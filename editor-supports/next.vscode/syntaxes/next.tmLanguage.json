@@ -271,7 +271,7 @@
 			"patterns": [
 				{
 					"name": "support.function.builtin.next",
-					"match": "\\b(len|min|max|sprint|sprintf|sprintln|print|printf|println)\\b"
+					"match": "\\b(len|min|max|sprint|sprintf|sprintln|print|printf|println|assert)\\b"
 				}
 			]
 		}

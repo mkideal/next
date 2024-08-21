@@ -33,6 +33,9 @@ type Context struct {
 
 	// errors is a list of errors
 	errors scanner.ErrorList
+
+	// pos is the current position for call expression
+	pos token.Pos
 }
 
 func NewContext(debug bool) *Context {
@@ -70,6 +73,10 @@ func (c *Context) Debug() bool {
 	return c.debug
 }
 
+func (c *Context) Position() token.Position {
+	return c.fset.Position(c.pos)
+}
+
 func (c *Context) error(pos token.Pos, msg string) {
 	c.errors.Add(c.fset.Position(pos), msg)
 }
@@ -94,6 +101,11 @@ func (c *Context) lookupFile(fullPath, relativePath string) *File {
 		relativePath = path.Clean(path.Join(path.Dir(fullPath), relativePath))
 	}
 	return c.files[relativePath]
+}
+
+func (c *Context) call(pos token.Pos, name string, args ...constant.Value) (constant.Value, error) {
+	c.pos = pos
+	return constant.Call(c, name, args)
 }
 
 func (c *Context) Resolve() error {
@@ -276,7 +288,7 @@ func (c *Context) recusiveResolveValue(file *File, refs []string, expr ast.Expr,
 		for i, arg := range expr.Args {
 			args[i] = c.recusiveResolveValue(file, refs, arg, iota)
 		}
-		result, err := constant.Call(c, ident.Name, args)
+		result, err := c.call(expr.Pos(), ident.Name, args...)
 		if err != nil {
 			c.errorf(expr.Pos(), err.Error())
 			return constant.MakeUnknown()

@@ -368,18 +368,19 @@ len("hello")        // 函数调用
 | 函数或变量 | 用法说明 |
 |----------|---------|
 | **iota** | 用于枚举声明中声明内置递增变量 |
-| **int**(bool\|int\|float) | 将 bool，int 或 float 转换成整数 |
-| **float**(bool\|int\|float) | 将 bool，int 或 float 转换成浮点数 |
-| **bool**(bool\|int\|float\|string) | 将 bool，int，float 或 string 转换成bool |
-| **min**(x1[, ...]) | 获取一个或多个值的最小值 |
-| **max**(x1[, ...]) | 获取一个或多个值的最大值 |
-| **len**(string) | 计算字符串的长度 |
-| **sprint**(args...) | 用于表达式中，返回格式化后字符串 |
-| **sprintf**(fmt, args...) | 用于表达式中，返回格式化后字符串 |
-| **sprintln**(...) | 用于表达式中，返回格式化后字符串 |
-| **print**(args...) | 用于调试输出信息，**不可**用于表达式中 |
-| **printf**(fmt, args...) | 用于调试输出信息，**不可**用于表达式中 |
-| **println**(...) | 用于调试输出信息，**不可**用于表达式中 |
+| **int**(`x: bool\|int\|float`) | 将 bool，int 或 float 转换成整数 |
+| **float**(`x: bool\|int\|float`) | 将 bool，int 或 float 转换成浮点数 |
+| **bool**(`x: any`) | 将 bool，int，float 或 string 转换成bool |
+| **min**(`x: any`, `y: any...`) | 获取一个或多个值的最小值 |
+| **max**(`x: any`, `y: any...`) | 获取一个或多个值的最大值 |
+| **len**(`s: string`) | 计算字符串的长度 |
+| **sprint**(`args: any...`) | 用于表达式中，返回格式化后字符串 |
+| **sprintf**(`fmt: string`, `args: any...`) | 用于表达式中，返回格式化后字符串 |
+| **sprintln**(`args: any...`) | 用于表达式中，返回格式化后字符串 |
+| **print**(`args: any...`) | 用于调试输出信息，**不可**用于表达式中 |
+| **printf**(`fmt: string`, `args: any...`) | 用于调试输出信息，**不可**用于表达式中 |
+| **println**(`args: any...`) | 用于调试输出信息，**不可**用于表达式中 |
+| **assert**(`cond: bool`, `fmtAndArgs: any...`) | 用于断言，**不可**用于表达式中 |
 
 ## 9. 词法约定
 

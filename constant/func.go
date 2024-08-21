@@ -10,6 +10,7 @@ import (
 type FuncContext interface {
 	Output() io.Writer
 	Debug() bool
+	Position() token.Position
 }
 
 type Func func(ctx FuncContext, args []Value) Value
@@ -27,6 +28,7 @@ var funcs = map[string]Func{
 	"print":    _print,
 	"printf":   _printf,
 	"println":  _println,
+	"assert":   _assert,
 }
 
 func _len(ctx FuncContext, args []Value) Value {
@@ -220,5 +222,30 @@ func _println(ctx FuncContext, args []Value) Value {
 		return MakeUnknown()
 	}
 	fmt.Fprintln(ctx.Output(), toArgs(args)...)
+	return MakeUnknown()
+}
+
+func _assert(ctx FuncContext, args []Value) Value {
+	if len(args) == 0 {
+		panic("assert: missing condition")
+	}
+	if BoolVal(args[0]) {
+		return MakeUnknown()
+	}
+	if len(args) == 1 {
+		fmt.Fprintf(ctx.Output(), "%s: assertion failed\n", ctx.Position())
+	} else {
+		var msg string
+		if len(args) == 2 {
+			if args[1].Kind() == String {
+				msg = StringVal(args[1])
+			} else {
+				msg = args[1].String()
+			}
+		} else {
+			msg = fmt.Sprint(toArgs(args[1:])...)
+		}
+		fmt.Fprintf(ctx.Output(), "%s: assertion failed: %s\n", ctx.Position(), msg)
+	}
 	return MakeUnknown()
 }
