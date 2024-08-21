@@ -1,0 +1,17 @@
+package a;
+
+@go(
+    package = "github.com/username/repo/a",
+);
+
+enum ItemType {
+    Coin = 0,
+    Diamond = 1,
+    Props = 2,
+}
+
+struct Item {
+    ItemType type;
+    int id;
+    int count;
+}

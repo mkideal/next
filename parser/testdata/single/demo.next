@@ -1,0 +1,122 @@
+package demo;
+
+// integer constant
+const X = 1;
+const V1 = 1000_1000;
+const V2 = 100;
+const V3 = V1 + V2;
+
+printf("V3 = %d\n", V3);
+
+// string constant
+const Y = "y";
+
+// raw string constant
+const Z = `hello
+
+world`;
+
+// constant group
+const (
+    A = 1;
+    B = 2.0;
+    C = false;
+    D = "hello";
+)
+
+// color enum
+enum Color {
+    Red = 1,
+    Green = 2,
+    Blue = 3,
+}
+
+// errno enum
+enum Errno {
+    OK = iota,  // 0
+    Internal,   // 1
+    BadRequest, // 2
+
+    UserNotFound = iota + 100, // 100
+    PlayerNotFound,           // 101
+
+    InvalidArgument = iota * 2 + 200, // 200
+    InvalidToken,                    // 202
+
+    NotFound = Errno.UserNotFound + Errno.PlayerNotFound,
+}
+
+const Hello = Errno.InvalidToken + V3;
+printf("InvalidToken = %d, Hello = %d\n", Errno.InvalidToken, Hello);
+printf("NotFound = %d\n", Errno.NotFound);
+
+// enum group
+enum (
+    EnumA {
+        A1 = 0,
+        A2 = 1,
+    }
+
+    EnumB {
+        B1 = 0,
+        B2 = 1,
+    }
+)
+
+// call function
+println(EnumA.A1);
+printf("hello, %d\n", A);
+println("hello, world");
+
+// Location info
+struct Location {
+    string country;
+    string city;
+    int zipCode;
+}
+
+// struct group
+struct (
+    StructA {
+        int field1;
+        bool field2;
+    }
+
+    StructB {
+        string field1;
+        int field2;
+    }
+)
+
+// User table
+@type(100)
+@json(name="User")
+protocol User {
+    @key
+    int64 id;
+    @json(name="nickname", omitempty)
+    string nickname;
+    string avatar;
+    Location location;
+    vector<string> fields;
+    map<string, int> scores;
+    @json(ignore)
+    array<int, 6> history;
+}
+
+// protocol group
+protocol (
+    ProtocolA {}
+    ProtocolB {
+        string id;
+    }
+    // ...
+)
+
+// primitive types:
+//
+// integer: int, int8, int16, int32, int64
+// floating: float32, float64
+// string: string, byte, bytes
+// boolean: bool
+// container: array<T, N>, vector<T>, map<K, V>

@@ -1,0 +1,10 @@
+package b;
+
+import "./a.next";
+
+@go(package = "github.com/username/repo/a");
+
+protocol Mail {
+    int id;
+    vector<a.Item> rewards;
+}

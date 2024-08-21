@@ -1,0 +1,136 @@
+// Package declaration
+package gameserver;
+
+// Import utility package
+import "./utils.next";
+
+// File-level annotations
+@go(package = "github.com/gamestudio/awesome-game/server");
+@json(omitempty = true);
+
+// Game server basic configuration
+const (
+    ServerName = "Awesome Game Server";
+    Version = "1.0.0";
+    MaxPlayers = 1000;
+    TickRate = 64;
+    GravityAcceleration = 9.8;
+    WelcomeMessage = "Welcome to " + ServerName + " v" + Version + "!";
+)
+
+// Player rank enumeration, demonstrating iota usage and value jumping
+enum PlayerRank {
+    Novice = iota,    // 0
+    Apprentice,       // 1
+    Adept,            // 2
+    Expert,           // 3
+
+    Master = iota + 100, // 100
+    GrandMaster,         // 101
+    Legend               // 102
+}
+
+// Item rarity in the game, using bit shift operations and iota
+enum ItemRarity {
+    Common = 1 << iota,  // 1
+    Uncommon,            // 2
+    Rare,                // 4
+    Epic,                // 8
+    Legendary,           // 16
+    Mythic               // 32
+}
+
+// Demonstrating enum group declaration and constant expression usage
+enum (
+    DamageType {
+        Physical = 1,
+        Fire = 2,
+        Ice = 4,
+        Lightning = 8,
+        Poison = 16,
+        Magic = DamageType.Fire | DamageType.Ice | DamageType.Lightning  // Using bitwise operations in constant expressions
+    }
+
+    GameMode {
+        Easy = 10 * (iota + 1),  // 10
+        Normal,                  // 20
+        Hard,                    // 30
+        Nightmare                // 40
+    }
+)
+
+// Player structure
+protocol Player {
+    int64 id;
+    string name;
+    PlayerRank rank;
+    int32 level;
+    float64 experience;
+    vector<int32> inventory;  // List of item IDs
+    map<DamageType, float32> resistances;  // Damage resistances
+}
+
+// Game world settings
+struct (
+    @json(snake_case = true)
+    WorldSettings {
+        string name;
+        int32 seed;
+        GameMode difficulty;
+        array<float64, 3> spawnPoint;  // x, y, z coordinates
+        bool pvpEnabled;
+    }
+
+    @go(generate = "easyjson")
+    ServerConfig {
+        int32 port;
+        string ipAddress;
+        int32 maxConnections;
+        float32 tickInterval;
+        vector<string> adminList;
+        map<string, bool> enabledFeatures;
+    }
+)
+
+// Game service protocol
+protocol GameService {
+    int64 gameId;
+    string gameName;
+    WorldSettings worldSettings;
+    ServerConfig serverConfig;
+    array<Player, MaxPlayers> activePlayers;  // Using constant as array size
+    array<Player, 2> inactivePlayers;  // Using constant as array size
+    ItemRarity latestDroppedItemRarity;
+}
+
+// Complex constant declarations using built-in functions, enum values, and constant expressions
+const (
+    // Minimum damage value
+    MinDamage = min(DamageType.Physical, DamageType.Magic, 5);
+    
+    // Maximum damage value
+    MaxDamage = max(DamageType.Physical, DamageType.Magic, ItemRarity.Mythic);
+    
+    // Calculate base experience
+    BaseExperience = (PlayerRank.GrandMaster - PlayerRank.Novice) * GameMode.Normal;
+    
+    // Calculate legendary item drop chance
+    LegendaryDropChance = 1.0 / float64(ItemRarity.Legendary);
+    
+    // Calculate maximum actions per second the server can handle
+    MaxActionsPerSecond = MaxPlayers * TickRate;
+)
+
+// Line comment: The following are constants for game balance adjustments
+
+/*
+Multi-line comment:
+These values will be used to adjust the game's difficulty and balance.
+Ensure thorough testing before making any modifications.
+*/
+
+const (
+    DifficultyScaling = 1.5;
+    ExperienceMultiplier = 2.0;
+    LootQualityFactor = 1.2;
+)
