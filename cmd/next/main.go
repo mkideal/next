@@ -14,34 +14,6 @@ import (
 	"github.com/gopherd/next/types"
 )
 
-type Map map[string]string
-
-func (m *Map) Set(s string) error {
-	if *m == nil {
-		*m = make(Map)
-	}
-	parts := strings.SplitN(s, "=", 2)
-	if len(parts) != 2 {
-		return fmt.Errorf("invalid format: %q, expected key=value", s)
-	}
-	(*m)[parts[0]] = parts[1]
-	return nil
-}
-
-func (m Map) String() string {
-	if m == nil {
-		return ""
-	}
-	var sb strings.Builder
-	for k, v := range m {
-		if sb.Len() > 0 {
-			sb.WriteByte(',')
-		}
-		fmt.Fprintf(&sb, "%s=%s", k, v)
-	}
-	return sb.String()
-}
-
 func main() {
 	ctx := types.NewContext()
 	version := flag.Bool("v", false, "Show next compiler version")
@@ -53,56 +25,49 @@ func main() {
 		os.Exit(0)
 	}
 
-	var err error
 	var files []string
 	if flag.NArg() == 0 {
-		files, err = fsutil.AppendFiles(files, ".", ".next", false)
+		files = result(fsutil.AppendFiles(files, ".", ".next", false))
 	} else {
 		for _, arg := range flag.Args() {
-			files, err = fsutil.AppendFiles(files, arg, ".next", false)
-			if err != nil {
-				break
-			}
+			files = result(fsutil.AppendFiles(files, arg, ".next", false))
 		}
-	}
-	if err != nil {
-		exit(err)
 	}
 	if len(files) == 0 {
-		exit("no source files")
+		try("no source files")
 	}
+
+	// compute absolute path and remove duplicated files
 	seen := make(map[string]bool)
 	for i := len(files) - 1; i >= 0; i-- {
-		files[i], err = filepath.Abs(files[i])
-		if err != nil {
-			exit(err)
-		}
+		files[i] = result(filepath.Abs(files[i]))
 		if seen[files[i]] {
-			// remove duplicated files
 			files = append(files[:i], files[i+1:]...)
 		} else {
 			seen[files[i]] = true
 		}
 	}
 
+	// parse and resolve all files
 	for _, file := range files {
-		f, err := parser.ParseFile(ctx.FileSet(), file, nil, parser.ParseComments|parser.AllErrors)
-		if err != nil {
-			exit(err)
-		}
-		if err := ctx.AddFile(f); err != nil {
-			exit(err)
-		}
+		f := result(parser.ParseFile(ctx.FileSet(), file, nil, parser.ParseComments|parser.AllErrors))
+		try(ctx.AddFile(f))
 	}
-	if err := ctx.Resolve(); err != nil {
-		exit(err)
-	}
+	try(ctx.Resolve())
+
+	// generate files
+	try(ctx.Generate())
 }
 
-func exit(err any) {
+func result[T any](v T, err error) T {
+	try(err)
+	return v
+}
+
+func try(err any) {
 	switch err := err.(type) {
 	case nil:
-		os.Exit(0)
+		return // do nothing if no error
 	case error:
 		if errs, ok := err.(scanner.ErrorList); ok {
 			const maxErrorCount = 20

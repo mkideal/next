@@ -13,7 +13,7 @@ import (
 )
 
 // Genertate generates files for all specified languages.
-func (c *Context) Genertate() error {
+func (c *Context) Generate() error {
 	// Check whether the template directory exists for each language
 	for lang := range c.flags.outputs {
 		tplDir := c.flags.templates[lang]
