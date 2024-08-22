@@ -32,11 +32,11 @@ var funcs = map[string]Func{
 	"error":     _error,
 	"assert":    _assert,
 	"assert_eq": _assert_eq,
-	//"assert_ne": _assert_ne,
-	//"assert_lt": _assert_lt,
-	//"assert_le": _assert_le,
-	//"assert_gt": _assert_gt,
-	//"assert_ge": _assert_ge,
+	"assert_ne": _assert_ne,
+	"assert_lt": _assert_lt,
+	"assert_le": _assert_le,
+	"assert_gt": _assert_gt,
+	"assert_ge": _assert_ge,
 }
 
 func _len(ctx FuncContext, args []Value) Value {

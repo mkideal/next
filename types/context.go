@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
+	"path/filepath"
 	"slices"
 	"sort"
 	"strings"
@@ -58,9 +58,13 @@ func (c *Context) AddFile(f *ast.File) error {
 		c.errorf(f.Pos(), "file %s already exists", filename)
 		return c.errors.Err()
 	}
+	path, err := filepath.Abs(filename)
+	if err != nil {
+		return fmt.Errorf("failed to get absolute path of %s: %w", filename, err)
+	}
 	file := newFile(c, f)
-	file.Path = filename
-	c.files[filename] = file
+	file.Path = path
+	c.files[path] = file
 	c.packages[file.Pkg] = append(c.packages[file.Pkg], file)
 	return nil
 }
@@ -90,7 +94,12 @@ func (c *Context) lookupSymbol(name string) Symbol {
 }
 
 func (c *Context) getFileByPos(pos token.Pos) *File {
-	return c.files[c.fset.Position(pos).Filename]
+	path, err := filepath.Abs(c.fset.Position(pos).Filename)
+	if err != nil {
+		c.errorf(pos, "failed to get absolute path of %s: %v", c.fset.Position(pos).Filename, err)
+		return nil
+	}
+	return c.files[path]
 }
 
 func (c *Context) lookupFile(fullPath, relativePath string) *File {
@@ -98,7 +107,12 @@ func (c *Context) lookupFile(fullPath, relativePath string) *File {
 		return nil
 	}
 	if relativePath[0] == '.' {
-		relativePath = path.Clean(path.Join(path.Dir(fullPath), relativePath))
+		var err error
+		relativePath, err = filepath.Abs(filepath.Join(filepath.Dir(fullPath), relativePath))
+		if err != nil {
+			c.errorf(token.NoPos, "failed to get absolute path of %s: %v", relativePath, err)
+			return nil
+		}
 	}
 	return c.files[relativePath]
 }
@@ -201,7 +215,7 @@ func (c *Context) resolveAnnotationGroup(file *File, annotations *ast.Annotation
 }
 
 func (c *Context) resolveValue(file *File, expr ast.Expr, iota *iotaValue) constant.Value {
-	return c.recusiveResolveValue(file, file, make([]*ValueSpec, 0, 16), expr, iota)
+	return c.recursiveResolveValue(file, file, make([]*ValueSpec, 0, 16), expr, iota)
 }
 
 func (c *Context) resolveSymbolValue(file *File, scope Scope, refs []*ValueSpec, v *ValueSpec) constant.Value {
@@ -221,10 +235,11 @@ func (c *Context) resolveSymbolValue(file *File, scope Scope, refs []*ValueSpec,
 	return v.Value
 }
 
-func (c *Context) recusiveResolveValue(file *File, scope Scope, refs []*ValueSpec, expr ast.Expr, iota *iotaValue) constant.Value {
+func (c *Context) recursiveResolveValue(file *File, scope Scope, refs []*ValueSpec, expr ast.Expr, iota *iotaValue) (result constant.Value) {
 	defer func() {
 		if r := recover(); r != nil {
 			c.errorf(expr.Pos(), "%v", r)
+			result = constant.MakeUnknown()
 		}
 	}()
 	expr = ast.Unparen(expr)
@@ -268,11 +283,11 @@ func (c *Context) recusiveResolveValue(file *File, scope Scope, refs []*ValueSpe
 		return c.resolveSymbolValue(file, scope, refs, v)
 
 	case *ast.BinaryExpr:
-		x := c.recusiveResolveValue(file, scope, refs, expr.X, iota)
-		y := c.recusiveResolveValue(file, scope, refs, expr.Y, iota)
+		x := c.recursiveResolveValue(file, scope, refs, expr.X, iota)
+		y := c.recursiveResolveValue(file, scope, refs, expr.Y, iota)
 		switch expr.Op {
 		case token.SHL, token.SHR:
-			return constant.Shift(x, expr.Op, uint(c.recusiveResolveUint64(file, scope, expr.Y, refs, iota)))
+			return constant.Shift(x, expr.Op, uint(c.recursiveResolveUint64(file, scope, expr.Y, refs, iota)))
 		case token.LSS, token.LEQ, token.GTR, token.GEQ, token.EQL, token.NEQ:
 			return constant.MakeBool(constant.Compare(x, expr.Op, y))
 		default:
@@ -280,7 +295,7 @@ func (c *Context) recusiveResolveValue(file *File, scope Scope, refs []*ValueSpe
 		}
 
 	case *ast.UnaryExpr:
-		x := c.recusiveResolveValue(file, scope, refs, expr.X, iota)
+		x := c.recursiveResolveValue(file, scope, refs, expr.X, iota)
 		return constant.UnaryOp(expr.Op, x, 0)
 
 	case *ast.CallExpr:
@@ -292,7 +307,7 @@ func (c *Context) recusiveResolveValue(file *File, scope Scope, refs []*ValueSpe
 		}
 		args := make([]constant.Value, len(expr.Args))
 		for i, arg := range expr.Args {
-			args[i] = c.recusiveResolveValue(file, scope, refs, arg, iota)
+			args[i] = c.recursiveResolveValue(file, scope, refs, arg, iota)
 		}
 		result, err := c.call(expr.Pos(), ident.Name, args...)
 		if err != nil {
@@ -308,11 +323,11 @@ func (c *Context) recusiveResolveValue(file *File, scope Scope, refs []*ValueSpe
 }
 
 func (c *Context) resolveUint64(file *File, expr ast.Expr) uint64 {
-	return c.recusiveResolveUint64(file, file, expr, make([]*ValueSpec, 0, 16), nil)
+	return c.recursiveResolveUint64(file, file, expr, make([]*ValueSpec, 0, 16), nil)
 }
 
-func (c *Context) recusiveResolveUint64(file *File, scope Scope, expr ast.Expr, refs []*ValueSpec, iota *iotaValue) uint64 {
-	val := c.recusiveResolveValue(file, scope, refs, expr, iota)
+func (c *Context) recursiveResolveUint64(file *File, scope Scope, expr ast.Expr, refs []*ValueSpec, iota *iotaValue) uint64 {
+	val := c.recursiveResolveValue(file, scope, refs, expr, iota)
 	switch val.Kind() {
 	case constant.Int:
 		n, ok := constant.Uint64Val(val)

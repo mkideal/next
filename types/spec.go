@@ -1,6 +1,8 @@
 package types
 
 import (
+	"strconv"
+
 	"github.com/gopherd/next/ast"
 	"github.com/gopherd/next/constant"
 	"github.com/gopherd/next/token"
@@ -45,12 +47,17 @@ type ImportSpec struct {
 	Path         string
 }
 
-func newImportSpec(_ *Context, _ *File, src *ast.ImportSpec) *ImportSpec {
+func newImportSpec(ctx *Context, _ *File, src *ast.ImportSpec) *ImportSpec {
+	path, err := strconv.Unquote(src.Path.Value)
+	if err != nil {
+		ctx.errorf(src.Path.Pos(), "invalid import path %v: %v", src.Path.Value, err)
+		path = "!BAD-IMPORT-PATH!"
+	}
 	i := &ImportSpec{
 		pos:     src.Pos(),
 		Doc:     newCommentGroup(src.Doc),
 		Comment: newCommentGroup(src.Comment),
-		Path:    src.Path.Value,
+		Path:    path,
 	}
 	i.unresolved.annotations = src.Annotations
 	return i
@@ -113,13 +120,13 @@ func (v *ValueSpec) resolveValue(ctx *Context, file *File, scope Scope, refs []*
 
 	// If enum type is nil, resolve constant value expression in which iota is not allowed
 	if v.enum.typ == nil {
-		v.Value = ctx.recusiveResolveValue(file, scope, append(refs, v), v.unresolved.value, nil)
+		v.Value = ctx.recursiveResolveValue(file, scope, append(refs, v), v.unresolved.value, nil)
 		return v.Value
 	}
 
 	if v.unresolved.value != nil {
 		// Resolve value expression
-		v.Value = ctx.recusiveResolveValue(file, v.enum.typ, append(refs, v), v.unresolved.value, &v.enum.iota)
+		v.Value = ctx.recursiveResolveValue(file, v.enum.typ, append(refs, v), v.unresolved.value, &v.enum.iota)
 	} else if v.enum.index == 0 {
 		// First member of enum type has value 0 if not specified
 		v.Value = constant.MakeInt64(0)
@@ -136,7 +143,7 @@ func (v *ValueSpec) resolveValue(ctx *Context, file *File, scope Scope, refs []*
 
 		if start.Value != nil && start.enum.iota.found {
 			// If start value is specified and it has iota expression, resolve it with the current iota value
-			v.Value = ctx.recusiveResolveValue(file, v.enum.typ, append(refs, v), start.unresolved.value, &v.enum.iota)
+			v.Value = ctx.recursiveResolveValue(file, v.enum.typ, append(refs, v), start.unresolved.value, &v.enum.iota)
 		} else {
 			// Otherwise, add 1 to the previous value
 			v.Value = constant.BinaryOp(prev.Value, token.ADD, constant.MakeInt64(1))

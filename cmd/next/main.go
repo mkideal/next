@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/gopherd/core/builder"
 	"github.com/gopherd/next/parser"
 	"github.com/gopherd/next/scanner"
 	"github.com/gopherd/next/types"
@@ -18,17 +19,24 @@ var flags struct {
 }
 
 func main() {
-	flag.BoolVar(&flags.version, "version", false, "show version")
-	flag.BoolVar(&flags.debug, "debug", false, "enable debug mode")
+	flag.BoolVar(&flags.version, "version", false, "Show next compiler version")
+	flag.BoolVar(&flags.debug, "d", false, "Enable debug mode")
 	flag.Parse()
 
+	if flags.version {
+		builder.PrintInfo()
+	}
+
 	var err error
-	var files = flag.Args()
-	if len(files) == 0 {
-		files, err = listDir(".")
+	var files []string
+	if flag.NArg() == 0 {
+		files, err = appendFiles(files, ".")
 	} else {
-		if len(files) == 1 && filepath.Ext(files[0]) != ".next" {
-			files, err = listDir(files[0])
+		for _, arg := range flag.Args() {
+			files, err = appendFiles(files, arg)
+			if err != nil {
+				break
+			}
 		}
 	}
 	if err != nil {
@@ -37,6 +45,20 @@ func main() {
 	if len(files) == 0 {
 		exit("no source files")
 	}
+	seen := make(map[string]bool)
+	for i := len(files) - 1; i >= 0; i-- {
+		files[i], err = filepath.Abs(files[i])
+		if err != nil {
+			exit(err)
+		}
+		if seen[files[i]] {
+			// remove duplicated files
+			files = append(files[:i], files[i+1:]...)
+		} else {
+			seen[files[i]] = true
+		}
+	}
+	debugf("files: %v\n", files)
 
 	ctx := types.NewContext(flags.debug)
 	for _, file := range files {
@@ -53,21 +75,29 @@ func main() {
 	}
 }
 
+func debugf(format string, args ...interface{}) {
+	if flags.debug {
+		fmt.Fprintf(os.Stderr, format, args...)
+	}
+}
+
 func exit(err any) {
 	switch err := err.(type) {
 	case nil:
 		os.Exit(0)
 	case error:
-		if err, ok := err.(scanner.ErrorList); ok {
+		if errs, ok := err.(scanner.ErrorList); ok {
 			const maxErrorCount = 20
 			var sb strings.Builder
-			for i := 0; i < len(err) && i < maxErrorCount; i++ {
-				fmt.Fprintln(&sb, err[i])
+			for i := 0; i < len(errs) && i < maxErrorCount; i++ {
+				fmt.Fprintln(&sb, errs[i])
 			}
-			if remaining := len(err) - maxErrorCount; remaining > 0 {
+			if remaining := len(errs) - maxErrorCount; remaining > 0 {
 				fmt.Fprintf(&sb, "and %d more errors\n", remaining)
 			}
 			fmt.Fprint(os.Stderr, sb.String())
+		} else {
+			fmt.Fprintln(os.Stderr, err)
 		}
 		os.Exit(2)
 	case string:
@@ -81,9 +111,8 @@ func exit(err any) {
 	}
 }
 
-func listDir(dir string) ([]string, error) {
-	var files []string
-	var err = filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+func appendFiles(files []string, path string) ([]string, error) {
+	var err = filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}

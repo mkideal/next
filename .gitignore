@@ -12,4 +12,5 @@ coverage.out
 coverage.txt
 coverage.html
 
+/build/
 /cmd/next/next

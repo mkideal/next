@@ -1,0 +1,355 @@
+// Package declaration
+
+@next(
+    go_package="github.com/nextlang/test/comprehensive",
+    cpp_namespace = "nextlang::test"
+)
+package a;
+
+// Constants
+const (
+    ServerName = "Comprehensive Test Server";
+    Version = "1.0.0";
+    MaxConnections = 1000;
+    Pi = 3.14159265358979323846;
+    MaxInt64 = 9223372036854775807;  // 2^63 - 1
+    MinInt64 = -9223372036854775808; // -2^63
+)
+
+// Assert constants
+assert_eq(ServerName, "Comprehensive Test Server");
+assert_eq(Version, "1.0.0");
+assert_eq(MaxConnections, 1000);
+assert(Pi > 3.14 && Pi < 3.15, "Pi value out of expected range: ", Pi);
+assert_eq(MaxInt64, 9223372036854775807);
+assert_eq(MinInt64, -9223372036854775808);
+
+// Constants with complex expressions
+const (
+    A = 1;
+    B = A + 2;
+    C = B * 3;
+    D = (C + 5) / 2;
+    E = D << 2;
+    F = E | (1 << 10);
+    G = F & 0xFFFF;
+    H = G ^ 0x1234;
+    I = H + 1.618;  // Approximation of golden ratio
+    J = I / 120;    // 120 is 5!
+)
+
+// Assert complex constants
+assert_eq(A, 1);
+assert_eq(B, 3);
+assert_eq(C, 9);
+assert_eq(D, 7);
+assert_eq(E, 28);
+assert_eq(F, 1052);
+assert_eq(G, 1052);
+assert_eq(H, 5672);
+assert(I > 5673.0 && I < 5674.0, "I value out of expected range: ", I);
+assert(J > 47.28 && J < 47.29, "J value out of expected range: ", J);
+
+// Constants with function calls
+const (
+    StringLength = len("Hello, World!");
+    MinValue = min(A, B, C, D, E);
+    MaxValue = max(F, G, H, int(I), int(J));
+)
+
+// Assert function call constants
+assert_eq(StringLength, 13);
+assert_eq(MinValue, 1);
+assert_eq(MaxValue, 5673);
+
+// Enum with iota
+enum Color {
+    Red = 1 << iota, // 1
+    Green,           // 2
+    Blue,            // 4
+    Alpha,           // 8
+    Yellow = Red | Green, // 3
+    Cyan = Green | Blue,  // 6
+    Magenta = Red | Blue, // 5
+    White = Red | Green | Blue, // 7
+}
+
+// Assert Color enum
+assert_eq(Color.Red, 1);
+assert_eq(Color.Green, 2);
+assert_eq(Color.Blue, 4);
+assert_eq(Color.Alpha, 8);
+assert_eq(Color.Yellow, 3);
+assert_eq(Color.Cyan, 6);
+assert_eq(Color.Magenta, 5);
+assert_eq(Color.White, 7);
+
+// Enum with complex iota usage
+enum FilePermission {
+    None = 0,
+    Execute = 1 << iota, // 1
+    Write,               // 2
+    Read,                // 4
+    
+    UserRead = Read << (3 * iota), // 4
+    UserWrite,                     // 4<<3 = 32
+    UserExecute,                   // 4<<6 = 256
+    
+    GroupRead, // 4<<9 = 2048
+    GroupWrite, // 4<<12 = 16384
+    GroupExecute, // 4<<15 = 131072
+    
+    OthersRead, // 4<<18 = 1048576
+    OthersWrite, // 4<<21 = 8388608
+    OthersExecute, // 4<<24 = 67108864
+    
+    // 4|32|256|2048|16384|131072|1048576|8388608|67108864
+    // 4 + 32 + 256 + 2048 + 16384 + 131072 + 1048576 + 8388608 + 67108864
+    All = UserRead | UserWrite | UserExecute | 
+          GroupRead | GroupWrite | GroupExecute | 
+          OthersRead | OthersWrite | OthersExecute,
+}
+
+// Assert FilePermission enum
+assert_eq(FilePermission.None, 0);
+assert_eq(FilePermission.Execute, 1);
+assert_eq(FilePermission.Write, 2);
+assert_eq(FilePermission.Read, 4);
+assert_eq(FilePermission.UserRead, 4);
+assert_eq(FilePermission.UserWrite, 32);
+assert_eq(FilePermission.UserExecute, 256);
+assert_eq(FilePermission.GroupRead, 2048);
+assert_eq(FilePermission.GroupWrite, 16384);
+assert_eq(FilePermission.GroupExecute, 131072);
+assert_eq(FilePermission.OthersRead, 1048576);
+assert_eq(FilePermission.OthersWrite, 8388608);
+assert_eq(FilePermission.OthersExecute, 67108864);
+assert_eq(FilePermission.All, (4 + 32 + 256 + 2048 + 16384 + 131072 + 1048576 + 8388608 + 67108864));
+
+// Enum group
+enum (
+    Day {
+        Monday = 1 << iota,
+        Tuesday,
+        Wednesday,
+        Thursday,
+        Friday,
+        Saturday,
+        Sunday,
+        
+        Weekday = Monday | Tuesday | Wednesday | Thursday | Friday,
+        Weekend = Saturday | Sunday,
+    }
+    
+    Month {
+        January = 1 << iota,
+        February,
+        March,
+        April,
+        May,
+        June,
+        July,
+        August,
+        September,
+        October,
+        November,
+        December,
+        
+        Q1 = January | February | March,
+        Q2 = April | May | June,
+        Q3 = July | August | September,
+        Q4 = October | November | December,
+    }
+)
+
+// Assert Day enum
+assert_eq(Day.Monday, 1);
+assert_eq(Day.Tuesday, 2);
+assert_eq(Day.Wednesday, 4);
+assert_eq(Day.Thursday, 8);
+assert_eq(Day.Friday, 16);
+assert_eq(Day.Saturday, 32);
+assert_eq(Day.Sunday, 64);
+assert_eq(Day.Weekday, 31);
+assert_eq(Day.Weekend, 96);
+
+// Assert Month enum
+assert_eq(Month.January, 1);
+assert_eq(Month.February, 2);
+assert_eq(Month.March, 4);
+assert_eq(Month.April, 8);
+assert_eq(Month.May, 16);
+assert_eq(Month.June, 32);
+assert_eq(Month.July, 64);
+assert_eq(Month.August, 128);
+assert_eq(Month.September, 256);
+assert_eq(Month.October, 512);
+assert_eq(Month.November, 1024);
+assert_eq(Month.December, 2048);
+assert_eq(Month.Q1, 7);
+assert_eq(Month.Q2, 56);
+assert_eq(Month.Q3, 448);
+assert_eq(Month.Q4, 3584);
+
+// Struct types
+struct Point2D {
+    float64 x;
+    float64 y;
+}
+
+struct Point3D {
+    Point2D point;
+    float64 z;
+}
+
+struct Rectangle {
+    Point2D topLeft;
+    Point2D bottomRight;
+}
+
+// Struct with various field types
+struct ComplexStruct {
+    bool flag;
+    int8 tinyInt;
+    int16 smallInt;
+    int32 mediumInt;
+    int64 bigInt;
+    int defaultInt;
+    float32 singlePrecision;
+    float64 doublePrecision;
+    string text;
+    byte singleByte;
+    bytes byteArray;
+    array<int, 5> fixedArray;
+    vector<string> dynamicArray;
+    map<string, int> dictionary;
+}
+
+// Struct group
+struct (
+    User {
+        int64 id;
+        string username;
+        string email;
+        Day preferredDay;
+        Month birthMonth;
+    }
+    
+    @json(name = "UserProfile")
+    UserProfile {
+        User user;
+        string firstName;
+        string lastName;
+        int age;
+        vector<string> interests;
+    }
+)
+
+// Protocol types
+protocol LoginRequest {
+    @key
+    string username;
+    @sensitive
+    string password;
+    string deviceId;
+    @optional
+    string twoFactorToken;
+}
+
+protocol LoginResponse {
+    bool success;
+    @json(omitempty)
+    string errorMessage;
+    @json(name = "auth_token")
+    string authenticationToken;
+    User user;
+}
+
+// Protocol group
+protocol (
+    GenericRequest {
+        string requestId;
+        int64 timestamp;
+    }
+    
+    GenericResponse {
+        string requestId;
+        int64 timestamp;
+        bool success;
+        @json(omitempty)
+        string errorCode;
+        @json(omitempty)
+        string errorMessage;
+    }
+)
+
+// Test cases for iota
+enum IotatestEnum {
+    A = iota,     // 0
+    B,            // 1
+    C = iota * 2, // 0
+    D,            // 2
+    E = iota * iota,  // 0
+    F,                // 1
+    G = iota + C,     // 0
+}
+
+// Assert IotatestEnum
+assert_eq(IotatestEnum.A, 0);
+assert_eq(IotatestEnum.B, 1);
+assert_eq(IotatestEnum.C, 0);
+assert_eq(IotatestEnum.D, 2);
+assert_eq(IotatestEnum.E, 0);
+assert_eq(IotatestEnum.F, 1);
+assert_eq(IotatestEnum.G, 0);
+
+// Constants using built-in functions
+const (
+    IntFromBool = int(true);
+    IntFromFloat = int(3.14);
+    FloatFromInt = float(42);
+    FloatFromBool = float(false);
+    BoolFromInt = bool(1);
+    BoolFromString = bool("true");
+    
+    FormattedString1 = sprint("The answer is ", 42);
+    FormattedString2 = sprintf("Pi is approximately %.2f", Pi);
+    FormattedString3 = sprintln("Hello", "World");
+)
+
+// Assert built-in function constants
+assert_eq(IntFromBool, 1);
+assert_eq(IntFromFloat, 3);
+assert_eq(FloatFromInt, 42.0);
+assert_eq(FloatFromBool, 0.0);
+assert_eq(BoolFromInt, true);
+assert_eq(BoolFromString, true);
+assert_eq(FormattedString1, "The answer is 42");
+assert_eq(FormattedString2, "Pi is approximately 3.14");
+assert_eq(FormattedString3, "Hello World\n");
+
+// Constants for testing complex expressions and bitwise operations
+const (
+    Complex1 = (A + B) * (C - D) / (E + F) & (G | H) ^ int(I);
+    Complex2 = min(max(A, B, C), min(D, E, F)) + abs(G - H) * len(sprint(I, J));
+    Complex3 = (Day.Weekday);
+    Complex4 = (Day.Weekday &^ Day.Weekend);
+    Complex5 = Color.Red | (FilePermission.UserRead & FilePermission.GroupWrite) | (Day.Weekday &^ Day.Weekend);
+)
+
+// Assert complex expression constants
+assert_eq(Complex1, 5673);
+assert_eq(Complex2, 78547);
+assert_eq(Complex3, 31);
+assert_eq(Complex4, 31);
+assert_eq(Complex5, 31);
+
+assert_eq(1, 1);
+assert_ne(1, 2);
+assert_lt(1, 2);
+assert_le(1, 1);
+assert_gt(2, 1);
+assert_ge(2, 2);
+
+// Final assertion to ensure all tests have run
+assert(true, "This assertion should always pass if we reach this point");
