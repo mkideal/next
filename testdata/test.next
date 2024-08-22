@@ -457,3 +457,5 @@ println("All assertions passed.");
 
 // Final assertion to ensure all tests have run
 assert(true, "This assertion should always pass if we reach this point");
+
+assert_eq(1, 2);

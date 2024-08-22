@@ -373,14 +373,22 @@ len("hello")        // 函数调用
 | **bool**(`x: any`) | 将 bool，int，float 或 string 转换成bool |
 | **min**(`x: any`, `y: any...`) | 获取一个或多个值的最小值 |
 | **max**(`x: any`, `y: any...`) | 获取一个或多个值的最大值 |
+| **abs**(`x: int\|float`) | 获取绝对值 |
 | **len**(`s: string`) | 计算字符串的长度 |
-| **sprint**(`args: any...`) | 用于表达式中，返回格式化后字符串 |
-| **sprintf**(`fmt: string`, `args: any...`) | 用于表达式中，返回格式化后字符串 |
-| **sprintln**(`args: any...`) | 用于表达式中，返回格式化后字符串 |
-| **print**(`args: any...`) | 用于调试输出信息，**不可**用于表达式中 |
-| **printf**(`fmt: string`, `args: any...`) | 用于调试输出信息，**不可**用于表达式中 |
-| **println**(`args: any...`) | 用于调试输出信息，**不可**用于表达式中 |
-| **assert**(`cond: bool`, `args: any...`) | 用于断言，**不可**用于表达式中 |
+| **sprint**(`args: any...`) | 将参数输出为字符串，如果所有参数都是字符串，则中间加空格隔开 |
+| **sprintf**(`fmt: string`, `args: any...`) | 格式化后字符串 |
+| **sprintln**(`args: any...`) | 类似于 `sprint`，但结尾增加一个换行 |
+| **print**(`args: any...`) | 调试输出信息，输出字符串同 `sprint` |
+| **printf**(`fmt: string`, `args: any...`) | 调试输出信息，输出字符串同 `sprint` |
+| **println**(`args: any...`) | 调试输出信息，输出字符串同 `sprint` |
+| **error**(`args: any...`) | 输出错误消息，至少需要一个参数 |
+| **assert**(`cond: bool`, `args: any...`) | 断言是否为真 |
+| **assert_eq**(`got: any`, `want: any`, `args: any...`) | 断言是否相等 |
+| **assert_ne**(`got: any`, `want: any`, `args: any...`) | 断言是否不等 |
+| **assert_lt**(`x: any`, `y: any`, `args: any...`) | 断言 `x` 是否小于 `y` |
+| **assert_le**(`x: any`, `y: any`, `args: any...`) | 断言 `x` 是否小于等于 `y` |
+| **assert_gt**(`x: any`, `y: any`, `args: any...`) | 断言 `x` 是否大于 `y` |
+| **assert_ge**(`x: any`, `y: any`, `args: any...`) | 断言 `x` 是否大于等于 `y` |
 
 ## 9. 词法约定
 

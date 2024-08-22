@@ -16,20 +16,27 @@ type FuncContext interface {
 type Func func(ctx FuncContext, args []Value) Value
 
 var funcs = map[string]Func{
-	"len":      _len,
-	"min":      _min,
-	"max":      _max,
-	"abs":      _abs,
-	"int":      _int,
-	"float":    _float,
-	"bool":     _bool,
-	"sprint":   _sprint,
-	"sprintf":  _sprintf,
-	"sprintln": _sprintln,
-	"print":    _print,
-	"printf":   _printf,
-	"println":  _println,
-	"assert":   _assert,
+	"len":       _len,
+	"min":       _min,
+	"max":       _max,
+	"abs":       _abs,
+	"int":       _int,
+	"float":     _float,
+	"bool":      _bool,
+	"sprint":    _sprint,
+	"sprintf":   _sprintf,
+	"sprintln":  _sprintln,
+	"print":     _print,
+	"printf":    _printf,
+	"println":   _println,
+	"error":     _error,
+	"assert":    _assert,
+	"assert_eq": _assert_eq,
+	//"assert_ne": _assert_ne,
+	//"assert_lt": _assert_lt,
+	//"assert_le": _assert_le,
+	//"assert_gt": _assert_gt,
+	//"assert_ge": _assert_ge,
 }
 
 func _len(ctx FuncContext, args []Value) Value {
@@ -257,27 +264,88 @@ func _println(ctx FuncContext, args []Value) Value {
 	return MakeUnknown()
 }
 
+func _error(ctx FuncContext, args []Value) Value {
+	if len(args) == 0 {
+		panic("error: missing error message")
+	}
+	fmt.Fprintln(ctx.Output(), toArgs(args)...)
+	return MakeUnknown()
+}
+
+func printAssert(ctx FuncContext, args []any) {
+	if len(args) == 0 {
+		fmt.Fprintf(ctx.Output(), "%s: assertion failed\n", ctx.Position())
+		return
+	}
+	fmt.Fprintf(ctx.Output(), "%s: assertion failed: %s\n", ctx.Position(), fmt.Sprint(args...))
+}
+
 func _assert(ctx FuncContext, args []Value) Value {
 	if len(args) == 0 {
 		panic("assert: missing condition")
 	}
-	if BoolVal(args[0]) {
-		return MakeUnknown()
+	if !BoolVal(args[0]) {
+		printAssert(ctx, toArgs(args[1:]))
 	}
-	if len(args) == 1 {
-		fmt.Fprintf(ctx.Output(), "%s: assertion failed\n", ctx.Position())
-	} else {
-		var msg string
-		if len(args) == 2 {
-			if args[1].Kind() == String {
-				msg = StringVal(args[1])
-			} else {
-				msg = args[1].String()
-			}
-		} else {
-			msg = fmt.Sprint(toArgs(args[1:])...)
-		}
-		fmt.Fprintf(ctx.Output(), "%s: assertion failed: %s\n", ctx.Position(), msg)
+	return MakeUnknown()
+}
+
+func _assert_eq(ctx FuncContext, args []Value) Value {
+	if len(args) < 2 {
+		panic("assert_eq: at least two arguments are required")
+	}
+	if !Compare(args[0], token.EQL, args[1]) {
+		printAssert(ctx, append([]any{fmt.Sprintf("expected %v, but got %v.", args[1], args[0])}, toArgs(args[2:])...))
+	}
+	return MakeUnknown()
+}
+
+func _assert_ne(ctx FuncContext, args []Value) Value {
+	if len(args) < 2 {
+		panic("assert_ne: at least two arguments are required")
+	}
+	if Compare(args[0], token.EQL, args[1]) {
+		printAssert(ctx, append([]any{fmt.Sprintf("expected not %v, but got %v.", args[1], args[0])}, toArgs(args[2:])...))
+	}
+	return MakeUnknown()
+}
+
+func _assert_lt(ctx FuncContext, args []Value) Value {
+	if len(args) < 2 {
+		panic("assert_lt: at least two arguments are required")
+	}
+	if !Compare(args[0], token.LSS, args[1]) {
+		printAssert(ctx, append([]any{fmt.Sprintf("expected %v < %v, but not", args[0], args[1])}, toArgs(args[2:])...))
+	}
+	return MakeUnknown()
+}
+
+func _assert_le(ctx FuncContext, args []Value) Value {
+	if len(args) < 2 {
+		panic("assert_le: at least two arguments are required")
+	}
+	if !Compare(args[0], token.LEQ, args[1]) {
+		printAssert(ctx, append([]any{fmt.Sprintf("expected %v <= %v, but not", args[0], args[1])}, toArgs(args[2:])...))
+	}
+	return MakeUnknown()
+}
+
+func _assert_gt(ctx FuncContext, args []Value) Value {
+	if len(args) < 2 {
+		panic("assert_gt: at least two arguments are required")
+	}
+	if !Compare(args[0], token.GTR, args[1]) {
+		printAssert(ctx, append([]any{fmt.Sprintf("expected %v > %v, but not", args[0], args[1])}, toArgs(args[2:])...))
+	}
+	return MakeUnknown()
+}
+
+func _assert_ge(ctx FuncContext, args []Value) Value {
+	if len(args) < 2 {
+		panic("assert_ge: at least two arguments are required")
+	}
+	if !Compare(args[0], token.GEQ, args[1]) {
+		printAssert(ctx, append([]any{fmt.Sprintf("expected %v >= %v, but not", args[0], args[1])}, toArgs(args[2:])...))
 	}
 	return MakeUnknown()
 }
