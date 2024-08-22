@@ -35,12 +35,13 @@ go/vet:
 
 .PHONY: build
 build: go/generate go/vet
+	@echo "Building ${BUILD_DIR}/next..."
 	@mkdir -p ${BUILD_DIR}
 	@${GOBUILD} -o ${BUILD_DIR}/ ./cmd/next
 
 .PHONY: install
 install: build
-	@echo "Installing..."
+	@echo "Installing to /usr/local/bin/next..."
 	@cp ${BUILD_DIR}/next /usr/local/bin/
 
 .PHONY: release
@@ -71,5 +72,4 @@ release: go/generate go/vet
 
 .PHONY: clean
 clean:
-	@if [ -f /usr/local/bin/next ]; then rm /usr/local/bin/next; fi
 	@if [ -d ${BUILD_DIR} ]; then rm -r ${BUILD_DIR}; fi
