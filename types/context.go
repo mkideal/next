@@ -1,6 +1,7 @@
 package types
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -11,22 +12,34 @@ import (
 
 	"github.com/gopherd/next/ast"
 	"github.com/gopherd/next/constant"
+	"github.com/gopherd/next/internal/flags"
 	"github.com/gopherd/next/scanner"
 	"github.com/gopherd/next/token"
 )
 
 // Context represents a context of a Next program
 type Context struct {
+	// command line flags
+	flags struct {
+		debug      bool        // enable debug mode
+		engine     string      // template engine, default is "jet"
+		suffix     string      // template file suffix, default is ".jet"
+		importDirs flags.Slice // import directories
+		envs       flags.Map   // environment variables, e.g. -E X=1 -E Y
+		outputs    flags.Map   // output directories for each language, e.g. -O go=gen/go -O ts=gen/ts
+		templates  flags.Map   // template dir or files for each language, e.g. -T go=templates/go
+		types      flags.Map   // type mapping for each language, e.g. -t cpp.map=map -t cpp.float32=float32_t -T cpp.float64=float64_t
+	}
+
 	// fset is the file set used to track file positions
-	fset  *token.FileSet
-	debug bool
+	fset *token.FileSet
 
 	// files maps file name to file
 	files       map[string]*File
 	sortedFiles []*File
 
-	// packages is a list of files sorted by their position
-	packages map[string][]*File
+	// packages is a list of packages sorted by package name
+	packages []*Package
 
 	// symbols maps symbol name to symbol
 	symbols map[string]Symbol
@@ -38,14 +51,28 @@ type Context struct {
 	pos token.Pos
 }
 
-func NewContext(debug bool) *Context {
-	return &Context{
-		fset:     token.NewFileSet(),
-		files:    make(map[string]*File),
-		packages: make(map[string][]*File),
-		symbols:  make(map[string]Symbol),
-		debug:    debug,
+func NewContext() *Context {
+	c := &Context{
+		fset:    token.NewFileSet(),
+		files:   make(map[string]*File),
+		symbols: make(map[string]Symbol),
 	}
+	c.flags.envs = make(flags.Map)
+	c.flags.outputs = make(flags.Map)
+	c.flags.templates = make(flags.Map)
+	c.flags.types = make(flags.Map)
+	return c
+}
+
+func (c *Context) SetupCommandFlags(fs *flag.FlagSet) {
+	fs.BoolVar(&c.flags.debug, "d", false, "Enable debug mode")
+	fs.StringVar(&c.flags.engine, "e", "", "Template engine, default is jet, supported engines: jet")
+	fs.StringVar(&c.flags.suffix, "s", "", "Template file suffix, default is .jet")
+	fs.Var(&c.flags.envs, "E", "Environment variables, e.g. -E X=1 -E Y")
+	fs.Var(&c.flags.outputs, "O", "Output directories for each language, e.g. -O go=gen/go -O ts=gen/ts")
+	fs.Var(&c.flags.templates, "T", "Template dir or files for each language, e.g. -T go=templates/go")
+	fs.Var(&c.flags.importDirs, "I", "Import directories")
+	fs.Var(&c.flags.types, "t", "Type mapping for each language, e.g. -t cpp.map=map")
 }
 
 func (c *Context) FileSet() *token.FileSet {
@@ -65,7 +92,19 @@ func (c *Context) AddFile(f *ast.File) error {
 	file := newFile(c, f)
 	file.Path = path
 	c.files[path] = file
-	c.packages[file.Pkg] = append(c.packages[file.Pkg], file)
+	for _, pkg := range c.packages {
+		if pkg.Name == f.Name.Name {
+			file.Package = pkg.Name
+			pkg.files = append(pkg.files, file)
+			return nil
+		}
+	}
+	pkg := &Package{
+		Name:  f.Name.Name,
+		files: []*File{file},
+	}
+	file.Package = pkg.Name
+	c.packages = append(c.packages, pkg)
 	return nil
 }
 
@@ -74,7 +113,7 @@ func (c *Context) Output() io.Writer {
 }
 
 func (c *Context) Debug() bool {
-	return c.debug
+	return c.flags.debug
 }
 
 func (c *Context) Position() token.Position {
@@ -129,8 +168,8 @@ func (c *Context) Resolve() error {
 		files = append(files, c.files[i])
 	}
 	sort.Slice(files, func(i, j int) bool {
-		if files[i].Pkg != files[j].Pkg {
-			return files[i].Pkg < files[j].Pkg
+		if files[i].Package != files[j].Package {
+			return files[i].Package < files[j].Package
 		}
 		return files[i].Pos() < files[j].Pos()
 	})
@@ -139,8 +178,8 @@ func (c *Context) Resolve() error {
 	// resolve all imports
 	for _, file := range files {
 		for i := range file.imports {
-			file.imports[i].file = c.lookupFile(file.Path, file.imports[i].Path)
-			if file.imports[i].file == nil {
+			file.imports[i].importedFile = c.lookupFile(file.Path, file.imports[i].Path)
+			if file.imports[i].importedFile == nil {
 				c.errorf(file.imports[i].Pos(), "import file not found: %s", file.imports[i].Path)
 			}
 		}
@@ -152,7 +191,7 @@ func (c *Context) Resolve() error {
 	// create all symbols
 	for _, file := range files {
 		for name, symbol := range file.symbols {
-			symbolName := joinSymbolName(file.Pkg, name)
+			symbolName := joinSymbolName(file.Package, name)
 			if prev, ok := c.symbols[symbolName]; ok {
 				c.errorf(symbol.Pos(), "symbol %s redeclared: previous declaration at %s", symbolName, c.fset.Position(prev.Pos()))
 			} else {
@@ -174,7 +213,7 @@ func (c *Context) Resolve() error {
 
 	// finally resolve all statements
 	for _, file := range files {
-		for _, stmt := range file.Stmts {
+		for _, stmt := range file.stmts {
 			stmt.resolve(c, file)
 		}
 	}
@@ -219,9 +258,9 @@ func (c *Context) resolveValue(file *File, expr ast.Expr, iota *iotaValue) const
 }
 
 func (c *Context) resolveSymbolValue(file *File, scope Scope, refs []*ValueSpec, v *ValueSpec) constant.Value {
-	if v.Value != nil {
+	if v.value != nil {
 		// value already resolved
-		return v.Value
+		return v.value
 	}
 	if index := slices.Index(refs, v); index >= 0 {
 		var sb strings.Builder
@@ -232,7 +271,7 @@ func (c *Context) resolveSymbolValue(file *File, scope Scope, refs []*ValueSpec,
 		return constant.MakeUnknown()
 	}
 	v.resolveValue(c, file, scope, refs)
-	return v.Value
+	return v.value
 }
 
 func (c *Context) recursiveResolveValue(file *File, scope Scope, refs []*ValueSpec, expr ast.Expr, iota *iotaValue) (result constant.Value) {
@@ -365,38 +404,16 @@ func (c *Context) resolveType(file *File, t ast.Type) Type {
 	}
 }
 
-func (c *Context) resolveIdentType(file *File, t *ast.Ident) Type {
-	switch t.Name {
-	case "bool":
-		return &BasicType{kind: Bool}
-	case "int":
-		return &BasicType{kind: Int}
-	case "int8":
-		return &BasicType{kind: Int8}
-	case "int16":
-		return &BasicType{kind: Int16}
-	case "int32":
-		return &BasicType{kind: Int32}
-	case "int64":
-		return &BasicType{kind: Int64}
-	case "float32":
-		return &BasicType{kind: Float32}
-	case "float64":
-		return &BasicType{kind: Float64}
-	case "byte":
-		return &BasicType{kind: Byte}
-	case "bytes":
-		return &BasicType{kind: Bytes}
-	case "string":
-		return &BasicType{kind: String}
-	default:
-		typ, err := file.LookupLocalType(t.Name)
-		if err != nil {
-			c.errorf(t.Pos(), "failed to lookup type %s: %s", t.Name, err)
-			return nil
-		}
-		return typ
+func (c *Context) resolveIdentType(file *File, i *ast.Ident) Type {
+	if t, ok := basicTypes[i.Name]; ok {
+		return t
 	}
+	t, err := file.LookupLocalType(i.Name)
+	if err != nil {
+		c.errorf(i.Pos(), "failed to lookup type %s: %s", i.Name, err)
+		return nil
+	}
+	return t
 }
 
 func (c *Context) resolveSelectorExprChain(t *ast.SelectorExpr) []string {

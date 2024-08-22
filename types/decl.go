@@ -19,7 +19,7 @@ func newDecl(ctx *Context, file *File, src *ast.GenDecl) *Decl {
 		Tok: src.Tok,
 	}
 	for _, s := range src.Specs {
-		d.Specs = append(d.Specs, newSpec(ctx, file, s))
+		d.Specs = append(d.Specs, newSpec(ctx, file, d, s))
 	}
 	return d
 }

@@ -1,0 +1,15 @@
+# Python
+int=int
+int8=int
+int16=int
+int32=int
+int64=int
+float32=float
+float64=float
+bool=bool
+string=str
+byte=int
+bytes=bytes
+map<%K%,%V%>=Dict[%K%,%V%]
+vector<%T%>=List[%T%]
+array<%T%,%N%>=List[%T%]

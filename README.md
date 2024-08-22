@@ -36,7 +36,7 @@ package   import    const     enum      struct    protocol
 -    |    ||   <<   <=   [    ]
 *    !    ==   >>   >=   {    }
 /    ,    ^    ;    !    <    >
-%    .
+%    .    &^
 ```
 
 **注**: 中括号 `[]` 目前尚未使用，但保留以被后续可能扩展语法时使用。
@@ -338,8 +338,8 @@ unary_op      = "+" | "-" | "!" | "^" .
 4. 二元操作（算术、位运算、逻辑，比较操作等）
 5. 一元操作（正负号、逻辑非、按位取反等）
 6. 圆括号分组
-7. 字段选择（仅用于枚举）
-8. 函数调用（目前仅支持内置函数: len, min, max）
+7. 字段选择
+8. 函数调用（目前仅支持内置函数）
 
 所有表达式都是在编译时求值的常量表达式。它们可以包含字面量、常量标识符、枚举字段引用，以及对这些的操作。
 
@@ -379,8 +379,8 @@ len("hello")        // 函数调用
 | **sprintf**(`fmt: string`, `args: any...`) | 格式化后字符串 |
 | **sprintln**(`args: any...`) | 类似于 `sprint`，但结尾增加一个换行 |
 | **print**(`args: any...`) | 调试输出信息，输出字符串同 `sprint` |
-| **printf**(`fmt: string`, `args: any...`) | 调试输出信息，输出字符串同 `sprint` |
-| **println**(`args: any...`) | 调试输出信息，输出字符串同 `sprint` |
+| **printf**(`fmt: string`, `args: any...`) | 调试输出信息，输出字符串同 `sprintf` |
+| **println**(`args: any...`) | 调试输出信息，输出字符串同 `sprintln` |
 | **error**(`args: any...`) | 输出错误消息，至少需要一个参数 |
 | **assert**(`cond: bool`, `args: any...`) | 断言是否为真 |
 | **assert_eq**(`got: any`, `want: any`, `args: any...`) | 断言是否相等 |

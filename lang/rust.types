@@ -1,0 +1,15 @@
+# Rust
+int=i32
+int8=i8
+int16=i16
+int32=i32
+int64=i64
+float32=f32
+float64=f64
+bool=bool
+string=String
+byte=u8
+bytes=Vec<u8>
+map<%K%,%V%>=HashMap<%K%,%V%>
+vector<%T%>=Vec<%T%>
+array<%T%,%N%>=[%T%; %N%]

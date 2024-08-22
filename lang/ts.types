@@ -1,0 +1,15 @@
+# TypeScript
+int=number
+int8=number
+int16=number
+int32=number
+int64=bigint
+float32=number
+float64=number
+bool=boolean
+string=string
+byte=number
+bytes=Uint8Array
+map<%K%,%V%>=Map<%K%,%V%>
+vector<%T%>=Array<%T%>
+array<%T%,%N%>=Array<%T%>

@@ -12,14 +12,13 @@ type File struct {
 		annotations *ast.AnnotationGroup
 	}
 
-	Context     *Context
-	Pkg         string // package name
-	Path        string // file path
+	Package     string
+	Path        string
 	Doc         CommentGroup
 	Annotations AnnotationGroup
-	Decls       []*Decl
-	Stmts       []Stmt
 
+	decls   []*Decl
+	stmts   []Stmt
 	imports []*ImportSpec
 
 	// all symbols used in current file:
@@ -31,21 +30,74 @@ type File struct {
 func newFile(ctx *Context, src *ast.File) *File {
 	file := &File{
 		pos:     src.Pos(),
-		Pkg:     src.Name.Name,
 		Doc:     newCommentGroup(src.Doc),
 		symbols: make(map[string]Symbol),
 	}
 	file.unresolved.annotations = src.Annotations
 	for _, d := range src.Decls {
-		file.Decls = append(file.Decls, newDecl(ctx, file, d.(*ast.GenDecl)))
+		file.decls = append(file.decls, newDecl(ctx, file, d.(*ast.GenDecl)))
 	}
 	for _, s := range src.Stmts {
-		file.Stmts = append(file.Stmts, newStmt(ctx, file, s))
+		file.stmts = append(file.stmts, newStmt(ctx, file, s))
 	}
 	if pos, err := file.createSymbols(); err != nil {
 		ctx.errors.Add(ctx.fset.Position(pos), err.Error())
 	}
 	return file
+}
+
+func (f *File) Decls() []*Decl { return f.decls }
+
+func (f *File) Stmts() []Stmt { return f.stmts }
+
+func (f *File) Imports() []*ImportSpec { return f.imports }
+
+func (f *File) Consts() []*ValueSpec {
+	var consts []*ValueSpec
+	for _, d := range f.decls {
+		if d.Tok == token.CONST {
+			for _, s := range d.Specs {
+				consts = append(consts, s.(*ValueSpec))
+			}
+		}
+	}
+	return consts
+}
+
+func (f *File) Enums() []*EnumType {
+	var enums []*EnumType
+	for _, d := range f.decls {
+		if d.Tok == token.ENUM {
+			for _, s := range d.Specs {
+				enums = append(enums, s.(*EnumType))
+			}
+		}
+	}
+	return enums
+}
+
+func (f *File) Structs() []*StructType {
+	var structs []*StructType
+	for _, d := range f.decls {
+		if d.Tok == token.STRUCT {
+			for _, s := range d.Specs {
+				structs = append(structs, s.(*StructType))
+			}
+		}
+	}
+	return structs
+}
+
+func (f *File) Protocols() []*ProtocolType {
+	var protocols []*ProtocolType
+	for _, d := range f.decls {
+		if d.Tok == token.PROTOCOL {
+			for _, s := range d.Specs {
+				protocols = append(protocols, s.(*ProtocolType))
+			}
+		}
+	}
+	return protocols
 }
 
 func (f *File) Pos() token.Pos { return f.pos }
@@ -68,8 +120,8 @@ func (s *fileParentScope) LookupLocalSymbol(name string) Symbol {
 	var files []*File
 	pkg, name := splitSymbolName(name)
 	for i := range s.f.imports {
-		if s.f.imports[i].file.Pkg == pkg {
-			files = append(files, s.f.imports[i].file)
+		if s.f.imports[i].importedFile.Package == pkg {
+			files = append(files, s.f.imports[i].importedFile)
 		}
 	}
 	for _, file := range files {
@@ -103,7 +155,7 @@ func (f *File) addSymbol(name string, s Symbol) error {
 }
 
 func (f *File) createSymbols() (token.Pos, error) {
-	for _, d := range f.Decls {
+	for _, d := range f.decls {
 		for _, s := range d.Specs {
 			switch s := s.(type) {
 			case *ImportSpec:
@@ -137,7 +189,7 @@ func (f *File) createSymbols() (token.Pos, error) {
 
 func (f *File) resolve(ctx *Context) {
 	f.Annotations = ctx.resolveAnnotationGroup(f, f.unresolved.annotations)
-	for _, d := range f.Decls {
+	for _, d := range f.decls {
 		d.resolve(ctx, f, f)
 	}
 }

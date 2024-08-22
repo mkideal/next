@@ -1,0 +1,15 @@
+# Java
+int=int
+int8=byte
+int16=short
+int32=int
+int64=long
+float32=float
+float64=double
+bool=boolean
+string=String
+byte=byte
+bytes=byte[]
+map<%K%,%V%>=Map<%K,%V%>
+vector<%T%>=List<%T%>
+array<%T%,%N%>=%T%[]

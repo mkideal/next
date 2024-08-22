@@ -1,0 +1,15 @@
+# Kotlin
+int=Int
+int8=Byte
+int16=Short
+int32=Int
+int64=Long
+float32=Float
+float64=Double
+bool=Boolean
+string=String
+byte=Byte
+bytes=ByteArray
+map<%K%,%V%>=Map<%K%,%V%>
+vector<%T%>=List<%T%>
+array<%T%,%N%>=Array<%T%>

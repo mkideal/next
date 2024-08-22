@@ -1,0 +1,15 @@
+# C
+int=int32_t
+int8=int8_t
+int16=int16_t
+int32=int32_t
+int64=int64_t
+float32=float
+float64=double
+bool=_Bool
+string=char*
+byte=uint8_t
+bytes=uint8_t*
+array<%T%,%N%>=%T%[%N%]
+# map<%K%,%V%>=// Custom implementation required
+# vector<%T%>=// Custom implementation required

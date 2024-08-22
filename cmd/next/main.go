@@ -8,32 +8,58 @@ import (
 	"strings"
 
 	"github.com/gopherd/core/builder"
+	"github.com/gopherd/next/internal/fsutil"
 	"github.com/gopherd/next/parser"
 	"github.com/gopherd/next/scanner"
 	"github.com/gopherd/next/types"
 )
 
-var flags struct {
-	version bool
-	debug   bool
+type Map map[string]string
+
+func (m *Map) Set(s string) error {
+	if *m == nil {
+		*m = make(Map)
+	}
+	parts := strings.SplitN(s, "=", 2)
+	if len(parts) != 2 {
+		return fmt.Errorf("invalid format: %q, expected key=value", s)
+	}
+	(*m)[parts[0]] = parts[1]
+	return nil
+}
+
+func (m Map) String() string {
+	if m == nil {
+		return ""
+	}
+	var sb strings.Builder
+	for k, v := range m {
+		if sb.Len() > 0 {
+			sb.WriteByte(',')
+		}
+		fmt.Fprintf(&sb, "%s=%s", k, v)
+	}
+	return sb.String()
 }
 
 func main() {
-	flag.BoolVar(&flags.version, "version", false, "Show next compiler version")
-	flag.BoolVar(&flags.debug, "d", false, "Enable debug mode")
+	ctx := types.NewContext()
+	version := flag.Bool("v", false, "Show next compiler version")
+	ctx.SetupCommandFlags(flag.CommandLine)
 	flag.Parse()
 
-	if flags.version {
+	if *version {
 		builder.PrintInfo()
+		os.Exit(0)
 	}
 
 	var err error
 	var files []string
 	if flag.NArg() == 0 {
-		files, err = appendFiles(files, ".")
+		files, err = fsutil.AppendFiles(files, ".", ".next", false)
 	} else {
 		for _, arg := range flag.Args() {
-			files, err = appendFiles(files, arg)
+			files, err = fsutil.AppendFiles(files, arg, ".next", false)
 			if err != nil {
 				break
 			}
@@ -58,9 +84,7 @@ func main() {
 			seen[files[i]] = true
 		}
 	}
-	debugf("files: %v\n", files)
 
-	ctx := types.NewContext(flags.debug)
 	for _, file := range files {
 		f, err := parser.ParseFile(ctx.FileSet(), file, nil, parser.ParseComments|parser.AllErrors)
 		if err != nil {
@@ -72,12 +96,6 @@ func main() {
 	}
 	if err := ctx.Resolve(); err != nil {
 		exit(err)
-	}
-}
-
-func debugf(format string, args ...interface{}) {
-	if flags.debug {
-		fmt.Fprintf(os.Stderr, format, args...)
 	}
 }
 
@@ -109,17 +127,4 @@ func exit(err any) {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-}
-
-func appendFiles(files []string, path string) ([]string, error) {
-	var err = filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if !info.IsDir() && filepath.Ext(path) == ".next" {
-			files = append(files, path)
-		}
-		return nil
-	})
-	return files, err
 }

@@ -1,0 +1,15 @@
+# PHP
+int=int
+int8=int
+int16=int
+int32=int
+int64=int
+float32=float
+float64=float
+bool=bool
+string=string
+byte=int
+bytes=string
+map<%K%,%V%>=array
+vector<%T%>=array
+array<%T%,%N%>=array

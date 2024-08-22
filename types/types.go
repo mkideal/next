@@ -1,6 +1,7 @@
 package types
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/gopherd/next/token"
@@ -85,6 +86,9 @@ func expectValueSymbol(name string, s Symbol) (*ValueSpec, error) {
 // Type represents a Next type.
 type Type interface {
 	Node
+	typeNode()
+
+	String() string
 	Kind() Kind
 	IsBool() bool
 	IsInteger() bool
@@ -122,9 +126,12 @@ func (*typ) IsBean() bool     { return false }
 // BasicType represents a basic type.
 type BasicType struct {
 	typ
+	name string
 	kind Kind
 }
 
+func (*BasicType) typeNode()        {}
+func (b *BasicType) String() string { return b.name }
 func (b *BasicType) Kind() Kind     { return b.kind }
 func (b *BasicType) IsBool() bool   { return b.kind == Bool }
 func (b *BasicType) IsString() bool { return b.kind == String }
@@ -139,12 +146,32 @@ func (b *BasicType) IsInteger() bool {
 	return false
 }
 
+var basicTypes = map[string]*BasicType{
+	"int":     {kind: Int, name: "int"},
+	"int8":    {kind: Int8, name: "int8"},
+	"int16":   {kind: Int16, name: "int16"},
+	"int32":   {kind: Int32, name: "int32"},
+	"int64":   {kind: Int64, name: "int64"},
+	"float32": {kind: Float32, name: "float32"},
+	"float64": {kind: Float64, name: "float64"},
+	"bool":    {kind: Bool, name: "bool"},
+	"string":  {kind: String, name: "string"},
+	"byte":    {kind: Byte, name: "byte"},
+	"bytes":   {kind: Bytes, name: "bytes"},
+}
+
 // ArrayType represents an array type.
 type ArrayType struct {
 	typ
 
 	ElemType Type
 	N        uint64
+}
+
+func (*ArrayType) typeNode() {}
+
+func (a *ArrayType) String() string {
+	return "array<" + a.ElemType.String() + "," + strconv.FormatUint(a.N, 10) + ">"
 }
 
 func (*ArrayType) Kind() Kind    { return Array }
@@ -157,6 +184,12 @@ type VectorType struct {
 	ElemType Type
 }
 
+func (*VectorType) typeNode() {}
+
+func (v *VectorType) String() string {
+	return "vector<" + v.ElemType.String() + ">"
+}
+
 func (*VectorType) Kind() Kind     { return Vector }
 func (*VectorType) IsVector() bool { return true }
 
@@ -166,6 +199,12 @@ type MapType struct {
 
 	KeyType  Type
 	ElemType Type
+}
+
+func (*MapType) typeNode() {}
+
+func (m *MapType) String() string {
+	return "map<" + m.KeyType.String() + "," + m.ElemType.String() + ">"
 }
 
 func (*MapType) Kind() Kind  { return Map }

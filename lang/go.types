@@ -1,0 +1,15 @@
+# Go
+int=int
+int8=int8
+int16=int16
+int32=int32
+int64=int64
+float32=float32
+float64=float64
+bool=bool
+string=string
+byte=byte
+bytes=[]byte
+map<%K%,%V%>=map[%K%]%V%
+vector<%T%>=[]%T%
+array<%T%,%N%>=[%N%]%T%

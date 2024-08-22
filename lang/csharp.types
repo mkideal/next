@@ -1,0 +1,15 @@
+# C#
+int=int
+int8=sbyte
+int16=short
+int32=int
+int64=long
+float32=float
+float64=double
+bool=bool
+string=string
+byte=byte
+bytes=byte[]
+map<%K%,%V%>=Dictionary<%K%,%V%>
+vector<%T%>=List<%T%>
+array<%T,%N%>=%T%[]
