@@ -13,21 +13,21 @@ type Decl struct {
 	Specs []Spec
 }
 
-func newDecl(ctx *Context, src *ast.GenDecl) *Decl {
+func newDecl(ctx *Context, file *File, src *ast.GenDecl) *Decl {
 	d := &Decl{
 		pos: src.Pos(),
 		Tok: src.Tok,
 	}
 	for _, s := range src.Specs {
-		d.Specs = append(d.Specs, newSpec(ctx, s))
+		d.Specs = append(d.Specs, newSpec(ctx, file, s))
 	}
 	return d
 }
 
 func (d *Decl) Pos() token.Pos { return d.pos }
 
-func (d *Decl) resolve(ctx *Context, file *File) {
+func (d *Decl) resolve(ctx *Context, file *File, scope Scope) {
 	for _, s := range d.Specs {
-		s.resolve(ctx, file)
+		s.resolve(ctx, file, scope)
 	}
 }

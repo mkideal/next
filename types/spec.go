@@ -9,7 +9,7 @@ import (
 // Spec represents a specification: import, value(constant, enum), struct, protocol
 type Spec interface {
 	Node
-	resolve(ctx *Context, file *File)
+	resolve(ctx *Context, file *File, scope Scope)
 	specObject()
 }
 
@@ -19,14 +19,14 @@ func (*EnumType) specObject()     {}
 func (*StructType) specObject()   {}
 func (*ProtocolType) specObject() {}
 
-func newSpec(ctx *Context, s ast.Spec) Spec {
+func newSpec(ctx *Context, file *File, s ast.Spec) Spec {
 	switch s := s.(type) {
 	case *ast.ImportSpec:
-		return newImportSpec(ctx, s)
+		return newImportSpec(ctx, file, s)
 	case *ast.TypeSpec:
-		return newTypeSpec(ctx, s)
+		return newTypeSpec(ctx, file, s)
 	case *ast.ValueSpec:
-		return newValueSpec(ctx, s)
+		return newValueSpec(ctx, file, s)
 	default:
 		panic("unexpected spec type")
 	}
@@ -45,7 +45,7 @@ type ImportSpec struct {
 	Path         string
 }
 
-func newImportSpec(_ *Context, src *ast.ImportSpec) *ImportSpec {
+func newImportSpec(_ *Context, _ *File, src *ast.ImportSpec) *ImportSpec {
 	i := &ImportSpec{
 		pos:     src.Pos(),
 		Doc:     newCommentGroup(src.Doc),
@@ -58,7 +58,7 @@ func newImportSpec(_ *Context, src *ast.ImportSpec) *ImportSpec {
 
 func (i *ImportSpec) Pos() token.Pos { return i.pos }
 
-func (i *ImportSpec) resolve(ctx *Context, file *File) {
+func (i *ImportSpec) resolve(ctx *Context, file *File, _ Scope) {
 	i.Annotations = ctx.resolveAnnotationGroup(file, i.unresolved.annotations)
 }
 
@@ -86,7 +86,7 @@ type ValueSpec struct {
 	Value        constant.Value
 }
 
-func newValueSpec(_ *Context, src *ast.ValueSpec) *ValueSpec {
+func newValueSpec(_ *Context, _ *File, src *ast.ValueSpec) *ValueSpec {
 	v := &ValueSpec{
 		pos:     src.Pos(),
 		Doc:     newCommentGroup(src.Doc),
@@ -100,12 +100,12 @@ func newValueSpec(_ *Context, src *ast.ValueSpec) *ValueSpec {
 
 func (v *ValueSpec) Pos() token.Pos { return v.pos }
 
-func (v *ValueSpec) resolve(ctx *Context, file *File) {
+func (v *ValueSpec) resolve(ctx *Context, file *File, scope Scope) {
 	v.Annotations = ctx.resolveAnnotationGroup(file, v.unresolved.annotations)
-	v.resolveValue(ctx, file, make([]string, 0, 16))
+	v.resolveValue(ctx, file, scope, make([]*ValueSpec, 0, 16))
 }
 
-func (v *ValueSpec) resolveValue(ctx *Context, file *File, refs []string) constant.Value {
+func (v *ValueSpec) resolveValue(ctx *Context, file *File, scope Scope, refs []*ValueSpec) constant.Value {
 	// If value already resolved, return it
 	if v.Value != nil {
 		return v.Value
@@ -113,22 +113,20 @@ func (v *ValueSpec) resolveValue(ctx *Context, file *File, refs []string) consta
 
 	// If enum type is nil, resolve constant value expression in which iota is not allowed
 	if v.enum.typ == nil {
-		name := joinSymbolName(file.Pkg, v.Name)
-		v.Value = ctx.recusiveResolveValue(file, append(refs, name), v.unresolved.value, nil)
+		v.Value = ctx.recusiveResolveValue(file, scope, append(refs, v), v.unresolved.value, nil)
 		return v.Value
 	}
 
-	name := joinSymbolName(file.Pkg, v.enum.typ.Name, v.Name)
 	if v.unresolved.value != nil {
 		// Resolve value expression
-		v.Value = ctx.recusiveResolveValue(file, append(refs, name), v.unresolved.value, &v.enum.iota)
+		v.Value = ctx.recusiveResolveValue(file, v.enum.typ, append(refs, v), v.unresolved.value, &v.enum.iota)
 	} else if v.enum.index == 0 {
 		// First member of enum type has value 0 if not specified
 		v.Value = constant.MakeInt64(0)
 	} else {
 		// Resolve previous value
 		prev := v.enum.typ.Members[v.enum.index-1]
-		prev.resolveValue(ctx, file, append(refs, name))
+		prev.resolveValue(ctx, file, v.enum.typ, append(refs, v))
 
 		// Increment iota value
 		v.enum.iota.value = prev.enum.iota.value + 1
@@ -138,7 +136,7 @@ func (v *ValueSpec) resolveValue(ctx *Context, file *File, refs []string) consta
 
 		if start.Value != nil && start.enum.iota.found {
 			// If start value is specified and it has iota expression, resolve it with the current iota value
-			v.Value = ctx.recusiveResolveValue(file, append(refs, name), start.unresolved.value, &v.enum.iota)
+			v.Value = ctx.recusiveResolveValue(file, v.enum.typ, append(refs, v), start.unresolved.value, &v.enum.iota)
 		} else {
 			// Otherwise, add 1 to the previous value
 			v.Value = constant.BinaryOp(prev.Value, token.ADD, constant.MakeInt64(1))
@@ -147,12 +145,12 @@ func (v *ValueSpec) resolveValue(ctx *Context, file *File, refs []string) consta
 	return v.Value
 }
 
-func newTypeSpec(ctx *Context, src *ast.TypeSpec) Spec {
+func newTypeSpec(ctx *Context, file *File, src *ast.TypeSpec) Spec {
 	switch t := src.Type.(type) {
 	case *ast.EnumType:
-		return newEnumType(ctx, src, t)
+		return newEnumType(ctx, file, src, t)
 	case *ast.StructType:
-		return newBeanType(ctx, src, t)
+		return newBeanType(ctx, file, src, t)
 	default:
 		panic("unexpected type")
 	}
@@ -186,7 +184,7 @@ func newField(_ *Context, src *ast.Field) *Field {
 
 func (f *Field) Pos() token.Pos { return f.pos }
 
-func (f *Field) resolve(ctx *Context, file *File) {
+func (f *Field) resolve(ctx *Context, file *File, _ Scope) {
 	f.Annotations = ctx.resolveAnnotationGroup(file, f.unresolved.annotations)
 	f.Type = ctx.resolveType(file, f.unresolved.typ)
 }
@@ -206,7 +204,7 @@ type beanType struct {
 
 func (*beanType) IsBean() bool { return true }
 
-func newBeanType(ctx *Context, src *ast.TypeSpec, t *ast.StructType) Spec {
+func newBeanType(ctx *Context, _ *File, src *ast.TypeSpec, t *ast.StructType) Spec {
 	b := &beanType{
 		typ:     typ{pos: src.Pos()},
 		Doc:     newCommentGroup(src.Doc),
@@ -223,10 +221,10 @@ func newBeanType(ctx *Context, src *ast.TypeSpec, t *ast.StructType) Spec {
 	return &ProtocolType{*b}
 }
 
-func (b *beanType) resolve(ctx *Context, file *File) {
+func (b *beanType) resolve(ctx *Context, file *File, scope Scope) {
 	b.Annotations = ctx.resolveAnnotationGroup(file, b.unresolved.annotations)
 	for _, f := range b.Fields {
-		f.resolve(ctx, file)
+		f.resolve(ctx, file, scope)
 	}
 }
 
@@ -252,6 +250,7 @@ type EnumType struct {
 	unresolved struct {
 		annotations *ast.AnnotationGroup
 	}
+	file *File
 
 	Doc, Comment CommentGroup
 	Annotations  AnnotationGroup
@@ -259,16 +258,17 @@ type EnumType struct {
 	Members      []*ValueSpec
 }
 
-func newEnumType(ctx *Context, src *ast.TypeSpec, t *ast.EnumType) *EnumType {
+func newEnumType(ctx *Context, file *File, src *ast.TypeSpec, t *ast.EnumType) *EnumType {
 	e := &EnumType{
 		typ:     typ{pos: src.Pos()},
+		file:    file,
 		Doc:     newCommentGroup(src.Doc),
 		Comment: newCommentGroup(src.Comment),
 		Name:    src.Name.Name,
 	}
 	e.unresolved.annotations = src.Annotations
 	for i, v := range t.Values {
-		m := newValueSpec(ctx, v)
+		m := newValueSpec(ctx, file, v)
 		m.enum.typ = e
 		m.enum.index = i
 		e.Members = append(e.Members, m)
@@ -276,12 +276,23 @@ func newEnumType(ctx *Context, src *ast.TypeSpec, t *ast.EnumType) *EnumType {
 	return e
 }
 
-func (e *EnumType) resolve(ctx *Context, file *File) {
+func (e *EnumType) resolve(ctx *Context, file *File, scope Scope) {
 	e.Annotations = ctx.resolveAnnotationGroup(file, e.unresolved.annotations)
 	for _, m := range e.Members {
-		m.resolve(ctx, file)
+		m.resolve(ctx, file, e)
 	}
 }
 
 func (*EnumType) Kind() Kind   { return Enum }
 func (*EnumType) IsEnum() bool { return true }
+
+func (e *EnumType) ParentScope() Scope { return e.file }
+
+func (e *EnumType) LookupLocalSymbol(name string) Symbol {
+	for _, m := range e.Members {
+		if m.Name == name {
+			return m
+		}
+	}
+	return nil
+}

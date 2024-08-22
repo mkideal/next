@@ -37,26 +37,39 @@ func newFile(ctx *Context, src *ast.File) *File {
 	}
 	file.unresolved.annotations = src.Annotations
 	for _, d := range src.Decls {
-		file.Decls = append(file.Decls, newDecl(ctx, d.(*ast.GenDecl)))
+		file.Decls = append(file.Decls, newDecl(ctx, file, d.(*ast.GenDecl)))
 	}
 	for _, s := range src.Stmts {
-		file.Stmts = append(file.Stmts, newStmt(ctx, s))
+		file.Stmts = append(file.Stmts, newStmt(ctx, file, s))
 	}
-	file.createSymbols()
+	if pos, err := file.createSymbols(); err != nil {
+		ctx.errors.Add(ctx.fset.Position(pos), err.Error())
+	}
 	return file
 }
 
 func (f *File) Pos() token.Pos { return f.pos }
 
-func (f *File) lookupSymbol(name string) Symbol {
-	if s := f.symbols[name]; s != nil {
-		return s
-	}
+func (f *File) ParentScope() Scope { return &fileParentScope{f} }
+
+func (f *File) LookupLocalSymbol(name string) Symbol {
+	return f.symbols[name]
+}
+
+type fileParentScope struct {
+	f *File
+}
+
+func (s *fileParentScope) ParentScope() Scope {
+	return nil
+}
+
+func (s *fileParentScope) LookupLocalSymbol(name string) Symbol {
 	var files []*File
 	pkg, name := splitSymbolName(name)
-	for i := range f.imports {
-		if f.imports[i].file.Pkg == pkg {
-			files = append(files, f.imports[i].file)
+	for i := range s.f.imports {
+		if s.f.imports[i].file.Pkg == pkg {
+			files = append(files, s.f.imports[i].file)
 		}
 	}
 	for _, file := range files {
@@ -67,50 +80,18 @@ func (f *File) lookupSymbol(name string) Symbol {
 	return nil
 }
 
-func (f *File) expectTypeSymbol(name string, s Symbol) (Type, error) {
-	if s == nil {
-		return nil, &SymbolNotFoundError{Name: name}
-	}
-	if t, ok := s.(Type); ok {
-		return t, nil
-	}
-	return nil, &UnexpectedSymbolTypeError{Name: name, Want: "type", Got: s.symbolType()}
-}
-
-func (f *File) expectValueSymbol(name string, s Symbol) (*ValueSpec, error) {
-	if s == nil {
-		return nil, &SymbolNotFoundError{Name: name}
-	}
-	if v, ok := s.(*ValueSpec); ok {
-		return v, nil
-	}
-	return nil, &UnexpectedSymbolTypeError{Name: name, Want: "value", Got: s.symbolType()}
-}
-
 // LookupLocalType looks up a type by name in the file's symbol table.
 // If the type is not found, it returns an error. If the symbol
 // is found but it is not a type, it returns an error.
 func (f *File) LookupLocalType(name string) (Type, error) {
-	return f.expectTypeSymbol(name, f.symbols[name])
-}
-
-// LookupType looks up a type by name in the file's symbol table and
-// its imported files. If the type is not found, it returns an error.
-func (f *File) LookupType(name string) (Type, error) {
-	return f.expectTypeSymbol(name, f.lookupSymbol(name))
+	return expectTypeSymbol(name, f.symbols[name])
 }
 
 // LookupLocalValue looks up a value by name in the file's symbol table.
 // If the value is not found, it returns an error. If the symbol
 // is found but it is not a value, it returns an error.
 func (f *File) LookupLocalValue(name string) (*ValueSpec, error) {
-	return f.expectValueSymbol(name, f.symbols[name])
-}
-
-// LookupValue looks up a value by name in the file's symbol table and
-// its imported files. If the value is not found, it returns an error.
-func (f *File) LookupValue(name string) (*ValueSpec, error) {
-	return f.expectValueSymbol(name, f.lookupSymbol(name))
+	return expectValueSymbol(name, f.symbols[name])
 }
 
 func (f *File) addSymbol(name string, s Symbol) error {
@@ -121,7 +102,7 @@ func (f *File) addSymbol(name string, s Symbol) error {
 	return nil
 }
 
-func (f *File) createSymbols() error {
+func (f *File) createSymbols() (token.Pos, error) {
 	for _, d := range f.Decls {
 		for _, s := range d.Specs {
 			switch s := s.(type) {
@@ -129,34 +110,34 @@ func (f *File) createSymbols() error {
 				f.imports = append(f.imports, s)
 			case *ValueSpec:
 				if err := f.addSymbol(s.Name, s); err != nil {
-					return err
+					return s.pos, err
 				}
 			case *EnumType:
 				if err := f.addSymbol(s.Name, s); err != nil {
-					return err
+					return s.pos, err
 				}
 				for _, m := range s.Members {
 					if err := f.addSymbol(joinSymbolName(s.Name, m.Name), m); err != nil {
-						return err
+						return m.pos, err
 					}
 				}
 			case *StructType:
 				if err := f.addSymbol(s.Name, s); err != nil {
-					return err
+					return s.pos, err
 				}
 			case *ProtocolType:
 				if err := f.addSymbol(s.Name, s); err != nil {
-					return err
+					return s.pos, err
 				}
 			}
 		}
 	}
-	return nil
+	return token.NoPos, nil
 }
 
 func (f *File) resolve(ctx *Context) {
 	f.Annotations = ctx.resolveAnnotationGroup(f, f.unresolved.annotations)
 	for _, d := range f.Decls {
-		d.resolve(ctx, f)
+		d.resolve(ctx, f, f)
 	}
 }

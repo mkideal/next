@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/gopherd/next/ast"
 	"github.com/gopherd/next/scanner"
@@ -257,6 +258,16 @@ func (p *parser) error(pos token.Pos, msg string) {
 	p.errors.Add(epos, msg)
 }
 
+func unexpectedToken(tok token.Token, lit string) string {
+	if tok == token.ILLEGAL {
+		if lit == "~" {
+			return "illegal character U+007E '~', did you mean '^'?"
+		}
+		return "illegal " + strconv.Quote(lit)
+	}
+	return "'" + tok.String() + "'"
+}
+
 func (p *parser) errorExpected(pos token.Pos, msg string) {
 	msg = "expected " + msg
 	if pos == p.pos {
@@ -269,7 +280,7 @@ func (p *parser) errorExpected(pos token.Pos, msg string) {
 			// print 123 rather than 'INT', etc.
 			msg += ", found " + p.lit
 		default:
-			msg += ", found '" + p.tok.String() + "'"
+			msg += ", found " + unexpectedToken(p.tok, p.lit)
 		}
 	}
 	p.error(pos, msg)
@@ -384,12 +395,13 @@ func (p *parser) advance(to map[token.Token]bool) {
 	}
 }
 
-var declStart = map[token.Token]bool{
+var declStmtStart = map[token.Token]bool{
 	token.IMPORT:   true,
 	token.CONST:    true,
 	token.STRUCT:   true,
 	token.PROTOCOL: true,
 	token.ENUM:     true,
+	token.IDENT:    true,
 }
 
 var exprEnd = map[token.Token]bool{
@@ -686,6 +698,7 @@ func (p *parser) parseOperand(assignAllowed, cmpAllowed bool) ast.Expr {
 	// we have an error
 	pos := p.pos
 	p.errorExpected(pos, "operand")
+	p.advance(declStmtStart)
 	return &ast.BadExpr{From: pos, To: p.pos}
 }
 
@@ -1000,9 +1013,9 @@ func (p *parser) parseGenDecl(annotations *ast.AnnotationGroup, keyword token.To
 	}
 }
 
-func (p *parser) parseDeclStmt(_ map[token.Token]bool) ast.Node {
+func (p *parser) parseDeclStmt() ast.Node {
 	if p.trace {
-		defer un(trace(p, "Declaration"))
+		defer un(trace(p, "DeclarationStmt"))
 	}
 
 	annotations := p.parseAnnotationGroup()
@@ -1076,7 +1089,7 @@ func (p *parser) parseFile() *ast.File {
 				}
 				prev = p.tok
 
-				node := p.parseDeclStmt(declStart)
+				node := p.parseDeclStmt()
 				switch node := node.(type) {
 				case ast.Decl:
 					decls = append(decls, node)

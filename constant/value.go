@@ -1028,7 +1028,7 @@ func BinaryOp(x_ Value, op token.Token, y_ Value) Value {
 			}
 			c = a * b
 		case token.QUO:
-			return makeRat(big.NewRat(a, b))
+			c = a / b
 		case token.REM:
 			c = a % b
 		case token.AND:
@@ -1056,7 +1056,7 @@ func BinaryOp(x_ Value, op token.Token, y_ Value) Value {
 		case token.MUL:
 			c.Mul(a, b)
 		case token.QUO:
-			return makeRat(newRat().SetFrac(a, b))
+			c.Quo(a, b)
 		case token.REM:
 			c.Rem(a, b)
 		case token.AND:

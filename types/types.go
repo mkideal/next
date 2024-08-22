@@ -37,6 +37,48 @@ func (*EnumType) symbolType() string     { return TypeSymbol }
 func (*StructType) symbolType() string   { return TypeSymbol }
 func (*ProtocolType) symbolType() string { return TypeSymbol }
 
+type Scope interface {
+	ParentScope() Scope
+	LookupLocalSymbol(name string) Symbol
+}
+
+func lookupSymbol(scope Scope, name string) Symbol {
+	for s := scope; s != nil; s = s.ParentScope() {
+		if sym := s.LookupLocalSymbol(name); sym != nil {
+			return sym
+		}
+	}
+	return nil
+}
+
+func lookupType(scope Scope, name string) (Type, error) {
+	return expectTypeSymbol(name, lookupSymbol(scope, name))
+}
+
+func lookupValue(scope Scope, name string) (*ValueSpec, error) {
+	return expectValueSymbol(name, lookupSymbol(scope, name))
+}
+
+func expectTypeSymbol(name string, s Symbol) (Type, error) {
+	if s == nil {
+		return nil, &SymbolNotFoundError{Name: name}
+	}
+	if t, ok := s.(Type); ok {
+		return t, nil
+	}
+	return nil, &UnexpectedSymbolTypeError{Name: name, Want: "type", Got: s.symbolType()}
+}
+
+func expectValueSymbol(name string, s Symbol) (*ValueSpec, error) {
+	if s == nil {
+		return nil, &SymbolNotFoundError{Name: name}
+	}
+	if v, ok := s.(*ValueSpec); ok {
+		return v, nil
+	}
+	return nil, &UnexpectedSymbolTypeError{Name: name, Want: "value", Got: s.symbolType()}
+}
+
 //-------------------------------------------------------------------------
 // Types
 

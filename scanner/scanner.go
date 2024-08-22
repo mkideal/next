@@ -868,9 +868,19 @@ scanAgain:
 		case '^':
 			tok = token.XOR
 		case '<':
-			tok = s.switch2(token.LSS, token.LEQ)
+			if s.ch == '<' {
+				s.next()
+				tok = token.SHL
+			} else {
+				tok = s.switch2(token.LSS, token.LEQ)
+			}
 		case '>':
-			tok = s.switch2(token.GTR, token.GEQ)
+			if s.ch == '>' {
+				s.next()
+				tok = token.SHR
+			} else {
+				tok = s.switch2(token.GTR, token.GEQ)
+			}
 		case '=':
 			tok = s.switch2(token.ASSIGN, token.EQL)
 		case '!':
@@ -879,11 +889,19 @@ scanAgain:
 			if s.ch == '^' {
 				s.next()
 				tok = token.AND_NOT
+			} else if s.ch == '&' {
+				s.next()
+				tok = token.LAND
 			} else {
-				tok = s.switch2(token.AND, token.LAND)
+				tok = token.AND
 			}
 		case '|':
-			tok = s.switch2(token.OR, token.LOR)
+			if s.ch == '|' {
+				s.next()
+				tok = token.LOR
+			} else {
+				tok = token.OR
+			}
 		default:
 			// next reports unexpected BOMs - don't repeat
 			if ch != bom {

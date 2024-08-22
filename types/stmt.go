@@ -12,12 +12,12 @@ type Stmt interface {
 	resolve(ctx *Context, file *File)
 }
 
-func newStmt(ctx *Context, src ast.Stmt) Stmt {
+func newStmt(ctx *Context, file *File, src ast.Stmt) Stmt {
 	switch s := src.(type) {
 	case *ast.ExprStmt:
 		x := ast.Unparen(s.X)
 		if call, ok := x.(*ast.CallExpr); ok {
-			return newCallStmt(ctx, call)
+			return newCallStmt(ctx, file, call)
 		}
 	}
 	ctx.errorf(src.Pos(), "unsupported statement: %T", src)
@@ -29,7 +29,7 @@ type CallStmt struct {
 	CallExpr *ast.CallExpr
 }
 
-func newCallStmt(ctx *Context, call *ast.CallExpr) *CallStmt {
+func newCallStmt(_ *Context, _ *File, call *ast.CallExpr) *CallStmt {
 	return &CallStmt{pos: call.Pos(), CallExpr: call}
 }
 

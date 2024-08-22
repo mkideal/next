@@ -19,6 +19,7 @@ var funcs = map[string]Func{
 	"len":      _len,
 	"min":      _min,
 	"max":      _max,
+	"abs":      _abs,
 	"int":      _int,
 	"float":    _float,
 	"bool":     _bool,
@@ -36,7 +37,7 @@ func _len(ctx FuncContext, args []Value) Value {
 		return unknownVal{}
 	}
 	if v := args[0]; v.Kind() == String {
-		return MakeUint64(uint64(len(v.String())))
+		return MakeUint64(uint64(len(StringVal(v))))
 	}
 	return unknownVal{}
 }
@@ -79,6 +80,35 @@ func _max(ctx FuncContext, args []Value) Value {
 	return max
 }
 
+func _abs(ctx FuncContext, args []Value) Value {
+	if len(args) != 1 {
+		panic("abs: exactly one argument is required")
+	}
+	v := args[0]
+	if v.Kind() == Unknown {
+		return v
+	}
+	switch v.Kind() {
+	case Int:
+		if i, ok := Int64Val(v); ok {
+			if i < 0 {
+				return MakeInt64(-i)
+			}
+			return v
+		} else if _, ok := Uint64Val(v); ok {
+			return v
+		}
+	case Float:
+		if f, ok := Float64Val(v); ok {
+			if f < 0 {
+				return MakeFloat64(-f)
+			}
+			return v
+		}
+	}
+	return MakeUnknown()
+}
+
 func _int(ctx FuncContext, args []Value) Value {
 	if len(args) != 1 {
 		panic("int: exactly one argument is required")
@@ -96,9 +126,8 @@ func _int(ctx FuncContext, args []Value) Value {
 	case Int:
 		return v
 	case Float:
-		if f, ok := Float64Val(v); ok {
-			return MakeInt64(int64(f))
-		}
+		f, _ := Float64Val(v)
+		return MakeInt64(int64(f))
 	}
 	return MakeUnknown()
 }
@@ -119,6 +148,8 @@ func _float(ctx FuncContext, args []Value) Value {
 		return MakeFloat64(0)
 	case Int:
 		if i, ok := Int64Val(v); ok {
+			return MakeFloat64(float64(i))
+		} else if i, ok := Uint64Val(v); ok {
 			return MakeFloat64(float64(i))
 		}
 	case Float:
@@ -141,13 +172,14 @@ func _bool(ctx FuncContext, args []Value) Value {
 	case Int:
 		if i, ok := Int64Val(v); ok {
 			return MakeBool(i != 0)
+		} else if i, ok := Uint64Val(v); ok {
+			return MakeBool(i != 0)
 		}
 	case Float:
-		if f, ok := Float64Val(v); ok {
-			return MakeBool(f != 0)
-		}
+		f, _ := Float64Val(v)
+		return MakeBool(f != 0)
 	case String:
-		return MakeBool(len(v.String()) > 0)
+		return MakeBool(len(StringVal(v)) > 0)
 	}
 	return MakeUnknown()
 }

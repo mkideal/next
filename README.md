@@ -380,7 +380,7 @@ len("hello")        // 函数调用
 | **print**(`args: any...`) | 用于调试输出信息，**不可**用于表达式中 |
 | **printf**(`fmt: string`, `args: any...`) | 用于调试输出信息，**不可**用于表达式中 |
 | **println**(`args: any...`) | 用于调试输出信息，**不可**用于表达式中 |
-| **assert**(`cond: bool`, `fmtAndArgs: any...`) | 用于断言，**不可**用于表达式中 |
+| **assert**(`cond: bool`, `args: any...`) | 用于断言，**不可**用于表达式中 |
 
 ## 9. 词法约定
 

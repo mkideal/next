@@ -154,6 +154,9 @@ func (c *Context) Resolve() error {
 	for _, file := range files {
 		file.resolve(c)
 	}
+	if c.errors.Len() > 0 {
+		return c.errors
+	}
 
 	// finally resolve all statements
 	for _, file := range files {
@@ -198,23 +201,27 @@ func (c *Context) resolveAnnotationGroup(file *File, annotations *ast.Annotation
 }
 
 func (c *Context) resolveValue(file *File, expr ast.Expr, iota *iotaValue) constant.Value {
-	return c.recusiveResolveValue(file, make([]string, 0, 16), expr, iota)
+	return c.recusiveResolveValue(file, file, make([]*ValueSpec, 0, 16), expr, iota)
 }
 
-func (c *Context) resolveSymbolValue(file *File, refs []string, expr ast.Expr, name string, v *ValueSpec) constant.Value {
+func (c *Context) resolveSymbolValue(file *File, scope Scope, refs []*ValueSpec, v *ValueSpec) constant.Value {
 	if v.Value != nil {
 		// value already resolved
 		return v.Value
 	}
-	if index := slices.Index(refs, name); index >= 0 {
-		c.errorf(expr.Pos(), "cyclic reference %v->%s", strings.Join(refs[index:], "->"), name)
+	if index := slices.Index(refs, v); index >= 0 {
+		var sb strings.Builder
+		for i := index; i < len(refs); i++ {
+			fmt.Fprintf(&sb, "\n%s: %s ↓", c.fset.Position(refs[i].Pos()), refs[i].Name)
+		}
+		c.errorf(v.pos, "cyclic references: %s\n%s: %s", sb.String(), c.fset.Position(v.Pos()), v.Name)
 		return constant.MakeUnknown()
 	}
-	v.resolveValue(c, file, refs)
+	v.resolveValue(c, file, scope, refs)
 	return v.Value
 }
 
-func (c *Context) recusiveResolveValue(file *File, refs []string, expr ast.Expr, iota *iotaValue) constant.Value {
+func (c *Context) recusiveResolveValue(file *File, scope Scope, refs []*ValueSpec, expr ast.Expr, iota *iotaValue) constant.Value {
 	defer func() {
 		if r := recover(); r != nil {
 			c.errorf(expr.Pos(), "%v", r)
@@ -231,7 +238,7 @@ func (c *Context) recusiveResolveValue(file *File, refs []string, expr ast.Expr,
 		} else if expr.Name == "true" {
 			return constant.MakeBool(true)
 		}
-		v, err := file.LookupLocalValue(expr.Name)
+		v, err := expectValueSymbol(expr.Name, scope.LookupLocalSymbol(expr.Name))
 		if err != nil {
 			if expr.Name == "iota" {
 				if iota == nil {
@@ -244,12 +251,11 @@ func (c *Context) recusiveResolveValue(file *File, refs []string, expr ast.Expr,
 			c.errorf(expr.Pos(), "%s is not defined", expr.Name)
 			return constant.MakeUnknown()
 		}
-		name := joinSymbolName(file.Pkg, expr.Name)
-		return c.resolveSymbolValue(file, refs, expr, name, v)
+		return c.resolveSymbolValue(file, scope, refs, v)
 
 	case *ast.SelectorExpr:
 		name := joinSymbolName(c.resolveSelectorExprChain(expr)...)
-		v, err := file.LookupValue(name)
+		v, err := lookupValue(scope, name)
 		if err != nil {
 			c.errorf(expr.Pos(), "%s is not defined", name)
 			return constant.MakeUnknown()
@@ -259,14 +265,14 @@ func (c *Context) recusiveResolveValue(file *File, refs []string, expr ast.Expr,
 			c.errorf(expr.Pos(), "%s is not defined (file %q not found)", name, c.fset.Position(v.Pos()).Filename)
 			return constant.MakeUnknown()
 		}
-		return c.resolveSymbolValue(file, refs, expr, name, v)
+		return c.resolveSymbolValue(file, scope, refs, v)
 
 	case *ast.BinaryExpr:
-		x := c.recusiveResolveValue(file, refs, expr.X, iota)
-		y := c.recusiveResolveValue(file, refs, expr.Y, iota)
+		x := c.recusiveResolveValue(file, scope, refs, expr.X, iota)
+		y := c.recusiveResolveValue(file, scope, refs, expr.Y, iota)
 		switch expr.Op {
 		case token.SHL, token.SHR:
-			return constant.Shift(x, expr.Op, uint(c.recusiveResolveUint64(file, expr.Y, refs, iota)))
+			return constant.Shift(x, expr.Op, uint(c.recusiveResolveUint64(file, scope, expr.Y, refs, iota)))
 		case token.LSS, token.LEQ, token.GTR, token.GEQ, token.EQL, token.NEQ:
 			return constant.MakeBool(constant.Compare(x, expr.Op, y))
 		default:
@@ -274,7 +280,7 @@ func (c *Context) recusiveResolveValue(file *File, refs []string, expr ast.Expr,
 		}
 
 	case *ast.UnaryExpr:
-		x := c.recusiveResolveValue(file, refs, expr.X, iota)
+		x := c.recusiveResolveValue(file, scope, refs, expr.X, iota)
 		return constant.UnaryOp(expr.Op, x, 0)
 
 	case *ast.CallExpr:
@@ -286,7 +292,7 @@ func (c *Context) recusiveResolveValue(file *File, refs []string, expr ast.Expr,
 		}
 		args := make([]constant.Value, len(expr.Args))
 		for i, arg := range expr.Args {
-			args[i] = c.recusiveResolveValue(file, refs, arg, iota)
+			args[i] = c.recusiveResolveValue(file, scope, refs, arg, iota)
 		}
 		result, err := c.call(expr.Pos(), ident.Name, args...)
 		if err != nil {
@@ -302,11 +308,11 @@ func (c *Context) recusiveResolveValue(file *File, refs []string, expr ast.Expr,
 }
 
 func (c *Context) resolveUint64(file *File, expr ast.Expr) uint64 {
-	return c.recusiveResolveUint64(file, expr, make([]string, 0, 16), nil)
+	return c.recusiveResolveUint64(file, file, expr, make([]*ValueSpec, 0, 16), nil)
 }
 
-func (c *Context) recusiveResolveUint64(file *File, expr ast.Expr, refs []string, iota *iotaValue) uint64 {
-	val := c.recusiveResolveValue(file, refs, expr, iota)
+func (c *Context) recusiveResolveUint64(file *File, scope Scope, expr ast.Expr, refs []*ValueSpec, iota *iotaValue) uint64 {
+	val := c.recusiveResolveValue(file, scope, refs, expr, iota)
 	switch val.Kind() {
 	case constant.Int:
 		n, ok := constant.Uint64Val(val)
@@ -408,7 +414,7 @@ func (c *Context) resolveSelectorExprType(file *File, t *ast.SelectorExpr) Type 
 		return nil
 	}
 	fullName := joinSymbolName(names...)
-	typ, err := file.LookupType(fullName)
+	typ, err := lookupType(file, fullName)
 	if err != nil {
 		c.error(t.Pos(), err.Error())
 		return nil
