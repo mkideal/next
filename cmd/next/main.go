@@ -10,6 +10,7 @@ import (
 
 	"github.com/gopherd/core/builder"
 	"github.com/gopherd/core/flags"
+	"github.com/gopherd/core/term"
 	"github.com/gopherd/next/internal/fsutil"
 	"github.com/gopherd/next/parser"
 	"github.com/gopherd/next/scanner"
@@ -20,23 +21,36 @@ const currentDir = "."
 const nextExt = ".next"
 
 func main() {
-	ctx := types.NewContext()
-	ctx.SetupCommandFlags(flag.CommandLine, flags.UseUsage(flag.CommandLine.Output()))
-
-	flag.Usage = func() {
-		var w strings.Builder
-		fmt.Fprintf(&w, "Usage: %s [Options] [dirs or files...]\n", os.Args[0])
-		fmt.Fprintf(&w, "       %s [Options] [stdin]\n", os.Args[0])
-		fmt.Fprintf(&w, "       %s version\n", os.Args[0])
-		fmt.Fprintf(&w, "\nOptions:\n")
-		fmt.Fprintf(flag.CommandLine.Output(), w.String())
-		flag.CommandLine.PrintDefaults()
-	}
-	flag.Parse()
-
-	if flag.NArg() == 1 && flag.Arg(0) == "version" {
+	if len(os.Args) == 2 && os.Args[1] == "version" {
 		builder.PrintInfo()
 		os.Exit(0)
+	}
+
+	flagSet := flag.CommandLine
+	flagSet.Init(os.Args[0], flag.ContinueOnError)
+	flagSet.Usage = func() {}
+
+	ctx := types.NewContext()
+	ctx.SetupCommandFlags(flagSet, flags.UseUsage(flagSet.Output()))
+
+	// set output color for error messages
+	flagSet.SetOutput(term.ColorizeWriter(os.Stderr, term.Red))
+	usage := func() {
+		flagSet.SetOutput(os.Stderr)
+		var w strings.Builder
+		fmt.Fprintf(&w, "Usage: %s [Options] [dirs or/and files... (default .)]\n", os.Args[0])
+		fmt.Fprintf(&w, "       %s [Options] <stdin>\n", os.Args[0])
+		fmt.Fprintf(&w, "       %s version\n", os.Args[0])
+		fmt.Fprintf(&w, "\nOptions:\n")
+		fmt.Fprintf(flagSet.Output(), w.String())
+		flagSet.PrintDefaults()
+	}
+	if err := flagSet.Parse(os.Args[1:]); err != nil {
+		if err == flag.ErrHelp {
+			usage()
+			os.Exit(0)
+		}
+		usageError(flagSet, "")
 	}
 
 	var files []string
@@ -51,10 +65,10 @@ func main() {
 	} else {
 		for _, arg := range flag.Args() {
 			if arg == "-" {
-				try("invalid argument: -")
+				usageError(flagSet, "invalid argument: -")
 			}
 			if strings.HasPrefix(arg, "-") {
-				try(fmt.Sprintf("flag %q not allowed after non-flag argument", arg))
+				usageError(flagSet, "flag %q not allowed after non-flag argument", arg)
 			}
 		}
 		for _, arg := range flag.Args() {
@@ -62,7 +76,7 @@ func main() {
 		}
 	}
 	if len(files) == 0 {
-		try("no source files")
+		usageError(flagSet, "no source files")
 	}
 
 	// compute absolute path and remove duplicated files
@@ -87,6 +101,13 @@ func main() {
 
 	// generate files
 	try(ctx.Generate())
+}
+
+func usageError(flagSet *flag.FlagSet, format string, args ...any) {
+	if format != "" {
+		fmt.Fprintln(flagSet.Output(), fmt.Sprintf(format, args...))
+	}
+	try(fmt.Errorf("try %q for help", os.Args[0]+" -h"))
 }
 
 func result[T any](v T, err error) T {
