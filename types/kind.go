@@ -20,6 +20,5 @@ const (
 	Vector
 	Array
 	Struct
-	Protocol
 	Enum
 )

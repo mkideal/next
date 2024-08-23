@@ -75,7 +75,6 @@ const (
 	CONST
 	ENUM
 	STRUCT
-	PROTOCOL
 	MAP
 	VECTOR
 	ARRAY
@@ -132,15 +131,14 @@ var tokens = [...]string{
 	RBRACE:    "}",
 	SEMICOLON: ";",
 
-	PACKAGE:  "package",
-	IMPORT:   "import",
-	CONST:    "const",
-	ENUM:     "enum",
-	STRUCT:   "struct",
-	PROTOCOL: "protocol",
-	MAP:      "map",
-	VECTOR:   "vector",
-	ARRAY:    "array",
+	PACKAGE: "package",
+	IMPORT:  "import",
+	CONST:   "const",
+	ENUM:    "enum",
+	STRUCT:  "struct",
+	MAP:     "map",
+	VECTOR:  "vector",
+	ARRAY:   "array",
 }
 
 // String returns the string corresponding to the token tok.

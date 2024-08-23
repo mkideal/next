@@ -365,7 +365,7 @@ type (
 		GT  token.Pos // position of ">"
 	}
 
-	// A StructType node represents a struct or protocol type.
+	// A StructType node represents a struct type.
 	StructType struct {
 		Fields     *FieldList // list of field declarations
 		Incomplete bool       // true if (source) fields are missing in the Fields list
@@ -485,7 +485,7 @@ func (*ExprStmt) stmtNode() {}
 // Declarations
 
 // A Spec node represents a single (non-parenthesized) import,
-// constant, type (enum, struct, protocol) declaration.
+// constant, type (enum, struct) declaration.
 type (
 	// The Spec type stands for any of *ImportSpec, *ValueSpec, and *TypeSpec.
 	Spec interface {
@@ -517,7 +517,7 @@ type (
 	TypeSpec struct {
 		Doc         *CommentGroup    // associated documentation; or nil
 		Annotations *AnnotationGroup // associated annotations; or nil
-		Keyword     token.Token      // ENUM, STRUCT, or PROTOCOL
+		Keyword     token.Token      // ENUM, STRUCT
 		Name        *Ident           // type name
 		Type        Type             // any of the *XxxTypes
 		Comment     *CommentGroup    // line comments; or nil
@@ -569,15 +569,15 @@ type (
 	//
 	// Relationship between Tok value and Specs element type:
 	//
-	//	token.IMPORT                  *ImportSpec
-	//	token.CONST                   *ValueSpec
-	//	token.ENUM/STRUCT/PROTOCOL    *TypeSpec
+	//	token.IMPORT         *ImportSpec
+	//	token.CONST          *ValueSpec
+	//	token.ENUM/STRUCT    *TypeSpec
 	//
 	GenDecl struct {
 		Doc         *CommentGroup    // associated documentation; or nil
 		Annotations *AnnotationGroup // associated annotations; or nil
 		TokPos      token.Pos        // position of Tok
-		Tok         token.Token      // IMPORT, CONST, ENUM, STRUCT, or PROTOCOL
+		Tok         token.Token      // IMPORT, CONST, ENUM, STRUCT
 		Lparen      token.Pos        // position of '(', if any
 		Specs       []Spec
 		Rparen      token.Pos // position of ')', if any

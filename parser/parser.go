@@ -396,12 +396,11 @@ func (p *parser) advance(to map[token.Token]bool) {
 }
 
 var declStmtStart = map[token.Token]bool{
-	token.IMPORT:   true,
-	token.CONST:    true,
-	token.STRUCT:   true,
-	token.PROTOCOL: true,
-	token.ENUM:     true,
-	token.IDENT:    true,
+	token.IMPORT: true,
+	token.CONST:  true,
+	token.STRUCT: true,
+	token.ENUM:   true,
+	token.IDENT:  true,
 }
 
 var exprEnd = map[token.Token]bool{
@@ -962,12 +961,12 @@ func (p *parser) parseTypeSpec(doc *ast.CommentGroup, annotations *ast.Annotatio
 
 	var typ ast.Type
 	switch keyword {
-	case token.STRUCT, token.PROTOCOL:
+	case token.STRUCT:
 		typ = p.parseStructType()
 	case token.ENUM:
 		typ = p.parseEnumType()
 	default:
-		p.errorExpected(p.pos, "Enum, Struct or Protocol")
+		p.errorExpected(p.pos, "enum or struct")
 	}
 
 	return &ast.TypeSpec{
@@ -1028,7 +1027,7 @@ func (p *parser) parseDeclStmt() ast.Node {
 	case token.CONST:
 		f = p.parseValueSpec
 
-	case token.ENUM, token.STRUCT, token.PROTOCOL:
+	case token.ENUM, token.STRUCT:
 		f = p.parseTypeSpec
 
 	default:

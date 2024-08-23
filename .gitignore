@@ -6,6 +6,7 @@
 .vscode/
 .idea/
 *.exe
+node_modules/
 
 # go coverage files
 coverage.out

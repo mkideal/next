@@ -1244,23 +1244,3 @@ func Compare(x_ Value, op token.Token, y_ Value) bool {
 
 	panic(fmt.Sprintf("invalid comparison %v %s %v", x_, op, y_))
 }
-
-// Call calls the function named fun with the arguments args.
-func Call(ctx FuncContext, fun string, args []Value) (v Value, err error) {
-	f, ok := funcs[fun]
-	if !ok {
-		return unknownVal{}, fmt.Errorf("unknown function %q", fun)
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			if e, ok := r.(error); ok {
-				err = e
-			} else if s, ok := r.(string); ok {
-				err = fmt.Errorf("failed to call %q: %s", fun, s)
-			} else {
-				panic(r)
-			}
-		}
-	}()
-	return f(ctx, args), nil
-}

@@ -1,6 +1,2 @@
-github.com/CloudyKit/fastprinter v0.0.0-20200109182630-33d98a066a53 h1:sR+/8Yb4slttB4vD+b9btVEnWgL3Q00OBTzVT8B9C0c=
-github.com/CloudyKit/fastprinter v0.0.0-20200109182630-33d98a066a53/go.mod h1:+3IMCy2vIlbG1XG/0ggNQv0SvxCAIpPM5b1nCz56Xno=
-github.com/CloudyKit/jet v2.1.2+incompatible h1:ybZoYzMBdoijK6I+Ke3vg9GZsmlKo/ZhKdNMWz0P26c=
-github.com/CloudyKit/jet v2.1.2+incompatible/go.mod h1:HPYO+50pSWkPoj9Q/eq0aRGByCL6ScRlUmiEX5Zgm+w=
-github.com/gopherd/core v0.0.0-20240820061811-dcb5d46ea64f h1:skLYoEGL2nz5I9ghdEOlC94pRkTEW4zlJPQtCHo7EBE=
-github.com/gopherd/core v0.0.0-20240820061811-dcb5d46ea64f/go.mod h1:KfAPtxaKLEFiby8PpGwdgp86auCmLU82+khBzHhUTaM=
+github.com/gopherd/core v0.0.0-20240823153028-9de4466154fd h1:WuNN56GX+mc5WwxEbas3IRZXjta0P/pZdJHrCy4mz/g=
+github.com/gopherd/core v0.0.0-20240823153028-9de4466154fd/go.mod h1:KfAPtxaKLEFiby8PpGwdgp86auCmLU82+khBzHhUTaM=

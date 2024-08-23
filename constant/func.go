@@ -2,18 +2,37 @@ package constant
 
 import (
 	"fmt"
-	"io"
 
 	"github.com/gopherd/next/token"
 )
 
 type FuncContext interface {
-	Output() io.Writer
-	Debug() bool
-	Position() token.Position
+	IsDebugEnabled() bool
+	Print(args ...any)
+	Error(args ...any)
 }
 
 type Func func(ctx FuncContext, args []Value) Value
+
+// Call calls the function named fun with the arguments args.
+func Call(ctx FuncContext, fun string, args []Value) (v Value, err error) {
+	f, ok := funcs[fun]
+	if !ok {
+		return unknownVal{}, fmt.Errorf("unknown function %q", fun)
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			if e, ok := r.(error); ok {
+				err = e
+			} else if s, ok := r.(string); ok {
+				err = fmt.Errorf("failed to call %q: %s", fun, s)
+			} else {
+				panic(r)
+			}
+		}
+	}()
+	return f(ctx, args), nil
+}
 
 var funcs = map[string]Func{
 	"len":       _len,
@@ -28,7 +47,6 @@ var funcs = map[string]Func{
 	"sprintln":  _sprintln,
 	"print":     _print,
 	"printf":    _printf,
-	"println":   _println,
 	"error":     _error,
 	"assert":    _assert,
 	"assert_eq": _assert_eq,
@@ -233,15 +251,15 @@ func _sprintln(ctx FuncContext, args []Value) Value {
 }
 
 func _print(ctx FuncContext, args []Value) Value {
-	if !ctx.Debug() {
+	if !ctx.IsDebugEnabled() {
 		return MakeUnknown()
 	}
-	fmt.Fprint(ctx.Output(), toArgs(args)...)
+	ctx.Print(fmt.Sprint(toArgs(args)...))
 	return MakeUnknown()
 }
 
 func _printf(ctx FuncContext, args []Value) Value {
-	if !ctx.Debug() {
+	if !ctx.IsDebugEnabled() {
 		return MakeUnknown()
 	}
 	if len(args) == 0 {
@@ -249,18 +267,9 @@ func _printf(ctx FuncContext, args []Value) Value {
 	}
 	format := args[0]
 	if format.Kind() != String {
-		fmt.Fprintln(ctx.Output(), "printf: format string is not a string")
-		return MakeUnknown()
+		panic("printf: format string is not a string")
 	}
-	fmt.Fprintf(ctx.Output(), StringVal(format), toArgs(args[1:])...)
-	return MakeUnknown()
-}
-
-func _println(ctx FuncContext, args []Value) Value {
-	if !ctx.Debug() {
-		return MakeUnknown()
-	}
-	fmt.Fprintln(ctx.Output(), toArgs(args)...)
+	ctx.Print(fmt.Sprintf(StringVal(format), toArgs(args[1:])...))
 	return MakeUnknown()
 }
 
@@ -268,16 +277,16 @@ func _error(ctx FuncContext, args []Value) Value {
 	if len(args) == 0 {
 		panic("error: missing error message")
 	}
-	fmt.Fprintln(ctx.Output(), toArgs(args)...)
+	ctx.Error(fmt.Sprint(toArgs(args)...))
 	return MakeUnknown()
 }
 
 func printAssert(ctx FuncContext, args []any) {
 	if len(args) == 0 {
-		fmt.Fprintf(ctx.Output(), "%s: assertion failed\n", ctx.Position())
+		ctx.Error("assertion failed")
 		return
 	}
-	fmt.Fprintf(ctx.Output(), "%s: assertion failed: %s\n", ctx.Position(), fmt.Sprint(args...))
+	ctx.Error("assertion failed: " + fmt.Sprint(args...))
 }
 
 func _assert(ctx FuncContext, args []Value) Value {

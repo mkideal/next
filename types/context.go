@@ -10,9 +10,9 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/gopherd/core/flags"
 	"github.com/gopherd/next/ast"
 	"github.com/gopherd/next/constant"
-	"github.com/gopherd/next/internal/flags"
 	"github.com/gopherd/next/scanner"
 	"github.com/gopherd/next/token"
 )
@@ -21,11 +21,9 @@ import (
 type Context struct {
 	// command line flags
 	flags struct {
-		debug      bool        // enable debug mode
-		engine     string      // template engine, default is "jet"
-		suffix     string      // template file suffix, default is ".jet"
+		verbose    int         // verbose logging level: 0=off, 1=info, 2=debug
 		importDirs flags.Slice // import directories
-		envs       flags.Map   // environment variables, e.g. -E X=1 -E Y
+		macros     flags.Map   // macro variables, e.g. -E X=1 -E Y
 		outputs    flags.Map   // output directories for each language, e.g. -O go=gen/go -O ts=gen/ts
 		templates  flags.Map   // template dir or files for each language, e.g. -T go=templates/go
 		types      flags.Map   // type mapping for each language, e.g. -t cpp.map=map -t cpp.float32=float32_t -T cpp.float64=float64_t
@@ -57,22 +55,20 @@ func NewContext() *Context {
 		files:   make(map[string]*File),
 		symbols: make(map[string]Symbol),
 	}
-	c.flags.envs = make(flags.Map)
+	c.flags.macros = make(flags.Map)
 	c.flags.outputs = make(flags.Map)
 	c.flags.templates = make(flags.Map)
 	c.flags.types = make(flags.Map)
 	return c
 }
 
-func (c *Context) SetupCommandFlags(fs *flag.FlagSet) {
-	fs.BoolVar(&c.flags.debug, "d", false, "Enable debug mode")
-	fs.StringVar(&c.flags.engine, "e", "", "Template engine, default is jet, supported engines: jet")
-	fs.StringVar(&c.flags.suffix, "s", "", "Template file suffix, default is .jet")
-	fs.Var(&c.flags.envs, "E", "Environment variables, e.g. -E X=1 -E Y")
-	fs.Var(&c.flags.outputs, "O", "Output directories for each language, e.g. -O go=gen/go -O ts=gen/ts")
-	fs.Var(&c.flags.templates, "T", "Template dir or files for each language, e.g. -T go=templates/go")
-	fs.Var(&c.flags.importDirs, "I", "Import directories")
-	fs.Var(&c.flags.types, "t", "Type mapping for each language, e.g. -t cpp.map=map")
+func (c *Context) SetupCommandFlags(fs *flag.FlagSet, u flags.UsageFunc) {
+	fs.IntVar(&c.flags.verbose, "v", 0, u("Set verbose logging `level`: 0=off, 1=info, 2=debug"))
+	fs.Var(&c.flags.importDirs, "I", u("Add import directories as `dir[,dir2,...]`, e.g. -I dir1 -I dir2 or -I dir1,dir2"))
+	fs.Var(&c.flags.macros, "D", u("Define macro variables as `name[=value]`, e.g. -D A=\"hello next\" X=hello -D Y=1 -D Z"))
+	fs.Var(&c.flags.outputs, "O", u("Specify output directories for each language as `lang=dir`, e.g. -O go=gen/go -O ts=gen/ts"))
+	fs.Var(&c.flags.templates, "T", u("Provide template directories or files for each language as `lang=dir|file`, e.g. -T go=templates/go"))
+	fs.Var(&c.flags.types, "M", u("Set type mappings for each language as `lang.type=value`, e.g. -M cpp.int=int64_t -M cpp.float64=float64_t"))
 }
 
 func (c *Context) FileSet() *token.FileSet {
@@ -112,8 +108,56 @@ func (c *Context) Output() io.Writer {
 	return os.Stderr
 }
 
-func (c *Context) Debug() bool {
-	return c.flags.debug
+func (c *Context) IsDebugEnabled() bool {
+	return c.flags.verbose >= 2
+}
+
+func fileLine(pos token.Position) string {
+	if pos.IsValid() {
+		return fmt.Sprintf("%s:%d", pos.Filename, pos.Line)
+	}
+	return ""
+}
+
+func (c *Context) log(msg string) {
+	if !strings.HasSuffix(msg, "\n") {
+		msg += "\n"
+	}
+	if c.Position().Line > 0 {
+		fmt.Fprintf(c.Output(), "%s: %s", fileLine(c.Position()), msg)
+	} else {
+		fmt.Fprint(c.Output(), msg)
+	}
+}
+
+func (c *Context) Print(args ...any) {
+	if c.IsDebugEnabled() {
+		c.log(fmt.Sprint(args...))
+	}
+}
+
+func (c *Context) Printf(format string, args ...any) {
+	if c.IsDebugEnabled() {
+		c.log(fmt.Sprintf(format, args...))
+	}
+}
+
+func (c *Context) Info(args ...any) {
+	if c.flags.verbose < 1 {
+		return
+	}
+	c.log(fmt.Sprint(args...))
+}
+
+func (c *Context) Infof(format string, args ...any) {
+	if c.flags.verbose < 1 {
+		return
+	}
+	c.log(fmt.Sprintf(format, args...))
+}
+
+func (c *Context) Error(args ...any) {
+	c.log(fmt.Sprint(args...))
 }
 
 func (c *Context) Position() token.Position {

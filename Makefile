@@ -43,32 +43,25 @@ build: go/generate go/vet
 install: build
 	@echo "Installing to /usr/local/bin/next..."
 	@cp ${BUILD_DIR}/next /usr/local/bin/
+	@cp -r next.d /usr/local/etc/
+
+define release_cmd
+	$(eval dir := next.$(subst v,,${BUILD_VERSION}).$(1)-$(2))
+	@echo "Building ${BUILD_DIR}/${dir}/next..."
+	@mkdir -p ${BUILD_DIR}/${dir}
+	@GOOS=$(1) GOARCH=$(2) ${GOBUILD} -o ${BUILD_DIR}/${dir}/ ./cmd/next
+	@cp -r next.d ${BUILD_DIR}/${dir} 
+	@cd ${BUILD_DIR} && tar zcf ${dir}.tar.gz ${dir} && rm -r ${dir}
+endef
 
 .PHONY: release
 release: go/generate go/vet
-	@echo "Building ${BUILD_DIR}/windows-amd64/next ..."
-	@mkdir -p ${BUILD_DIR}/windows-amd64
-	@GOOS=windows GOARCH=amd64 ${GOBUILD} -o ${BUILD_DIR}/windows-amd64/ ./cmd/next
-
-	@echo "Building ${BUILD_DIR}/darwin-amd64/next ..."
-	@mkdir -p ${BUILD_DIR}/darwin-amd64
-	@GOOS=darwin GOARCH=amd64 ${GOBUILD} -o ${BUILD_DIR}/darwin-amd64/ ./cmd/next
-
-	@echo "Building ${BUILD_DIR}/darwin-arm64/next ..."
-	@mkdir -p ${BUILD_DIR}/darwin-arm64
-	@GOOS=darwin GOARCH=arm64 ${GOBUILD} -o ${BUILD_DIR}/darwin-arm64/ ./cmd/next
-
-	@echo "Building ${BUILD_DIR}/linux-amd64/next ..."
-	@mkdir -p ${BUILD_DIR}/linux-amd64
-	@GOOS=linux GOARCH=amd64 ${GOBUILD} -o ${BUILD_DIR}/linux-amd64/ ./cmd/next
-
-	@echo "Building ${BUILD_DIR}/linux-arm64/next ..."
-	@mkdir -p ${BUILD_DIR}/linux-amd64
-	@GOOS=linux GOARCH=arm64 ${GOBUILD} -o ${BUILD_DIR}/linux-arm64/ ./cmd/next
-
-	@echo "Building ${BUILD_DIR}/linux-386/next ..."
-	@mkdir -p ${BUILD_DIR}/linux-386
-	@GOOS=linux GOARCH=x86 ${GOBUILD} -o ${BUILD_DIR}/linux-386/ ./cmd/next
+	$(call release_cmd,windows,amd64)
+	$(call release_cmd,darwin,amd64)
+	$(call release_cmd,darwin,arm64)
+	$(call release_cmd,linux,amd64)
+	$(call release_cmd,linux,arm64)
+	$(call release_cmd,linux,386)
 
 .PHONY: clean
 clean:

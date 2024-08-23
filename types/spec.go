@@ -8,7 +8,7 @@ import (
 	"github.com/gopherd/next/token"
 )
 
-// Spec represents a specification: import, value(constant, enum), struct, protocol
+// Spec represents a specification: import, value(constant, enum), struct
 type Spec interface {
 	Node
 	specObject()
@@ -17,11 +17,10 @@ type Spec interface {
 	resolve(ctx *Context, file *File, scope Scope)
 }
 
-func (*ImportSpec) specObject()   {}
-func (*ValueSpec) specObject()    {}
-func (*EnumType) specObject()     {}
-func (*StructType) specObject()   {}
-func (*ProtocolType) specObject() {}
+func (*ImportSpec) specObject() {}
+func (*ValueSpec) specObject()  {}
+func (*EnumType) specObject()   {}
+func (*StructType) specObject() {}
 
 func newSpec(ctx *Context, file *File, decl *Decl, s ast.Spec) Spec {
 	switch s := s.(type) {
@@ -199,13 +198,13 @@ func newTypeSpec(ctx *Context, file *File, decl *Decl, src *ast.TypeSpec) Spec {
 	case *ast.EnumType:
 		return newEnumType(ctx, file, decl, src, t)
 	case *ast.StructType:
-		return newBeanType(ctx, file, decl, src, t)
+		return newStructType(ctx, file, decl, src, t)
 	default:
 		panic("unexpected type")
 	}
 }
 
-// Field represents a struct/protocol field.
+// Field represents a struct field.
 type Field struct {
 	pos        token.Pos
 	unresolved struct {
@@ -238,8 +237,8 @@ func (f *Field) resolve(ctx *Context, file *File, _ Scope) {
 	f.Type = ctx.resolveType(file, f.unresolved.typ)
 }
 
-// beanType represents a an struct/protocol type.
-type beanType struct {
+// StructType represents a struct type.
+type StructType struct {
 	typ
 	decl       *Decl
 	unresolved struct {
@@ -252,54 +251,36 @@ type beanType struct {
 	Fields       []*Field
 }
 
-func (b *beanType) String() string { return b.Name }
+func (*StructType) typeNode() {}
 
-func (b *beanType) Decl() *Decl { return b.decl }
+func (*StructType) Kind() Kind     { return Struct }
+func (*StructType) IsStruct() bool { return true }
 
-func (*beanType) IsBean() bool { return true }
+func (s *StructType) String() string { return s.Name }
 
-func newBeanType(ctx *Context, _ *File, decl *Decl, src *ast.TypeSpec, t *ast.StructType) Spec {
-	b := &beanType{
+func (s *StructType) Decl() *Decl { return s.decl }
+
+func newStructType(ctx *Context, _ *File, decl *Decl, src *ast.TypeSpec, t *ast.StructType) Spec {
+	s := &StructType{
 		typ:     typ{pos: src.Pos()},
 		decl:    decl,
 		Doc:     newCommentGroup(src.Doc),
 		Comment: newCommentGroup(src.Comment),
 		Name:    src.Name.Name,
 	}
-	b.unresolved.annotations = src.Annotations
+	s.unresolved.annotations = src.Annotations
 	for _, f := range t.Fields.List {
-		b.Fields = append(b.Fields, newField(ctx, f))
+		s.Fields = append(s.Fields, newField(ctx, f))
 	}
-	if src.Keyword == token.STRUCT {
-		return &StructType{*b}
-	}
-	return &ProtocolType{*b}
+	return s
 }
 
-func (b *beanType) resolve(ctx *Context, file *File, scope Scope) {
-	b.Annotations = ctx.resolveAnnotationGroup(file, b.unresolved.annotations)
-	for _, f := range b.Fields {
+func (s *StructType) resolve(ctx *Context, file *File, scope Scope) {
+	s.Annotations = ctx.resolveAnnotationGroup(file, s.unresolved.annotations)
+	for _, f := range s.Fields {
 		f.resolve(ctx, file, scope)
 	}
 }
-
-// StructType represents a struct type.
-type StructType struct {
-	beanType
-}
-
-func (*StructType) typeNode() {}
-
-func (*StructType) Kind() Kind     { return Struct }
-func (*StructType) IsStruct() bool { return true }
-
-// ProtocolType represents a protocol type declaration.
-type ProtocolType struct {
-	beanType
-}
-
-func (*ProtocolType) Kind() Kind       { return Protocol }
-func (*ProtocolType) IsProtocol() bool { return true }
 
 // EnumType represents an enumeration type declaration.
 type EnumType struct {

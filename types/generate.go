@@ -8,12 +8,31 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/gopherd/next/internal/flags"
+	"github.com/gopherd/core/flags"
 	"github.com/gopherd/next/internal/fsutil"
 )
 
+const (
+	nextDir     = "next.d"
+	langDir     = "lang"
+	templateDir = "template"
+	templateExt = ".nxp"
+)
+
+func hidden(dir string) string {
+	return "." + dir
+}
+
 // Genertate generates files for all specified languages.
 func (c *Context) Generate() error {
+	if len(c.flags.outputs) == 0 {
+		return nil
+	}
+	c.Print("flags.importDirs: ", c.flags.importDirs)
+	c.Print("flags.macros: ", c.flags.macros)
+	c.Print("flags.outputs: ", c.flags.outputs)
+	c.Print("flags.templates: ", c.flags.templates)
+	c.Print("flags.types: ", c.flags.types)
 	// Check whether the template directory exists for each language
 	for lang := range c.flags.outputs {
 		tplDir := c.flags.templates[lang]
@@ -49,14 +68,12 @@ func (c *Context) Generate() error {
 }
 
 func (c *Context) searchDirs() []string {
-	const nextDir = "next"
-	const nextHiddenDir = ".next"
 
 	var dirs []string
 	dirs = append(dirs, ".")
 	homedir, err := os.UserHomeDir()
 	if err == nil {
-		dirs = append(dirs, filepath.Join(homedir, nextHiddenDir))
+		dirs = append(dirs, filepath.Join(homedir, hidden(nextDir)))
 	}
 	if runtime.GOOS == "windows" {
 		appData := os.Getenv("APPDATA")
@@ -102,10 +119,7 @@ func (c *Context) loadTypesFromFile(m flags.Map, lang, path string) error {
 }
 
 func (c *Context) generateForLang(lang, dir, tplDir string) error {
-	if c.flags.suffix == "" {
-		c.flags.suffix = ".jet"
-	}
-	tplFiles, err := fsutil.AppendFiles(nil, tplDir, c.flags.suffix, true)
+	tplFiles, err := fsutil.AppendFiles(nil, tplDir, templateExt, true)
 	if err != nil {
 		return fmt.Errorf("failed to list template files in %q: %v", tplDir, err)
 	}
@@ -124,7 +138,7 @@ func (c *Context) generateForTemplateFile(lang, dir, tplFile string) error {
 	if err != nil {
 		return err
 	}
-	tpl, err := loadTemplate(c.flags.engine, tplFile)
+	tpl, err := loadTemplate(tplFile)
 	if err != nil {
 		return fmt.Errorf("failed to load template %q: %v", tplFile, err)
 	}
@@ -142,14 +156,14 @@ func (c *Context) generateForTemplateFile(lang, dir, tplFile string) error {
 				return err
 			}
 		}
-	case "struct", "protocol", "enum", "const":
+	case "const", "enum", "struct":
 		for _, file := range c.files {
 			for _, decl := range file.decls {
 				if strings.ToLower(decl.Tok.String()) != nodeType {
 					continue
 				}
 				for _, spec := range decl.Specs {
-					if err := c.generateForSpec(lang, dir, tpl, decl, spec); err != nil {
+					if err := c.generateForSpec(lang, dir, tpl, spec); err != nil {
 						return err
 					}
 				}
@@ -177,7 +191,7 @@ func (c *Context) generateForFile(lang, dir string, tpl Template, file *File) er
 	return c.gen(lang, dir, tpl, meta, file)
 }
 
-func (c *Context) generateForSpec(lang, dir string, tpl Template, decl *Decl, spec Spec) error {
+func (c *Context) generateForSpec(lang, dir string, tpl Template, spec Spec) error {
 	meta, err := c.applyMeta(spec, tpl.GetMeta())
 	if err != nil {
 		return err
@@ -191,7 +205,7 @@ func (c *Context) applyMeta(data any, values map[string]string) (*TemplateMeta, 
 	}
 	var meta TemplateMeta
 	for k, v := range values {
-		v, err := executeTemplate(c.flags.engine, k, v, data)
+		v, err := executeTemplate(k, v, data)
 		if err != nil {
 			return nil, fmt.Errorf("failed to execute template %q: %v", v, err)
 		}

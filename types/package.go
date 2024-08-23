@@ -41,11 +41,3 @@ func (p *Package) Structs() []*StructType {
 	}
 	return structs
 }
-
-func (p *Package) Protocols() []*ProtocolType {
-	var protocols []*ProtocolType
-	for _, file := range p.files {
-		protocols = append(protocols, file.Protocols()...)
-	}
-	return protocols
-}

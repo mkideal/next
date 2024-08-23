@@ -26,7 +26,7 @@ identifier = letter { letter | unicode_digit } .
 以下关键字被保留，不能用作标识符：
 
 ```
-package   import    const     enum      struct    protocol
+package   import    const     enum      struct
 ```
 
 ### 2.4 操作符和标点符号
@@ -192,52 +192,6 @@ struct (
 )
 ```
 
-#### 4.2.3 协议类型
-
-协议声明使用 `protocol` 关键字，语法与结构体类似：
-
-```
-ProtocolDecl     = "protocol" ( ProtocolSpec | "(" { ProtocolSpec ";" } ")" ) .
-ProtocolSpec     = identifier "{" { FieldDecl ";" } "}" .
-```
-
-协议和结构体的主要区别是，协议不能作为任何结构体和协议的字段，必须是顶级的（即协议不能出现在任何结构体和协议的字段中）。
-
-示例：
-
-```next
-protocol User {
-    int64 id;
-    string nickname;
-    string avatar;
-    Location location;
-    vector<string> fields;
-    map<string, int> scores;
-    array<int, 6> history;
-}
-
-protocol (
-    ProtocolA {}
-    ProtocolB {
-        string id;
-    }
-)
-```
-
-以下是协议类型的错误使用示例：
-
-```
-protocol Login {
-    User user; // ERROR: User 在前面已经定义为 protocol，所以这里不可以使用
-    vector<User> users; // ERROR: 容器中也不可使用协议
-}
-
-struct Logout {
-    User user; // ERROR: User 在前面已经定义为 protocol，所以这里不可以使用
-    map<int, User> users; // ERROR: 容器中也不可使用协议
-}
-```
-
 ### 4.3 注解
 
 注解可以添加到包、任意的声明、常量、枚举（及其任意字段）、结构体（及其任意字段）、协议（及其任意字段）。注解使用 `@` 符号开头：
@@ -261,8 +215,8 @@ NamedParam     = identifier "=" Expression .
 )
 package demo;
 
-@type(100)
-protocol LoginRequest {
+@protocol(type=100)
+struct LoginRequest {
     @required
     string token;
     string ip;
@@ -378,9 +332,8 @@ len("hello")        // 函数调用
 | **sprint**(`args: any...`) | 将参数输出为字符串，如果所有参数都是字符串，则中间加空格隔开 |
 | **sprintf**(`fmt: string`, `args: any...`) | 格式化后字符串 |
 | **sprintln**(`args: any...`) | 类似于 `sprint`，但结尾增加一个换行 |
-| **print**(`args: any...`) | 调试输出信息，输出字符串同 `sprint` |
-| **printf**(`fmt: string`, `args: any...`) | 调试输出信息，输出字符串同 `sprintf` |
-| **println**(`args: any...`) | 调试输出信息，输出字符串同 `sprintln` |
+| **print**(`args: any...`) | 调试输出信息，内容没有换行时会自动添加换行符 |
+| **printf**(`fmt: string`, `args: any...`) | 调试输出格式化信息，内容没有换行时会自动添加换行符 |
 | **error**(`args: any...`) | 输出错误消息，至少需要一个参数 |
 | **assert**(`cond: bool`, `args: any...`) | 断言是否为真 |
 | **assert_eq**(`got: any`, `want: any`, `args: any...`) | 断言是否相等 |

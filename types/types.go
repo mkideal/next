@@ -22,7 +22,7 @@ type Node interface {
 	Pos() token.Pos
 }
 
-// Symbol represents a Next symbol: value(constant, enum member), type(struct, protocol, enum)
+// Symbol represents a Next symbol: value(constant, enum member), type(struct, enum)
 type Symbol interface {
 	Node
 	symbolType() string
@@ -33,10 +33,9 @@ const (
 	TypeSymbol  = "type"
 )
 
-func (*ValueSpec) symbolType() string    { return ValueSymbol }
-func (*EnumType) symbolType() string     { return TypeSymbol }
-func (*StructType) symbolType() string   { return TypeSymbol }
-func (*ProtocolType) symbolType() string { return TypeSymbol }
+func (*ValueSpec) symbolType() string  { return ValueSymbol }
+func (*EnumType) symbolType() string   { return TypeSymbol }
+func (*StructType) symbolType() string { return TypeSymbol }
 
 type Scope interface {
 	ParentScope() Scope
@@ -100,8 +99,6 @@ type Type interface {
 	IsMap() bool
 	IsEnum() bool
 	IsStruct() bool
-	IsProtocol() bool
-	IsBean() bool // IsStruct() || IsProtocol()
 }
 
 type typ struct {
@@ -120,8 +117,6 @@ func (*typ) IsArray() bool    { return false }
 func (*typ) IsMap() bool      { return false }
 func (*typ) IsEnum() bool     { return false }
 func (*typ) IsStruct() bool   { return false }
-func (*typ) IsProtocol() bool { return false }
-func (*typ) IsBean() bool     { return false }
 
 // BasicType represents a basic type.
 type BasicType struct {

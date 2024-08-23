@@ -19,3 +19,6 @@ assert_eq(TestEnum.D, 8);
 assert_eq(TestEnum.E, 16);
 assert_eq(TestEnum.F, 1);
 assert_eq(TestEnum.G, 2);
+
+// error("This is an error message");
+print("All tests passed!");

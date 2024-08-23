@@ -245,8 +245,9 @@ struct (
     }
 )
 
-// Protocol types
-protocol LoginRequest {
+// API types
+@api(req)
+struct LoginRequest {
     @key
     string username;
     @sensitive
@@ -256,7 +257,8 @@ protocol LoginRequest {
     string twoFactorToken;
 }
 
-protocol LoginResponse {
+@api(res)
+struct LoginResponse {
     bool success;
     @json(omitempty)
     string errorMessage;
@@ -265,8 +267,8 @@ protocol LoginResponse {
     User user;
 }
 
-// Protocol group
-protocol (
+@api
+struct (
     GenericRequest {
         string requestId;
         int64 timestamp;
@@ -351,5 +353,4 @@ assert_le(1, 1);
 assert_gt(2, 1);
 assert_ge(2, 2);
 
-// Final assertion to ensure all tests have run
-assert(true, "This assertion should always pass if we reach this point");
+print("All tests passed!");

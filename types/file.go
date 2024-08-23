@@ -23,7 +23,7 @@ type File struct {
 
 	// all symbols used in current file:
 	// - values: constant, enum member
-	// - types: struct, protocol, enum
+	// - types: struct, enum
 	symbols map[string]Symbol
 }
 
@@ -86,18 +86,6 @@ func (f *File) Structs() []*StructType {
 		}
 	}
 	return structs
-}
-
-func (f *File) Protocols() []*ProtocolType {
-	var protocols []*ProtocolType
-	for _, d := range f.decls {
-		if d.Tok == token.PROTOCOL {
-			for _, s := range d.Specs {
-				protocols = append(protocols, s.(*ProtocolType))
-			}
-		}
-	}
-	return protocols
 }
 
 func (f *File) Pos() token.Pos { return f.pos }
@@ -174,10 +162,6 @@ func (f *File) createSymbols() (token.Pos, error) {
 					}
 				}
 			case *StructType:
-				if err := f.addSymbol(s.Name, s); err != nil {
-					return s.pos, err
-				}
-			case *ProtocolType:
 				if err := f.addSymbol(s.Name, s); err != nil {
 					return s.pos, err
 				}

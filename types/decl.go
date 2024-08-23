@@ -5,7 +5,7 @@ import (
 	"github.com/gopherd/next/token"
 )
 
-// Decl represents a declaration: import, constant, enum, struct, protocol
+// Decl represents a declaration: import, constant, enum, struct
 type Decl struct {
 	pos token.Pos
 

@@ -49,16 +49,16 @@ type Template interface {
 	GetTemplate(name string) (Template, error)
 }
 
-func loadTemplate(engine, path string) (Template, error) {
+func loadTemplate(path string) (Template, error) {
 	content, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read template file %q: %v", path, err)
 	}
-	return createTemplate(engine, string(content))
+	return createTemplate(string(content))
 }
 
-func executeTemplate(engine, name, content string, data any) (string, error) {
-	tpl, err := createTemplate(engine, content)
+func executeTemplate(name, content string, data any) (string, error) {
+	tpl, err := createTemplate(content)
 	if err != nil {
 		return "", err
 	}
@@ -69,7 +69,7 @@ func executeTemplate(engine, name, content string, data any) (string, error) {
 	return buf.String(), nil
 }
 
-func createTemplate(engine, content string) (Template, error) {
+func createTemplate(content string) (Template, error) {
 	// TODO
 	return nil, nil
 }
@@ -82,8 +82,8 @@ func nodeTypeOfTemplateFile(tplFile string) (string, error) {
 	}
 	nodeType := parts[len(parts)-2]
 	switch nodeType {
-	case "package", "file", "struct", "protocol", "enum", "const":
+	case "package", "file", "const", "enum", "struct":
 		return nodeType, nil
 	}
-	return "", fmt.Errorf("invalid node type %q in template file name %q, expected one of [package, file, struct, protocol, enum, const]", nodeType, tplFile)
+	return "", fmt.Errorf("invalid node type %q in template file name %q, expected one of [package, file, struct, enum, const]", nodeType, tplFile)
 }
