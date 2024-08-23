@@ -20,7 +20,7 @@ func newStmt(ctx *Context, file *File, src ast.Stmt) Stmt {
 			return newCallStmt(ctx, file, call)
 		}
 	}
-	ctx.errorf(src.Pos(), "unsupported statement: %T", src)
+	ctx.addErrorf(src.Pos(), "unsupported statement: %T", src)
 	return nil
 }
 
@@ -37,7 +37,7 @@ func (s *CallStmt) resolve(ctx *Context, file *File) {
 	fun := ast.Unparen(s.CallExpr.Fun)
 	ident, ok := fun.(*ast.Ident)
 	if !ok {
-		ctx.errorf(fun.Pos(), "unexpected function %T", fun)
+		ctx.addErrorf(fun.Pos(), "unexpected function %T", fun)
 		return
 	}
 	args := make([]constant.Value, len(s.CallExpr.Args))
@@ -46,7 +46,7 @@ func (s *CallStmt) resolve(ctx *Context, file *File) {
 	}
 	_, err := ctx.call(s.pos, ident.Name, args...)
 	if err != nil {
-		ctx.errorf(s.CallExpr.Pos(), "call %s: %s", ident.Name, err)
+		ctx.addErrorf(s.CallExpr.Pos(), "call %s: %s", ident.Name, err)
 	}
 }
 

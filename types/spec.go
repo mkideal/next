@@ -52,7 +52,7 @@ type ImportSpec struct {
 func newImportSpec(ctx *Context, _ *File, decl *Decl, src *ast.ImportSpec) *ImportSpec {
 	path, err := strconv.Unquote(src.Path.Value)
 	if err != nil {
-		ctx.errorf(src.Path.Pos(), "invalid import path %v: %v", src.Path.Value, err)
+		ctx.addErrorf(src.Path.Pos(), "invalid import path %v: %v", src.Path.Value, err)
 		path = "!BAD-IMPORT-PATH!"
 	}
 	i := &ImportSpec{

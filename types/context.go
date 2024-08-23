@@ -21,12 +21,12 @@ import (
 type Context struct {
 	// command line flags
 	flags struct {
-		verbose    int         // verbose logging level: 0=off, 1=info, 2=debug
-		importDirs flags.Slice // import directories
-		macros     flags.Map   // macro variables, e.g. -E X=1 -E Y
-		outputs    flags.Map   // output directories for each language, e.g. -O go=gen/go -O ts=gen/ts
-		templates  flags.Map   // template dir or files for each language, e.g. -T go=templates/go
-		types      flags.Map   // type mapping for each language, e.g. -t cpp.map=map -t cpp.float32=float32_t -T cpp.float64=float64_t
+		verbose    int
+		importDirs flags.Slice
+		macros     flags.Map
+		outputs    flags.Map
+		templates  flags.Map
+		types      flags.Map
 	}
 
 	// fset is the file set used to track file positions
@@ -45,8 +45,8 @@ type Context struct {
 	// errors is a list of errors
 	errors scanner.ErrorList
 
-	// pos is the current position for call expression
-	pos token.Pos
+	// trace is the current position for call expression
+	trace []token.Pos
 }
 
 func NewContext() *Context {
@@ -71,14 +71,16 @@ func (c *Context) SetupCommandFlags(fs *flag.FlagSet, u flags.UsageFunc) {
 	fs.Var(&c.flags.types, "M", u("Set type mappings for each language as `lang.type=value`, e.g. -M cpp.int=int64_t -M cpp.float64=float64_t"))
 }
 
+// FileSet returns the file set used to track file positions
 func (c *Context) FileSet() *token.FileSet {
 	return c.fset
 }
 
+// AddFile adds a file to the context
 func (c *Context) AddFile(f *ast.File) error {
 	filename := c.fset.Position(f.Pos()).Filename
 	if _, ok := c.files[filename]; ok {
-		c.errorf(f.Pos(), "file %s already exists", filename)
+		c.addErrorf(f.Pos(), "file %s already exists", filename)
 		return c.errors.Err()
 	}
 	path, err := filepath.Abs(filename)
@@ -104,44 +106,44 @@ func (c *Context) AddFile(f *ast.File) error {
 	return nil
 }
 
+// Output returns the output writer for logging
 func (c *Context) Output() io.Writer {
 	return os.Stderr
 }
 
+// IsDebugEnabled returns true if debug logging is enabled
 func (c *Context) IsDebugEnabled() bool {
 	return c.flags.verbose >= 2
-}
-
-func fileLine(pos token.Position) string {
-	if pos.IsValid() {
-		return fmt.Sprintf("%s:%d", pos.Filename, pos.Line)
-	}
-	return ""
 }
 
 func (c *Context) log(msg string) {
 	if !strings.HasSuffix(msg, "\n") {
 		msg += "\n"
 	}
-	if c.Position().Line > 0 {
-		fmt.Fprintf(c.Output(), "%s: %s", fileLine(c.Position()), msg)
+	pos := c.Position()
+	pos.Column = 0 // ignore column
+	if pos.Line > 0 {
+		fmt.Fprintf(c.Output(), "%s: %s", pos, msg)
 	} else {
 		fmt.Fprint(c.Output(), msg)
 	}
 }
 
+// Print logs a message if debug logging is enabled
 func (c *Context) Print(args ...any) {
 	if c.IsDebugEnabled() {
 		c.log(fmt.Sprint(args...))
 	}
 }
 
+// Printf logs a formatted message if debug logging is enabled
 func (c *Context) Printf(format string, args ...any) {
 	if c.IsDebugEnabled() {
 		c.log(fmt.Sprintf(format, args...))
 	}
 }
 
+// Info logs an info message if verbose logging is enabled
 func (c *Context) Info(args ...any) {
 	if c.flags.verbose < 1 {
 		return
@@ -149,6 +151,7 @@ func (c *Context) Info(args ...any) {
 	c.log(fmt.Sprint(args...))
 }
 
+// Infof logs a formatted info message if verbose logging is enabled
 func (c *Context) Infof(format string, args ...any) {
 	if c.flags.verbose < 1 {
 		return
@@ -156,35 +159,40 @@ func (c *Context) Infof(format string, args ...any) {
 	c.log(fmt.Sprintf(format, args...))
 }
 
+// Error logs an error message
 func (c *Context) Error(args ...any) {
 	c.log(fmt.Sprint(args...))
 }
 
+// Position returns the current position for call expression
 func (c *Context) Position() token.Position {
-	return c.fset.Position(c.pos)
+	if len(c.trace) == 0 {
+		return token.Position{}
+	}
+	return c.fset.Position(c.trace[len(c.trace)-1])
 }
 
-func (c *Context) error(pos token.Pos, msg string) {
+// addError adds an error message with position to the error list
+func (c *Context) addError(pos token.Pos, msg string) {
 	c.errors.Add(c.fset.Position(pos), msg)
 }
 
-func (c *Context) errorf(pos token.Pos, format string, args ...any) {
+// addErrorf adds a formatted error message with position to the error list
+func (c *Context) addErrorf(pos token.Pos, format string, args ...any) {
 	c.errors.Add(c.fset.Position(pos), fmt.Sprintf(format, args...))
 }
 
-func (c *Context) lookupSymbol(name string) Symbol {
-	return c.symbols[name]
-}
-
+// getFileByPos returns the file by position
 func (c *Context) getFileByPos(pos token.Pos) *File {
 	path, err := filepath.Abs(c.fset.Position(pos).Filename)
 	if err != nil {
-		c.errorf(pos, "failed to get absolute path of %s: %v", c.fset.Position(pos).Filename, err)
+		c.addErrorf(pos, "failed to get absolute path of %s: %v", c.fset.Position(pos).Filename, err)
 		return nil
 	}
 	return c.files[path]
 }
 
+// lookupFile returns the file by full path or relative path
 func (c *Context) lookupFile(fullPath, relativePath string) *File {
 	if relativePath == "" {
 		return nil
@@ -193,18 +201,31 @@ func (c *Context) lookupFile(fullPath, relativePath string) *File {
 		var err error
 		relativePath, err = filepath.Abs(filepath.Join(filepath.Dir(fullPath), relativePath))
 		if err != nil {
-			c.errorf(token.NoPos, "failed to get absolute path of %s: %v", relativePath, err)
+			c.addErrorf(token.NoPos, "failed to get absolute path of %s: %v", relativePath, err)
 			return nil
 		}
 	}
 	return c.files[relativePath]
 }
 
+// pushTrace pushes a position to the trace
+func (c *Context) pushTrace(pos token.Pos) {
+	c.trace = append(c.trace, pos)
+}
+
+// popTrace pops a position from the trace
+func (c *Context) popTrace() {
+	c.trace = c.trace[:len(c.trace)-1]
+}
+
+// call calls a function with arguments
 func (c *Context) call(pos token.Pos, name string, args ...constant.Value) (constant.Value, error) {
-	c.pos = pos
+	c.pushTrace(pos)
+	defer c.popTrace()
 	return constant.Call(c, name, args)
 }
 
+// Resolve resolves all files in the context
 func (c *Context) Resolve() error {
 	// sort files by package name and position
 	files := make([]*File, 0, len(c.files))
@@ -224,7 +245,7 @@ func (c *Context) Resolve() error {
 		for i := range file.imports {
 			file.imports[i].importedFile = c.lookupFile(file.Path, file.imports[i].Path)
 			if file.imports[i].importedFile == nil {
-				c.errorf(file.imports[i].Pos(), "import file not found: %s", file.imports[i].Path)
+				c.addErrorf(file.imports[i].Pos(), "import file not found: %s", file.imports[i].Path)
 			}
 		}
 	}
@@ -237,7 +258,7 @@ func (c *Context) Resolve() error {
 		for name, symbol := range file.symbols {
 			symbolName := joinSymbolName(file.Package, name)
 			if prev, ok := c.symbols[symbolName]; ok {
-				c.errorf(symbol.Pos(), "symbol %s redeclared: previous declaration at %s", symbolName, c.fset.Position(prev.Pos()))
+				c.addErrorf(symbol.Pos(), "symbol %s redeclared: previous declaration at %s", symbolName, c.fset.Position(prev.Pos()))
 			} else {
 				c.symbols[symbolName] = symbol
 			}
@@ -265,6 +286,7 @@ func (c *Context) Resolve() error {
 	return c.errors.Err()
 }
 
+// resolveAnnotationGroup resolves an annotation group
 func (c *Context) resolveAnnotationGroup(file *File, annotations *ast.AnnotationGroup) AnnotationGroup {
 	if annotations == nil {
 		return AnnotationGroup{}
@@ -297,10 +319,12 @@ func (c *Context) resolveAnnotationGroup(file *File, annotations *ast.Annotation
 	}
 }
 
+// resolveValue resolves a value of an expression
 func (c *Context) resolveValue(file *File, expr ast.Expr, iota *iotaValue) constant.Value {
 	return c.recursiveResolveValue(file, file, make([]*ValueSpec, 0, 16), expr, iota)
 }
 
+// resolveSymbolValue resolves a value of a symbol
 func (c *Context) resolveSymbolValue(file *File, scope Scope, refs []*ValueSpec, v *ValueSpec) constant.Value {
 	if v.value != nil {
 		// value already resolved
@@ -311,7 +335,7 @@ func (c *Context) resolveSymbolValue(file *File, scope Scope, refs []*ValueSpec,
 		for i := index; i < len(refs); i++ {
 			fmt.Fprintf(&sb, "\n%s: %s ↓", c.fset.Position(refs[i].Pos()), refs[i].Name)
 		}
-		c.errorf(v.pos, "cyclic references: %s\n%s: %s", sb.String(), c.fset.Position(v.Pos()), v.Name)
+		c.addErrorf(v.pos, "cyclic references: %s\n%s: %s", sb.String(), c.fset.Position(v.Pos()), v.Name)
 		return constant.MakeUnknown()
 	}
 	v.resolveValue(c, file, scope, refs)
@@ -321,7 +345,7 @@ func (c *Context) resolveSymbolValue(file *File, scope Scope, refs []*ValueSpec,
 func (c *Context) recursiveResolveValue(file *File, scope Scope, refs []*ValueSpec, expr ast.Expr, iota *iotaValue) (result constant.Value) {
 	defer func() {
 		if r := recover(); r != nil {
-			c.errorf(expr.Pos(), "%v", r)
+			c.addErrorf(expr.Pos(), "%v", r)
 			result = constant.MakeUnknown()
 		}
 	}()
@@ -340,13 +364,13 @@ func (c *Context) recursiveResolveValue(file *File, scope Scope, refs []*ValueSp
 		if err != nil {
 			if expr.Name == "iota" {
 				if iota == nil {
-					c.errorf(expr.Pos(), "iota is not allowed in this context")
+					c.addErrorf(expr.Pos(), "iota is not allowed in this context")
 					return constant.MakeUnknown()
 				}
 				iota.found = true
 				return constant.MakeInt64(int64(iota.value))
 			}
-			c.errorf(expr.Pos(), "%s is not defined", expr.Name)
+			c.addErrorf(expr.Pos(), "%s is not defined", expr.Name)
 			return constant.MakeUnknown()
 		}
 		return c.resolveSymbolValue(file, scope, refs, v)
@@ -355,12 +379,12 @@ func (c *Context) recursiveResolveValue(file *File, scope Scope, refs []*ValueSp
 		name := joinSymbolName(c.resolveSelectorExprChain(expr)...)
 		v, err := lookupValue(scope, name)
 		if err != nil {
-			c.errorf(expr.Pos(), "%s is not defined", name)
+			c.addErrorf(expr.Pos(), "%s is not defined", name)
 			return constant.MakeUnknown()
 		}
 		file = c.getFileByPos(v.Pos())
 		if file == nil {
-			c.errorf(expr.Pos(), "%s is not defined (file %q not found)", name, c.fset.Position(v.Pos()).Filename)
+			c.addErrorf(expr.Pos(), "%s is not defined (file %q not found)", name, c.fset.Position(v.Pos()).Filename)
 			return constant.MakeUnknown()
 		}
 		return c.resolveSymbolValue(file, scope, refs, v)
@@ -385,7 +409,7 @@ func (c *Context) recursiveResolveValue(file *File, scope Scope, refs []*ValueSp
 		fun := ast.Unparen(expr.Fun)
 		ident, ok := fun.(*ast.Ident)
 		if !ok {
-			c.errorf(expr.Pos(), "unexpected function %T", fun)
+			c.addErrorf(expr.Pos(), "unexpected function %T", fun)
 			return constant.MakeUnknown()
 		}
 		args := make([]constant.Value, len(expr.Args))
@@ -394,17 +418,18 @@ func (c *Context) recursiveResolveValue(file *File, scope Scope, refs []*ValueSp
 		}
 		result, err := c.call(expr.Pos(), ident.Name, args...)
 		if err != nil {
-			c.errorf(expr.Pos(), err.Error())
+			c.addErrorf(expr.Pos(), err.Error())
 			return constant.MakeUnknown()
 		}
 		return result
 
 	default:
-		c.errorf(expr.Pos(), "unexpected expression %T", expr)
+		c.addErrorf(expr.Pos(), "unexpected expression %T", expr)
 	}
 	return constant.MakeUnknown()
 }
 
+// resolveUint64 resolves an unsigned integer value of an expression
 func (c *Context) resolveUint64(file *File, expr ast.Expr) uint64 {
 	return c.recursiveResolveUint64(file, file, expr, make([]*ValueSpec, 0, 16), nil)
 }
@@ -417,19 +442,20 @@ func (c *Context) recursiveResolveUint64(file *File, scope Scope, expr ast.Expr,
 		if ok {
 			return n
 		}
-		c.errorf(expr.Pos(), "constant %s overflows uint64", val)
+		c.addErrorf(expr.Pos(), "constant %s overflows uint64", val)
 	case constant.Float:
 		f, ok := constant.Float64Val(val)
 		if ok && f == float64(uint64(f)) {
 			return uint64(f)
 		}
-		c.errorf(expr.Pos(), "constant %s overflows uint64", val)
+		c.addErrorf(expr.Pos(), "constant %s overflows uint64", val)
 	default:
-		c.errorf(expr.Pos(), "constant %s is not an integer", val)
+		c.addErrorf(expr.Pos(), "constant %s is not an integer", val)
 	}
 	return 0
 }
 
+// resolveType resolves a type
 func (c *Context) resolveType(file *File, t ast.Type) Type {
 	switch t := t.(type) {
 	case *ast.Ident:
@@ -443,7 +469,7 @@ func (c *Context) resolveType(file *File, t ast.Type) Type {
 	case *ast.MapType:
 		return c.resolveMapType(file, t)
 	default:
-		c.errorf(t.Pos(), "unexpected type %T", t)
+		c.addErrorf(t.Pos(), "unexpected type %T", t)
 		return nil
 	}
 }
@@ -454,7 +480,7 @@ func (c *Context) resolveIdentType(file *File, i *ast.Ident) Type {
 	}
 	t, err := file.LookupLocalType(i.Name)
 	if err != nil {
-		c.errorf(i.Pos(), "failed to lookup type %s: %s", i.Name, err)
+		c.addErrorf(i.Pos(), "failed to lookup type %s: %s", i.Name, err)
 		return nil
 	}
 	return t
@@ -471,7 +497,7 @@ func (c *Context) resolveSelectorExprChain(t *ast.SelectorExpr) []string {
 		case *ast.SelectorExpr:
 			t = x
 		default:
-			c.errorf(t.Pos(), "unexpected selector expression %T", t)
+			c.addErrorf(t.Pos(), "unexpected selector expression %T", t)
 			return nil
 		}
 	}
@@ -486,13 +512,13 @@ func (c *Context) resolveSelectorExprType(file *File, t *ast.SelectorExpr) Type 
 		return nil
 	}
 	if len(names) != 2 {
-		c.errorf(t.Pos(), "unexpected selector expression %s", names)
+		c.addErrorf(t.Pos(), "unexpected selector expression %s", names)
 		return nil
 	}
 	fullName := joinSymbolName(names...)
 	typ, err := lookupType(file, fullName)
 	if err != nil {
-		c.error(t.Pos(), err.Error())
+		c.addError(t.Pos(), err.Error())
 		return nil
 	}
 	return typ
