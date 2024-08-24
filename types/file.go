@@ -1,6 +1,9 @@
 package types
 
 import (
+	"path/filepath"
+	"strings"
+
 	"github.com/gopherd/next/ast"
 	"github.com/gopherd/next/token"
 )
@@ -8,11 +11,11 @@ import (
 // File represents a Next source file.
 type File struct {
 	pos        token.Pos
+	pkg        string
 	unresolved struct {
 		annotations *ast.AnnotationGroup
 	}
 
-	Package     string
 	Path        string
 	Doc         CommentGroup
 	Annotations AnnotationGroup
@@ -46,7 +49,29 @@ func newFile(ctx *Context, src *ast.File) *File {
 	return file
 }
 
-func (f *File) Decls() []*Decl { return f.decls }
+func (f *File) Name() string {
+	return strings.TrimSuffix(filepath.Base(f.Path), ".next")
+}
+
+func (f *File) Decls() []*Decl {
+	var hasImport bool
+	for _, d := range f.decls {
+		if d.Tok == token.IMPORT {
+			hasImport = true
+			break
+		}
+	}
+	if !hasImport {
+		return f.decls
+	}
+	var decls = make([]*Decl, 0, len(f.decls))
+	for _, d := range f.decls {
+		if d.Tok != token.IMPORT {
+			decls = append(decls, d)
+		}
+	}
+	return decls
+}
 
 func (f *File) Stmts() []Stmt { return f.stmts }
 
@@ -108,7 +133,7 @@ func (s *fileParentScope) LookupLocalSymbol(name string) Symbol {
 	var files []*File
 	pkg, name := splitSymbolName(name)
 	for i := range s.f.imports {
-		if s.f.imports[i].importedFile.Package == pkg {
+		if s.f.imports[i].importedFile.pkg == pkg {
 			files = append(files, s.f.imports[i].importedFile)
 		}
 	}
@@ -149,20 +174,20 @@ func (f *File) createSymbols() (token.Pos, error) {
 			case *ImportSpec:
 				f.imports = append(f.imports, s)
 			case *ValueSpec:
-				if err := f.addSymbol(s.Name, s); err != nil {
+				if err := f.addSymbol(s.name, s); err != nil {
 					return s.pos, err
 				}
 			case *EnumType:
-				if err := f.addSymbol(s.Name, s); err != nil {
+				if err := f.addSymbol(s.name, s); err != nil {
 					return s.pos, err
 				}
 				for _, m := range s.Members {
-					if err := f.addSymbol(joinSymbolName(s.Name, m.Name), m); err != nil {
+					if err := f.addSymbol(joinSymbolName(s.name, m.name), m); err != nil {
 						return m.pos, err
 					}
 				}
 			case *StructType:
-				if err := f.addSymbol(s.Name, s); err != nil {
+				if err := f.addSymbol(s.name, s); err != nil {
 					return s.pos, err
 				}
 			}

@@ -11,16 +11,16 @@ import (
 // Spec represents a specification: import, value(constant, enum), struct
 type Spec interface {
 	Node
-	specObject()
+	specNode()
 
 	Decl() *Decl
 	resolve(ctx *Context, file *File, scope Scope)
 }
 
-func (*ImportSpec) specObject() {}
-func (*ValueSpec) specObject()  {}
-func (*EnumType) specObject()   {}
-func (*StructType) specObject() {}
+func (*ImportSpec) specNode() {}
+func (*ValueSpec) specNode()  {}
+func (*EnumType) specNode()   {}
+func (*StructType) specNode() {}
 
 func newSpec(ctx *Context, file *File, decl *Decl, s ast.Spec) Spec {
 	switch s := s.(type) {
@@ -68,6 +68,8 @@ func newImportSpec(ctx *Context, _ *File, decl *Decl, src *ast.ImportSpec) *Impo
 
 func (i *ImportSpec) Pos() token.Pos { return i.pos }
 
+func (i *ImportSpec) String() string { return i.Path }
+
 func (i *ImportSpec) Decl() *Decl { return i.decl }
 
 func (i *ImportSpec) resolve(ctx *Context, file *File, _ Scope) {
@@ -83,6 +85,7 @@ type iotaValue struct {
 type ValueSpec struct {
 	pos   token.Pos
 	decl  *Decl
+	name  string
 	value constant.Value
 	enum  struct {
 		typ   *EnumType // parent enum type
@@ -96,7 +99,6 @@ type ValueSpec struct {
 
 	Doc, Comment CommentGroup
 	Annotations  AnnotationGroup
-	Name         string
 }
 
 func newValueSpec(_ *Context, _ *File, decl *Decl, src *ast.ValueSpec) *ValueSpec {
@@ -105,7 +107,7 @@ func newValueSpec(_ *Context, _ *File, decl *Decl, src *ast.ValueSpec) *ValueSpe
 		decl:    decl,
 		Doc:     newCommentGroup(src.Doc),
 		Comment: newCommentGroup(src.Comment),
-		Name:    src.Name.Name,
+		name:    src.Name.Name,
 	}
 	v.unresolved.annotations = src.Annotations
 	v.unresolved.value = src.Value
@@ -118,12 +120,20 @@ func (v *ValueSpec) Decl() *Decl { return v.decl }
 
 func (v *ValueSpec) String() string {
 	if v.value != nil {
-		return v.value.String()
+		return v.name + "=" + v.value.String()
 	}
-	return "<nil>"
+	return v.name + "=?"
 }
 
-func (v *ValueSpec) Value() any {
+func (v *ValueSpec) Name() string {
+	return v.name
+}
+
+func (v *ValueSpec) Value() constant.Value {
+	return v.value
+}
+
+func (v *ValueSpec) Underlying() any {
 	if v.value == nil {
 		return nil
 	}
@@ -241,24 +251,25 @@ func (f *Field) resolve(ctx *Context, file *File, _ Scope) {
 type StructType struct {
 	typ
 	decl       *Decl
+	name       string
 	unresolved struct {
 		annotations *ast.AnnotationGroup
 	}
 
 	Doc, Comment CommentGroup
 	Annotations  AnnotationGroup
-	Name         string
 	Fields       []*Field
 }
+
+func (s *StructType) Name() string   { return s.name }
+func (s *StructType) String() string { return s.name }
+
+func (s *StructType) Decl() *Decl { return s.decl }
 
 func (*StructType) typeNode() {}
 
 func (*StructType) Kind() Kind     { return Struct }
 func (*StructType) IsStruct() bool { return true }
-
-func (s *StructType) String() string { return s.Name }
-
-func (s *StructType) Decl() *Decl { return s.decl }
 
 func newStructType(ctx *Context, _ *File, decl *Decl, src *ast.TypeSpec, t *ast.StructType) Spec {
 	s := &StructType{
@@ -266,7 +277,7 @@ func newStructType(ctx *Context, _ *File, decl *Decl, src *ast.TypeSpec, t *ast.
 		decl:    decl,
 		Doc:     newCommentGroup(src.Doc),
 		Comment: newCommentGroup(src.Comment),
-		Name:    src.Name.Name,
+		name:    src.Name.Name,
 	}
 	s.unresolved.annotations = src.Annotations
 	for _, f := range t.Fields.List {
@@ -288,23 +299,21 @@ type EnumType struct {
 	unresolved struct {
 		annotations *ast.AnnotationGroup
 	}
-	file *File
 	decl *Decl
 
 	Doc, Comment CommentGroup
 	Annotations  AnnotationGroup
-	Name         string
+	name         string
 	Members      []*ValueSpec
 }
 
 func newEnumType(ctx *Context, file *File, decl *Decl, src *ast.TypeSpec, t *ast.EnumType) *EnumType {
 	e := &EnumType{
 		typ:     typ{pos: src.Pos()},
-		file:    file,
 		decl:    decl,
 		Doc:     newCommentGroup(src.Doc),
 		Comment: newCommentGroup(src.Comment),
-		Name:    src.Name.Name,
+		name:    src.Name.Name,
 	}
 	e.unresolved.annotations = src.Annotations
 	for i, v := range t.Values {
@@ -315,6 +324,8 @@ func newEnumType(ctx *Context, file *File, decl *Decl, src *ast.TypeSpec, t *ast
 	}
 	return e
 }
+
+func (e *EnumType) Name() string { return e.name }
 
 func (e *EnumType) Decl() *Decl { return e.decl }
 
@@ -327,18 +338,18 @@ func (e *EnumType) resolve(ctx *Context, file *File, scope Scope) {
 
 func (*EnumType) typeNode() {}
 
-func (e *EnumType) String() string { return e.Name }
+func (e *EnumType) String() string { return e.name }
 
 func (*EnumType) Pos() token.Pos { return 0 }
 
 func (*EnumType) Kind() Kind   { return Enum }
 func (*EnumType) IsEnum() bool { return true }
 
-func (e *EnumType) ParentScope() Scope { return e.file }
+func (e *EnumType) ParentScope() Scope { return e.decl.file }
 
 func (e *EnumType) LookupLocalSymbol(name string) Symbol {
 	for _, m := range e.Members {
-		if m.Name == name {
+		if m.name == name {
 			return m
 		}
 	}

@@ -1,0 +1,58 @@
+package c;
+
+const (
+    A = 1;
+    B = "hello";
+    C = 3.14;
+    D = true;
+)
+
+enum Color {
+    Red = iota,
+    Green,
+    Blue,
+}
+
+enum (
+    LoginType {
+        Username = 1,
+        Email = 2,
+    }
+    UserType {
+        Admin = 1,
+        User = 2,
+    }
+)
+
+struct User {
+    UserType type;
+    int id;
+    string username;
+    @sensitive
+    string password;
+    string deviceId;
+    @optional
+    string twoFactorToken;
+    vector<string> roles;
+    map<string, string> metadata;
+    array<int, A+3> scores;
+}
+
+struct (
+    LoginRequest {
+        LoginType type;
+        string username;
+        string password;
+        string deviceId;
+        @optional
+        string twoFactorToken;
+    }
+    LoginResponse {
+        bool success;
+        @json(omitempty)
+        string errorMessage;
+        @json(name = "auth_token")
+        string authenticationToken;
+        User user;
+    }
+)

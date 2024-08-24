@@ -7,7 +7,8 @@ import (
 
 // Decl represents a declaration: import, constant, enum, struct
 type Decl struct {
-	pos token.Pos
+	pos  token.Pos
+	file *File
 
 	Tok   token.Token
 	Specs []Spec
@@ -15,8 +16,9 @@ type Decl struct {
 
 func newDecl(ctx *Context, file *File, src *ast.GenDecl) *Decl {
 	d := &Decl{
-		pos: src.Pos(),
-		Tok: src.Tok,
+		file: file,
+		pos:  src.Pos(),
+		Tok:  src.Tok,
 	}
 	for _, s := range src.Specs {
 		d.Specs = append(d.Specs, newSpec(ctx, file, d, s))

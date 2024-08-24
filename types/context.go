@@ -91,17 +91,17 @@ func (c *Context) AddFile(f *ast.File) error {
 	file.Path = path
 	c.files[path] = file
 	for _, pkg := range c.packages {
-		if pkg.Name == f.Name.Name {
-			file.Package = pkg.Name
+		if pkg.name == f.Name.Name {
+			file.pkg = pkg.name
 			pkg.files = append(pkg.files, file)
 			return nil
 		}
 	}
 	pkg := &Package{
-		Name:  f.Name.Name,
+		name:  f.Name.Name,
 		files: []*File{file},
 	}
-	file.Package = pkg.Name
+	file.pkg = pkg.name
 	c.packages = append(c.packages, pkg)
 	return nil
 }
@@ -233,8 +233,8 @@ func (c *Context) Resolve() error {
 		files = append(files, c.files[i])
 	}
 	sort.Slice(files, func(i, j int) bool {
-		if files[i].Package != files[j].Package {
-			return files[i].Package < files[j].Package
+		if files[i].pkg != files[j].pkg {
+			return files[i].pkg < files[j].pkg
 		}
 		return files[i].Pos() < files[j].Pos()
 	})
@@ -256,7 +256,7 @@ func (c *Context) Resolve() error {
 	// create all symbols
 	for _, file := range files {
 		for name, symbol := range file.symbols {
-			symbolName := joinSymbolName(file.Package, name)
+			symbolName := joinSymbolName(file.pkg, name)
 			if prev, ok := c.symbols[symbolName]; ok {
 				c.addErrorf(symbol.Pos(), "symbol %s redeclared: previous declaration at %s", symbolName, c.fset.Position(prev.Pos()))
 			} else {
@@ -333,9 +333,9 @@ func (c *Context) resolveSymbolValue(file *File, scope Scope, refs []*ValueSpec,
 	if index := slices.Index(refs, v); index >= 0 {
 		var sb strings.Builder
 		for i := index; i < len(refs); i++ {
-			fmt.Fprintf(&sb, "\n%s: %s ↓", c.fset.Position(refs[i].Pos()), refs[i].Name)
+			fmt.Fprintf(&sb, "\n%s: %s ↓", c.fset.Position(refs[i].Pos()), refs[i].name)
 		}
-		c.addErrorf(v.pos, "cyclic references: %s\n%s: %s", sb.String(), c.fset.Position(v.Pos()), v.Name)
+		c.addErrorf(v.pos, "cyclic references: %s\n%s: %s", sb.String(), c.fset.Position(v.Pos()), v.name)
 		return constant.MakeUnknown()
 	}
 	v.resolveValue(c, file, scope, refs)

@@ -1,19 +1,19 @@
 package types
 
 type Package struct {
-	Name string
+	name string
 
 	files []*File
 }
 
-func (p *Package) Files() []*File {
-	return p.files
+func (p *Package) Name() string {
+	return p.name
 }
 
 func (p *Package) Decls() []*Decl {
 	var decls []*Decl
 	for _, file := range p.files {
-		decls = append(decls, file.decls...)
+		decls = append(decls, file.Decls()...)
 	}
 	return decls
 }

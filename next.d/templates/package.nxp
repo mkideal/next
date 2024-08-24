@@ -1,0 +1,27 @@
+{{/*
+file: {{.Name}}.gen.go
+*/}}
+package {{.T.Package}}
+{{- $ := .}}
+
+{{range $c := .T.Consts}}
+const {{$c.Name}} = {{$c.Value}}
+{{- end}}
+
+{{range $e := .T.Enums}}
+type {{$e.Name}} int
+
+const (
+{{- range $m := $e.Members}}
+    {{$e.Name}}_{{$m.Name}} {{$e.Name}} = {{$m.Value}}
+{{- end}}
+)
+{{- end}}
+
+{{range $s := .T.Structs}}
+type {{$s.Name}} struct {
+{{- range $f := $s.Fields }}
+    {{$f.Name}} {{$.TypeOf $f.Type}}
+{{- end}}
+}
+{{- end}}

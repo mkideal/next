@@ -7,6 +7,11 @@ import (
 	"github.com/gopherd/next/token"
 )
 
+// Node represents a Next AST node.
+type Node interface {
+	Pos() token.Pos
+}
+
 func splitSymbolName(name string) (ns, sym string) {
 	if i := strings.Index(name, "."); i >= 0 {
 		return name[:i], name[i+1:]
@@ -16,10 +21,6 @@ func splitSymbolName(name string) (ns, sym string) {
 
 func joinSymbolName(syms ...string) string {
 	return strings.Join(syms, ".")
-}
-
-type Node interface {
-	Pos() token.Pos
 }
 
 // Symbol represents a Next symbol: value(constant, enum member), type(struct, enum)
@@ -37,6 +38,7 @@ func (*ValueSpec) symbolType() string  { return ValueSymbol }
 func (*EnumType) symbolType() string   { return TypeSymbol }
 func (*StructType) symbolType() string { return TypeSymbol }
 
+// Scope represents a symbol scope.
 type Scope interface {
 	ParentScope() Scope
 	LookupLocalSymbol(name string) Symbol
@@ -78,6 +80,25 @@ func expectValueSymbol(name string, s Symbol) (*ValueSpec, error) {
 	}
 	return nil, &UnexpectedSymbolTypeError{Name: name, Want: "value", Got: s.symbolType()}
 }
+
+// Object represents a Next AST node which may be a package, file, const, enum or struct to be generated.
+type Object interface {
+	objectType()
+	Package() string
+	Name() string
+}
+
+func (*Package) objectType()    {}
+func (*File) objectType()       {}
+func (*ValueSpec) objectType()  {}
+func (*EnumType) objectType()   {}
+func (*StructType) objectType() {}
+
+func (p *Package) Package() string    { return p.name }
+func (f *File) Package() string       { return f.pkg }
+func (v *ValueSpec) Package() string  { return v.decl.file.pkg }
+func (e *EnumType) Package() string   { return e.decl.file.pkg }
+func (s *StructType) Package() string { return s.decl.file.pkg }
 
 //-------------------------------------------------------------------------
 // Types
