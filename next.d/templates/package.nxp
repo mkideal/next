@@ -1,27 +1,29 @@
 {{/*
-file: {{.Name}}.gen.go
+file: {{this.Name}}.gen.go
 */}}
-package {{.T.Package}}
-{{- $ := .}}
 
-{{range $c := .T.Consts}}
-const {{$c.Name}} = {{$c.Value}}
+package {{this.Package}}
+
+{{range this.Consts}}
+const {{.Name}} = {{.Value}}
 {{- end}}
 
-{{range $e := .T.Enums}}
-type {{$e.Name}} int
+{{- range $e := this.Enums}}
+
+type {{.Name}} int
 
 const (
-{{- range $m := $e.Members}}
-    {{$e.Name}}_{{$m.Name}} {{$e.Name}} = {{$m.Value}}
+{{- range .Members}}
+    {{$e.Name}}_{{.Name}} {{$e.Name}} = {{.Value}}
 {{- end}}
 )
 {{- end}}
 
-{{range $s := .T.Structs}}
+{{- range $s := this.Structs}}
+
 type {{$s.Name}} struct {
-{{- range $f := $s.Fields }}
-    {{$f.Name}} {{$.TypeOf $f.Type}}
+{{- range $s.Fields }}
+    {{.Name | camelCase | capitalize}} {{typeof .Type}}
 {{- end}}
 }
 {{- end}}

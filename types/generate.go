@@ -152,103 +152,171 @@ func (c *Context) generateForTemplateFile(lang, dir, tmplFile string) error {
 	if err != nil {
 		return err
 	}
-	tmpl, meta, err := loadTemplate(tmplFile)
+	tmplContent, err := os.ReadFile(tmplFile)
 	if err != nil {
-		return fmt.Errorf("failed to load template %q: %v", tmplFile, err)
+		return fmt.Errorf("failed to read file %q: %w", tmplFile, err)
 	}
-	objType = strings.ToLower(objType)
-	switch objType {
+	meta, content, err := parseMetadata(string(tmplContent))
+	if err != nil {
+		return err
+	}
+	for k, v := range meta {
+		fmt.Printf("meta[%q] = %q\n", k, v)
+	}
+
+	switch strings.ToLower(objType) {
 	case "package":
-		for _, pkg := range c.packages {
-			if err := gen(c, lang, dir, tmpl, meta, ext, pkg); err != nil {
-				return err
-			}
-		}
+		return generateForPackage(&TemplateData[*Package]{
+			context: c,
+			lang:    lang,
+			dir:     dir,
+			ext:     ext,
+		}, tmplFile, string(content), meta)
+
 	case "file":
-		for _, file := range c.files {
-			if err := gen(c, lang, dir, tmpl, meta, ext, file); err != nil {
-				return err
-			}
+		return generateForFile(&TemplateData[*File]{
+			context: c,
+			lang:    lang,
+			dir:     dir,
+			ext:     ext,
+		}, tmplFile, string(content), meta)
+
+	case "const":
+		return generateForSpec(&TemplateData[*ValueSpec]{
+			context: c,
+			lang:    lang,
+			dir:     dir,
+			ext:     ext,
+		}, tmplFile, string(content), meta)
+
+	case "enum":
+		return generateForSpec(&TemplateData[*EnumType]{
+			context: c,
+			lang:    lang,
+			dir:     dir,
+			ext:     ext,
+		}, tmplFile, string(content), meta)
+
+	case "struct":
+		return generateForSpec(&TemplateData[*StructType]{
+			context: c,
+			lang:    lang,
+			dir:     dir,
+			ext:     ext,
+		}, tmplFile, string(content), meta)
+	default:
+		return fmt.Errorf("invalid object type %q in template %q", objType, tmplFile)
+	}
+}
+
+func generateForPackage(d *TemplateData[*Package], file, content string, meta TemplateMeta) error {
+	t, mt, err := createTemplates(d, file, content, meta)
+	if err != nil {
+		return err
+	}
+	for _, pkg := range d.context.packages {
+		d.obj = pkg
+		if err := gen(d, t, mt); err != nil {
+			return err
 		}
-	case "const", "enum", "struct":
-		for _, file := range c.files {
-			for _, decl := range file.decls {
-				if strings.ToLower(decl.Tok.String()) != objType {
-					continue
-				}
-				for _, spec := range decl.Specs {
-					var err error
-					switch spec := spec.(type) {
-					case *ValueSpec:
-						err = gen(c, lang, dir, tmpl, meta, ext, spec)
-					case *EnumType:
-						err = gen(c, lang, dir, tmpl, meta, ext, spec)
-					case *StructType:
-						err = gen(c, lang, dir, tmpl, meta, ext, spec)
-					default:
-						err = fmt.Errorf("invalid object type %q in template file %q", objType, tmplFile)
-					}
-					if err != nil {
+	}
+	return nil
+}
+
+func generateForFile(d *TemplateData[*File], file, content string, meta TemplateMeta) error {
+	t, mt, err := createTemplates(d, file, content, meta)
+	if err != nil {
+		return err
+	}
+	for _, f := range d.context.files {
+		d.obj = f
+		if err := gen(d, t, mt); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func generateForSpec[T Object](d *TemplateData[T], file, content string, meta TemplateMeta) error {
+	t, mt, err := createTemplates(d, file, content, meta)
+	if err != nil {
+		return err
+	}
+
+	for _, file := range d.context.files {
+		for _, decl := range file.decls {
+			for _, spec := range decl.Specs {
+				if spec, ok := spec.(T); ok {
+					d.obj = spec
+					if err := gen(d, t, mt); err != nil {
 						return err
 					}
 				}
 			}
 		}
-	default:
-		panic(fmt.Sprintf("invalid object type %q in template file %q", objType, tmplFile))
 	}
 	return nil
 }
 
-func (c *Context) parseMeta(meta TemplateMeta, data any) (TemplateMeta, error) {
-	if meta == nil {
-		return nil, nil
+func createTemplates[T Object](d *TemplateData[T], file, content string, meta TemplateMeta) (*template.Template, map[string]*template.Template, error) {
+	t, err := createTemplate(file, content, d.funcs())
+	if err != nil {
+		return nil, nil, err
 	}
-	m := make(TemplateMeta)
+	mt := make(map[string]*template.Template)
 	for k, v := range meta {
-		v, err := executeTemplate(k, v, data)
+		tt, err := createTemplate(k, v, d.funcs())
 		if err != nil {
-			return nil, fmt.Errorf("failed to execute template %q: %v", v, err)
+			return nil, nil, err
 		}
-		m[k] = v
+		mt[k] = tt
 	}
-	return m, nil
+	return t, mt, nil
 }
 
 // gen generates a file using the given template, meta data, and object which may be a
 // package, file, const, enum or struct.
-func gen[T Object](c *Context, lang, dir string, tmpl *template.Template, meta TemplateMeta, ext string, obj T) error {
-	meta, err := c.parseMeta(meta, obj)
+func gen[T Object](d *TemplateData[T], t *template.Template, mt map[string]*template.Template) error {
+	meta, err := d.context.parseMeta(mt, d.obj)
 	if err != nil {
 		return err
 	}
 	if meta == nil {
 		meta = make(TemplateMeta)
 	}
-	data := &TemplateData[T]{
-		T:       obj,
-		Lang:    lang,
-		Meta:    meta,
-		context: c,
-	}
-
+	d.Meta = meta
 	var sb strings.Builder
-	if err := tmpl.Execute(&sb, &data); err != nil {
+	if err := t.Execute(&sb, d); err != nil {
 		return fmt.Errorf("failed to execute template: %v", err)
 	}
 
 	// write the generated content to the output file
 	file := meta.Get("file")
 	if file == "" {
-		file = obj.Name() + ext
+		file = d.obj.Name() + d.ext
 	}
-	path := filepath.Join(dir, file)
+	path := filepath.Join(d.dir, file)
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
-		return fmt.Errorf("failed to create directory %q: %v", dir, err)
+		return fmt.Errorf("failed to create directory %q: %v", d.dir, err)
 	}
 	if err := os.WriteFile(path, []byte(sb.String()), 0644); err != nil {
 		return fmt.Errorf("failed to write file %q: %v", path, err)
 	}
 
 	return nil
+}
+
+func (c *Context) parseMeta(mt map[string]*template.Template, data any) (TemplateMeta, error) {
+	if mt == nil {
+		return nil, nil
+	}
+	meta := make(TemplateMeta)
+	for k, t := range mt {
+		v, err := executeTemplate(t, data)
+		if err != nil {
+			return nil, fmt.Errorf("failed to execute template %q: %v", v, err)
+		}
+		meta[k] = v
+	}
+	return meta, nil
 }

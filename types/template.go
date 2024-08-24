@@ -1,15 +1,15 @@
 package types
 
 import (
-	"bufio"
 	"bytes"
 	"fmt"
-	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
 	"text/template"
+
+	"github.com/gopherd/next/internal/templateutil"
 )
 
 // TemplateMeta represents the meta data of a template.
@@ -21,7 +21,8 @@ func (m TemplateMeta) Get(key string) string {
 	return m[key]
 }
 
-// parseMetadata parses the metadata from the content of a template.
+// parseMetadata extracts metadata from the content and returns the parsed metadata
+// along with the modified content (with a simple metadata placeholder).
 //
 // The metadata is expected to be in the following format:
 // {{/*
@@ -38,55 +39,60 @@ func (m TemplateMeta) Get(key string) string {
 // authors: gopherd, next
 // date: 2024-01-01
 // */}}
-func parseMetadata(content string) (TemplateMeta, error) {
-	scanner := bufio.NewScanner(bytes.NewBufferString(content))
+// parseMetadata extracts metadata from the content and returns the parsed metadata
+// along with the modified content (with metadata replaced by placeholder and empty lines).
+func parseMetadata(content string) (TemplateMeta, string, error) {
+	startIndex := strings.Index(content, "{{/*")
+	endIndex := strings.Index(content, "*/}}")
 
-	if !scanner.Scan() {
-		return nil, nil
+	if startIndex == -1 || endIndex == -1 || endIndex < startIndex {
+		return nil, content, nil
 	}
 
-	firstLine := strings.TrimSpace(scanner.Text())
-	if firstLine != "{{/*" {
-		return nil, nil
-	}
-
+	metaContent := content[startIndex+4 : endIndex]
 	meta := make(TemplateMeta)
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-		if line == "*/}}" {
-			break
-		}
 
+	// Parse metadata
+	lines := strings.Split(metaContent, "\n")
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
 		key, value, err := parseMetaLine(line)
 		if err != nil {
-			return nil, err
+			return nil, content, err
 		}
 		if key != "" {
 			if _, exists := meta[key]; exists {
-				return nil, fmt.Errorf("duplicate meta key %q", key)
+				return nil, content, fmt.Errorf("duplicate meta key %q", key)
 			}
 			meta[key] = value
 		}
 	}
 
-	if err := scanner.Err(); err != nil {
-		return nil, fmt.Errorf("error scanning template: %w", err)
+	// If no valid metadata was found, return an error
+	if len(meta) == 0 {
+		return nil, content, fmt.Errorf("no valid metadata found")
 	}
 
-	return meta, nil
+	// Replace metadata block with placeholder
+	replacement := "{{- /* meta */ -}}" + strings.Repeat("\n", strings.Count(metaContent, "\n"))
+	modifiedContent := content[:startIndex] + replacement + content[endIndex+4:]
+
+	return meta, modifiedContent, nil
 }
 
+// parseMetaLine parses a single metadata line into a key-value pair.
 func parseMetaLine(line string) (string, string, error) {
-	if line == "" || strings.HasPrefix(line, "//") {
+	if line == "" {
 		return "", "", nil
 	}
-
 	var key, value string
 	index := strings.Index(line, ":")
 	if index > 0 {
 		key, value = strings.TrimSpace(line[:index]), strings.TrimSpace(line[index+1:])
 	}
-
 	if key == "" || value == "" {
 		return "", "", fmt.Errorf("invalid meta line %q, expected key: value", line)
 	}
@@ -97,7 +103,6 @@ func parseMetaLine(line string) (string, string, error) {
 			return "", "", fmt.Errorf("invalid meta value %q: %v", value, err)
 		}
 	}
-
 	return key, value, nil
 }
 
@@ -128,65 +133,49 @@ func parseTemplateFilename(filename string) (extension, objectType string, err e
 	}
 }
 
-// loadTemplate loads a template from a file.
-func loadTemplate(path string) (*template.Template, TemplateMeta, error) {
-	content, err := os.ReadFile(path)
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to read template file %q: %v", path, err)
-	}
-	return createTemplate(path, string(content), true)
+// createTemplate creates a new template from the given content.
+func createTemplate(name, content string, funcs template.FuncMap) (*template.Template, error) {
+	return template.New(name).Funcs(templateutil.Funcs).Funcs(funcs).Parse(content)
 }
 
 // executeTemplate executes a template content with the given data.
-func executeTemplate(name, content string, data any) (string, error) {
-	tpl, _, err := createTemplate(name, content, false)
-	if err != nil {
-		return "", err
-	}
+func executeTemplate(t *template.Template, data any) (string, error) {
 	var buf bytes.Buffer
-	if err := tpl.Execute(&buf, data); err != nil {
-		return "", fmt.Errorf("failed to execute template %q: %v", name, err)
+	if err := t.Execute(&buf, data); err != nil {
+		return "", fmt.Errorf("failed to execute template: %v", err)
 	}
 	return buf.String(), nil
 }
 
-// createTemplate creates a new template from the given content.
-// If hasMeta is true, the content is expected to contain metadata.
-func createTemplate(name, content string, hasMeta bool) (*template.Template, TemplateMeta, error) {
-	var metadata TemplateMeta
-	var err error
-	if hasMeta {
-		metadata, err = parseMetadata(content)
-		if err != nil {
-			return nil, nil, fmt.Errorf("failed to parse metadata for template %q: %w", name, err)
-		}
-	}
-
-	t, err := template.New(name).Parse(content)
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to parse template %q: %w", name, err)
-	}
-
-	return t, metadata, nil
-}
-
-// template functions
-
 // TemplateMeta is a map of key-value pairs used in templates.
 type TemplateData[T Object] struct {
-	T    T
-	Lang string
-	Meta TemplateMeta
-
 	context *Context
-	types   sync.Map
+	obj     T
+	dir     string
+	ext     string
+	lang    string
+
+	types sync.Map
+
+	Meta TemplateMeta
 }
 
-func (d *TemplateData[T]) TypeOf(t Type) (string, error) {
+func (d *TemplateData[T]) funcs() template.FuncMap {
+	return template.FuncMap{
+		"this":   d.this,
+		"typeof": d.typeof,
+	}
+}
+
+func (d *TemplateData[T]) this() T {
+	return d.obj
+}
+
+func (d *TemplateData[T]) typeof(t Type) (string, error) {
 	if v, ok := d.types.Load(t); ok {
 		return v.(string), nil
 	}
-	v, err := resolveLangType(d.context.flags.types, d.Lang, t)
+	v, err := resolveLangType(d.context.flags.types, d.lang, t)
 	if err != nil {
 		return "", err
 	}
