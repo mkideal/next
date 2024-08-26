@@ -49,6 +49,9 @@ func newFile(ctx *Context, src *ast.File) *File {
 	return file
 }
 
+func (f *File) Pos() token.Pos   { return f.pos }
+func (f *File) nodeType() string { return "file" }
+
 func (f *File) Name() string {
 	return strings.TrimSuffix(filepath.Base(f.Path), ".next")
 }
@@ -112,8 +115,6 @@ func (f *File) Structs() []*StructType {
 	}
 	return structs
 }
-
-func (f *File) Pos() token.Pos { return f.pos }
 
 func (f *File) ParentScope() Scope { return &fileParentScope{f} }
 

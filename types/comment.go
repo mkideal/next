@@ -55,6 +55,13 @@ func newCommentGroup(cg *ast.CommentGroup) CommentGroup {
 	}
 }
 
+func (cg CommentGroup) Text() string {
+	if len(cg.List) == 0 {
+		return ""
+	}
+	return cg.Format()
+}
+
 func (cg CommentGroup) String() string {
 	return strings.Join(ast.TrimComments(cg.List), "\n")
 }

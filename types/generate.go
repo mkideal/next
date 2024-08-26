@@ -20,59 +20,9 @@ const (
 	hiddenNextDir = ".next"     // hidden next directory for configuration files in user's home directory
 	typesDir      = "types"     // types directory for types files in next directory
 	templatesDir  = "templates" // templates directory for template files in next directory
-	templateExt   = ".nxp"      // template file extension
+	templateExt   = ".np"       // template file extension
 	typesExt      = ".types"    // types file extension
 )
-
-// Genertate generates files for each language specified in the flags.outputs.
-func (c *Context) Generate() error {
-	if len(c.flags.outputs) == 0 {
-		return nil
-	}
-	c.Print("flags.importDirs: ", c.flags.importDirs)
-	c.Print("flags.macros: ", c.flags.macros)
-	c.Print("flags.outputs: ", c.flags.outputs)
-	c.Print("flags.templates: ", c.flags.templates)
-	c.Print("flags.types: ", c.flags.types)
-	// Check whether the template directory exists for each language
-	for lang := range c.flags.outputs {
-		tmplDir := c.flags.templates[lang]
-		if _, err := os.Stat(tmplDir); err != nil {
-			if os.IsNotExist(err) {
-				return fmt.Errorf("template directory for %q not found: %q", lang, tmplDir)
-			}
-			return fmt.Errorf("failed to check template directory for %q: %v", lang, err)
-		}
-	}
-
-	// Load all types from all types files
-	searchDirs := c.searchDirs()
-	m := make(flags.Map)
-	for lang := range c.flags.outputs {
-		if err := c.loadTypes(m, searchDirs, lang); err != nil {
-			return err
-		}
-	}
-	for k, v := range c.flags.types {
-		m[k] = v
-	}
-	c.flags.types = m
-	if c.IsDebugEnabled() {
-		for _, k := range slices.Sorted(maps.Keys(m)) {
-			c.Printf("types[%q] = %q", k, m[k])
-		}
-	}
-
-	// Generate files for each language
-	for lang, dir := range c.flags.outputs {
-		ext := op.Or(c.flags.types[lang+".ext"], "."+lang)
-		tempDir := c.flags.templates[lang]
-		if err := c.generateForTemplateDir(lang, ext, dir, tempDir); err != nil {
-			return err
-		}
-	}
-	return nil
-}
 
 // searchDirs returns ordered a list of directories to search for types files.
 // The order is from the most specific to the least specific.
@@ -84,7 +34,7 @@ func (c *Context) Generate() error {
 //   - /Library/Application Support/next.d
 //   - ~/Library/Application Support/next.d
 //   - %APPDATA%/next.d
-func (c *Context) searchDirs() []string {
+func createSearchDirs() []string {
 	var dirs []string
 	dirs = append(dirs, ".")
 	homedir, err := os.UserHomeDir()
@@ -110,6 +60,57 @@ func (c *Context) searchDirs() []string {
 	}
 	slices.Reverse(dirs)
 	return dirs
+}
+
+// Genertate generates files for each language specified in the flags.outputs.
+func (c *Context) Generate() error {
+	if len(c.flags.outputs) == 0 {
+		return nil
+	}
+	c.Print("flags.importDirs: ", c.flags.importDirs)
+	c.Print("flags.macros: ", c.flags.macros)
+	c.Print("flags.outputs: ", c.flags.outputs)
+	c.Print("flags.templates: ", c.flags.templates)
+	c.Print("flags.types: ", c.flags.types)
+
+	// Check whether the template directory exists for each language
+	for lang := range c.flags.outputs {
+		tmplDir := c.flags.templates[lang]
+		if _, err := os.Stat(tmplDir); err != nil {
+			if os.IsNotExist(err) {
+				return fmt.Errorf("template directory for %q not found: %q", lang, tmplDir)
+			}
+			return fmt.Errorf("failed to check template directory for %q: %v", lang, err)
+		}
+	}
+
+	// Load all types from all types files
+	searchDirs := c.searchDirs
+	m := make(flags.Map)
+	for lang := range c.flags.outputs {
+		if err := c.loadTypes(m, searchDirs, lang); err != nil {
+			return err
+		}
+	}
+	for k, v := range c.flags.types {
+		m[k] = v
+	}
+	c.flags.types = m
+	if c.IsDebugEnabled() {
+		for _, k := range slices.Sorted(maps.Keys(m)) {
+			c.Printf("types[%q] = %q", k, m[k])
+		}
+	}
+
+	// Generate files for each language
+	for lang, dir := range c.flags.outputs {
+		ext := op.Or(c.flags.types[lang+".ext"], "."+lang)
+		tempDir := c.flags.templates[lang]
+		if err := c.generateForTemplateDir(lang, ext, dir, tempDir); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (c *Context) loadTypes(m flags.Map, dirs []string, lang string) error {
@@ -166,53 +167,36 @@ func (c *Context) generateForTemplateFile(lang, ext, dir, tmplFile string) error
 	}
 	delete(meta, "this")
 
+	tctx := templateContext{
+		context: c,
+		lang:    lang,
+		dir:     dir,
+		ext:     ext,
+	}
+
 	switch strings.ToLower(objType) {
 	case "package":
-		return generateForPackage(&templateContext[*Package]{
-			context: c,
-			lang:    lang,
-			dir:     dir,
-			ext:     ext,
-		}, tmplFile, string(content), meta)
+		return generateForPackage(newTemplateData[*Package](tctx), tmplFile, string(content), meta)
 
 	case "file":
-		return generateForFile(&templateContext[*File]{
-			context: c,
-			lang:    lang,
-			dir:     dir,
-			ext:     ext,
-		}, tmplFile, string(content), meta)
+		return generateForFile(newTemplateData[*File](tctx), tmplFile, string(content), meta)
 
 	case "const":
-		return generateForSpec(&templateContext[*ValueSpec]{
-			context: c,
-			lang:    lang,
-			dir:     dir,
-			ext:     ext,
-		}, tmplFile, string(content), meta)
+		return generateForSpec(newTemplateData[*ValueSpec](tctx), tmplFile, string(content), meta)
 
 	case "enum":
-		return generateForSpec(&templateContext[*EnumType]{
-			context: c,
-			lang:    lang,
-			dir:     dir,
-			ext:     ext,
-		}, tmplFile, string(content), meta)
+		return generateForSpec(newTemplateData[*EnumType](tctx), tmplFile, string(content), meta)
 
 	case "struct":
-		return generateForSpec(&templateContext[*StructType]{
-			context: c,
-			lang:    lang,
-			dir:     dir,
-			ext:     ext,
-		}, tmplFile, string(content), meta)
+		return generateForSpec(newTemplateData[*StructType](tctx), tmplFile, string(content), meta)
+
 	default:
 		return fmt.Errorf(`unknown value for 'this': %q, expected "package", "file", "const", "enum" or "struct"`, objType)
 	}
 }
 
-func generateForPackage(tc *templateContext[*Package], file, content string, meta templateMeta[string]) error {
-	t, mt, err := createTemplates(file, content, meta, tc.funcs())
+func generateForPackage(tc *templateData[*Package], file, content string, meta templateMeta[string]) error {
+	t, mt, err := createTemplates(file, content, meta, tc.funcs)
 	if err != nil {
 		return err
 	}
@@ -225,8 +209,8 @@ func generateForPackage(tc *templateContext[*Package], file, content string, met
 	return nil
 }
 
-func generateForFile(tc *templateContext[*File], file, content string, meta templateMeta[string]) error {
-	t, mt, err := createTemplates(file, content, meta, tc.funcs())
+func generateForFile(tc *templateData[*File], file, content string, meta templateMeta[string]) error {
+	t, mt, err := createTemplates(file, content, meta, tc.funcs)
 	if err != nil {
 		return err
 	}
@@ -239,8 +223,8 @@ func generateForFile(tc *templateContext[*File], file, content string, meta temp
 	return nil
 }
 
-func generateForSpec[T Object](tc *templateContext[T], file, content string, meta templateMeta[string]) error {
-	t, mt, err := createTemplates(file, content, meta, tc.funcs())
+func generateForSpec[T Object](tc *templateData[T], file, content string, meta templateMeta[string]) error {
+	t, mt, err := createTemplates(file, content, meta, tc.funcs)
 	if err != nil {
 		return err
 	}
@@ -262,7 +246,12 @@ func generateForSpec[T Object](tc *templateContext[T], file, content string, met
 
 // gen generates a file using the given template, meta data, and object which may be a
 // package, file, const, enum or struct.
-func gen[T Object](tc *templateContext[T], t *template.Template, mt templateMeta[*template.Template]) error {
+func gen[T Object](tc *templateData[T], t *template.Template, mt templateMeta[*template.Template]) error {
+	tc.entrypoint = t
+	if err := tc.init(); err != nil {
+		return err
+	}
+
 	meta, err := resolveMeta(mt, tc)
 	if err != nil {
 		return err

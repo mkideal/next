@@ -66,6 +66,8 @@ func newImportSpec(ctx *Context, _ *File, decl *Decl, src *ast.ImportSpec) *Impo
 	return i
 }
 
+func (i *ImportSpec) nodeType() string { return "import" }
+
 func (i *ImportSpec) Pos() token.Pos { return i.pos }
 
 func (i *ImportSpec) String() string { return i.Path }
@@ -114,6 +116,13 @@ func newValueSpec(_ *Context, _ *File, decl *Decl, src *ast.ValueSpec) *ValueSpe
 	return v
 }
 
+func (v *ValueSpec) nodeType() string {
+	if v.enum.typ != nil {
+		return "enum.member"
+	}
+	return "const"
+}
+
 func (v *ValueSpec) Pos() token.Pos { return v.pos }
 
 func (v *ValueSpec) Decl() *Decl { return v.decl }
@@ -123,6 +132,10 @@ func (v *ValueSpec) String() string {
 		return v.name + "=" + v.value.String()
 	}
 	return v.name + "=?"
+}
+
+func (v *ValueSpec) Enum() *EnumType {
+	return v.enum.typ
 }
 
 func (v *ValueSpec) Name() string {
@@ -240,6 +253,8 @@ func newField(_ *Context, src *ast.Field) *Field {
 	return f
 }
 
+func (f *Field) nodeType() string { return "struct.field" }
+
 func (f *Field) Pos() token.Pos { return f.pos }
 
 func (f *Field) resolve(ctx *Context, file *File, _ Scope) {
@@ -260,6 +275,8 @@ type StructType struct {
 	Annotations  AnnotationGroup
 	Fields       []*Field
 }
+
+func (s *StructType) nodeType() string { return "struct" }
 
 func (s *StructType) Name() string   { return s.name }
 func (s *StructType) String() string { return s.name }
@@ -325,6 +342,9 @@ func newEnumType(ctx *Context, file *File, decl *Decl, src *ast.TypeSpec, t *ast
 	return e
 }
 
+func (e *EnumType) nodeType() string { return "enum" }
+func (*EnumType) Pos() token.Pos     { return 0 }
+
 func (e *EnumType) Name() string { return e.name }
 
 func (e *EnumType) Decl() *Decl { return e.decl }
@@ -339,8 +359,6 @@ func (e *EnumType) resolve(ctx *Context, file *File, scope Scope) {
 func (*EnumType) typeNode() {}
 
 func (e *EnumType) String() string { return e.name }
-
-func (*EnumType) Pos() token.Pos { return 0 }
 
 func (*EnumType) Kind() Kind   { return Enum }
 func (*EnumType) IsEnum() bool { return true }

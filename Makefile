@@ -69,7 +69,7 @@ test/src: go/generate go/vet
 	@go test -v ./...
 
 .PHONY: test/template
-test/template:
+test/template: install
 	@echo "Running template tests..."
 	@next -O go=testdata/gen/go -T go=testdata/templates/go testdata/a.next testdata/b.next
 	@next -O go=testdata/gen/go/c -T go=testdata/templates/go testdata/c.next

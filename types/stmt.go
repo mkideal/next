@@ -33,6 +33,8 @@ func newCallStmt(_ *Context, _ *File, call *ast.CallExpr) *CallStmt {
 	return &CallStmt{pos: call.Pos(), CallExpr: call}
 }
 
+func (*CallStmt) nodeType() string { return "stmt.call" }
+
 func (s *CallStmt) resolve(ctx *Context, file *File) {
 	fun := ast.Unparen(s.CallExpr.Fun)
 	ident, ok := fun.(*ast.Ident)

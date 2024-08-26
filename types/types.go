@@ -10,6 +10,7 @@ import (
 // Node represents a Next AST node.
 type Node interface {
 	Pos() token.Pos
+	nodeType() string
 }
 
 func splitSymbolName(name string) (ns, sym string) {
@@ -146,6 +147,8 @@ type BasicType struct {
 	kind Kind
 }
 
+func (b *BasicType) nodeType() string { return b.name }
+
 func (*BasicType) typeNode()        {}
 func (b *BasicType) String() string { return b.name }
 func (b *BasicType) Kind() Kind     { return b.kind }
@@ -184,7 +187,8 @@ type ArrayType struct {
 	N        uint64
 }
 
-func (*ArrayType) typeNode() {}
+func (*ArrayType) nodeType() string { return "array" }
+func (*ArrayType) typeNode()        {}
 
 func (a *ArrayType) String() string {
 	return "array<" + a.ElemType.String() + "," + strconv.FormatUint(a.N, 10) + ">"
@@ -200,7 +204,8 @@ type VectorType struct {
 	ElemType Type
 }
 
-func (*VectorType) typeNode() {}
+func (*VectorType) nodeType() string { return "vector" }
+func (*VectorType) typeNode()        {}
 
 func (v *VectorType) String() string {
 	return "vector<" + v.ElemType.String() + ">"
@@ -217,7 +222,8 @@ type MapType struct {
 	ElemType Type
 }
 
-func (*MapType) typeNode() {}
+func (*MapType) nodeType() string { return "map" }
+func (*MapType) typeNode()        {}
 
 func (m *MapType) String() string {
 	return "map<" + m.KeyType.String() + "," + m.ElemType.String() + ">"

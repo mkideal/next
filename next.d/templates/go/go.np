@@ -1,0 +1,57 @@
+{{- define "next.go.package"}}
+{{- template ".next.go.range" . -}}
+{{- end}}
+
+{{- define "next.go.file"}}
+{{- template ".next.go.range" . -}}
+{{- end}}
+
+{{- define "next.go.imports"}}
+import "x"
+import "y"
+{{- end}}
+
+{{- define ".next.go.range" -}}
+package {{.Package}}
+{{render "go.imports" .}}
+{{range .Consts}}
+{{next . -}}
+{{- end}}
+{{range $i, $e := .Enums}}
+{{if $i}}{{print "\n"}}{{end}}{{next . -}}
+{{- end}}
+{{range $i, $s := .Structs}}
+{{if $i}}{{print "\n"}}{{end}}{{next . -}}
+{{- end}}
+{{- end}}
+{{- define "next.go.const" -}}
+{{.Doc.Text}}const {{.Name}} = {{.Value}}{{.Comment.Text}}
+{{- end}}
+
+{{- define "next.go.enum" -}}
+{{- $this := . -}}
+{{$this.Doc.Text}}type {{$this.Name}} int
+
+const (
+{{- range $this.Members}}
+    {{next . -}}
+{{- end}}
+)
+{{- end}}
+
+{{- define "next.go.enum.member" -}}
+{{.Doc.Text}}{{.Enum.Name}}_{{.Name}} = {{.Value}}{{.Comment.Text}}
+{{- end}}
+
+{{- define "next.go.struct" -}}
+{{- $this := . -}}
+{{$this.Doc.Text}}type {{$this.Name}} struct {
+{{- range $this.Fields}}
+    {{next . -}}
+{{- end}}
+}
+{{- end}}
+
+{{- define "next.go.struct.field" -}}
+{{.Doc.Text}}{{.Name | camelCase | capitalize}} {{type .Type}}{{.Comment.Text}}
+{{- end}}

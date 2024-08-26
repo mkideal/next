@@ -47,18 +47,23 @@ type Context struct {
 
 	// trace is the current position for call expression
 	trace []token.Pos
+
+	// searchDirs is a list of search directories
+	searchDirs []string
 }
 
 func NewContext() *Context {
 	c := &Context{
-		fset:    token.NewFileSet(),
-		files:   make(map[string]*File),
-		symbols: make(map[string]Symbol),
+		fset:       token.NewFileSet(),
+		files:      make(map[string]*File),
+		symbols:    make(map[string]Symbol),
+		searchDirs: createSearchDirs(),
 	}
 	c.flags.macros = make(flags.Map)
 	c.flags.outputs = make(flags.Map)
 	c.flags.templates = make(flags.Map)
 	c.flags.types = make(flags.Map)
+
 	return c
 }
 
@@ -67,7 +72,7 @@ func (c *Context) SetupCommandFlags(fs *flag.FlagSet, u flags.UsageFunc) {
 	fs.Var(&c.flags.importDirs, "I", u("Add import directories as `dir[,dir2,...]`, e.g. -I dir1 -I dir2 or -I dir1,dir2"))
 	fs.Var(&c.flags.macros, "D", u("Define macro variables as `name[=value]`, e.g. -D A=\"hello next\" -D X=hello -D Y=1 -D Z"))
 	fs.Var(&c.flags.outputs, "O", u("Specify output directories as `lang=dir`, e.g. -O go=gen/go -O ts=gen/ts"))
-	fs.Var(&c.flags.templates, "T", u("Provide template directories or files as `lang=dir|file`, e.g. -T go=tmpl/go -T ts=tmpl/ts.nxp"))
+	fs.Var(&c.flags.templates, "T", u("Provide template directories or files as `lang=dir|file`, e.g. -T go=tmpl/go -T ts=tmpl/ts.np"))
 	fs.Var(&c.flags.types, "M", u("Set type mappings as `lang.type=value`, e.g. -M cpp.int=int64_t -M cpp.map<%K%,%V%>=std::map<%K%,%V%>"))
 }
 

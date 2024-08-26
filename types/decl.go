@@ -26,6 +26,10 @@ func newDecl(ctx *Context, file *File, src *ast.GenDecl) *Decl {
 	return d
 }
 
+func (d *Decl) nodeType() string {
+	return "decl." + d.Tok.String()
+}
+
 func (d *Decl) Pos() token.Pos { return d.pos }
 
 func (d *Decl) resolve(ctx *Context, file *File, scope Scope) {
