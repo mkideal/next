@@ -1,4 +1,7 @@
 # Swift
+ext=.swift
+comment(%S%)=// %S%
+
 int=Int
 int8=Int8
 int16=Int16

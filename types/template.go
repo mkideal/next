@@ -3,7 +3,6 @@ package types
 import (
 	"bytes"
 	"fmt"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -12,36 +11,92 @@ import (
 	"github.com/gopherd/next/internal/templateutil"
 )
 
-// TemplateMeta represents the meta data of a template.
+// metaValue represents a metadata value with the line number where it was defined.
+type metaValue[T any] struct {
+	content T
+	line    int
+}
+
+func (m *metaValue[T]) value() T {
+	var zero T
+	if m == nil {
+		return zero
+	}
+	return m.content
+}
+
+// templateMeta represents the meta data of a template.
 // It is used to generate the header of the generated file.
-type TemplateMeta map[string]string
+type templateMeta[T any] map[string]*metaValue[T]
 
 // Get returns the value of the given key.
-func (m TemplateMeta) Get(key string) string {
+func (m templateMeta[T]) Get(key string) *metaValue[T] {
+	if m == nil {
+		return nil
+	}
 	return m[key]
 }
 
-// parseMetadata extracts metadata from the content and returns the parsed metadata
+// resolveMeta resolves the metadata values by executing the metadata templates with the given data.
+func resolveMeta[T Object](metaTemplates templateMeta[*template.Template], data *templateContext[T]) (templateMeta[string], error) {
+	if metaTemplates == nil {
+		return nil, nil
+	}
+	meta := make(templateMeta[string])
+	for k, t := range metaTemplates {
+		v, err := executeTemplate(t.content, data)
+		if err != nil {
+			return nil, fmt.Errorf("failed to execute template %q: %v", v, err)
+		}
+		switch k {
+		case "overwrite":
+			if v != "true" && v != "false" {
+				return nil, fmt.Errorf("invalid value %q for meta key %q, expected true or false", v, k)
+			}
+		}
+		meta[k] = &metaValue[string]{
+			content: v,
+			line:    t.line,
+		}
+	}
+	return meta, nil
+}
+
+// parseMeta extracts metadata from the content and returns the parsed metadata
 // along with the modified content (with a simple metadata placeholder).
 //
 // The metadata is expected to be in the following format:
+//
 // {{/*
-// name: <name>
-// ignore: <true|false>
-// authors: <author1>,<author2>,...
-// date: <date>
+// # 'this' represents the type of the object to be generated,
+// # default is 'file'
+// this: [package|file|const|enum|struct]
+//
+// # 'path' represents the output path of the generated file,
+// # default is the object name with the current extension
+// path: [relative/path/to/generated/file|/absolute/path/to/generated/file]
+//
+// # 'skip' represents whether to skip generating the file,
+// # default is false
+// skip: [true|false]
+//
+// # 'overwrite' represents whether to overwrite the existing file,
+// # default is true
+// overwrite: [true|false]
+//
+// # and other custom metadata key-value pairs
+// # ...
 // */}}
 //
 // Example:
 // {{/*
-// name: {{.Name}}.go
-// ignore: {{eq "Test" .Name}}
-// authors: gopherd, next
-// date: 2024-01-01
+// this: file
+// path: {{this.Package}}/{{this.Name}}.next.go
+// skip: {{eq "Test" this.Name}}
 // */}}
-// parseMetadata extracts metadata from the content and returns the parsed metadata
+// parseMeta extracts metadata from the content and returns the parsed metadata
 // along with the modified content (with metadata replaced by placeholder and empty lines).
-func parseMetadata(content string) (TemplateMeta, string, error) {
+func parseMeta(content string) (templateMeta[string], string, error) {
 	startIndex := strings.Index(content, "{{/*")
 	endIndex := strings.Index(content, "*/}}")
 
@@ -50,13 +105,13 @@ func parseMetadata(content string) (TemplateMeta, string, error) {
 	}
 
 	metaContent := content[startIndex+4 : endIndex]
-	meta := make(TemplateMeta)
+	meta := make(templateMeta[string])
 
 	// Parse metadata
 	lines := strings.Split(metaContent, "\n")
-	for _, line := range lines {
+	for i, line := range lines {
 		line = strings.TrimSpace(line)
-		if line == "" {
+		if line == "" || line[0] == '#' {
 			continue
 		}
 		key, value, err := parseMetaLine(line)
@@ -67,7 +122,10 @@ func parseMetadata(content string) (TemplateMeta, string, error) {
 			if _, exists := meta[key]; exists {
 				return nil, content, fmt.Errorf("duplicate meta key %q", key)
 			}
-			meta[key] = value
+			meta[key] = &metaValue[string]{
+				content: value,
+				line:    i + 1,
+			}
 		}
 	}
 
@@ -106,31 +164,23 @@ func parseMetaLine(line string) (string, string, error) {
 	return key, value, nil
 }
 
-// parseTemplateFilename extracts the extension and object type from a template filename.
-// Format: [[<name>.]<ext>.]<object_type>.nxp
-// Examples: struct.nxp, hpp.struct.nxp, demo.hpp.struct.nxp
-func parseTemplateFilename(filename string) (extension, objectType string, err error) {
-	filename = filepath.Base(filename)
-	parts := strings.Split(filename, ".")
-
-	if len(parts) < 2 || parts[len(parts)-1] != templateExt[1:] {
-		return "", "", fmt.Errorf("invalid filename %q: must end with %s", filename, templateExt)
+func createTemplates(file, content string, meta templateMeta[string], funcs template.FuncMap) (*template.Template, templateMeta[*template.Template], error) {
+	t, err := createTemplate(file, content, funcs)
+	if err != nil {
+		return nil, nil, err
 	}
-
-	// Remove the .nxp part
-	parts = parts[:len(parts)-1]
-
-	objectType = parts[len(parts)-1]
-	if len(parts) > 1 {
-		extension = parts[len(parts)-2]
+	mt := make(templateMeta[*template.Template])
+	for k, v := range meta {
+		tt, err := createTemplate(k, v.content, funcs)
+		if err != nil {
+			return nil, nil, err
+		}
+		mt[k] = &metaValue[*template.Template]{
+			content: tt,
+			line:    v.line,
+		}
 	}
-
-	switch objectType {
-	case "package", "file", "const", "enum", "struct":
-		return extension, objectType, nil
-	default:
-		return "", "", fmt.Errorf("invalid object type %q in %q, expected: package, file, struct, enum, or const", objectType, filename)
-	}
+	return t, mt, nil
 }
 
 // createTemplate creates a new template from the given content.
@@ -147,38 +197,172 @@ func executeTemplate(t *template.Template, data any) (string, error) {
 	return buf.String(), nil
 }
 
-// TemplateMeta is a map of key-value pairs used in templates.
-type TemplateData[T Object] struct {
+// templateContext represents the context of a template.
+type templateContext[T Object] struct {
 	context *Context
-	obj     T
-	dir     string
-	ext     string
-	lang    string
 
+	lang string // current language
+	dir  string // output directory for current language
+	ext  string // file extension for current language
+
+	// current object to be rendered: Package, File, ValueSpec, EnumType, StructType
+	obj T
+
+	// cache for resolved types for current language: Type -> string
 	types sync.Map
-
-	Meta TemplateMeta
 }
 
-func (d *TemplateData[T]) funcs() template.FuncMap {
+func (tc *templateContext[T]) funcs() template.FuncMap {
 	return template.FuncMap{
-		"this":   d.this,
-		"typeof": d.typeof,
+		"this":   tc.this,
+		"typeof": tc.typeof,
+		"head":   tc.head,
+		"next":   tc.next,
 	}
 }
 
-func (d *TemplateData[T]) this() T {
-	return d.obj
+// @api(context): this
+// `this` returns the current [object](#Object) to be rendered.
+//
+// Example:
+// > ```
+// > {{this.Package}}
+// > {{this.Name}}
+// > ```
+func (tc *templateContext[T]) this() T {
+	return tc.obj
 }
 
-func (d *TemplateData[T]) typeof(t Type) (string, error) {
-	if v, ok := d.types.Load(t); ok {
+// @api(context): typeof (Type)
+// `typeof` outputs the string representation of the given [type](#Type) for the current language.
+//
+// Example:
+//
+// ```
+// {{/*
+// this: struct
+// */}}
+//
+// {{range this.Fields}}
+// {{typeof .Type}}
+// {{end}}
+// ```
+//
+// Output (for c++):
+//
+// ```
+// int
+// std::string
+// std::map<std::string,int>
+// ```
+func (tc *templateContext[T]) typeof(t Type) (string, error) {
+	if v, ok := tc.types.Load(t); ok {
 		return v.(string), nil
 	}
-	v, err := resolveLangType(d.context.flags.types, d.lang, t)
+	v, err := resolveLangType(tc.context.flags.types, tc.lang, t)
 	if err != nil {
 		return "", err
 	}
-	d.types.Store(t, v)
+	tc.types.Store(t, v)
 	return v, nil
+}
+
+// @api(context): head
+// `head` outputs the header of the generated file.
+//
+// Example:
+//
+// ```
+// {{head}}
+// ```
+//
+// Output (for c++):
+// ```
+// // Auto-generated by "next", DO NOT EDIT.
+// ```
+//
+// Output (for c):
+// ```
+// /* Auto-generated by "next", DO NOT EDIT. */
+// ```
+func (tc *templateContext[T]) head() string {
+	p, ok := tc.context.flags.types[tc.lang+".comment(%S%)"]
+	if !ok {
+		return ""
+	}
+	return strings.ReplaceAll(p, "%S%", `Auto-generated by "next", DO NOT EDIT.`)
+}
+
+// @api(context): next (value, options...)
+// next executes the next template with the given object and [options](#Options) as key=value pairs.
+//
+// Example:
+//
+// ```
+// {{/*
+// this: struct
+// */}}
+//
+// {{next this "key1=value1" "key2=value2"}}
+//
+// {{range this.Fields}}
+// {{next .}}
+// {{end}}
+// ```
+func (tc *templateContext[T]) next(value any, options ...string) (result any, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			if e, ok := r.(error); ok {
+				err = e
+			} else {
+				err = fmt.Errorf("%v", r)
+			}
+		}
+	}()
+	switch v := value.(type) {
+	case *Package:
+		return tc.nextPackage(v, options...)
+	case *File:
+		return tc.nextFile(v, options...)
+	case *Decl:
+		return tc.nextDecl(v, options...)
+	case *ValueSpec:
+		return tc.nextValueSpec(v, options...)
+	case *EnumType:
+		return tc.nextEnumType(v, options...)
+	case *StructType:
+		return tc.nextStructType(v, options...)
+	case *Field:
+		return tc.nextField(v, options...)
+	default:
+		return nil, fmt.Errorf("unsupported object type %T", value)
+	}
+}
+
+func (tc *templateContext[T]) nextPackage(pkg *Package, options ...string) (any, error) {
+	return nil, nil
+}
+
+func (tc *templateContext[T]) nextFile(file *File, options ...string) (any, error) {
+	return nil, nil
+}
+
+func (tc *templateContext[T]) nextDecl(decl *Decl, options ...string) (any, error) {
+	return nil, nil
+}
+
+func (tc *templateContext[T]) nextValueSpec(spec *ValueSpec, options ...string) (any, error) {
+	return nil, nil
+}
+
+func (tc *templateContext[T]) nextEnumType(enum *EnumType, options ...string) (any, error) {
+	return nil, nil
+}
+
+func (tc *templateContext[T]) nextStructType(strct *StructType, options ...string) (any, error) {
+	return nil, nil
+}
+
+func (tc *templateContext[T]) nextField(field *Field, options ...string) (any, error) {
+	return nil, nil
 }

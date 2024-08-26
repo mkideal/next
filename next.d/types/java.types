@@ -1,4 +1,7 @@
 # Java
+ext=.java
+comment(%S%)=// %S%
+
 int=int
 int8=byte
 int16=short

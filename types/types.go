@@ -83,16 +83,16 @@ func expectValueSymbol(name string, s Symbol) (*ValueSpec, error) {
 
 // Object represents a Next AST node which may be a package, file, const, enum or struct to be generated.
 type Object interface {
-	objectType()
+	objectType() token.Token
 	Package() string
 	Name() string
 }
 
-func (*Package) objectType()    {}
-func (*File) objectType()       {}
-func (*ValueSpec) objectType()  {}
-func (*EnumType) objectType()   {}
-func (*StructType) objectType() {}
+func (*Package) objectType() token.Token     { return token.PACKAGE }
+func (*File) objectType() token.Token        { return token.FILE }
+func (v *ValueSpec) objectType() token.Token { return v.decl.Tok }
+func (*EnumType) objectType() token.Token    { return token.ENUM }
+func (*StructType) objectType() token.Token  { return token.STRUCT }
 
 func (p *Package) Package() string    { return p.name }
 func (f *File) Package() string       { return f.pkg }

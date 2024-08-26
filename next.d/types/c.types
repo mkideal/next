@@ -1,4 +1,7 @@
 # C
+ext=.h
+comment(%S%)=/* %S% */
+
 int=int32_t
 int8=int8_t
 int16=int16_t
@@ -11,5 +14,5 @@ string=char*
 byte=uint8_t
 bytes=uint8_t*
 array<%T%,%N%>=%T%[%N%]
-# map<%K%,%V%>=// Custom implementation required
-# vector<%T%>=// Custom implementation required
+# map<%K%,%V%>=<c.map: not supported>
+# vector<%T%>=<c.vector: not supported>

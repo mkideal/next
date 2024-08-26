@@ -1,4 +1,7 @@
 # TypeScript
+ext=.ts
+comment(%S%)=// %S%
+
 int=number
 int8=number
 int16=number

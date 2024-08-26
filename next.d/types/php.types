@@ -1,4 +1,7 @@
 # PHP
+ext=.php
+comment(%S%)=// %S%
+
 int=int
 int8=int
 int16=int

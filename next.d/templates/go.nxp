@@ -1,0 +1,39 @@
+{{/* go templates */}}
+
+{{define "go.package"}}
+{{end}}
+
+{{define "go.file"}}
+{{end}}
+
+{{define "go.decl"}}
+{{end}}
+
+{{define "go.const"}}
+{{.Doc}}const {{.Name}} = {{.Value}}{{.Comment}}
+{{end}}
+
+{{define "go.enum"}}
+{{- $this := .this}}
+{{- $options := .options}}
+{{$this.Doc}}type {{$this.Name}} int
+const (
+    {{- range $this.Members}}
+    {{.Doc}}{{$this.Name}}_{{.Name}} = {{.Value}}{{.Comment}}
+    {{- end}}
+)
+{{end}}
+
+{{define "go.struct"}}
+{{- $this := .this}}
+{{- $options := .options}}
+{{$this.Doc}}type {{$this.Name}} struct {
+    {{- range $this.Fields}}
+    {{.Doc}}{{.Name}} {{typeof .Type}}{{.Comment}}
+    {{- end}}
+}
+{{end}}
+
+{{define "go.field"}}
+{{.this.Doc}}{{.this.Name}} {{typeof .this.Type}}{{.this.Comment}}
+{{end}}

@@ -1,4 +1,7 @@
 # C#
+ext=.cs
+comment(%S%)=// %S%
+
 int=int
 int8=sbyte
 int16=short

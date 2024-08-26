@@ -1,6 +1,12 @@
 {{/*
-file: {{this.Name}}.gen.go
+this: file
+path: {{this.Package}}/{{this.Name}}.next.go
+skip: {{eq "test" this.Name}}
+time: 2024-08-25T23:39:46Z0800
 */}}
+{{head}}
+
+{{next}}
 
 package {{this.Package}}
 

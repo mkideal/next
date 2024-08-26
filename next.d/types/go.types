@@ -1,4 +1,7 @@
 # Go
+ext=.go
+comment(%S%)=// %S%
+
 int=int
 int8=int8
 int16=int16

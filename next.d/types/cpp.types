@@ -1,4 +1,7 @@
 # C++
+ext=.h
+comment(%S%)=// %S%
+
 int=int
 int8=int8_t
 int16=int16_t

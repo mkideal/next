@@ -1,4 +1,7 @@
 # Rust
+ext=.rust
+comment(%S%)=// %S%
+
 int=i32
 int8=i8
 int16=i16

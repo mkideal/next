@@ -63,6 +63,17 @@ release: go/generate go/vet
 	$(call release_cmd,linux,arm64)
 	$(call release_cmd,linux,386)
 
+.PHONY: test/src
+test/src: go/generate go/vet
+	@echo "Running tests..."
+	@go test -v ./...
+
+.PHONY: test/template
+test/template:
+	@echo "Running template tests..."
+	@next -O go=testdata/gen/go -T go=testdata/templates/go testdata/a.next testdata/b.next
+	@next -O go=testdata/gen/go/c -T go=testdata/templates/go testdata/c.next
+
 .PHONY: clean
 clean:
 	@if [ -d ${BUILD_DIR} ]; then rm -r ${BUILD_DIR}; fi

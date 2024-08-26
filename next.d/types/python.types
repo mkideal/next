@@ -1,4 +1,7 @@
 # Python
+ext=.py
+comment(%S%)=# %S%
+
 int=int
 int8=int
 int16=int
