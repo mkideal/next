@@ -312,14 +312,14 @@ func (c *Context) resolveAnnotationGroup(file *File, annotations *ast.Annotation
 				value = c.resolveValue(file, p.Value, nil)
 			}
 			params[j] = &AnnotationParam{
-				Name:  name,
-				Value: value,
+				name:  name,
+				value: value,
 			}
 		}
 		list[i] = Annotation{
 			pos:    c.fset.Position(a.Pos()),
-			Name:   a.Name.Name,
-			Params: params,
+			name:   a.Name.Name,
+			params: params,
 		}
 	}
 	return &AnnotationGroup{

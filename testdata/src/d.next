@@ -19,3 +19,5 @@ struct User {
     map<string, string> metadata;
     array<int, A+3> scores;
 }
+
+struct Empty {}

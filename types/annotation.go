@@ -26,21 +26,32 @@ var (
 // @message("Login", type=100)
 // ```
 type AnnotationParam struct {
-	Name  string
-	Value constant.Value
+	name  string
+	value constant.Value
+}
+
+func (a *AnnotationParam) Name() string {
+	return a.name
+}
+
+func (a *AnnotationParam) Value() constant.Value {
+	if a == nil {
+		return nil
+	}
+	return a.value
 }
 
 func (a *AnnotationParam) String() string {
 	if a == nil {
 		return ""
 	}
-	if a.Name != "" {
-		if a.Value == nil {
-			return a.Name
+	if a.name != "" {
+		if a.value == nil {
+			return a.name
 		}
-		return a.Name + "=" + a.Value.String()
+		return a.name + "=" + a.value.String()
 	}
-	return a.Value.String()
+	return a.value.String()
 }
 
 // @api(template/annotation) AnnotationParam.IsNamed
@@ -48,7 +59,7 @@ func (a *AnnotationParam) IsNamed() bool {
 	if a == nil {
 		return false
 	}
-	return a.Name != ""
+	return a.name != ""
 }
 
 // @api(template/annotation) AnnotationParam.HasValue
@@ -56,7 +67,7 @@ func (a *AnnotationParam) HasValue() bool {
 	if a == nil {
 		return false
 	}
-	return a.Value != nil
+	return a.value != nil
 }
 
 // @api(template/annotation) AnnotationParam.GetString
@@ -64,8 +75,8 @@ func (a *AnnotationParam) GetString() (string, error) {
 	if a == nil {
 		return "", ErrParamNotFound
 	}
-	if a.Value.Kind() == constant.String {
-		return strconv.Unquote(a.Value.String())
+	if a.value.Kind() == constant.String {
+		return strconv.Unquote(a.value.String())
 	}
 	return "", ErrUnpexpectedParamType
 }
@@ -75,8 +86,8 @@ func (a *AnnotationParam) GetInt() (int64, error) {
 	if a == nil {
 		return 0, ErrParamNotFound
 	}
-	if a.Value.Kind() == constant.Int {
-		return strconv.ParseInt(a.Value.String(), 10, 64)
+	if a.value.Kind() == constant.Int {
+		return strconv.ParseInt(a.value.String(), 10, 64)
 	}
 	return 0, ErrUnpexpectedParamType
 }
@@ -86,8 +97,8 @@ func (a *AnnotationParam) GetFloat() (float64, error) {
 	if a == nil {
 		return 0, ErrParamNotFound
 	}
-	if a.Value.Kind() == constant.Float {
-		return strconv.ParseFloat(a.Value.String(), 64)
+	if a.value.Kind() == constant.Float {
+		return strconv.ParseFloat(a.value.String(), 64)
 	}
 	return 0, ErrUnpexpectedParamType
 }
@@ -97,8 +108,8 @@ func (a *AnnotationParam) GetBool() (bool, error) {
 	if a == nil {
 		return false, ErrParamNotFound
 	}
-	if a.Value.Kind() == constant.Bool {
-		return strconv.ParseBool(a.Value.String())
+	if a.value.Kind() == constant.Bool {
+		return strconv.ParseBool(a.value.String())
 	}
 	return false, ErrUnpexpectedParamType
 }
@@ -107,14 +118,28 @@ func (a *AnnotationParam) GetBool() (bool, error) {
 // Annotation represents an annotation.
 type Annotation struct {
 	pos    token.Position
-	Name   string
-	Params []*AnnotationParam
+	name   string
+	params []*AnnotationParam
+}
+
+func (a *Annotation) Name() string {
+	return a.name
+}
+
+func (a *Annotation) Params() []*AnnotationParam {
+	if a == nil {
+		return nil
+	}
+	return a.params
 }
 
 // @api(template/annotation) Annotation.Contains
 func (a *Annotation) Contains(name string) bool {
-	for _, p := range a.Params {
-		if p.Name == name {
+	if a == nil {
+		return false
+	}
+	for _, p := range a.params {
+		if p.name == name {
 			return true
 		}
 	}
@@ -123,16 +148,22 @@ func (a *Annotation) Contains(name string) bool {
 
 // @api(template/annotation) Annotation.At
 func (a *Annotation) At(i int) *AnnotationParam {
-	if i < 0 || i >= len(a.Params) {
+	if a == nil {
 		return nil
 	}
-	return a.Params[i]
+	if i < 0 || i >= len(a.params) {
+		return nil
+	}
+	return a.params[i]
 }
 
 // @api(template/annotation) Annotation.Param
 func (a *Annotation) Param(name string) *AnnotationParam {
-	for _, p := range a.Params {
-		if p.Name == name {
+	if a == nil {
+		return nil
+	}
+	for _, p := range a.params {
+		if p.name == name {
 			return p
 		}
 	}
@@ -151,7 +182,7 @@ func (ag *AnnotationGroup) Contains(name string) bool {
 		return false
 	}
 	for _, a := range ag.list {
-		if a.Name == name {
+		if a.name == name {
 			return true
 		}
 	}
@@ -164,7 +195,7 @@ func (ag *AnnotationGroup) Lookup(name string) *Annotation {
 		return nil
 	}
 	for _, a := range ag.list {
-		if a.Name == name {
+		if a.name == name {
 			return &a
 		}
 	}

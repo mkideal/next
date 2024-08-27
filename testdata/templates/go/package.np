@@ -6,6 +6,12 @@ time: 2024-08-25T23:39:46Z0800
 */}}
 {{head}}
 
+{{- define "go.range.struct.fields"}}
+{{- template "next.go.range.struct.fields" .}}
+
+    userdata any
+{{- end}}
+
 {{- define "go.struct"}}
 {{- template "next.go.struct" .}}
 

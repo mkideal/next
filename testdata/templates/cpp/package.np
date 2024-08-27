@@ -1,0 +1,15 @@
+{{/*
+this: file
+path: {{this.Package}}/{{this.Name}}.next.h
+skip: {{eq "test" this.Name}}
+time: 2024-08-25T23:39:46Z0800
+*/}}
+{{head}}
+
+{{- define "cpp.range.struct.fields" -}}
+{{- template "next.cpp.range.struct.fields" .}}
+
+    std::string type() const { return "{{.Name}}"; }
+{{- end}}
+
+{{next this}}

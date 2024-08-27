@@ -89,10 +89,14 @@ const (
 
 {{- define "next.go.struct" -}}
 {{.Doc.Text}}type {{.Name}} struct {
+    {{- render "go.range.struct.fields" .}}
+}
+{{- end}}
+
+{{- define "next.go.range.struct.fields" -}}
 {{- range .Fields}}
     {{next . -}}
 {{- end}}
-}
 {{- end}}
 
 {{- define "next.go.struct.field" -}}

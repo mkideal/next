@@ -21,6 +21,46 @@ import (
 var Funcs = map[string]any{
 	// String functions
 
+	// @api(template/funcs) quote (s: string)
+	// `quote` returns a double-quoted string literal representing s.
+	// Special characters are escaped with backslashes.
+	//
+	// Example:
+	//
+	// ```
+	// {{quote "Hello, World!"}}
+	// ```
+	// or
+	// ```
+	// {{"Hello, World!" | quote}}
+	// ```
+	//
+	// Output:
+	// ```
+	// "Hello, World!"
+	// ```
+	"quote": strconv.Quote,
+
+	// @api(template/funcs) unquote (s: string)
+	// `unquote` interprets s as a double-quoted string literal and returns the string value that s represents.
+	// Special characters are unescaped.
+	//
+	// Example:
+	//
+	// ```
+	// {{unquote "\"Hello, World!\""}}
+	// ```
+	// or
+	// ```
+	// {{"\"Hello, World!\"" | unquote}}
+	// ```
+	//
+	// Output:
+	// ```
+	// Hello, World!
+	// ```
+	"unquote": strconv.Unquote,
+
 	// @api(template/funcs) capitalize (s: string)
 	// `capitalize` capitalizes the first character of the given string.
 	//
