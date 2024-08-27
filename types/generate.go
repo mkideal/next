@@ -175,9 +175,6 @@ func (c *Context) generateForTemplateFile(lang, ext, dir, tmplFile string) error
 	}
 
 	switch strings.ToLower(objType) {
-	case "package":
-		return generateForPackage(newTemplateData[*Package](tctx), tmplFile, string(content), meta)
-
 	case "file":
 		return generateForFile(newTemplateData[*File](tctx), tmplFile, string(content), meta)
 
@@ -191,22 +188,8 @@ func (c *Context) generateForTemplateFile(lang, ext, dir, tmplFile string) error
 		return generateForSpec(newTemplateData[*StructType](tctx), tmplFile, string(content), meta)
 
 	default:
-		return fmt.Errorf(`unknown value for 'this': %q, expected "package", "file", "const", "enum" or "struct"`, objType)
+		return fmt.Errorf(`unknown value for 'this': %q, expected "file", "const", "enum" or "struct"`, objType)
 	}
-}
-
-func generateForPackage(d *templateData[*Package], file, content string, meta templateMeta[string]) error {
-	t, mt, err := createTemplates(file, content, meta, d.funcs)
-	if err != nil {
-		return err
-	}
-	for _, pkg := range d.context.packages {
-		d.reset(pkg)
-		if err := gen(d, t, mt); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func generateForFile(d *templateData[*File], file, content string, meta templateMeta[string]) error {
@@ -245,7 +228,7 @@ func generateForSpec[T Node](d *templateData[T], file, content string, meta temp
 }
 
 // gen generates a file using the given template, meta data, and object which may be a
-// package, file, const, enum or struct.
+// file, const, enum or struct.
 func gen[T Node](d *templateData[T], t *template.Template, mt templateMeta[*template.Template]) error {
 	d.entrypoint = t
 	if err := d.init(); err != nil {

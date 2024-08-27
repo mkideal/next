@@ -56,6 +56,8 @@ func newImportSpec(ctx *Context, _ *File, decl *Decl, src *ast.ImportSpec) *Impo
 
 func (i *ImportSpec) String() string { return i.Path }
 
+func (i *ImportSpec) File() *File { return i.importedFile }
+
 func (i *ImportSpec) Decl() *Decl { return i.decl }
 
 func (i *ImportSpec) resolve(ctx *Context, file *File, _ Scope) {

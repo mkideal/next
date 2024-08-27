@@ -1,13 +1,7 @@
-{{- define "next.go.package" -}}
-package {{.Package}}
-{{next .Imports -}}
-{{render "go.range.specs" . -}}
-{{- end}}
-
 {{- define "next.go.file" -}}
 package {{.Package}}
 {{next .Imports -}}
-{{render "go.range.specs" . -}}
+{{render "go.specs" . -}}
 {{- end}}
 
 {{- define "next.go.imports" -}}
@@ -39,31 +33,31 @@ var _ = (*{{$p.Name}}.{{type (index ($p.Types) 0)}})(nil)
 {{- end}}
 {{- end}}
 
-{{- define "next.go.range.specs" -}}
+{{- define "next.go.specs" -}}
 {{- if .Consts -}}
-{{render "go.range.consts" .}}
+{{render "go.consts" .}}
 {{ end -}}
 {{- if .Enums -}}
-{{render "go.range.enums" .}}
+{{render "go.enums" .}}
 {{ end -}}
 {{- if .Structs -}}
-{{render "go.range.structs" .}}
+{{render "go.structs" .}}
 {{- end -}}
 {{- end }}
 
-{{- define "next.go.range.consts" -}}
+{{- define "next.go.consts" -}}
 {{range .Consts}}
 {{next . -}}
 {{- end}}
 {{- end}}
 
-{{- define "next.go.range.enums" -}}
+{{- define "next.go.enums" -}}
 {{range $i, $e := .Enums}}
 {{if $i}}{{print "\n"}}{{end}}{{next . -}}
 {{- end}}
 {{- end}}
 
-{{- define "next.go.range.structs" -}}
+{{- define "next.go.structs" -}}
 {{range $i, $s := .Structs}}
 {{if $i}}{{print "\n"}}{{end}}{{next . -}}
 {{- end}}
@@ -89,11 +83,11 @@ const (
 
 {{- define "next.go.struct" -}}
 {{.Doc.Text}}type {{.Name}} struct {
-    {{- render "go.range.struct.fields" .}}
+    {{- render "go.struct.fields" .}}
 }
 {{- end}}
 
-{{- define "next.go.range.struct.fields" -}}
+{{- define "next.go.struct.fields" -}}
 {{- range .Fields}}
     {{next . -}}
 {{- end}}

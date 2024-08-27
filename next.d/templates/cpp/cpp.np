@@ -1,17 +1,14 @@
-{{- define "next.cpp.package" -}}
-{{render "cpp.header" . -}}
-{{- end}}
-
 {{- define "next.cpp.file" -}}
 {{render "cpp.header" . -}}
 {{- end}}
 
 {{- define "next.cpp.header" -}}
 #pragma once
+
 {{next .Imports -}}
 {{render "cpp.namespace.begin" . -}}
 {{render "cpp.forward.declarations" . -}}
-{{render "cpp.range.specs" . -}}
+{{render "cpp.specs" . -}}
 {{render "cpp.namespace.end" . -}}
 {{- end}}
 
@@ -20,16 +17,21 @@
 #include <vector>
 #include <map>
 #include <cstdint>
-{{- range $p := .Packages}}
-{{- if len $p.Types}}
-#include "{{$p.Name}}.h"
+{{- if .Specs}}
+{{range $p := .Specs}}
+{{render "cpp.import" . -}}
 {{- end}}
 {{- end}}
+{{- end}}
+
+{{- define "next.cpp.import" -}}
+#include "{{.File.Name}}.next.h"
 {{- end}}
 
 {{- define "next.cpp.namespace.begin" -}}
 {{- $namespace := ((.Annotations.Lookup "next").Param "cpp_namespace").Value -}}
 {{- if $namespace}}
+
 namespace {{unquote $namespace.String}} {
 {{- end}}
 {{- end}}
@@ -37,17 +39,20 @@ namespace {{unquote $namespace.String}} {
 {{- define "next.cpp.namespace.end" -}}
 {{- $namespace := ((.Annotations.Lookup "next").Param "cpp_namespace").Value -}}
 {{- if $namespace}}
+
 } // namespace {{unquote $namespace.String}}
 {{- end}}
 {{- end}}
 
 {{- define "next.cpp.forward.declarations" -}}
 {{- if .Enums}}
+
 // Enums forward declarations
 {{- range .Enums}}
 enum class {{.Name}};
 {{- end}}
 {{- end}}
+
 {{- if .Structs}}
 
 // Classes forward declarations
@@ -55,34 +60,35 @@ enum class {{.Name}};
 class {{.Name}};
 {{- end}}
 {{- end}}
-
 {{- end}}
 
-{{- define "next.cpp.range.specs" -}}
-{{- if .Consts -}}
-{{render "cpp.range.consts" .}}
-{{ end -}}
-{{- if .Enums -}}
-{{render "cpp.range.enums" .}}
-{{ end -}}
-{{- if .Structs -}}
-{{render "cpp.range.structs" .}}
+{{- define "next.cpp.specs" -}}
+{{- if .Consts}}
+{{render "cpp.consts" .}}
+{{- end -}}
+
+{{- if .Enums}}
+{{render "cpp.enums" .}}
+{{- end -}}
+
+{{- if .Structs}}
+{{render "cpp.structs" .}}
 {{- end -}}
 {{- end }}
 
-{{- define "next.cpp.range.consts" -}}
+{{- define "next.cpp.consts" -}}
 {{range .Consts}}
 {{next . -}}
 {{- end}}
 {{- end}}
 
-{{- define "next.cpp.range.enums" -}}
+{{- define "next.cpp.enums" -}}
 {{range $i, $e := .Enums}}
 {{if $i}}{{print "\n"}}{{end}}{{next . -}}
 {{- end}}
 {{- end}}
 
-{{- define "next.cpp.range.structs" -}}
+{{- define "next.cpp.structs" -}}
 {{range $i, $s := .Structs}}
 {{if $i}}{{print "\n"}}{{end}}{{next . -}}
 {{- end}}
@@ -109,11 +115,11 @@ class {{.Name}};
 public:
     {{.Name}}() = default;
     ~{{.Name}}() = default;
-    {{render "cpp.range.struct.fields" .}}
+    {{render "cpp.struct.fields" .}}
 };
 {{- end}}
 
-{{- define "next.cpp.range.struct.fields" -}}
+{{- define "next.cpp.struct.fields" -}}
 {{- range .Fields}}
     {{next . -}}
 {{- end}}

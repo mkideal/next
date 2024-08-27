@@ -15,7 +15,6 @@ type Object interface {
 	ObjectType() string
 }
 
-func (p *Package) Pos() token.Pos    { return token.NoPos }
 func (f *File) Pos() token.Pos       { return f.pos }
 func (s *CallStmt) Pos() token.Pos   { return s.pos }
 func (i *Imports) Pos() token.Pos    { return op.If(len(i.Specs) == 0, token.NoPos, i.Specs[0].pos) }
@@ -29,7 +28,6 @@ func (m *MapType) Pos() token.Pos    { return m.pos }
 func (s *StructType) Pos() token.Pos { return s.pos }
 func (f *Field) Pos() token.Pos      { return f.pos }
 
-func (*Package) ObjectType() string     { return "package" }
 func (*File) ObjectType() string        { return "file" }
 func (*CallStmt) ObjectType() string    { return "stmt.call" }
 func (*Imports) ObjectType() string     { return "imports" }
@@ -43,20 +41,18 @@ func (*ArrayType) ObjectType() string   { return "array" }
 func (*VectorType) ObjectType() string  { return "vector" }
 func (*MapType) ObjectType() string     { return "map" }
 
-// Node represents a Next AST node which may be a package, file, const, enum or struct to be generated.
+// Node represents a Next AST node which may be a file, const, enum or struct to be generated.
 type Node interface {
 	Object
 	Package() string
 	Name() string
 }
 
-func (p *Package) Package() string    { return p.name }
 func (f *File) Package() string       { return f.pkg.name }
 func (e *EnumType) Package() string   { return e.decl.file.pkg.name }
 func (s *StructType) Package() string { return s.decl.file.pkg.name }
 func (v *ValueSpec) Package() string  { return v.decl.file.pkg.name }
 
-func (p *Package) Name() string    { return p.name }
 func (f *File) Name() string       { return strings.TrimSuffix(filepath.Base(f.Path), ".next") }
 func (s *StructType) Name() string { return s.name }
 func (e *EnumType) Name() string   { return e.name }

@@ -74,7 +74,7 @@ func resolveMeta[T Node](metaTemplates templateMeta[*template.Template], data *t
 // {{/*
 // # 'this' represents the type of the object to be generated,
 // # default is 'file'
-// this: [package|file|const|enum|struct]
+// this: [file|const|enum|struct]
 //
 // # 'path' represents the output path of the generated file,
 // # default is the object name with the current extension
@@ -214,7 +214,7 @@ type templateData[T Node] struct {
 
 	// buf is used to buffer the generated content.
 	buf bytes.Buffer
-	// current object to be rendered: Package, File, ValueSpec, EnumType, StructType
+	// current object to be rendered: File, ValueSpec, EnumType, StructType
 	obj T
 
 	// current entrypoint template
