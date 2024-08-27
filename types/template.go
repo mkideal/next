@@ -413,13 +413,13 @@ func (d *templateData[T]) lookupTemplate(name string, withNext bool) (*template.
 // {{next .}}
 // {{end}}
 // ```
-func (d *templateData[T]) next(obj Object, options ...string) (result string, err error) {
-	return d.render(fmt.Sprintf("%s.%s", d.lang, obj.ObjectType()), obj, options...)
+func (d *templateData[T]) next(obj Object) (string, error) {
+	return d.render(fmt.Sprintf("%s.%s", d.lang, obj.ObjectType()), obj)
 }
 
-// @api(template/context): render (name, data, options...)
+// @api(template/context): render (name, data)
 // render executes the template with the given name and data.
-func (d *templateData[T]) render(name string, data any, options ...string) (result string, err error) {
+func (d *templateData[T]) render(name string, data any) (result string, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			if e, ok := r.(error); ok {
