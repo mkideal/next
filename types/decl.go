@@ -1,9 +1,42 @@
 package types
 
 import (
+	"cmp"
+	"slices"
+
 	"github.com/gopherd/next/ast"
 	"github.com/gopherd/next/token"
 )
+
+// Imports represents a list of import specs
+type Imports struct {
+	Specs []*ImportSpec
+}
+
+func (i *Imports) resolve(ctx *Context, file *File) {
+	for _, spec := range i.Specs {
+		spec.importedFile = ctx.lookupFile(file.Path, spec.Path)
+		if spec.importedFile == nil {
+			ctx.addErrorf(spec.Pos(), "import file not found: %s", spec.Path)
+		}
+	}
+}
+
+func (i *Imports) Packages() []*Package {
+	var seen = make(map[string]bool)
+	var pkgs []*Package
+	for _, spec := range i.Specs {
+		if seen[spec.importedFile.pkg.name] {
+			continue
+		}
+		seen[spec.importedFile.pkg.name] = true
+		pkgs = append(pkgs, spec.importedFile.pkg)
+	}
+	slices.SortFunc(pkgs, func(a, b *Package) int {
+		return cmp.Compare(a.name, b.name)
+	})
+	return pkgs
+}
 
 // Decl represents a declaration: import, constant, enum, struct
 type Decl struct {

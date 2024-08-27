@@ -1,58 +1,100 @@
-{{- define "next.go.package"}}
-{{- template ".next.go.range" . -}}
-{{- end}}
-
-{{- define "next.go.file"}}
-{{- template ".next.go.range" . -}}
-{{- end}}
-
-{{- define "next.go.imports"}}
-import "x"
-import "y"
-{{- end}}
-
-{{- define ".next.go.range" -}}
+{{- define "next.go.package" -}}
 package {{.Package}}
-{{render "go.imports" .}}
+{{next .Imports -}}
+{{render "go.range.specs" . -}}
+{{- end}}
+
+{{- define "next.go.file" -}}
+package {{.Package}}
+{{next .Imports -}}
+{{render "go.range.specs" . -}}
+{{- end}}
+
+{{- define "next.go.imports" -}}
+{{render "go.imports.decl" . -}}
+{{render "go.imports.unused" . -}}
+{{- end}}
+
+{{- define "next.go.imports.decl" -}}
+{{- range $p := .Packages}}
+{{- if len $p.Types}}
+import {{$p.Name}} {{(($p.Annotations.Lookup "next").Param "go_package").Value -}}
+{{- end}}
+{{- end}}
+{{- end}}
+
+{{- define "next.go.imports.unused" -}}
+{{- $n := 0}}
+{{- range $p := .Packages}}
+{{- if len $p.Types}}
+{{- $n = (add ($n) 1)}}
+{{- end}}
+{{- end}}
+{{- if $n}}
+{{range $p := .Packages}}
+{{- if len $p.Types}}
+var _ = (*{{$p.Name}}.{{type (index ($p.Types) 0)}})(nil)
+{{- end}}
+{{- end}}
+{{- end}}
+{{- end}}
+
+{{- define "next.go.range.specs" -}}
+{{- if .Consts -}}
+{{render "go.range.consts" .}}
+{{ end -}}
+{{- if .Enums -}}
+{{render "go.range.enums" .}}
+{{ end -}}
+{{- if .Structs -}}
+{{render "go.range.structs" .}}
+{{- end -}}
+{{- end }}
+
+{{- define "next.go.range.consts" -}}
 {{range .Consts}}
 {{next . -}}
 {{- end}}
+{{- end}}
+
+{{- define "next.go.range.enums" -}}
 {{range $i, $e := .Enums}}
 {{if $i}}{{print "\n"}}{{end}}{{next . -}}
 {{- end}}
+{{- end}}
+
+{{- define "next.go.range.structs" -}}
 {{range $i, $s := .Structs}}
 {{if $i}}{{print "\n"}}{{end}}{{next . -}}
 {{- end}}
 {{- end}}
 
 {{- define "next.go.const" -}}
-{{.Doc.Text | align}}const {{.Name}} = {{.Value}}{{tailcomment .Comment.Text}}
+{{.Doc.Text | align}}const {{.Name}} = {{.Value}}{{alignEnd .Comment.Text}}
 {{- end}}
 
 {{- define "next.go.enum" -}}
-{{- $this := . -}}
-{{$this.Doc.Text | align}}type {{$this.Name}} int
+{{.Doc.Text | align}}type {{.Name}} int
 
 const (
-{{- range $this.Members}}
+{{- range .Members}}
     {{next . -}}
 {{- end}}
 )
 {{- end}}
 
 {{- define "next.go.enum.member" -}}
-{{.Doc.Text | align}}{{.Enum.Name}}_{{.Name}} = {{.Value}}{{tailcomment .Comment.Text}}
+{{.Doc.Text | align}}{{.Enum.Name}}_{{.Name}} = {{.Value}}{{alignEnd .Comment.Text}}
 {{- end}}
 
 {{- define "next.go.struct" -}}
-{{- $this := . -}}
-{{$this.Doc.Text}}type {{$this.Name}} struct {
-{{- range $this.Fields}}
+{{.Doc.Text}}type {{.Name}} struct {
+{{- range .Fields}}
     {{next . -}}
 {{- end}}
 }
 {{- end}}
 
 {{- define "next.go.struct.field" -}}
-{{.Doc.Text | align}}{{.Name | camelCase | capitalize}} {{type .Type}}{{tailcomment .Comment.Text}}
+{{.Doc.Text | align}}{{.Name | camelCase | capitalize}} {{type .Type}}{{alignEnd .Comment.Text}}
 {{- end}}

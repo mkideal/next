@@ -8,7 +8,7 @@ import (
 // File represents a Next source file.
 type File struct {
 	pos        token.Pos
-	pkg        string
+	pkg        *Package
 	unresolved struct {
 		annotations *ast.AnnotationGroup
 	}
@@ -19,7 +19,7 @@ type File struct {
 
 	decls   []*Decl
 	stmts   []Stmt
-	imports []*ImportSpec
+	imports *Imports
 
 	// all symbols used in current file:
 	// - values: constant, enum member
@@ -31,6 +31,7 @@ func newFile(ctx *Context, src *ast.File) *File {
 	file := &File{
 		pos:     src.Pos(),
 		Doc:     newCommentGroup(src.Doc),
+		imports: &Imports{},
 		symbols: make(map[string]Symbol),
 	}
 	file.unresolved.annotations = src.Annotations
@@ -68,7 +69,7 @@ func (f *File) Decls() []*Decl {
 
 func (f *File) Stmts() []Stmt { return f.stmts }
 
-func (f *File) Imports() []*ImportSpec { return f.imports }
+func (f *File) Imports() *Imports { return f.imports }
 
 func (f *File) Consts() []*ValueSpec {
 	var consts []*ValueSpec
@@ -133,7 +134,7 @@ func (f *File) createSymbols() (token.Pos, error) {
 		for _, s := range d.Specs {
 			switch s := s.(type) {
 			case *ImportSpec:
-				f.imports = append(f.imports, s)
+				f.imports.Specs = append(f.imports.Specs, s)
 			case *ValueSpec:
 				if err := f.addSymbol(s.name, s); err != nil {
 					return s.pos, err

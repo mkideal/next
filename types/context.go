@@ -97,7 +97,7 @@ func (c *Context) AddFile(f *ast.File) error {
 	c.files[path] = file
 	for _, pkg := range c.packages {
 		if pkg.name == f.Name.Name {
-			file.pkg = pkg.name
+			file.pkg = pkg
 			pkg.files = append(pkg.files, file)
 			return nil
 		}
@@ -106,7 +106,7 @@ func (c *Context) AddFile(f *ast.File) error {
 		name:  f.Name.Name,
 		files: []*File{file},
 	}
-	file.pkg = pkg.name
+	file.pkg = pkg
 	c.packages = append(c.packages, pkg)
 	return nil
 }
@@ -238,8 +238,8 @@ func (c *Context) Resolve() error {
 		files = append(files, c.files[i])
 	}
 	sort.Slice(files, func(i, j int) bool {
-		if files[i].pkg != files[j].pkg {
-			return files[i].pkg < files[j].pkg
+		if files[i].pkg.name != files[j].pkg.name {
+			return files[i].pkg.name < files[j].pkg.name
 		}
 		return files[i].Pos() < files[j].Pos()
 	})
@@ -247,12 +247,7 @@ func (c *Context) Resolve() error {
 
 	// resolve all imports
 	for _, file := range files {
-		for i := range file.imports {
-			file.imports[i].importedFile = c.lookupFile(file.Path, file.imports[i].Path)
-			if file.imports[i].importedFile == nil {
-				c.addErrorf(file.imports[i].Pos(), "import file not found: %s", file.imports[i].Path)
-			}
-		}
+		file.imports.resolve(c, file)
 	}
 	if c.errors.Len() > 0 {
 		return c.errors
@@ -261,7 +256,7 @@ func (c *Context) Resolve() error {
 	// create all symbols
 	for _, file := range files {
 		for name, symbol := range file.symbols {
-			symbolName := joinSymbolName(file.pkg, name)
+			symbolName := joinSymbolName(file.pkg.name, name)
 			if prev, ok := c.symbols[symbolName]; ok {
 				c.addErrorf(symbol.Pos(), "symbol %s redeclared: previous declaration at %s", symbolName, c.fset.Position(prev.Pos()))
 			} else {
@@ -276,6 +271,14 @@ func (c *Context) Resolve() error {
 	// resolve all files
 	for _, file := range files {
 		file.resolve(c)
+	}
+	if c.errors.Len() > 0 {
+		return c.errors
+	}
+
+	// resolve all packages
+	for _, pkg := range c.packages {
+		pkg.resolve(c)
 	}
 	if c.errors.Len() > 0 {
 		return c.errors

@@ -237,13 +237,13 @@ func newTemplateData[T Node](ctx templateContext) *templateData[T] {
 		dontOverrides:   make(map[string]bool),
 	}
 	d.funcs = template.FuncMap{
-		"this":        d.this,
-		"type":        d.type_,
-		"head":        d.head,
-		"next":        d.next,
-		"render":      d.render,
-		"align":       d.align,
-		"tailcomment": d.tailcomment,
+		"this":     d.this,
+		"type":     d.type_,
+		"head":     d.head,
+		"next":     d.next,
+		"render":   d.render,
+		"align":    d.align,
+		"alignEnd": d.alignEnd,
 	}
 	return d
 }
@@ -413,8 +413,8 @@ func (d *templateData[T]) lookupTemplate(name string, withNext bool) (*template.
 // {{next .}}
 // {{end}}
 // ```
-func (d *templateData[T]) next(value Object, options ...string) (result string, err error) {
-	return d.render(fmt.Sprintf("%s.%s", d.lang, value.ObjectType()), value, options...)
+func (d *templateData[T]) next(obj Object, options ...string) (result string, err error) {
+	return d.render(fmt.Sprintf("%s.%s", d.lang, obj.ObjectType()), obj, options...)
 }
 
 // @api(template/context): render (name, data, options...)
@@ -439,6 +439,23 @@ func (d *templateData[T]) render(name string, data any, options ...string) (resu
 	result = d.buf.String()
 	d.buf.Reset()
 	return result, nil
+}
+
+func (d *templateData[T]) lastLine() string {
+	content := d.buf.Bytes()
+	if len(content) == 0 {
+		return ""
+	}
+
+	lastLineStart := len(content)
+	for i := len(content) - 1; i >= 0; i-- {
+		if content[i] == '\n' {
+			lastLineStart = i + 1
+			break
+		}
+	}
+
+	return string(content[lastLineStart:])
 }
 
 func (d *templateData[T]) lastIndent() string {
@@ -468,7 +485,12 @@ func (d *templateData[T]) align(s string) string {
 }
 
 func (d *templateData[T]) alignWith(text, prefix string) string {
-	indent := d.lastIndent()
+	indent := strings.Map(func(r rune) rune {
+		if r != ' ' && r != '\t' {
+			return ' '
+		}
+		return r
+	}, d.lastLine())
 	lines := strings.Split(text, "\n")
 	if len(lines) <= 1 {
 		return prefix + text
@@ -482,8 +504,8 @@ func (d *templateData[T]) alignWith(text, prefix string) string {
 	return strings.Join(lines, "\n")
 }
 
-// @api(template/context): tailcomment (text)
-func (d *templateData[T]) tailcomment(text string) string {
+// @api(template/context): alignEnd (text)
+func (d *templateData[T]) alignEnd(text string) string {
 	text = strings.TrimSpace(text)
 	if text == "" {
 		return ""

@@ -18,6 +18,7 @@ type Object interface {
 func (p *Package) Pos() token.Pos    { return token.NoPos }
 func (f *File) Pos() token.Pos       { return f.pos }
 func (s *CallStmt) Pos() token.Pos   { return s.pos }
+func (i *Imports) Pos() token.Pos    { return op.If(len(i.Specs) == 0, token.NoPos, i.Specs[0].pos) }
 func (v *ValueSpec) Pos() token.Pos  { return v.pos }
 func (i *ImportSpec) Pos() token.Pos { return i.pos }
 func (e *EnumType) Pos() token.Pos   { return e.pos }
@@ -31,6 +32,7 @@ func (f *Field) Pos() token.Pos      { return f.pos }
 func (*Package) ObjectType() string     { return "package" }
 func (*File) ObjectType() string        { return "file" }
 func (*CallStmt) ObjectType() string    { return "stmt.call" }
+func (*Imports) ObjectType() string     { return "imports" }
 func (*ImportSpec) ObjectType() string  { return "import" }
 func (*StructType) ObjectType() string  { return "struct" }
 func (*Field) ObjectType() string       { return "struct.field" }
@@ -49,10 +51,10 @@ type Node interface {
 }
 
 func (p *Package) Package() string    { return p.name }
-func (f *File) Package() string       { return f.pkg }
-func (e *EnumType) Package() string   { return e.decl.file.pkg }
-func (s *StructType) Package() string { return s.decl.file.pkg }
-func (v *ValueSpec) Package() string  { return v.decl.file.pkg }
+func (f *File) Package() string       { return f.pkg.name }
+func (e *EnumType) Package() string   { return e.decl.file.pkg.name }
+func (s *StructType) Package() string { return s.decl.file.pkg.name }
+func (v *ValueSpec) Package() string  { return v.decl.file.pkg.name }
 
 func (p *Package) Name() string    { return p.name }
 func (f *File) Name() string       { return strings.TrimSuffix(filepath.Base(f.Path), ".next") }

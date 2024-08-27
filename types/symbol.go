@@ -80,9 +80,9 @@ func (s *fileParentScope) ParentScope() Scope {
 func (s *fileParentScope) LookupLocalSymbol(name string) Symbol {
 	var files []*File
 	pkg, name := splitSymbolName(name)
-	for i := range s.f.imports {
-		if s.f.imports[i].importedFile.pkg == pkg {
-			files = append(files, s.f.imports[i].importedFile)
+	for i := range s.f.imports.Specs {
+		if s.f.imports.Specs[i].importedFile.pkg.name == pkg {
+			files = append(files, s.f.imports.Specs[i].importedFile)
 		}
 	}
 	for _, file := range files {

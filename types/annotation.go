@@ -121,16 +121,16 @@ func (a *Annotation) Contains(name string) bool {
 	return false
 }
 
-// @api(template/annotation) Annotation.Get
-func (a *Annotation) Get(i int) *AnnotationParam {
+// @api(template/annotation) Annotation.At
+func (a *Annotation) At(i int) *AnnotationParam {
 	if i < 0 || i >= len(a.Params) {
 		return nil
 	}
 	return a.Params[i]
 }
 
-// @api(template/annotation) Annotation.Find
-func (a *Annotation) Find(name string) *AnnotationParam {
+// @api(template/annotation) Annotation.Param
+func (a *Annotation) Param(name string) *AnnotationParam {
 	for _, p := range a.Params {
 		if p.Name == name {
 			return p
@@ -158,27 +158,14 @@ func (ag *AnnotationGroup) Contains(name string) bool {
 	return false
 }
 
-// @api(template/annotation) AnnotationGroup.Get
-func (ag *AnnotationGroup) Find(name string) *Annotation {
+// @api(template/annotation) AnnotationGroup.Lookup
+func (ag *AnnotationGroup) Lookup(name string) *Annotation {
 	if ag == nil {
 		return nil
 	}
 	for _, a := range ag.list {
 		if a.Name == name {
 			return &a
-		}
-	}
-	return nil
-}
-
-// @api(template/annotation) AnnotationGroup.FindParam
-func (ag *AnnotationGroup) FindParam(name, param string) *AnnotationParam {
-	if ag == nil {
-		return nil
-	}
-	for _, a := range ag.list {
-		if a.Name == name {
-			return a.Find(param)
 		}
 	}
 	return nil

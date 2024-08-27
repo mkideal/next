@@ -1,12 +1,13 @@
 // Package declaration
 
 @next(
-    go_package="github.com/nextlang/test/comprehensive",
+    go_package="github.com/gopherd/next/testdata/gen/go/a",
     cpp_namespace = "nextlang::test"
 )
 package a;
 
 // XX constant
+// XX value 2
 const XX = 1; // XX value
 
 // Constants
