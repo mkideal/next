@@ -20,72 +20,849 @@ import (
 // Funcs is a map of utility functions for use in templates
 var Funcs = map[string]any{
 	// String functions
+
+	// @api(template/funcs) capitalize (s: string)
+	// `capitalize` capitalizes the first character of the given string.
+	//
+	// Example:
+	//
+	// ```
+	// {{capitalize "hello world"}}
+	// ```
+	// or
+	// ```
+	// {{"hello world" | capitalize}}
+	// ```
+	//
+	// Output:
+	// ```
+	// Hello world
+	// ```
 	"capitalize": capitalize,
-	"lower":      strings.ToLower,
-	"upper":      strings.ToUpper,
-	"replace":    strings.Replace,
-	"trim":       strings.TrimSpace,
+
+	// @api(template/funcs) lower (s: string)
+	// `lower` converts the entire string to lowercase.
+	//
+	// Example:
+	//
+	// ```
+	// {{lower "Hello World"}}
+	// ```
+	// or
+	// ```
+	// {{"Hello World" | lower}}
+	// ```
+	//
+	// Output:
+	// ```
+	// hello world
+	// ```
+	"lower": strings.ToLower,
+
+	// @api(template/funcs) upper (s: string)
+	// `upper` converts the entire string to uppercase.
+	//
+	// Example:
+	//
+	// ```
+	// {{upper "hello world"}}
+	// ```
+	// or
+	// ```
+	// {{"hello world" | upper}}
+	// ```
+	//
+	// Output:
+	// ```
+	// HELLO WORLD
+	// ```
+	"upper": strings.ToUpper,
+
+	// @api(template/funcs) replace (s: string, old: string, new: string[, n: int])
+	// `replace` returns a copy of the string s with the first n non-overlapping instances of old replaced by new.
+	//
+	// Example:
+	//
+	// ```
+	// {{replace "oink oink oink" "oink" "moo" 2}}
+	// {{replace "oink oink oink" "oink" "moo"}}
+	// ```
+	//
+	// Output:
+	// ```
+	// moo moo oink
+	// moo moo moo
+	// ```
+	"replace": replace,
+
+	// @api(template/funcs) trim (s: string)
+	// `trim` returns a slice of the string s with all leading and trailing white space removed.
+	//
+	// Example:
+	//
+	// ```
+	// {{trim "  hello world  "}}
+	// ```
+	// or
+	// ```
+	// {{"  hello world  " | trim}}
+	// ```
+	//
+	// Output:
+	// ```
+	// hello world
+	// hello world
+	// ```
+	"trim": strings.TrimSpace,
+
+	// @api(template/funcs) trimPrefix (prefix: string, s: string)
+	// `trimPrefix` returns s without the provided leading prefix string.
+	//
+	// Example:
+	//
+	// ```
+	// {{trimPrefix "Hello" "Hello, World!"}}
+	// ```
+	// or
+	// ```
+	// {{"Hello, World!" | trimPrefix "Hello"}}
+	// ```
+	//
+	// Output:
+	// ```
+	// , World!
+	// ```
 	"trimPrefix": trimPrefix,
+
+	// @api(template/funcs) trimSuffix (suffix: string, s: string)
+	// `trimSuffix` returns s without the provided trailing suffix string.
+	//
+	// Example:
+	//
+	// ```
+	// {{trimSuffix "!" "Hello, World!"}}
+	// ```
+	// or
+	// ```
+	// {{"Hello, World!" | trimSuffix "!"}}
+	// ```
+	//
+	// Output:
+	// ```
+	// Hello, World
+	// ```
 	"trimSuffix": trimSuffix,
-	"split":      split,
-	"join":       join,
-	"striptags":  striptags,
-	"substr":     substr,
-	"repeat":     strings.Repeat,
-	"camelCase":  camelCase,
-	"snakeCase":  snakeCase,
-	"kebabCase":  kebabCase,
-	"truncate":   truncate,
-	"wordwrap":   wordwrap,
-	"center":     center,
+
+	// @api(template/funcs) split (sep: string, s: string)
+	// `split` slices s into all substrings separated by sep and returns a slice of the substrings between those separators.
+	//
+	// Example:
+	//
+	// ```
+	// {{split "," "a,b,c"}}
+	// ```
+	// or
+	// ```
+	// {{"a,b,c" | split ","}}
+	// ```
+	//
+	// Output:
+	// ```
+	// [a b c]
+	// ```
+	"split": split,
+
+	// @api(template/funcs) join (sep: string, v: []string)
+	// `join` concatenates the elements of v to create a single string. The separator string sep is placed between elements in the resulting string.
+	//
+	// Example:
+	//
+	// ```
+	// {{join ", " (slice "apple" "banana" "cherry")}}
+	// ```
+	//
+	// Output:
+	// ```
+	// apple, banana, cherry
+	// ```
+	"join": join,
+
+	// @api(template/funcs) striptags (s: string)
+	// `striptags` removes all HTML tags from the given string.
+	//
+	// Example:
+	//
+	// ```
+	// {{striptags "<p>Hello <b>World</b>!</p>"}}
+	// ```
+	// or
+	// ```
+	// {{"<p>Hello <b>World</b>!</p>" | striptags}}
+	// ```
+	//
+	// Output:
+	// ```
+	// Hello World!
+	// ```
+	"striptags": striptags,
+
+	// @api(template/funcs) substr (start: int, length: int, s: string)
+	// `substr` returns a substring of s starting at index start with the given length.
+	//
+	// Example:
+	//
+	// ```
+	// {{substr 7 5 "Hello, World!"}}
+	// ```
+	// or
+	// ```
+	// {{"Hello, World!" | substr 7 5}}
+	// ```
+	//
+	// Output:
+	// ```
+	// World
+	// ```
+	"substr": substr,
+
+	// @api(template/funcs) repeat (count: int, s: string)
+	// `repeat` returns a new string consisting of count copies of the string s.
+	//
+	// Example:
+	//
+	// ```
+	// {{repeat 3 "na"}}
+	// ```
+	// or
+	// ```
+	// {{"na" | repeat 3}}
+	// ```
+	//
+	// Output:
+	// ```
+	// nanana
+	// ```
+	"repeat": strings.Repeat,
+
+	// @api(template/funcs) camelCase (s: string)
+	// `camelCase` converts the given string to camel case.
+	//
+	// Example:
+	//
+	// ```
+	// {{camelCase "hello world"}}
+	// ```
+	// or
+	// ```
+	// {{"hello world" | camelCase}}
+	// ```
+	//
+	// Output:
+	// ```
+	// helloWorld
+	// ```
+	"camelCase": camelCase,
+
+	// @api(template/funcs) snakeCase (s: string)
+	// `snakeCase` converts the given string to snake case.
+	//
+	// Example:
+	//
+	// ```
+	// {{snakeCase "helloWorld"}}
+	// ```
+	// or
+	// ```
+	// {{"helloWorld" | snakeCase}}
+	// ```
+	//
+	// Output:
+	// ```
+	// hello_world
+	// ```
+	"snakeCase": snakeCase,
+
+	// @api(template/funcs) kebabCase (s: string)
+	// `kebabCase` converts the given string to kebab case.
+	//
+	// Example:
+	//
+	// ```
+	// {{kebabCase "helloWorld"}}
+	// ```
+	// or
+	// ```
+	// {{"helloWorld" | kebabCase}}
+	// ```
+	//
+	// Output:
+	// ```
+	// hello-world
+	// ```
+	"kebabCase": kebabCase,
+
+	// @api(template/funcs) truncate (s: string, length: int, suffix: string)
+	// `truncate` truncates the given string to the specified length and adds the suffix if truncation occurred.
+	//
+	// Example:
+	//
+	// ```
+	// {{truncate 10 "..." "This is a long sentence."}}
+	// ```
+	// or
+	// ```
+	// {{"This is a long sentence." | truncate 10 "..."}}
+	// ```
+	//
+	// Output:
+	// ```
+	// This is...
+	// ```
+	"truncate": truncate,
+
+	// @api(template/funcs) wordwrap (s: string, width: int)
+	// `wordwrap` wraps the given string to a maximum width.
+	//
+	// Example:
+	//
+	// ```
+	// {{wordwrap 20 "This is a long sentence that needs wrapping."}}
+	// ```
+	// or
+	// ```
+	// {{"This is a long sentence that needs wrapping." | wordwrap 20}}
+	// ```
+	//
+	// Output:
+	// ```
+	// This is a long
+	// sentence that needs
+	// wrapping.
+	// ```
+	"wordwrap": wordwrap,
+
+	// @api(template/funcs) center (s: string, width: int)
+	// `center` centers the string in a field of the specified width.
+	//
+	// Example:
+	//
+	// ```
+	// {{center 11 "hello"}}
+	// ```
+	// or
+	// ```
+	// {{"hello" | center 11}}
+	//
+	// Output:
+	// ```
+	//    hello
+	// ```
+	"center": center,
+
+	// @api(template/funcs) matchRegex (pattern: string, s: string)
+	// `matchRegex` checks if the string matches the given regular expression pattern.
+	//
+	// Example:
+	//
+	// ```
+	// {{matchRegex "^[a-z]+$" "hello"}}
+	// ```
+	// or
+	// ```
+	// {{"hello" | matchRegex "^[a-z]+$"}}
+	// ```
+	//
+	// Output:
+	// ```
+	// true
+	// ```
 	"matchRegex": matchRegex,
 
 	// Escaping functions
-	"html":        html.EscapeString,
-	"urlquery":    url.QueryEscape,
+
+	// @api(template/funcs) html (s: string)
+	// `html` escapes special characters like "<" to become "&lt;". It escapes only five such characters: <, >, &, ' and ".
+	//
+	// Example:
+	//
+	// ```
+	// {{html "<script>alert('XSS')</script>"}}
+	// ```
+	// or
+	// ```
+	// {{"<script>alert('XSS')</script>" | html}}
+	// ```
+	//
+	// Output:
+	// ```
+	// &lt;script&gt;alert(&#39;XSS&#39;)&lt;/script&gt;
+	// ```
+	"html": html.EscapeString,
+
+	// @api(template/funcs) urlquery (s: string)
+	// `urlquery` escapes the string so it can be safely placed inside a URL query.
+	//
+	// Example:
+	//
+	// ```
+	// {{urlquery "hello world"}}
+	// ```
+	// or
+	// ```
+	// {{"hello world" | urlquery}}
+	// ```
+	//
+	// Output:
+	// ```
+	// hello+world
+	// ```
+	"urlquery": url.QueryEscape,
+
+	// @api(template/funcs) urlUnescape (s: string)
+	// `urlUnescape` does the inverse transformation of urlquery, converting each 3-byte encoded substring of the form "%AB" into the hex-decoded byte 0xAB.
+	//
+	// Example:
+	//
+	// ```
+	// {{urlUnescape "hello+world"}}
+	// ```
+	// or
+	// ```
+	// {{"hello+world" | urlUnescape}}
+	// ```
+	//
+	// Output:
+	// ```
+	// hello world
+	// ```
 	"urlUnescape": urlUnescape,
 
 	// Encoding functions
+
+	// @api(template/funcs) b64enc (v: string)
+	// `b64enc` encodes the given string to base64.
+	//
+	// Example:
+	//
+	// ```
+	// {{b64enc "hello world"}}
+	// ```
+	// or
+	// ```
+	// {{"hello world" | b64enc}}
+	// ```
+	//
+	// Output:
+	// ```
+	// aGVsbG8gd29ybGQ=
+	// ```
 	"b64enc": base64.StdEncoding.EncodeToString,
+
+	// @api(template/funcs) b64dec (s: string)
+	// `b64dec` decodes the given base64 string.
+	//
+	// Example:
+	//
+	// ```
+	// {{b64dec "aGVsbG8gd29ybGQ="}}
+	// ```
+	// or
+	// ```
+	// {{"aGVsbG8gd29ybGQ=" | b64dec}}
+	// ```
+	//
+	// Output:
+	// ```
+	// hello world
+	// ```
 	"b64dec": b64dec,
 
 	// List functions
-	"first":   first,
-	"last":    last,
-	"rest":    rest,
+
+	// @api(template/funcs) first (list: []any)
+	// `first` returns the first element of a list.
+	//
+	// Example:
+	//
+	// ```
+	// {{first (slice 1 2 3)}}
+	// ```
+	//
+	// Output:
+	// ```
+	// 1
+	// ```
+	"first": first,
+
+	// @api(template/funcs) last (list: []any)
+	// `last` returns the last element of a list.
+	//
+	// Example:
+	//
+	// ```
+	// {{last (slice 1 2 3)}}
+	// ```
+	//
+	// Output:
+	// ```
+	// 3
+	// ```
+	"last": last,
+
+	// @api(template/funcs) rest (list: []any)
+	// `rest` returns all elements of a list except the first.
+	//
+	// Example:
+	//
+	// ```
+	// {{rest (slice 1 2 3)}}
+	// ```
+	//
+	// Output:
+	// ```
+	// [2 3]
+	// ```
+	"rest": rest,
+
+	// @api(template/funcs) reverse (list: []any)
+	// `reverse` reverses the order of elements in a list.
+	//
+	// Example:
+	//
+	// ```
+	// {{reverse (slice 1 2 3)}}
+	// ```
+	//
+	// Output:
+	// ```
+	// [3 2 1]
+	// ```
 	"reverse": reverse,
-	"sort":    sortStrings,
-	"uniq":    uniq,
-	"in":      in,
+
+	// @api(template/funcs) sort (list: []string)
+	// `sort` sorts a list of strings in ascending order.
+	//
+	// Example:
+	//
+	// ```
+	// {{sort (slice "banana" "apple" "cherry")}}
+	// ```
+	//
+	// Output:
+	// ```
+	// [apple banana cherry]
+	// ```
+	"sort": sortStrings,
+
+	// @api(template/funcs) uniq (list: []any)
+	// `uniq` removes duplicate elements from a list.
+	//
+	// Example:
+	//
+	// ```
+	// {{uniq (slice 1 2 2 3 3 3)}}
+	// ```
+	//
+	// Output:
+	// ```
+	// [1 2 3]
+	// ```
+	"uniq": uniq,
+
+	// @api(template/funcs) in (item: any, list: []any)
+	// `in` checks if an item is present in a list.
+	//
+	// Example:
+	//
+	// ```
+	// {{in "b" (slice "a" "b" "c")}}
+	// ```
+	//
+	// Output:
+	// ```
+	// true
+	// ```
+	"in": in,
 
 	// Math functions
-	"add":   add,
-	"sub":   sub,
-	"mul":   mul,
-	"quo":   quo,
-	"rem":   rem,
-	"mod":   mod,
-	"max":   max,
-	"min":   min,
-	"ceil":  ceil,
+
+	// @api(template/funcs) add (a: number, b: number)
+	// `add` adds two numbers.
+	//
+	// Example:
+	//
+	// ```
+	// {{add 1 2}}
+	// ```
+	//
+	// Output:
+	// ```
+	// 3
+	// ```
+	"add": add,
+
+	// @api(template/funcs) sub (a: number, b: number)
+	// `sub` subtracts the second number from the first.
+	//
+	// Example:
+	//
+	// ```
+	// {{sub 5 3}}
+	// ```
+	//
+	// Output:
+	// ```
+	// 2
+	// ```
+	"sub": sub,
+
+	// @api(template/funcs) mul (a: number, b: number)
+	// `mul` multiplies two numbers.
+	//
+	// Example:
+	//
+	// ```
+	// {{mul 2 3}}
+	// ```
+	//
+	// Output:
+	// ```
+	// 6
+	// ```
+	"mul": mul,
+
+	// @api(template/funcs) quo (a: number, b: number)
+	// `quo` divides the first number by the second.
+	//
+	// Example:
+	//
+	// ```
+	// {{quo 6 3}}
+	// ```
+	//
+	// Output:
+	// ```
+	// 2
+	// ```
+	"quo": quo,
+
+	// @api(template/funcs) rem (a: number, b: number)
+	// `rem` returns the remainder of dividing the first number by the second.
+	//
+	// Example:
+	//
+	// ```
+	// {{rem 7 3}}
+	// ```
+	//
+	// Output:
+	// ```
+	// 1
+	// ```
+	"rem": rem,
+
+	// @api(template/funcs) mod (a: number, b: number)
+	// `mod` returns the modulus of dividing the first number by the second.
+	//
+	// Example:
+	//
+	// ```
+	// {{mod -7 3}}
+	// ```
+	//
+	// Output:
+	// ```
+	// 2
+	// ```
+	"mod": mod,
+
+	// @api(template/funcs) max (numbers: ...number)
+	// `max` returns the largest of the given numbers.
+	//
+	// Example:
+	//
+	// ```
+	// {{max 1 5 3 2}}
+	// ```
+	//
+	// Output:
+	// ```
+	// 5
+	// ```
+	"max": max,
+
+	// @api(template/funcs) min (numbers: ...number)
+	// `min` returns the smallest of the given numbers.
+	//
+	// Example:
+	//
+	// ```
+	// {{min 1 5 3 2}}
+	// ```
+	//
+	// Output:
+	// ```
+	// 1
+	// ```
+	"min": min,
+
+	// @api(template/funcs) ceil (x: number)
+	// `ceil` returns the least integer value greater than or equal to x.
+	//
+	// Example:
+	//
+	// ```
+	// {{ceil 1.5}}
+	// ```
+	//
+	// Output:
+	// ```
+	// 2
+	// ```
+	"ceil": ceil,
+
+	// @api(template/funcs) floor (x: number)
+	// `floor` returns the greatest integer value less than or equal to x.
+	//
+	// Example:
+	//
+	// ```
+	// {{floor 1.5}}
+	// ```
+	//
+	// Output:
+	// ```
+	// 1
+	// ```
 	"floor": floor,
+
+	// @api(template/funcs) round (x: number, precision: int)
+	// `round` returns x rounded to the specified precision.
+	//
+	// Example:
+	//
+	// ```
+	// {{round 1.234 2}}
+	// ```
+	//
+	// Output:
+	// ```
+	// 1.23
+	// ```
 	"round": round,
 
 	// Type conversion functions
-	"int":    toInt,
-	"float":  toFloat,
+
+	// @api(template/funcs) int (v: any)
+	// `int` converts the given value to an integer.
+	//
+	// Example:
+	//
+	// ```
+	// {{int "123"}}
+	// ```
+	//
+	// Output:
+	// ```
+	// 123
+	// ```
+	"int": toInt,
+
+	// @api(template/funcs) float (v: any)
+	// `float` converts the given value to a float.
+	//
+	// Example:
+	//
+	// ```
+	// {{float "1.23"}}
+	// ```
+	//
+	// Output:
+	// ```
+	// 1.23
+	// ```
+	"float": toFloat,
+
+	// @api(template/funcs) string (v: any)
+	// `string` converts the given value to a string.
+	//
+	// Example:
+	//
+	// ```
+	// {{string 123}}
+	// ```
+	//
+	// Output:
+	// ```
+	// 123
+	// ```
 	"string": toString,
-	"bool":   toBool,
+
+	// @api(template/funcs) bool (v: any)
+	// `bool` converts the given value to a boolean.
+	//
+	// Example:
+	//
+	// ```
+	// {{bool 1}}
+	// ```
+	//
+	// Output:
+	// ```
+	// true
+	// ```
+	"bool": toBool,
 
 	// Date functions
-	"now":    time.Now,
-	"format": timeFormat,
-	"parse":  timeParse,
+
+	// @api(template/funcs) now ()
+	// `now` returns the current local time.
+	//
+	// Example:
+	//
+	// ```
+	// {{now}}
+	// {{now.Format "2006-01-02 15:04:05"}}
+	// ```
+	//
+	// Output:
+	// ```
+	// 2023-05-17 14:30:45.123456789 +0000 UTC
+	// 2023-05-17 14:30:45
+	// ```
+	"now": time.Now,
+
+	// @api(template/funcs) parse (layout: string, value: string)
+	// `parse` parses a formatted string and returns the time value it represents.
+	//
+	// Example:
+	//
+	// ```
+	// {{parseTime "2006-01-02" "2023-05-17"}}
+	// ```
+	//
+	// Output:
+	// ```
+	// 2023-05-17 00:00:00 +0000 UTC
+	// ```
+	"parseTime": parseTime,
 
 	// Conditional functions
-	"default":  dfault,
-	"ternary":  ternary,
-	"coalesce": coalesce,
+
+	// @api(template/funcs) ternary (cond: bool, trueVal: any, falseVal: any)
+	// `ternary` returns trueVal if the condition is true, falseVal otherwise.
+	//
+	// Example:
+	//
+	// ```
+	// {{ternary (eq 1 1) "yes" "no"}}
+	// ```
+	//
+	// Output:
+	// ```
+	// yes
+	// ```
+	"ternary": ternary,
 }
 
 // String functions
@@ -96,6 +873,23 @@ func capitalize(s string) string {
 	}
 	r, size := utf8.DecodeRuneInString(s)
 	return string(unicode.ToUpper(r)) + s[size:]
+}
+
+func replace(s, old, new string, n ...reflect.Value) (string, error) {
+	if len(n) == 0 {
+		return strings.Replace(s, old, new, -1), nil
+	}
+	if len(n) > 1 {
+		return "", fmt.Errorf("replace: too many arguments")
+	}
+	switch n[0].Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return strings.Replace(s, old, new, int(n[0].Int())), nil
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		return strings.Replace(s, old, new, int(n[0].Uint())), nil
+	default:
+		return "", fmt.Errorf("replace: unsupported type %s", n[0].Type())
+	}
 }
 
 func trimPrefix(prefix, s string) string {
@@ -180,7 +974,7 @@ func kebabCase(s string) string {
 	return result.String()
 }
 
-func truncate(s string, length int, suffix string) string {
+func truncate(length int, suffix, s string) string {
 	if length <= 0 {
 		return ""
 	}
@@ -190,7 +984,7 @@ func truncate(s string, length int, suffix string) string {
 	return s[:length-len(suffix)] + suffix
 }
 
-func wordwrap(s string, width int) string {
+func wordwrap(width int, s string) string {
 	words := strings.Fields(s)
 	if len(words) == 0 {
 		return s
@@ -216,7 +1010,7 @@ func wordwrap(s string, width int) string {
 	return strings.Join(lines, "\n")
 }
 
-func center(s string, width int) string {
+func center(width int, s string) string {
 	if width <= len(s) {
 		return s
 	}
@@ -638,18 +1432,11 @@ func timeFormat(t time.Time, layout string) string {
 	return t.Format(layout)
 }
 
-func timeParse(layout, value string) (time.Time, error) {
+func parseTime(layout, value string) (time.Time, error) {
 	return time.Parse(layout, value)
 }
 
 // Conditional functions
-
-func dfault(def, val reflect.Value) (reflect.Value, error) {
-	if !val.IsValid() || (val.Kind() == reflect.Ptr && val.IsNil()) {
-		return def, nil
-	}
-	return val, nil
-}
 
 func ternary(cond, trueVal, falseVal reflect.Value) (reflect.Value, error) {
 	if cond.Kind() != reflect.Bool {
@@ -659,34 +1446,4 @@ func ternary(cond, trueVal, falseVal reflect.Value) (reflect.Value, error) {
 		return trueVal, nil
 	}
 	return falseVal, nil
-}
-
-func coalesce(args ...reflect.Value) (reflect.Value, error) {
-	for _, arg := range args {
-		if arg.IsValid() && !arg.IsZero() {
-			return arg, nil
-		}
-	}
-	return reflect.Value{}, nil
-}
-
-// Additional utility functions
-
-func isNil(v reflect.Value) bool {
-	switch v.Kind() {
-	case reflect.Chan, reflect.Func, reflect.Map, reflect.Ptr, reflect.Interface, reflect.Slice:
-		return v.IsNil()
-	default:
-		return false
-	}
-}
-
-func indirect(v reflect.Value) reflect.Value {
-	for v.Kind() == reflect.Ptr {
-		if v.IsNil() {
-			return reflect.Value{}
-		}
-		v = v.Elem()
-	}
-	return v
 }
