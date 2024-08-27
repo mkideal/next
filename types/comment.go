@@ -6,67 +6,41 @@ import (
 	"github.com/gopherd/next/ast"
 )
 
-type Comment struct {
-	// Text is the comment text.
-	Text string
-}
-
-func resolveComment(c *ast.Comment) *Comment {
-	return &Comment{
-		Text: c.Text,
-	}
-}
-
-func (c Comment) String() string {
-	return strings.TrimSpace(ast.TrimComments([]string{c.Text})[0])
-}
-
-func (c Comment) Format(beginAndEnd ...string) string {
-	begin, end := "//", ""
-	if len(beginAndEnd) > 0 && beginAndEnd[0] != "" {
-		begin = beginAndEnd[0]
-		if len(beginAndEnd) > 1 && beginAndEnd[1] != "" {
-			end = beginAndEnd[1]
-		}
-	}
-	if end == "" {
-		if strings.HasPrefix(c.Text, begin) {
-			return c.Text
-		}
-		return begin + " " + c.String()
-	}
-	return begin + " " + c.String() + " " + end
-}
-
 type CommentGroup struct {
-	List []string
+	list []string
 }
 
-func newCommentGroup(cg *ast.CommentGroup) CommentGroup {
+func newCommentGroup(cg *ast.CommentGroup) *CommentGroup {
 	if cg == nil {
-		return CommentGroup{}
+		return nil
 	}
 	list := make([]string, len(cg.List))
 	for i, c := range cg.List {
 		list[i] = c.Text
 	}
-	return CommentGroup{
-		List: list,
+	return &CommentGroup{
+		list: list,
 	}
 }
 
-func (cg CommentGroup) Text() string {
-	if len(cg.List) == 0 {
+func (cg *CommentGroup) Text() string {
+	if cg == nil || len(cg.list) == 0 {
 		return ""
 	}
 	return cg.Format()
 }
 
-func (cg CommentGroup) String() string {
-	return strings.Join(ast.TrimComments(cg.List), "\n")
+func (cg *CommentGroup) String() string {
+	if cg == nil || len(cg.list) == 0 {
+		return ""
+	}
+	return strings.Join(ast.TrimComments(cg.list), "\n")
 }
 
-func (cg CommentGroup) Format(beginAndEnd ...string) string {
+func (cg *CommentGroup) Format(beginAndEnd ...string) string {
+	if cg == nil {
+		return ""
+	}
 	return cg.FormatIndent("", "", beginAndEnd...)
 }
 
@@ -97,11 +71,11 @@ func (cg CommentGroup) Format(beginAndEnd ...string) string {
 //	 comment1
 //	 comment2
 //	 -->
-func (cg CommentGroup) FormatIndent(prefix, indent string, beginAndEnd ...string) string {
-	if len(cg.List) == 0 {
+func (cg *CommentGroup) FormatIndent(prefix, indent string, beginAndEnd ...string) string {
+	if cg == nil || len(cg.list) == 0 {
 		return ""
 	}
-	lines := ast.TrimComments(cg.List)
+	lines := ast.TrimComments(cg.list)
 	if len(lines) == 0 {
 		return ""
 	}

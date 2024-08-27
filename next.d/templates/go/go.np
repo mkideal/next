@@ -24,13 +24,14 @@ package {{.Package}}
 {{if $i}}{{print "\n"}}{{end}}{{next . -}}
 {{- end}}
 {{- end}}
+
 {{- define "next.go.const" -}}
-{{.Doc.Text}}const {{.Name}} = {{.Value}}{{.Comment.Text}}
+{{.Doc.Text | align}}const {{.Name}} = {{.Value}}{{tailcomment .Comment.Text}}
 {{- end}}
 
 {{- define "next.go.enum" -}}
 {{- $this := . -}}
-{{$this.Doc.Text}}type {{$this.Name}} int
+{{$this.Doc.Text | align}}type {{$this.Name}} int
 
 const (
 {{- range $this.Members}}
@@ -40,7 +41,7 @@ const (
 {{- end}}
 
 {{- define "next.go.enum.member" -}}
-{{.Doc.Text}}{{.Enum.Name}}_{{.Name}} = {{.Value}}{{.Comment.Text}}
+{{.Doc.Text | align}}{{.Enum.Name}}_{{.Name}} = {{.Value}}{{tailcomment .Comment.Text}}
 {{- end}}
 
 {{- define "next.go.struct" -}}
@@ -53,5 +54,5 @@ const (
 {{- end}}
 
 {{- define "next.go.struct.field" -}}
-{{.Doc.Text}}{{.Name | camelCase | capitalize}} {{type .Type}}{{.Comment.Text}}
+{{.Doc.Text | align}}{{.Name | camelCase | capitalize}} {{type .Type}}{{tailcomment .Comment.Text}}
 {{- end}}

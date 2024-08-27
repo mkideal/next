@@ -292,9 +292,9 @@ func (c *Context) Resolve() error {
 }
 
 // resolveAnnotationGroup resolves an annotation group
-func (c *Context) resolveAnnotationGroup(file *File, annotations *ast.AnnotationGroup) AnnotationGroup {
+func (c *Context) resolveAnnotationGroup(file *File, annotations *ast.AnnotationGroup) *AnnotationGroup {
 	if annotations == nil {
-		return AnnotationGroup{}
+		return nil
 	}
 	list := make([]Annotation, len(annotations.List))
 	for i, a := range annotations.List {
@@ -319,8 +319,8 @@ func (c *Context) resolveAnnotationGroup(file *File, annotations *ast.Annotation
 			Params: params,
 		}
 	}
-	return AnnotationGroup{
-		List: list,
+	return &AnnotationGroup{
+		list: list,
 	}
 }
 
@@ -531,7 +531,7 @@ func (c *Context) resolveSelectorExprType(file *File, t *ast.SelectorExpr) Type 
 
 func (c *Context) resolveArrayType(file *File, t *ast.ArrayType) Type {
 	return &ArrayType{
-		typ:      typ{pos: t.Pos()},
+		pos:      t.Pos(),
 		ElemType: c.resolveType(file, t.T),
 		N:        c.resolveUint64(file, t.N),
 	}
@@ -539,14 +539,14 @@ func (c *Context) resolveArrayType(file *File, t *ast.ArrayType) Type {
 
 func (c *Context) resolveVectorType(file *File, t *ast.VectorType) Type {
 	return &VectorType{
-		typ:      typ{pos: t.Pos()},
+		pos:      t.Pos(),
 		ElemType: c.resolveType(file, t.T),
 	}
 }
 
 func (c *Context) resolveMapType(file *File, t *ast.MapType) Type {
 	return &MapType{
-		typ:      typ{pos: t.Pos()},
+		pos:      t.Pos(),
 		KeyType:  c.resolveType(file, t.K),
 		ElemType: c.resolveType(file, t.V),
 	}

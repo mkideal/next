@@ -195,46 +195,46 @@ func (c *Context) generateForTemplateFile(lang, ext, dir, tmplFile string) error
 	}
 }
 
-func generateForPackage(tc *templateData[*Package], file, content string, meta templateMeta[string]) error {
-	t, mt, err := createTemplates(file, content, meta, tc.funcs)
+func generateForPackage(d *templateData[*Package], file, content string, meta templateMeta[string]) error {
+	t, mt, err := createTemplates(file, content, meta, d.funcs)
 	if err != nil {
 		return err
 	}
-	for _, pkg := range tc.context.packages {
-		tc.obj = pkg
-		if err := gen(tc, t, mt); err != nil {
+	for _, pkg := range d.context.packages {
+		d.reset(pkg)
+		if err := gen(d, t, mt); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func generateForFile(tc *templateData[*File], file, content string, meta templateMeta[string]) error {
-	t, mt, err := createTemplates(file, content, meta, tc.funcs)
+func generateForFile(d *templateData[*File], file, content string, meta templateMeta[string]) error {
+	t, mt, err := createTemplates(file, content, meta, d.funcs)
 	if err != nil {
 		return err
 	}
-	for _, f := range tc.context.files {
-		tc.obj = f
-		if err := gen(tc, t, mt); err != nil {
+	for _, f := range d.context.files {
+		d.reset(f)
+		if err := gen(d, t, mt); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func generateForSpec[T Object](tc *templateData[T], file, content string, meta templateMeta[string]) error {
-	t, mt, err := createTemplates(file, content, meta, tc.funcs)
+func generateForSpec[T Node](d *templateData[T], file, content string, meta templateMeta[string]) error {
+	t, mt, err := createTemplates(file, content, meta, d.funcs)
 	if err != nil {
 		return err
 	}
 
-	for _, file := range tc.context.files {
+	for _, file := range d.context.files {
 		for _, decl := range file.decls {
 			for _, spec := range decl.Specs {
 				if spec, ok := spec.(T); ok {
-					tc.obj = spec
-					if err := gen(tc, t, mt); err != nil {
+					d.reset(spec)
+					if err := gen(d, t, mt); err != nil {
 						return err
 					}
 				}
@@ -246,13 +246,13 @@ func generateForSpec[T Object](tc *templateData[T], file, content string, meta t
 
 // gen generates a file using the given template, meta data, and object which may be a
 // package, file, const, enum or struct.
-func gen[T Object](tc *templateData[T], t *template.Template, mt templateMeta[*template.Template]) error {
-	tc.entrypoint = t
-	if err := tc.init(); err != nil {
+func gen[T Node](d *templateData[T], t *template.Template, mt templateMeta[*template.Template]) error {
+	d.entrypoint = t
+	if err := d.init(); err != nil {
 		return err
 	}
 
-	meta, err := resolveMeta(mt, tc)
+	meta, err := resolveMeta(mt, d)
 	if err != nil {
 		return err
 	}
@@ -260,23 +260,23 @@ func gen[T Object](tc *templateData[T], t *template.Template, mt templateMeta[*t
 		return nil
 	}
 	var sb strings.Builder
-	if err := t.Execute(&sb, tc); err != nil {
+	if err := t.Execute(&sb, d); err != nil {
 		return fmt.Errorf("failed to execute template: %v", err)
 	}
 
 	// write the generated content to the output file
-	path := op.Or(meta.Get("path").value(), tc.obj.Name()+tc.ext)
+	path := op.Or(meta.Get("path").value(), d.obj.Name()+d.ext)
 	if !filepath.IsAbs(path) {
-		path = filepath.Join(tc.dir, path)
+		path = filepath.Join(d.dir, path)
 	}
 	if op.Or(meta.Get("overwrite").value(), "true") != "true" {
 		if _, err := os.Stat(path); err == nil {
-			tc.context.Printf("file %q already exists, and will not be overwritten", path)
+			d.context.Printf("file %q already exists, and will not be overwritten", path)
 			return nil
 		}
 	}
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
-		return fmt.Errorf("failed to create directory %q: %v", tc.dir, err)
+		return fmt.Errorf("failed to create directory %q: %v", d.dir, err)
 	}
 	if err := os.WriteFile(path, []byte(sb.String()), 0644); err != nil {
 		return fmt.Errorf("failed to write file %q: %v", path, err)

@@ -6,6 +6,9 @@
 )
 package a;
 
+// XX constant
+const XX = 1; // XX value
+
 // Constants
 const (
     ServerName = "Comprehensive Test Server";
@@ -193,8 +196,8 @@ assert_eq(Month.Q4, 3584);
 
 // Struct types
 struct Point2D {
-    float64 x;
-    float64 y;
+    float64 x; // x-coordinate
+    float64 y; // y-coordinate
 }
 
 struct Point3D {

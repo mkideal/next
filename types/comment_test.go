@@ -1,30 +1,12 @@
-package types_test
+package types
 
 import (
 	"testing"
-
-	"github.com/gopherd/next/types"
 )
 
-func TestCommentFormat(t *testing.T) {
-	c := types.Comment{Text: "// This is a comment."}
-	if got, want := c.Format(), "// This is a comment."; got != want {
-		t.Errorf("got %q, want %q", got, want)
-	}
-	if got, want := c.Format("//", ""), "// This is a comment."; got != want {
-		t.Errorf("got %q, want %q", got, want)
-	}
-	if got, want := c.Format("//", "//"), "// This is a comment. //"; got != want {
-		t.Errorf("got %q, want %q", got, want)
-	}
-	if got, want := c.Format("/*", "*/"), "/* This is a comment. */"; got != want {
-		t.Errorf("got %q, want %q", got, want)
-	}
-}
-
 func TestCommentGroupFormat(t *testing.T) {
-	cg := types.CommentGroup{
-		List: []string{
+	cg := CommentGroup{
+		list: []string{
 			"// This is a comment.",
 			"// This is another comment.",
 		},
@@ -44,8 +26,8 @@ func TestCommentGroupFormat(t *testing.T) {
 }
 
 func TestCommentGroupFormatIndent(t *testing.T) {
-	cg := types.CommentGroup{
-		List: []string{
+	cg := CommentGroup{
+		list: []string{
 			"// This is a comment.",
 			"// This is another comment.",
 		},

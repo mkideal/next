@@ -1,9 +1,6 @@
 package types
 
 import (
-	"path/filepath"
-	"strings"
-
 	"github.com/gopherd/next/ast"
 	"github.com/gopherd/next/token"
 )
@@ -17,8 +14,8 @@ type File struct {
 	}
 
 	Path        string
-	Doc         CommentGroup
-	Annotations AnnotationGroup
+	Doc         *CommentGroup
+	Annotations *AnnotationGroup
 
 	decls   []*Decl
 	stmts   []Stmt
@@ -49,17 +46,10 @@ func newFile(ctx *Context, src *ast.File) *File {
 	return file
 }
 
-func (f *File) Pos() token.Pos   { return f.pos }
-func (f *File) nodeType() string { return "file" }
-
-func (f *File) Name() string {
-	return strings.TrimSuffix(filepath.Base(f.Path), ".next")
-}
-
 func (f *File) Decls() []*Decl {
 	var hasImport bool
 	for _, d := range f.decls {
-		if d.Tok == token.IMPORT {
+		if d.tok == token.IMPORT {
 			hasImport = true
 			break
 		}
@@ -69,7 +59,7 @@ func (f *File) Decls() []*Decl {
 	}
 	var decls = make([]*Decl, 0, len(f.decls))
 	for _, d := range f.decls {
-		if d.Tok != token.IMPORT {
+		if d.tok != token.IMPORT {
 			decls = append(decls, d)
 		}
 	}
@@ -83,7 +73,7 @@ func (f *File) Imports() []*ImportSpec { return f.imports }
 func (f *File) Consts() []*ValueSpec {
 	var consts []*ValueSpec
 	for _, d := range f.decls {
-		if d.Tok == token.CONST {
+		if d.tok == token.CONST {
 			for _, s := range d.Specs {
 				consts = append(consts, s.(*ValueSpec))
 			}
@@ -95,7 +85,7 @@ func (f *File) Consts() []*ValueSpec {
 func (f *File) Enums() []*EnumType {
 	var enums []*EnumType
 	for _, d := range f.decls {
-		if d.Tok == token.ENUM {
+		if d.tok == token.ENUM {
 			for _, s := range d.Specs {
 				enums = append(enums, s.(*EnumType))
 			}
@@ -107,43 +97,13 @@ func (f *File) Enums() []*EnumType {
 func (f *File) Structs() []*StructType {
 	var structs []*StructType
 	for _, d := range f.decls {
-		if d.Tok == token.STRUCT {
+		if d.tok == token.STRUCT {
 			for _, s := range d.Specs {
 				structs = append(structs, s.(*StructType))
 			}
 		}
 	}
 	return structs
-}
-
-func (f *File) ParentScope() Scope { return &fileParentScope{f} }
-
-func (f *File) LookupLocalSymbol(name string) Symbol {
-	return f.symbols[name]
-}
-
-type fileParentScope struct {
-	f *File
-}
-
-func (s *fileParentScope) ParentScope() Scope {
-	return nil
-}
-
-func (s *fileParentScope) LookupLocalSymbol(name string) Symbol {
-	var files []*File
-	pkg, name := splitSymbolName(name)
-	for i := range s.f.imports {
-		if s.f.imports[i].importedFile.pkg == pkg {
-			files = append(files, s.f.imports[i].importedFile)
-		}
-	}
-	for _, file := range files {
-		if s := file.symbols[name]; s != nil {
-			return s
-		}
-	}
-	return nil
 }
 
 // LookupLocalType looks up a type by name in the file's symbol table.

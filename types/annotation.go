@@ -13,20 +13,37 @@ var (
 	ErrUnpexpectedParamType = errors.New("unexpected param type")
 )
 
+// @api(template/annotation) AnnotationParam
 // AnnotationParam represents an annotation parameter.
 // If Name is empty, the Value is not nil.
 //
 // Example:
 //
-//	@json(omitempty)
-//	@type(100)
-//	@event(name="Login")
-//	@message("Login", type=100)
+// ```
+// @json(omitempty)
+// @type(100)
+// @event(name="Login")
+// @message("Login", type=100)
+// ```
 type AnnotationParam struct {
 	Name  string
 	Value constant.Value
 }
 
+func (a *AnnotationParam) String() string {
+	if a == nil {
+		return ""
+	}
+	if a.Name != "" {
+		if a.Value == nil {
+			return a.Name
+		}
+		return a.Name + "=" + a.Value.String()
+	}
+	return a.Value.String()
+}
+
+// @api(template/annotation) AnnotationParam.IsNamed
 func (a *AnnotationParam) IsNamed() bool {
 	if a == nil {
 		return false
@@ -34,24 +51,16 @@ func (a *AnnotationParam) IsNamed() bool {
 	return a.Name != ""
 }
 
-func (a *AnnotationParam) IsValue() bool {
+// @api(template/annotation) AnnotationParam.HasValue
+func (a *AnnotationParam) HasValue() bool {
 	if a == nil {
 		return false
 	}
 	return a.Value != nil
 }
 
-func (a *AnnotationParam) String() string {
-	if a == nil {
-		return ""
-	}
-	if a.IsNamed() {
-		return a.Name + "=" + a.Value.String()
-	}
-	return a.Value.String()
-}
-
-func (a *AnnotationParam) Str() (string, error) {
+// @api(template/annotation) AnnotationParam.GetString
+func (a *AnnotationParam) GetString() (string, error) {
 	if a == nil {
 		return "", ErrParamNotFound
 	}
@@ -61,7 +70,8 @@ func (a *AnnotationParam) Str() (string, error) {
 	return "", ErrUnpexpectedParamType
 }
 
-func (a *AnnotationParam) Int() (int64, error) {
+// @api(template/annotation) AnnotationParam.GetInt
+func (a *AnnotationParam) GetInt() (int64, error) {
 	if a == nil {
 		return 0, ErrParamNotFound
 	}
@@ -71,7 +81,8 @@ func (a *AnnotationParam) Int() (int64, error) {
 	return 0, ErrUnpexpectedParamType
 }
 
-func (a *AnnotationParam) Float() (float64, error) {
+// @api(template/annotation) AnnotationParam.GetFloat
+func (a *AnnotationParam) GetFloat() (float64, error) {
 	if a == nil {
 		return 0, ErrParamNotFound
 	}
@@ -81,7 +92,8 @@ func (a *AnnotationParam) Float() (float64, error) {
 	return 0, ErrUnpexpectedParamType
 }
 
-func (a *AnnotationParam) Bool() (bool, error) {
+// @api(template/annotation) AnnotationParam.GetBool
+func (a *AnnotationParam) GetBool() (bool, error) {
 	if a == nil {
 		return false, ErrParamNotFound
 	}
@@ -91,6 +103,7 @@ func (a *AnnotationParam) Bool() (bool, error) {
 	return false, ErrUnpexpectedParamType
 }
 
+// @api(template/annotation) Annotation
 // Annotation represents an annotation.
 type Annotation struct {
 	pos    token.Position
@@ -98,6 +111,7 @@ type Annotation struct {
 	Params []*AnnotationParam
 }
 
+// @api(template/annotation) Annotation.Contains
 func (a *Annotation) Contains(name string) bool {
 	for _, p := range a.Params {
 		if p.Name == name {
@@ -107,6 +121,7 @@ func (a *Annotation) Contains(name string) bool {
 	return false
 }
 
+// @api(template/annotation) Annotation.Get
 func (a *Annotation) Get(i int) *AnnotationParam {
 	if i < 0 || i >= len(a.Params) {
 		return nil
@@ -114,6 +129,7 @@ func (a *Annotation) Get(i int) *AnnotationParam {
 	return a.Params[i]
 }
 
+// @api(template/annotation) Annotation.Find
 func (a *Annotation) Find(name string) *AnnotationParam {
 	for _, p := range a.Params {
 		if p.Name == name {
@@ -123,13 +139,18 @@ func (a *Annotation) Find(name string) *AnnotationParam {
 	return nil
 }
 
+// @api(template/annotation) AnnotationGroup
 // AnnotationGroup represents a group of annotations.
 type AnnotationGroup struct {
-	List []Annotation
+	list []Annotation
 }
 
+// @api(template/annotation) AnnotationGroup.Contains
 func (ag *AnnotationGroup) Contains(name string) bool {
-	for _, a := range ag.List {
+	if ag == nil {
+		return false
+	}
+	for _, a := range ag.list {
 		if a.Name == name {
 			return true
 		}
@@ -137,8 +158,12 @@ func (ag *AnnotationGroup) Contains(name string) bool {
 	return false
 }
 
+// @api(template/annotation) AnnotationGroup.Get
 func (ag *AnnotationGroup) Find(name string) *Annotation {
-	for _, a := range ag.List {
+	if ag == nil {
+		return nil
+	}
+	for _, a := range ag.list {
 		if a.Name == name {
 			return &a
 		}
@@ -146,8 +171,12 @@ func (ag *AnnotationGroup) Find(name string) *Annotation {
 	return nil
 }
 
+// @api(template/annotation) AnnotationGroup.FindParam
 func (ag *AnnotationGroup) FindParam(name, param string) *AnnotationParam {
-	for _, a := range ag.List {
+	if ag == nil {
+		return nil
+	}
+	for _, a := range ag.list {
 		if a.Name == name {
 			return a.Find(param)
 		}

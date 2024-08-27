@@ -7,32 +7,34 @@ import (
 
 // Decl represents a declaration: import, constant, enum, struct
 type Decl struct {
-	pos  token.Pos
-	file *File
+	pos        token.Pos
+	tok        token.Token
+	file       *File
+	unresolved struct {
+		annotations *ast.AnnotationGroup
+	}
 
-	Tok   token.Token
-	Specs []Spec
+	Doc         *CommentGroup
+	Annotations *AnnotationGroup
+	Specs       []Spec
 }
 
 func newDecl(ctx *Context, file *File, src *ast.GenDecl) *Decl {
 	d := &Decl{
 		file: file,
 		pos:  src.Pos(),
-		Tok:  src.Tok,
+		tok:  src.Tok,
+		Doc:  newCommentGroup(src.Doc),
 	}
+	d.unresolved.annotations = src.Annotations
 	for _, s := range src.Specs {
 		d.Specs = append(d.Specs, newSpec(ctx, file, d, s))
 	}
 	return d
 }
 
-func (d *Decl) nodeType() string {
-	return "decl." + d.Tok.String()
-}
-
-func (d *Decl) Pos() token.Pos { return d.pos }
-
 func (d *Decl) resolve(ctx *Context, file *File, scope Scope) {
+	d.Annotations = ctx.resolveAnnotationGroup(file, d.unresolved.annotations)
 	for _, s := range d.Specs {
 		s.resolve(ctx, file, scope)
 	}

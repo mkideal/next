@@ -1,33 +1,69 @@
 package types
 
 import (
+	"path/filepath"
 	"strconv"
 	"strings"
 
+	"github.com/gopherd/core/op"
 	"github.com/gopherd/next/token"
 )
 
-// Node represents a Next AST node.
-type Node interface {
+// Object represents a Next AST node.
+type Object interface {
 	Pos() token.Pos
-	nodeType() string
+	ObjectType() string
 }
 
-func splitSymbolName(name string) (ns, sym string) {
-	if i := strings.Index(name, "."); i >= 0 {
-		return name[:i], name[i+1:]
-	}
-	return "", name
+func (p *Package) Pos() token.Pos    { return token.NoPos }
+func (f *File) Pos() token.Pos       { return f.pos }
+func (s *CallStmt) Pos() token.Pos   { return s.pos }
+func (v *ValueSpec) Pos() token.Pos  { return v.pos }
+func (i *ImportSpec) Pos() token.Pos { return i.pos }
+func (e *EnumType) Pos() token.Pos   { return e.pos }
+func (b *BasicType) Pos() token.Pos  { return b.pos }
+func (a *ArrayType) Pos() token.Pos  { return a.pos }
+func (v *VectorType) Pos() token.Pos { return v.pos }
+func (m *MapType) Pos() token.Pos    { return m.pos }
+func (s *StructType) Pos() token.Pos { return s.pos }
+func (f *Field) Pos() token.Pos      { return f.pos }
+
+func (*Package) ObjectType() string     { return "package" }
+func (*File) ObjectType() string        { return "file" }
+func (*CallStmt) ObjectType() string    { return "stmt.call" }
+func (*ImportSpec) ObjectType() string  { return "import" }
+func (*StructType) ObjectType() string  { return "struct" }
+func (*Field) ObjectType() string       { return "struct.field" }
+func (*EnumType) ObjectType() string    { return "enum" }
+func (v *ValueSpec) ObjectType() string { return op.If(v.enum.typ != nil, "enum.member", "const") }
+func (b *BasicType) ObjectType() string { return b.name }
+func (*ArrayType) ObjectType() string   { return "array" }
+func (*VectorType) ObjectType() string  { return "vector" }
+func (*MapType) ObjectType() string     { return "map" }
+
+// Node represents a Next AST node which may be a package, file, const, enum or struct to be generated.
+type Node interface {
+	Object
+	Package() string
+	Name() string
 }
 
-func joinSymbolName(syms ...string) string {
-	return strings.Join(syms, ".")
-}
+func (p *Package) Package() string    { return p.name }
+func (f *File) Package() string       { return f.pkg }
+func (e *EnumType) Package() string   { return e.decl.file.pkg }
+func (s *StructType) Package() string { return s.decl.file.pkg }
+func (v *ValueSpec) Package() string  { return v.decl.file.pkg }
+
+func (p *Package) Name() string    { return p.name }
+func (f *File) Name() string       { return strings.TrimSuffix(filepath.Base(f.Path), ".next") }
+func (s *StructType) Name() string { return s.name }
+func (e *EnumType) Name() string   { return e.name }
+func (v *ValueSpec) Name() string  { return v.name }
 
 // Symbol represents a Next symbol: value(constant, enum member), type(struct, enum)
 type Symbol interface {
-	Node
-	symbolType() string
+	Object
+	SymbolType() string
 }
 
 const (
@@ -35,135 +71,47 @@ const (
 	TypeSymbol  = "type"
 )
 
-func (*ValueSpec) symbolType() string  { return ValueSymbol }
-func (*EnumType) symbolType() string   { return TypeSymbol }
-func (*StructType) symbolType() string { return TypeSymbol }
-
-// Scope represents a symbol scope.
-type Scope interface {
-	ParentScope() Scope
-	LookupLocalSymbol(name string) Symbol
-}
-
-func lookupSymbol(scope Scope, name string) Symbol {
-	for s := scope; s != nil; s = s.ParentScope() {
-		if sym := s.LookupLocalSymbol(name); sym != nil {
-			return sym
-		}
-	}
-	return nil
-}
-
-func lookupType(scope Scope, name string) (Type, error) {
-	return expectTypeSymbol(name, lookupSymbol(scope, name))
-}
-
-func lookupValue(scope Scope, name string) (*ValueSpec, error) {
-	return expectValueSymbol(name, lookupSymbol(scope, name))
-}
-
-func expectTypeSymbol(name string, s Symbol) (Type, error) {
-	if s == nil {
-		return nil, &SymbolNotFoundError{Name: name}
-	}
-	if t, ok := s.(Type); ok {
-		return t, nil
-	}
-	return nil, &UnexpectedSymbolTypeError{Name: name, Want: "type", Got: s.symbolType()}
-}
-
-func expectValueSymbol(name string, s Symbol) (*ValueSpec, error) {
-	if s == nil {
-		return nil, &SymbolNotFoundError{Name: name}
-	}
-	if v, ok := s.(*ValueSpec); ok {
-		return v, nil
-	}
-	return nil, &UnexpectedSymbolTypeError{Name: name, Want: "value", Got: s.symbolType()}
-}
-
-// Object represents a Next AST node which may be a package, file, const, enum or struct to be generated.
-type Object interface {
-	objectType() token.Token
-	Package() string
-	Name() string
-}
-
-func (*Package) objectType() token.Token     { return token.PACKAGE }
-func (*File) objectType() token.Token        { return token.FILE }
-func (v *ValueSpec) objectType() token.Token { return v.decl.Tok }
-func (*EnumType) objectType() token.Token    { return token.ENUM }
-func (*StructType) objectType() token.Token  { return token.STRUCT }
-
-func (p *Package) Package() string    { return p.name }
-func (f *File) Package() string       { return f.pkg }
-func (v *ValueSpec) Package() string  { return v.decl.file.pkg }
-func (e *EnumType) Package() string   { return e.decl.file.pkg }
-func (s *StructType) Package() string { return s.decl.file.pkg }
-
-//-------------------------------------------------------------------------
-// Types
+func (*ValueSpec) SymbolType() string  { return ValueSymbol }
+func (*EnumType) SymbolType() string   { return TypeSymbol }
+func (*StructType) SymbolType() string { return TypeSymbol }
 
 // Type represents a Next type.
 type Type interface {
-	Node
-	typeNode()
-
-	String() string
+	Object
 	Kind() Kind
-	IsBool() bool
-	IsInteger() bool
-	IsString() bool
-	IsByte() bool
-	IsBytes() bool
-	IsVector() bool
-	IsArray() bool
-	IsMap() bool
-	IsEnum() bool
-	IsStruct() bool
+	String() string
 }
 
-type typ struct {
-	pos token.Pos
+func (b *BasicType) Kind() Kind { return b.kind }
+func (*ArrayType) Kind() Kind   { return Array }
+func (*VectorType) Kind() Kind  { return Vector }
+func (*MapType) Kind() Kind     { return Map }
+func (*EnumType) Kind() Kind    { return Enum }
+func (*StructType) Kind() Kind  { return Struct }
+
+// Spec represents a specification: import, value(const, enum member), type(enum, struct)
+type Spec interface {
+	Object
+	specNode()
+	resolve(ctx *Context, file *File, scope Scope)
 }
 
-func (t *typ) Pos() token.Pos { return t.pos }
-func (*typ) Kind() Kind       { return Invalid }
-func (*typ) IsBool() bool     { return false }
-func (*typ) IsInteger() bool  { return false }
-func (*typ) IsString() bool   { return false }
-func (*typ) IsByte() bool     { return false }
-func (*typ) IsBytes() bool    { return false }
-func (*typ) IsVector() bool   { return false }
-func (*typ) IsArray() bool    { return false }
-func (*typ) IsMap() bool      { return false }
-func (*typ) IsEnum() bool     { return false }
-func (*typ) IsStruct() bool   { return false }
+func (*ImportSpec) specNode() {}
+func (*ValueSpec) specNode()  {}
+func (*EnumType) specNode()   {}
+func (*StructType) specNode() {}
+
+//-------------------------------------------------------------------------
+// Builtin Types
 
 // BasicType represents a basic type.
 type BasicType struct {
-	typ
+	pos  token.Pos
 	name string
 	kind Kind
 }
 
-func (b *BasicType) nodeType() string { return b.name }
-
-func (*BasicType) typeNode()        {}
 func (b *BasicType) String() string { return b.name }
-func (b *BasicType) Kind() Kind     { return b.kind }
-func (b *BasicType) IsBool() bool   { return b.kind == Bool }
-func (b *BasicType) IsString() bool { return b.kind == String }
-func (b *BasicType) IsByte() bool   { return b.kind == Byte }
-func (b *BasicType) IsBytes() bool  { return b.kind == Bytes }
-
-func (b *BasicType) IsInteger() bool {
-	switch b.kind {
-	case Int, Int8, Int16, Int32, Int64:
-		return true
-	}
-	return false
-}
 
 var basicTypes = map[string]*BasicType{
 	"int":     {kind: Int, name: "int"},
@@ -181,53 +129,35 @@ var basicTypes = map[string]*BasicType{
 
 // ArrayType represents an array type.
 type ArrayType struct {
-	typ
+	pos token.Pos
 
 	ElemType Type
 	N        uint64
 }
 
-func (*ArrayType) nodeType() string { return "array" }
-func (*ArrayType) typeNode()        {}
-
 func (a *ArrayType) String() string {
 	return "array<" + a.ElemType.String() + "," + strconv.FormatUint(a.N, 10) + ">"
 }
 
-func (*ArrayType) Kind() Kind    { return Array }
-func (*ArrayType) IsArray() bool { return true }
-
 // VectorType represents a vector type.
 type VectorType struct {
-	typ
+	pos token.Pos
 
 	ElemType Type
 }
-
-func (*VectorType) nodeType() string { return "vector" }
-func (*VectorType) typeNode()        {}
 
 func (v *VectorType) String() string {
 	return "vector<" + v.ElemType.String() + ">"
 }
 
-func (*VectorType) Kind() Kind     { return Vector }
-func (*VectorType) IsVector() bool { return true }
-
 // MapType represents a map type.
 type MapType struct {
-	typ
+	pos token.Pos
 
 	KeyType  Type
 	ElemType Type
 }
 
-func (*MapType) nodeType() string { return "map" }
-func (*MapType) typeNode()        {}
-
 func (m *MapType) String() string {
 	return "map<" + m.KeyType.String() + "," + m.ElemType.String() + ">"
 }
-
-func (*MapType) Kind() Kind  { return Map }
-func (*MapType) IsMap() bool { return true }

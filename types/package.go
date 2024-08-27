@@ -1,23 +1,9 @@
 package types
 
-import "github.com/gopherd/next/token"
-
+// @api(template/object) Package
 type Package struct {
-	name string
-
+	name  string
 	files []*File
-}
-
-func (p *Package) Pos() token.Pos {
-	return token.NoPos
-}
-
-func (p *Package) nodeType() string {
-	return "package"
-}
-
-func (p *Package) Name() string {
-	return p.name
 }
 
 func (p *Package) Decls() []*Decl {
