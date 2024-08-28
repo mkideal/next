@@ -11,7 +11,7 @@ type Package struct {
 	files []*File
 	types []Type
 
-	Doc         *CommentGroup
+	Doc         *Doc
 	Annotations *AnnotationGroup
 }
 
@@ -25,10 +25,10 @@ func (p *Package) resolve(c *Context) error {
 		for _, decl := range file.decls {
 			for _, spec := range decl.Specs {
 				switch spec := spec.(type) {
-				case *EnumType:
-					p.types = append(p.types, spec)
-				case *StructType:
-					p.types = append(p.types, spec)
+				case *EnumSpec:
+					p.types = append(p.types, spec.Type)
+				case *StructSpec:
+					p.types = append(p.types, spec.Type)
 				}
 			}
 		}

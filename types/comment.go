@@ -4,13 +4,72 @@ import (
 	"strings"
 
 	"github.com/gopherd/next/ast"
+	"github.com/gopherd/next/token"
 )
 
-type CommentGroup struct {
+// Comment represents a comment group.
+type Comment struct {
+	pos  token.Pos
 	list []string
 }
 
-func newCommentGroup(cg *ast.CommentGroup) *CommentGroup {
+func newComment(cg *ast.CommentGroup) *Comment {
+	if cg == nil {
+		return nil
+	}
+	return &Comment{
+		pos:  cg.Pos(),
+		list: makeCommentList(cg),
+	}
+}
+
+// Text returns the text of the comment.
+func (c *Comment) Text() string {
+	if c == nil || len(c.list) == 0 {
+		return ""
+	}
+	return formatComments(c.list, false, "", " ")
+}
+
+func (c *Comment) String() string {
+	if c == nil || len(c.list) == 0 {
+		return ""
+	}
+	return strings.Join(ast.TrimComments(c.list), "\n")
+}
+
+// Doc represents a documentation comment.
+type Doc struct {
+	pos  token.Pos
+	list []string
+}
+
+func newDoc(cg *ast.CommentGroup) *Doc {
+	if cg == nil {
+		return nil
+	}
+	return &Doc{
+		pos:  cg.Pos(),
+		list: makeCommentList(cg),
+	}
+}
+
+func (d *Doc) Text() string {
+	if d == nil || len(d.list) == 0 {
+		return ""
+	}
+	return formatComments(d.list, true, "", "")
+}
+
+func (d *Doc) String() string {
+	if d == nil || len(d.list) == 0 {
+		return ""
+	}
+	return strings.Join(ast.TrimComments(d.list), "\n")
+}
+
+// makeCommentList returns a list of comments from the comment group.
+func makeCommentList(cg *ast.CommentGroup) []string {
 	if cg == nil {
 		return nil
 	}
@@ -18,33 +77,10 @@ func newCommentGroup(cg *ast.CommentGroup) *CommentGroup {
 	for i, c := range cg.List {
 		list[i] = c.Text
 	}
-	return &CommentGroup{
-		list: list,
-	}
+	return list
 }
 
-func (cg *CommentGroup) Text() string {
-	if cg == nil || len(cg.list) == 0 {
-		return ""
-	}
-	return cg.Format()
-}
-
-func (cg *CommentGroup) String() string {
-	if cg == nil || len(cg.list) == 0 {
-		return ""
-	}
-	return strings.Join(ast.TrimComments(cg.list), "\n")
-}
-
-func (cg *CommentGroup) Format(beginAndEnd ...string) string {
-	if cg == nil {
-		return ""
-	}
-	return cg.FormatIndent("", "", beginAndEnd...)
-}
-
-// FormatIndent formats the comment group with the given prefix, ident, and begin and end strings.
+// formatComments formats the comment group with the given prefix, ident, and begin and end strings.
 //
 // Example:
 //
@@ -71,11 +107,11 @@ func (cg *CommentGroup) Format(beginAndEnd ...string) string {
 //	 comment1
 //	 comment2
 //	 -->
-func (cg *CommentGroup) FormatIndent(prefix, indent string, beginAndEnd ...string) string {
-	if cg == nil || len(cg.list) == 0 {
+func formatComments(list []string, appendNewline bool, prefix, indent string, beginAndEnd ...string) string {
+	if len(list) == 0 {
 		return ""
 	}
-	lines := ast.TrimComments(cg.list)
+	lines := ast.TrimComments(list)
 	if len(lines) == 0 {
 		return ""
 	}
@@ -91,7 +127,7 @@ func (cg *CommentGroup) FormatIndent(prefix, indent string, beginAndEnd ...strin
 		for i, line := range lines {
 			lines[i] = prefix + indent + begin + " " + line
 		}
-		if !isLastEmpty {
+		if !isLastEmpty && appendNewline {
 			lines = append(lines, prefix)
 		}
 		return strings.Join(lines, "\n")

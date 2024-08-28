@@ -1,19 +1,19 @@
 {{/*
 this: file
-path: {{this.Package}}/{{this.Name}}.next.go
+path: {{this.Package.Name}}/{{this.Name}}.next.go
 skip: {{eq "test" this.Name}}
 time: 2024-08-25T23:39:46Z0800
 */}}
 {{head}}
 
-{{- define "go.struct.fields"}}
-{{- template "next.go.struct.fields" .}}
+{{- define "go/struct.fields"}}
+{{- super .}}
 
     userdata any
 {{- end}}
 
-{{- define "go.struct"}}
-{{- template "next.go.struct" .}}
+{{- define "go/struct"}}
+{{- super .}}
 
 func ({{.Name}}) Typeof() string { return "{{.Name}}" }
 {{- end}}

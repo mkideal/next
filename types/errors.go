@@ -1,5 +1,25 @@
 package types
 
+import "errors"
+
+var (
+	ErrParamNotFound        = errors.New("param not found")
+	ErrUnpexpectedParamType = errors.New("unexpected param type")
+)
+
+type TemplateNotFoundError struct {
+	Name string
+}
+
+func (e *TemplateNotFoundError) Error() string {
+	return "template " + e.Name + " not found"
+}
+
+func IsTemplateNotFoundError(err error) bool {
+	var e *TemplateNotFoundError
+	return errors.As(err, &e)
+}
+
 type SymbolNotFoundError struct {
 	Name string
 }

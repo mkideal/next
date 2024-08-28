@@ -1,0 +1,88 @@
+{{- define "next/file" -}}
+{{next .Imports -}}
+{{next .Specs -}}
+{{- end}}
+
+{{- define "next/specs" -}}
+{{- if .Consts -}}
+{{next .Consts}}
+{{ end -}}
+{{- if .Enums -}}
+{{next .Enums}}
+{{ end -}}
+{{- if .Structs -}}
+{{next .Structs}}
+{{- end -}}
+{{- end }}
+
+{{- define "next/comment" -}}
+{{align .Text}}
+{{- end}}
+
+{{- define "next/doc" -}}
+{{align .Text}}
+{{- end}}
+
+{{- define "next/imports" -}}
+{{- range .List}}
+{{next . -}}
+{{- end}}
+{{- end}}
+
+{{- define "next/import" -}}
+import "{{.Path}}";
+{{- end}}
+
+{{- define "next/consts" -}}
+{{range .List}}
+{{next . -}}
+{{- end}}
+{{- end}}
+
+{{- define "next/const" -}}
+{{next .Doc}}const {{.Name}} = {{.Value}}{{next .Comment}}
+{{- end}}
+
+{{- define "next/enums" -}}
+{{range $i, $e := .List}}
+{{if $i}}{{print "\n"}}{{end}}{{next . -}}
+{{- end}}
+{{- end}}
+
+{{- define "next/enum" -}}
+enum {{.Name}} {
+    {{- next .Members}}
+}
+{{- end}}
+
+{{- define "next/enum.members" -}}
+{{- range .List}}
+    {{next . -}}
+{{- end}}
+{{- end}}
+
+{{- define "next/enum.member" -}}
+{{next .Doc}}{{.Name}} = {{.Value}}{{next .Comment}}
+{{- end}}
+
+{{- define "next/structs" -}}
+{{range $i, $s := .List}}
+{{if $i}}{{print "\n"}}{{end}}{{next . -}}
+{{- end}}
+{{- end}}
+
+{{- define "next/struct" -}}
+{{next .Doc}}struct {{.Name}} {
+    {{- next .Fields}}
+}
+{{- end}}
+
+{{- define "next/struct.fields" -}}
+{{- range .List}}
+    {{next . -}}
+{{- end}}
+{{- end}}
+
+{{- define "next/struct.field" -}}
+{{next .Doc}}{{next .Type}} {{.Name}};{{next .Comment}}
+{{- end}}

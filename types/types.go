@@ -11,56 +11,53 @@ import (
 
 // Object represents a Next AST node.
 type Object interface {
-	Pos() token.Pos
 	ObjectType() string
 }
 
-func (f *File) Pos() token.Pos       { return f.pos }
-func (s *CallStmt) Pos() token.Pos   { return s.pos }
-func (i *Imports) Pos() token.Pos    { return op.If(len(i.Specs) == 0, token.NoPos, i.Specs[0].pos) }
-func (v *ValueSpec) Pos() token.Pos  { return v.pos }
-func (i *ImportSpec) Pos() token.Pos { return i.pos }
-func (e *EnumType) Pos() token.Pos   { return e.pos }
-func (b *BasicType) Pos() token.Pos  { return b.pos }
-func (a *ArrayType) Pos() token.Pos  { return a.pos }
-func (v *VectorType) Pos() token.Pos { return v.pos }
-func (m *MapType) Pos() token.Pos    { return m.pos }
-func (s *StructType) Pos() token.Pos { return s.pos }
-func (f *Field) Pos() token.Pos      { return f.pos }
-
 func (*File) ObjectType() string        { return "file" }
+func (*Comment) ObjectType() string     { return "comment" }
+func (*Doc) ObjectType() string         { return "doc" }
 func (*CallStmt) ObjectType() string    { return "stmt.call" }
 func (*Imports) ObjectType() string     { return "imports" }
 func (*ImportSpec) ObjectType() string  { return "import" }
-func (*StructType) ObjectType() string  { return "struct" }
-func (*Field) ObjectType() string       { return "struct.field" }
-func (*EnumType) ObjectType() string    { return "enum" }
 func (v *ValueSpec) ObjectType() string { return op.If(v.enum.typ != nil, "enum.member", "const") }
+func (*Specs) ObjectType() string       { return "specs" }
+func (*ConstSpecs) ObjectType() string  { return "consts" }
+func (*EnumSpecs) ObjectType() string   { return "enums" }
+func (*EnumSpec) ObjectType() string    { return "enum" }
+func (EnumMembers) ObjectType() string  { return "enum.members" }
+func (StructSpecs) ObjectType() string  { return "structs" }
+func (*StructSpec) ObjectType() string  { return "struct" }
+func (*Fields) ObjectType() string      { return "struct.fields" }
+func (*Field) ObjectType() string       { return "struct.field" }
 func (b *BasicType) ObjectType() string { return b.name }
-func (*ArrayType) ObjectType() string   { return "array" }
-func (*VectorType) ObjectType() string  { return "vector" }
-func (*MapType) ObjectType() string     { return "map" }
+func (*ArrayType) ObjectType() string   { return "type.array" }
+func (*VectorType) ObjectType() string  { return "type.vector" }
+func (*MapType) ObjectType() string     { return "type.map" }
+func (*EnumType) ObjectType() string    { return "type.enum" }
+func (*StructType) ObjectType() string  { return "type.struct" }
 
 // Node represents a Next AST node which may be a file, const, enum or struct to be generated.
 type Node interface {
 	Object
-	Package() string
+	Package() *Package
 	Name() string
 }
 
-func (f *File) Package() string       { return f.pkg.name }
-func (e *EnumType) Package() string   { return e.decl.file.pkg.name }
-func (s *StructType) Package() string { return s.decl.file.pkg.name }
-func (v *ValueSpec) Package() string  { return v.decl.file.pkg.name }
+func (f *File) Package() *Package       { return f.pkg }
+func (v *ValueSpec) Package() *Package  { return v.decl.file.pkg }
+func (e *EnumSpec) Package() *Package   { return e.decl.file.pkg }
+func (s *StructSpec) Package() *Package { return s.decl.file.pkg }
 
 func (f *File) Name() string       { return strings.TrimSuffix(filepath.Base(f.Path), ".next") }
-func (s *StructType) Name() string { return s.name }
-func (e *EnumType) Name() string   { return e.name }
 func (v *ValueSpec) Name() string  { return v.name }
+func (e *EnumSpec) Name() string   { return e.Type.name }
+func (s *StructSpec) Name() string { return s.Type.name }
 
 // Symbol represents a Next symbol: value(constant, enum member), type(struct, enum)
 type Symbol interface {
 	Object
+	Pos() token.Pos
 	SymbolType() string
 }
 
@@ -68,6 +65,10 @@ const (
 	ValueSymbol = "value"
 	TypeSymbol  = "type"
 )
+
+func (v *ValueSpec) Pos() token.Pos  { return v.pos }
+func (e *EnumType) Pos() token.Pos   { return e.pos }
+func (s *StructType) Pos() token.Pos { return s.pos }
 
 func (*ValueSpec) SymbolType() string  { return ValueSymbol }
 func (*EnumType) SymbolType() string   { return TypeSymbol }
@@ -96,11 +97,11 @@ type Spec interface {
 
 func (*ImportSpec) specNode() {}
 func (*ValueSpec) specNode()  {}
-func (*EnumType) specNode()   {}
-func (*StructType) specNode() {}
+func (*EnumSpec) specNode()   {}
+func (*StructSpec) specNode() {}
 
 //-------------------------------------------------------------------------
-// Builtin Types
+// Types
 
 // BasicType represents a basic type.
 type BasicType struct {
@@ -159,3 +160,21 @@ type MapType struct {
 func (m *MapType) String() string {
 	return "map<" + m.KeyType.String() + "," + m.ElemType.String() + ">"
 }
+
+// EnumType represents an enum type.
+type EnumType struct {
+	name string
+	pos  token.Pos
+	spec *EnumSpec
+}
+
+func (e *EnumType) String() string { return e.name }
+
+// StructType represents a struct type.
+type StructType struct {
+	name string
+	pos  token.Pos
+	spec *StructSpec
+}
+
+func (s *StructType) String() string { return s.name }

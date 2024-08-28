@@ -72,6 +72,7 @@ test/src: go/generate go/vet
 test/template: install
 	@echo "Running template tests..."
 	@next \
+		-v 1 \
 		-O go=testdata/gen/go -T go=testdata/templates/go \
 		-O cpp=testdata/gen/cpp -T cpp=testdata/templates/cpp \
 		testdata/src/

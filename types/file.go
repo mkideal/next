@@ -14,12 +14,13 @@ type File struct {
 	}
 
 	Path        string
-	Doc         *CommentGroup
+	Doc         *Doc
 	Annotations *AnnotationGroup
 
 	decls   []*Decl
 	stmts   []Stmt
 	imports *Imports
+	specs   Specs
 
 	// all symbols used in current file:
 	// - values: constant, enum member
@@ -28,23 +29,26 @@ type File struct {
 }
 
 func newFile(ctx *Context, src *ast.File) *File {
-	file := &File{
+	f := &File{
 		pos:     src.Pos(),
-		Doc:     newCommentGroup(src.Doc),
+		Doc:     newDoc(src.Doc),
 		imports: &Imports{},
 		symbols: make(map[string]Symbol),
 	}
-	file.unresolved.annotations = src.Annotations
+	f.unresolved.annotations = src.Annotations
 	for _, d := range src.Decls {
-		file.decls = append(file.decls, newDecl(ctx, file, d.(*ast.GenDecl)))
+		f.decls = append(f.decls, newDecl(ctx, f, d.(*ast.GenDecl)))
 	}
+	f.specs.Consts = f.getConsts()
+	f.specs.Enums = f.getEnums()
+	f.specs.Structs = f.getStructs()
 	for _, s := range src.Stmts {
-		file.stmts = append(file.stmts, newStmt(ctx, file, s))
+		f.stmts = append(f.stmts, newStmt(ctx, f, s))
 	}
-	if pos, err := file.createSymbols(); err != nil {
+	if pos, err := f.createSymbols(); err != nil {
 		ctx.errors.Add(ctx.fset.Position(pos), err.Error())
 	}
-	return file
+	return f
 }
 
 func (f *File) Decls() []*Decl {
@@ -67,40 +71,42 @@ func (f *File) Decls() []*Decl {
 	return decls
 }
 
-func (f *File) Stmts() []Stmt { return f.stmts }
-
 func (f *File) Imports() *Imports { return f.imports }
 
-func (f *File) Consts() []*ValueSpec {
-	var consts []*ValueSpec
+func (f *File) Specs() *Specs {
+	return &f.specs
+}
+
+func (f *File) getConsts() *ConstSpecs {
+	var consts = &ConstSpecs{File: f}
 	for _, d := range f.decls {
 		if d.tok == token.CONST {
 			for _, s := range d.Specs {
-				consts = append(consts, s.(*ValueSpec))
+				consts.List = append(consts.List, s.(*ValueSpec))
 			}
 		}
 	}
 	return consts
 }
 
-func (f *File) Enums() []*EnumType {
-	var enums []*EnumType
+func (f *File) getEnums() *EnumSpecs {
+	var enums = &EnumSpecs{File: f}
 	for _, d := range f.decls {
 		if d.tok == token.ENUM {
 			for _, s := range d.Specs {
-				enums = append(enums, s.(*EnumType))
+				enums.List = append(enums.List, s.(*EnumSpec))
 			}
 		}
 	}
 	return enums
 }
 
-func (f *File) Structs() []*StructType {
-	var structs []*StructType
+func (f *File) getStructs() *StructSpecs {
+	var structs = &StructSpecs{File: f}
 	for _, d := range f.decls {
 		if d.tok == token.STRUCT {
 			for _, s := range d.Specs {
-				structs = append(structs, s.(*StructType))
+				structs.List = append(structs.List, s.(*StructSpec))
 			}
 		}
 	}
@@ -134,23 +140,23 @@ func (f *File) createSymbols() (token.Pos, error) {
 		for _, s := range d.Specs {
 			switch s := s.(type) {
 			case *ImportSpec:
-				f.imports.Specs = append(f.imports.Specs, s)
+				f.imports.List = append(f.imports.List, s)
 			case *ValueSpec:
 				if err := f.addSymbol(s.name, s); err != nil {
 					return s.pos, err
 				}
-			case *EnumType:
-				if err := f.addSymbol(s.name, s); err != nil {
-					return s.pos, err
+			case *EnumSpec:
+				if err := f.addSymbol(s.Type.name, s.Type); err != nil {
+					return s.Type.pos, err
 				}
-				for _, m := range s.Members {
-					if err := f.addSymbol(joinSymbolName(s.name, m.name), m); err != nil {
+				for _, m := range s.Members.List {
+					if err := f.addSymbol(joinSymbolName(s.Type.name, m.name), m); err != nil {
 						return m.pos, err
 					}
 				}
-			case *StructType:
-				if err := f.addSymbol(s.name, s); err != nil {
-					return s.pos, err
+			case *StructSpec:
+				if err := f.addSymbol(s.Type.name, s.Type); err != nil {
+					return s.Type.pos, err
 				}
 			}
 		}

@@ -1,0 +1,86 @@
+{{- define "next/cpp/file" -}}
+#pragma once
+
+{{next .Imports -}}
+{{render "cpp/namespace.begin" . -}}
+{{render "cpp/forward.declarations" . -}}
+{{next .Specs -}}
+{{render "cpp/namespace.end" . -}}
+{{- end}}
+
+{{- define "next/cpp/imports" -}}
+#include <string>
+#include <array>
+#include <vector>
+#include <map>
+#include <unordered_map>
+#include <cstdint>
+{{- if .List}}
+{{range .List}}
+{{next . -}}
+{{- end}}
+{{- end}}
+{{- end}}
+
+{{- define "next/cpp/import" -}}
+#include "{{.File.Name}}.next.h"
+{{- end}}
+
+{{- define "next/cpp/namespace.begin" -}}
+{{- $namespace := ((.Annotations.Lookup "next").Param "cpp_namespace").Value -}}
+{{- if $namespace}}
+
+namespace {{unquote $namespace.String}} {
+{{end}}
+{{- end}}
+
+{{- define "next/cpp/namespace.end" -}}
+{{- $namespace := ((.Annotations.Lookup "next").Param "cpp_namespace").Value -}}
+{{- if $namespace}}
+
+} // namespace {{unquote $namespace.String}}
+{{- end}}
+{{- end}}
+
+{{- define "next/cpp/forward.declarations" -}}
+{{- if .Specs.Enums.List}}
+// Enums forward declarations
+{{- range .Specs.Enums.List}}
+enum class {{.Name}};
+{{- end}}
+{{end -}}
+
+{{- if .Specs.Structs.List}}
+// Classes forward declarations
+{{- range .Specs.Structs.List}}
+class {{.Name}};
+{{- end}}
+{{end -}}
+{{- end}}
+
+{{- define "next/cpp/const" -}}
+{{next .Doc}}constexpr auto {{.Name}} = {{.Value}};{{next .Comment}}
+{{- end}}
+
+{{- define "next/cpp/enum" -}}
+{{next .Doc}}enum class {{.Name}} : int {
+{{- next .Members}}
+};
+{{- end}}
+
+{{- define "next/cpp/enum.member" -}}
+{{next .Doc}}{{.Name}} = {{.Value}},{{next .Comment}}
+{{- end}}
+
+{{- define "next/cpp/struct" -}}
+{{.Doc.Text}}class {{.Name}} {
+public:
+    {{.Name}}() = default;
+    ~{{.Name}}() = default;
+    {{next .Fields}}
+};
+{{- end}}
+
+{{- define "next/cpp/struct.field" -}}
+{{next .Doc}}{{next .Type}} {{.Name | camelCase}};{{next .Comment}}
+{{- end}}

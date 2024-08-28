@@ -45,8 +45,8 @@ type Context struct {
 	// errors is a list of errors
 	errors scanner.ErrorList
 
-	// trace is the current position for call expression
-	trace []token.Pos
+	// stack is the current position for call expression
+	stack []token.Pos
 
 	// searchDirs is a list of search directories
 	searchDirs []string
@@ -134,16 +134,30 @@ func (c *Context) log(msg string) {
 	}
 }
 
+// Trace logs a message if trace logging is enabled
+func (c *Context) Trace(args ...any) {
+	if c.flags.verbose >= 3 {
+		c.log(fmt.Sprint(args...))
+	}
+}
+
+// Tracef logs a formatted message if trace logging is enabled
+func (c *Context) Tracef(format string, args ...any) {
+	if c.flags.verbose >= 3 {
+		c.log(fmt.Sprintf(format, args...))
+	}
+}
+
 // Print logs a message if debug logging is enabled
 func (c *Context) Print(args ...any) {
-	if c.IsDebugEnabled() {
+	if c.flags.verbose >= 2 {
 		c.log(fmt.Sprint(args...))
 	}
 }
 
 // Printf logs a formatted message if debug logging is enabled
 func (c *Context) Printf(format string, args ...any) {
-	if c.IsDebugEnabled() {
+	if c.flags.verbose >= 2 {
 		c.log(fmt.Sprintf(format, args...))
 	}
 }
@@ -171,10 +185,10 @@ func (c *Context) Error(args ...any) {
 
 // Position returns the current position for call expression
 func (c *Context) Position() token.Position {
-	if len(c.trace) == 0 {
+	if len(c.stack) == 0 {
 		return token.Position{}
 	}
-	return c.fset.Position(c.trace[len(c.trace)-1])
+	return c.fset.Position(c.stack[len(c.stack)-1])
 }
 
 // addError adds an error message with position to the error list
@@ -215,12 +229,12 @@ func (c *Context) lookupFile(fullPath, relativePath string) *File {
 
 // pushTrace pushes a position to the trace
 func (c *Context) pushTrace(pos token.Pos) {
-	c.trace = append(c.trace, pos)
+	c.stack = append(c.stack, pos)
 }
 
 // popTrace pops a position from the trace
 func (c *Context) popTrace() {
-	c.trace = c.trace[:len(c.trace)-1]
+	c.stack = c.stack[:len(c.stack)-1]
 }
 
 // call calls a function with arguments
@@ -241,7 +255,7 @@ func (c *Context) Resolve() error {
 		if files[i].pkg.name != files[j].pkg.name {
 			return files[i].pkg.name < files[j].pkg.name
 		}
-		return files[i].Pos() < files[j].Pos()
+		return files[i].pos < files[j].pos
 	})
 	c.sortedFiles = files
 

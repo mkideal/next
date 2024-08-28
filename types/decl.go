@@ -10,30 +10,30 @@ import (
 
 // Imports represents a list of import specs
 type Imports struct {
-	Specs []*ImportSpec
+	List []*ImportSpec
 }
 
 func (i *Imports) resolve(ctx *Context, file *File) {
-	for _, spec := range i.Specs {
+	for _, spec := range i.List {
 		spec.importedFile = ctx.lookupFile(file.Path, spec.Path)
 		if spec.importedFile == nil {
-			ctx.addErrorf(spec.Pos(), "import file not found: %s", spec.Path)
+			ctx.addErrorf(spec.pos, "import file not found: %s", spec.Path)
 		}
 	}
 }
 
-func (i *Imports) Packages() []*Package {
+func (i *Imports) ListForPackage() []*ImportSpec {
 	var seen = make(map[string]bool)
-	var pkgs []*Package
-	for _, spec := range i.Specs {
+	var pkgs []*ImportSpec
+	for _, spec := range i.List {
 		if seen[spec.importedFile.pkg.name] {
 			continue
 		}
 		seen[spec.importedFile.pkg.name] = true
-		pkgs = append(pkgs, spec.importedFile.pkg)
+		pkgs = append(pkgs, spec)
 	}
-	slices.SortFunc(pkgs, func(a, b *Package) int {
-		return cmp.Compare(a.name, b.name)
+	slices.SortFunc(pkgs, func(a, b *ImportSpec) int {
+		return cmp.Compare(a.importedFile.pkg.name, b.importedFile.pkg.name)
 	})
 	return pkgs
 }
@@ -47,7 +47,7 @@ type Decl struct {
 		annotations *ast.AnnotationGroup
 	}
 
-	Doc         *CommentGroup
+	Doc         *Doc
 	Annotations *AnnotationGroup
 	Specs       []Spec
 }
@@ -57,7 +57,7 @@ func newDecl(ctx *Context, file *File, src *ast.GenDecl) *Decl {
 		file: file,
 		pos:  src.Pos(),
 		tok:  src.Tok,
-		Doc:  newCommentGroup(src.Doc),
+		Doc:  newDoc(src.Doc),
 	}
 	d.unresolved.annotations = src.Annotations
 	for _, s := range src.Specs {

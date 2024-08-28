@@ -1,16 +1,10 @@
 package types
 
 import (
-	"errors"
 	"strconv"
 
 	"github.com/gopherd/next/constant"
 	"github.com/gopherd/next/token"
-)
-
-var (
-	ErrParamNotFound        = errors.New("param not found")
-	ErrUnpexpectedParamType = errors.New("unexpected param type")
 )
 
 // @api(template/annotation) AnnotationParam

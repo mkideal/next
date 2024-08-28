@@ -8,6 +8,28 @@ import (
 	"github.com/gopherd/next/token"
 )
 
+type Specs struct {
+	File    *File
+	Consts  *ConstSpecs
+	Enums   *EnumSpecs
+	Structs *StructSpecs
+}
+
+type ConstSpecs struct {
+	File *File
+	List []*ValueSpec
+}
+
+type EnumSpecs struct {
+	File *File
+	List []*EnumSpec
+}
+
+type StructSpecs struct {
+	File *File
+	List []*StructSpec
+}
+
 func newSpec(ctx *Context, file *File, decl *Decl, s ast.Spec) Spec {
 	switch s := s.(type) {
 	case *ast.ImportSpec:
@@ -30,9 +52,10 @@ type ImportSpec struct {
 		annotations *ast.AnnotationGroup
 	}
 
-	Doc, Comment *CommentGroup
-	Annotations  *AnnotationGroup
-	Path         string
+	Doc         *Doc
+	Comment     *Comment
+	Annotations *AnnotationGroup
+	Path        string
 }
 
 func newImportSpec(ctx *Context, _ *File, decl *Decl, src *ast.ImportSpec) *ImportSpec {
@@ -44,11 +67,9 @@ func newImportSpec(ctx *Context, _ *File, decl *Decl, src *ast.ImportSpec) *Impo
 	i := &ImportSpec{
 		pos:     src.Pos(),
 		decl:    decl,
-		Comment: newCommentGroup(src.Comment),
+		Doc:     newDoc(src.Doc),
+		Comment: newComment(src.Comment),
 		Path:    path,
-	}
-	if src.Doc != nil {
-		i.Doc = newCommentGroup(src.Doc)
 	}
 	i.unresolved.annotations = src.Annotations
 	return i
@@ -82,7 +103,7 @@ type ValueSpec struct {
 	name  string
 	value constant.Value
 	enum  struct {
-		typ   *EnumType // parent enum type
+		typ   *EnumSpec // parent enum type
 		index int       // index in the enum type. start from 0
 		iota  iotaValue // iota value
 	}
@@ -91,16 +112,17 @@ type ValueSpec struct {
 		value       ast.Expr
 	}
 
-	Doc, Comment *CommentGroup
-	Annotations  *AnnotationGroup
+	Doc         *Doc
+	Comment     *Comment
+	Annotations *AnnotationGroup
 }
 
 func newValueSpec(_ *Context, _ *File, decl *Decl, src *ast.ValueSpec) *ValueSpec {
 	v := &ValueSpec{
 		pos:     src.Pos(),
 		decl:    decl,
-		Doc:     newCommentGroup(src.Doc),
-		Comment: newCommentGroup(src.Comment),
+		Doc:     newDoc(src.Doc),
+		Comment: newComment(src.Comment),
 		name:    src.Name.Name,
 	}
 	v.unresolved.annotations = src.Annotations
@@ -118,7 +140,7 @@ func (v *ValueSpec) String() string {
 }
 
 // @api(template/object) ValueSpec.Enum
-func (v *ValueSpec) Enum() *EnumType {
+func (v *ValueSpec) Enum() *EnumSpec {
 	return v.enum.typ
 }
 
@@ -185,14 +207,14 @@ func (v *ValueSpec) resolveValue(ctx *Context, file *File, scope Scope, refs []*
 		v.value = constant.MakeInt64(0)
 	} else {
 		// Resolve previous value
-		prev := v.enum.typ.Members[v.enum.index-1]
+		prev := v.enum.typ.Members.List[v.enum.index-1]
 		prev.resolveValue(ctx, file, v.enum.typ, append(refs, v))
 
 		// Increment iota value
 		v.enum.iota.value = prev.enum.iota.value + 1
 
 		// Find the start value of the enum type for iota expression
-		start := v.enum.typ.Members[v.enum.index-v.enum.iota.value]
+		start := v.enum.typ.Members.List[v.enum.index-v.enum.iota.value]
 
 		if start.value != nil && start.enum.iota.found {
 			// If start value is specified and it has iota expression, resolve it with the current iota value
@@ -208,9 +230,9 @@ func (v *ValueSpec) resolveValue(ctx *Context, file *File, scope Scope, refs []*
 func newTypeSpec(ctx *Context, file *File, decl *Decl, src *ast.TypeSpec) Spec {
 	switch t := src.Type.(type) {
 	case *ast.EnumType:
-		return newEnumType(ctx, file, decl, src, t)
+		return newEnumSpec(ctx, file, decl, src, t)
 	case *ast.StructType:
-		return newStructType(ctx, file, decl, src, t)
+		return newStructSpec(ctx, file, decl, src, t)
 	default:
 		panic("unexpected type")
 	}
@@ -224,17 +246,18 @@ type Field struct {
 		typ         ast.Type
 	}
 
-	Doc, Comment *CommentGroup
-	Annotations  *AnnotationGroup
-	Name         string
-	Type         Type
+	Doc         *Doc
+	Comment     *Comment
+	Annotations *AnnotationGroup
+	Name        string
+	Type        Type
 }
 
 func newField(_ *Context, src *ast.Field) *Field {
 	f := &Field{
 		pos:     src.Pos(),
-		Doc:     newCommentGroup(src.Doc),
-		Comment: newCommentGroup(src.Comment),
+		Doc:     newDoc(src.Doc),
+		Comment: newComment(src.Comment),
 		Name:    src.Name.Name,
 	}
 	f.unresolved.annotations = src.Annotations
@@ -247,39 +270,48 @@ func (f *Field) resolve(ctx *Context, file *File, _ Scope) {
 	f.Type = ctx.resolveType(file, f.unresolved.typ)
 }
 
-// StructType represents a struct type.
-type StructType struct {
-	pos        token.Pos
+// Fields represents a list of struct fields.
+type Fields struct {
+	Struct *StructSpec
+	List   []*Field
+}
+
+// StructSpec represents a struct type.
+type StructSpec struct {
 	decl       *Decl
-	name       string
 	unresolved struct {
 		annotations *ast.AnnotationGroup
 	}
 
-	Doc, Comment *CommentGroup
-	Annotations  *AnnotationGroup
-	Fields       []*Field
+	Type        *StructType
+	Doc         *Doc
+	Comment     *Comment
+	Annotations *AnnotationGroup
+	Fields      *Fields
 }
 
-func newStructType(ctx *Context, _ *File, decl *Decl, src *ast.TypeSpec, t *ast.StructType) Spec {
-	s := &StructType{
-		pos:     src.Pos(),
+func newStructSpec(ctx *Context, _ *File, decl *Decl, src *ast.TypeSpec, t *ast.StructType) Spec {
+	s := &StructSpec{
 		decl:    decl,
-		Doc:     newCommentGroup(src.Doc),
-		Comment: newCommentGroup(src.Comment),
-		name:    src.Name.Name,
+		Doc:     newDoc(src.Doc),
+		Comment: newComment(src.Comment),
+		Type: &StructType{
+			name: src.Name.Name,
+			pos:  src.Pos(),
+		},
 	}
 	s.unresolved.annotations = src.Annotations
+	s.Fields = &Fields{Struct: s}
 	for _, f := range t.Fields.List {
-		s.Fields = append(s.Fields, newField(ctx, f))
+		s.Fields.List = append(s.Fields.List, newField(ctx, f))
 	}
 	return s
 }
 
-func (s *StructType) Decl() *Decl    { return s.decl }
-func (s *StructType) String() string { return s.name }
+func (s *StructSpec) Decl() *Decl    { return s.decl }
+func (s *StructSpec) String() string { return s.Type.name }
 
-func (s *StructType) resolve(ctx *Context, file *File, scope Scope) {
+func (s *StructSpec) resolve(ctx *Context, file *File, scope Scope) {
 	s.Annotations = ctx.resolveAnnotationGroup(file, s.unresolved.annotations)
 	if len(s.decl.Specs) == 1 {
 		s.Doc = s.decl.Doc
@@ -287,46 +319,55 @@ func (s *StructType) resolve(ctx *Context, file *File, scope Scope) {
 		s.Annotations = s.decl.Annotations
 		s.decl.Annotations = nil
 	}
-	for _, f := range s.Fields {
+	for _, f := range s.Fields.List {
 		f.resolve(ctx, file, scope)
 	}
 }
 
-// EnumType represents an enumeration type declaration.
-type EnumType struct {
-	pos        token.Pos
+// EnumMembers represents a list of enum members.
+type EnumMembers struct {
+	Enum *EnumSpec
+	List []*ValueSpec
+}
+
+// EnumSpec represents an enumeration type declaration.
+type EnumSpec struct {
+	decl       *Decl
 	unresolved struct {
 		annotations *ast.AnnotationGroup
 	}
-	decl *Decl
 
-	Doc, Comment *CommentGroup
-	Annotations  *AnnotationGroup
-	name         string
-	Members      []*ValueSpec
+	Type        *EnumType
+	Doc         *Doc
+	Comment     *Comment
+	Annotations *AnnotationGroup
+	Members     *EnumMembers
 }
 
-func newEnumType(ctx *Context, file *File, decl *Decl, src *ast.TypeSpec, t *ast.EnumType) *EnumType {
-	e := &EnumType{
-		pos:     src.Pos(),
+func newEnumSpec(ctx *Context, file *File, decl *Decl, src *ast.TypeSpec, t *ast.EnumType) *EnumSpec {
+	e := &EnumSpec{
 		decl:    decl,
-		Doc:     newCommentGroup(src.Doc),
-		Comment: newCommentGroup(src.Comment),
-		name:    src.Name.Name,
+		Doc:     newDoc(src.Doc),
+		Comment: newComment(src.Comment),
+		Type: &EnumType{
+			name: src.Name.Name,
+			pos:  src.Pos(),
+		},
 	}
+	e.Members = &EnumMembers{Enum: e}
 	e.unresolved.annotations = src.Annotations
 	for i, v := range t.Values {
 		m := newValueSpec(ctx, file, decl, v)
 		m.enum.typ = e
 		m.enum.index = i
-		e.Members = append(e.Members, m)
+		e.Members.List = append(e.Members.List, m)
 	}
 	return e
 }
 
-func (e *EnumType) Decl() *Decl { return e.decl }
+func (e *EnumSpec) Decl() *Decl { return e.decl }
 
-func (e *EnumType) resolve(ctx *Context, file *File, scope Scope) {
+func (e *EnumSpec) resolve(ctx *Context, file *File, scope Scope) {
 	e.Annotations = ctx.resolveAnnotationGroup(file, e.unresolved.annotations)
 	if len(e.decl.Specs) == 1 {
 		e.Doc = e.decl.Doc
@@ -334,9 +375,9 @@ func (e *EnumType) resolve(ctx *Context, file *File, scope Scope) {
 		e.Annotations = e.decl.Annotations
 		e.decl.Annotations = nil
 	}
-	for _, m := range e.Members {
+	for _, m := range e.Members.List {
 		m.resolve(ctx, file, e)
 	}
 }
 
-func (e *EnumType) String() string { return e.name }
+func (e *EnumSpec) String() string { return e.Type.name }

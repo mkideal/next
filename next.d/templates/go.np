@@ -1,0 +1,67 @@
+{{- define "next/go/file" -}}
+package {{.Package.Name}}
+{{super . -}}
+{{- end}}
+
+{{- define "next/go/imports" -}}
+{{render "go/imports.decl" . -}}
+{{render "go/imports.unused" . -}}
+{{- end}}
+
+{{- define "next/go/imports.decl" -}}
+{{- range .ListForPackage}}
+{{- if len .File.Package.Types}}
+{{next .}}
+{{- end}}
+{{- end}}
+{{- end}}
+
+{{- define "next/go/import" -}}
+import {{.File.Package.Name}} {{((.File.Package.Annotations.Lookup "next").Param "go_package").Value -}}
+{{- end}}
+
+{{- define "next/go/imports.unused" -}}
+{{- $n := 0}}
+{{- range .ListForPackage}}
+{{- if len .File.Package.Types}}
+{{- $n = (add ($n) 1)}}
+{{- end}}
+{{- end}}
+{{- if $n}}
+{{range $p := .ListForPackage}}
+{{- if len .File.Package.Types}}
+{{render "go/import.unused" .}}
+{{- end}}
+{{- end}}
+{{- end}}
+{{- end}}
+
+{{- define "next/go/import.unused" -}}
+var _ = (*{{.File.Package.Name}}.{{next (index (.File.Package.Types) 0)}})(nil)
+{{- end}}
+
+{{- define "next/go/const" -}}
+{{next .Doc}}const {{.Name}} = {{.Value}}{{next .Comment}}
+{{- end}}
+
+{{- define "next/go/enum" -}}
+{{next .Doc}}type {{.Name}} int
+
+const (
+{{- next .Members}}
+)
+{{- end}}
+
+{{- define "next/go/enum.member" -}}
+{{next .Doc}}{{.Enum.Name}}_{{.Name}} = {{.Value}}{{next .Comment}}
+{{- end}}
+
+{{- define "next/go/struct" -}}
+{{next .Doc}}type {{.Name}} struct {
+    {{- next .Fields}}
+}
+{{- end}}
+
+{{- define "next/go/struct.field" -}}
+{{next .Doc}}{{.Name | camelCase | capitalize}} {{next .Type}}{{next .Comment}}
+{{- end}}

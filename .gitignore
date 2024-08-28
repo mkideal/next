@@ -14,5 +14,5 @@ coverage.txt
 coverage.html
 
 /build/
-/cmd/next/next
 /testdata/gen/
+/cmd/next/next

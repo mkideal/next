@@ -73,6 +73,10 @@ func (c *Context) Generate() error {
 	c.Print("flags.templates: ", c.flags.templates)
 	c.Print("flags.types: ", c.flags.types)
 
+	if c.flags.outputs.Get("next") != "" {
+		return fmt.Errorf("output language 'next' is not supported")
+	}
+
 	// Check whether the template directory exists for each language
 	for lang := range c.flags.outputs {
 		tmplDir := c.flags.templates[lang]
@@ -98,13 +102,13 @@ func (c *Context) Generate() error {
 	c.flags.types = m
 	if c.IsDebugEnabled() {
 		for _, k := range slices.Sorted(maps.Keys(m)) {
-			c.Printf("types[%q] = %q", k, m[k])
+			c.Tracef("types[%q] = %q", k, m[k])
 		}
 	}
 
 	// Generate files for each language
 	for lang, dir := range c.flags.outputs {
-		ext := op.Or(c.flags.types[lang+".ext"], "."+lang)
+		ext := ".next" + op.Or(c.flags.types[lang+".ext"], "."+lang)
 		tempDir := c.flags.templates[lang]
 		if err := c.generateForTemplateDir(lang, ext, dir, tempDir); err != nil {
 			return err
@@ -182,10 +186,10 @@ func (c *Context) generateForTemplateFile(lang, ext, dir, tmplFile string) error
 		return generateForSpec(newTemplateData[*ValueSpec](tctx), tmplFile, string(content), meta)
 
 	case "enum":
-		return generateForSpec(newTemplateData[*EnumType](tctx), tmplFile, string(content), meta)
+		return generateForSpec(newTemplateData[*EnumSpec](tctx), tmplFile, string(content), meta)
 
 	case "struct":
-		return generateForSpec(newTemplateData[*StructType](tctx), tmplFile, string(content), meta)
+		return generateForSpec(newTemplateData[*StructSpec](tctx), tmplFile, string(content), meta)
 
 	default:
 		return fmt.Errorf(`unknown value for 'this': %q, expected "file", "const", "enum" or "struct"`, objType)
@@ -193,7 +197,7 @@ func (c *Context) generateForTemplateFile(lang, ext, dir, tmplFile string) error
 }
 
 func generateForFile(d *templateData[*File], file, content string, meta templateMeta[string]) error {
-	t, mt, err := createTemplates(file, content, meta, d.funcs)
+	t, mt, err := createTemplates(file, content, meta, d.withThis())
 	if err != nil {
 		return err
 	}
@@ -207,7 +211,7 @@ func generateForFile(d *templateData[*File], file, content string, meta template
 }
 
 func generateForSpec[T Node](d *templateData[T], file, content string, meta templateMeta[string]) error {
-	t, mt, err := createTemplates(file, content, meta, d.funcs)
+	t, mt, err := createTemplates(file, content, meta, d.withThis())
 	if err != nil {
 		return err
 	}

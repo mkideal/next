@@ -20,11 +20,11 @@ type Scope interface {
 }
 
 func (f *File) ParentScope() Scope     { return &fileParentScope{f} }
-func (e *EnumType) ParentScope() Scope { return e.decl.file }
+func (e *EnumSpec) ParentScope() Scope { return e.decl.file }
 
 func (f *File) LookupLocalSymbol(name string) Symbol { return f.symbols[name] }
-func (e *EnumType) LookupLocalSymbol(name string) Symbol {
-	for _, m := range e.Members {
+func (e *EnumSpec) LookupLocalSymbol(name string) Symbol {
+	for _, m := range e.Members.List {
 		if m.name == name {
 			return m
 		}
@@ -80,9 +80,9 @@ func (s *fileParentScope) ParentScope() Scope {
 func (s *fileParentScope) LookupLocalSymbol(name string) Symbol {
 	var files []*File
 	pkg, name := splitSymbolName(name)
-	for i := range s.f.imports.Specs {
-		if s.f.imports.Specs[i].importedFile.pkg.name == pkg {
-			files = append(files, s.f.imports.Specs[i].importedFile)
+	for i := range s.f.imports.List {
+		if s.f.imports.List[i].importedFile.pkg.name == pkg {
+			files = append(files, s.f.imports.List[i].importedFile)
 		}
 	}
 	for _, file := range files {
