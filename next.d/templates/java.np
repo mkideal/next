@@ -65,16 +65,16 @@ public class Constants {
 
 {{- define "next/java/struct" -}}
 {{next .Doc}}public class {{.Name}} {
-    {{next .Fields}}
+    {{- next .Fields}}
 
     public {{.Name}}() {}
 }
 {{- end}}
 
 {{- define "next/java/struct.field" -}}
-{{- $type := (next .Type) -}}
-{{- $name := (next .Name) -}}
-{{next .Doc}}private {{$type}} {{$name}};{{next .Comment}}
+{{- $type := (next .Type)}}
+{{- $name := (next .Name)}}
+    {{next .Doc}}private {{$type}} {{$name}};{{next .Comment}}
 
     public {{$type}} get{{$name | capitalize}}() {
         return {{$name}};
@@ -83,7 +83,7 @@ public class Constants {
     public void set{{$name | capitalize}}({{$type}} {{$name}}) {
         this.{{$name}} = {{$name}};
     }
-{{end}}
+{{- end}}
 
 {{- define "next/java/struct.field.name" -}}
 {{.}}

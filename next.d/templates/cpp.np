@@ -84,3 +84,13 @@ public:
 {{- define "next/cpp/struct.field" -}}
 {{next .Doc}}{{next .Type}} {{.Name | camelCase}};{{next .Comment}}
 {{- end}}
+
+{{- define "next/cpp/struct.field.type" -}}
+{{if not (.Type.Package.In .Field.Struct.Decl.File.Package) -}}
+{{$namespace := ((.Type.Package.Annotations.Lookup "next").Param "cpp_namespace").Value -}}
+{{if $namespace -}}
+{{unquote $namespace.String}}::
+{{- end -}}
+{{- end -}}
+{{next .Type}}
+{{- end}}
