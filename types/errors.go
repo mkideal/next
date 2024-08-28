@@ -3,8 +3,9 @@ package types
 import "errors"
 
 var (
-	ErrParamNotFound        = errors.New("param not found")
-	ErrUnpexpectedParamType = errors.New("unexpected param type")
+	ErrParamNotFound          = errors.New("param not found")
+	ErrUnpexpectedParamType   = errors.New("unexpected param type")
+	ErrUnexpectedConstantType = errors.New("unexpected constant type")
 )
 
 type TemplateNotFoundError struct {

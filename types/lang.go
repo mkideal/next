@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"regexp"
 	"strconv"
 	"strings"
 	"unicode"
@@ -38,7 +39,27 @@ func parseLangTypes[M ~map[string]string](m M, lang string, r io.Reader) error {
 	return s.Err()
 }
 
-func resolveLangType[M ~map[string]string](m M, lang string, t Type) (string, error) {
+var boxRegexp = regexp.MustCompile(`box\(([^)]*)\)`)
+
+func removeBox(input string) string {
+	return boxRegexp.ReplaceAllString(input, "$1")
+}
+
+func resolveLangType[M ~map[string]string](m M, lang string, t Type) (result string, err error) {
+	defer func() {
+		if err == nil && strings.Contains(result, "box(") {
+			// replace box(...) with the actual type
+			for k, v := range m {
+				if strings.HasPrefix(k, lang+".box(") {
+					dot := strings.Index(k, ".")
+					if dot > 0 && k[:dot] == lang {
+						result = strings.ReplaceAll(result, k[dot+1:], v)
+					}
+				}
+			}
+			result = removeBox(result)
+		}
+	}()
 	switch t := t.(type) {
 	case *BasicType:
 		p, ok := m[lang+"."+t.name]

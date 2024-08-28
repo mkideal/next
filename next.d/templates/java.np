@@ -1,0 +1,90 @@
+{{- define "next/java/file" -}}
+package {{render "java/package.name" .Package}};
+
+{{next .Imports -}}
+{{next .Specs -}}
+{{- end}}
+
+{{- define "next/java/imports" -}}
+import java.util.List;
+import java.util.Map;
+import java.util.Arrays;
+{{if .ListForPackage}}
+{{range .ListForPackage}}
+{{next . -}}
+{{- end}}
+{{- end}}
+{{- end}}
+
+{{- define "next/java/package.name" -}}
+{{((.Annotations.Lookup "next").Param "java_package").Value.String | unquote}}
+{{- end}}
+
+{{- define "next/java/import" -}}
+import {{render "java/package.name" .File.Package}}.*;
+{{- end}}
+
+{{- define "next/java/consts" -}}
+public class Constants {
+    {{- range .List}}
+    {{next . -}}
+    {{- end}}
+}
+{{- end}}
+
+{{- define "next/java/const" -}}
+{{next .Doc}}public static final {{next .Type}} {{.Name | upper}} = {{.Value}}{{if eq "long" ((next .Type))}}l{{end}};{{next .Comment}}
+{{- end}}
+
+{{- define "next/java/enums" -}}
+{{- range .List}}
+{{next . -}}
+
+{{- end}}
+{{- end}}
+
+{{- define "next/java/enum" -}}
+{{next .Doc}}public enum {{.Name}} {
+    {{- next .Members}}
+
+    private final int value;
+
+    {{.Name}}(int value) {
+        this.value = value;
+    }
+
+    public int getValue() {
+        return value;
+    }
+}
+{{- end}}
+
+{{- define "next/java/enum.member" -}}
+{{next .Doc}}{{.Name}}({{.Value}}){{if not .IsLast}},{{else}};{{end}}{{next .Comment}}
+{{- end}}
+
+{{- define "next/java/struct" -}}
+{{next .Doc}}public class {{.Name}} {
+    {{next .Fields}}
+
+    public {{.Name}}() {}
+}
+{{- end}}
+
+{{- define "next/java/struct.field" -}}
+{{- $type := (next .Type) -}}
+{{- $name := (next .Name) -}}
+{{next .Doc}}private {{$type}} {{$name}};{{next .Comment}}
+
+    public {{$type}} get{{$name | capitalize}}() {
+        return {{$name}};
+    }
+
+    public void set{{$name | capitalize}}({{$type}} {{$name}}) {
+        this.{{$name}} = {{$name}};
+    }
+{{end}}
+
+{{- define "next/java/struct.field.name" -}}
+{{.}}
+{{- end}}

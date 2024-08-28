@@ -15,9 +15,8 @@ import (
 //
 // ```
 // @json(omitempty)
-// @type(100)
 // @event(name="Login")
-// @message("Login", type=100)
+// @message(name="Login", type=100)
 // ```
 type AnnotationParam struct {
 	name  string
@@ -48,24 +47,8 @@ func (a *AnnotationParam) String() string {
 	return a.value.String()
 }
 
-// @api(template/annotation) AnnotationParam.IsNamed
-func (a *AnnotationParam) IsNamed() bool {
-	if a == nil {
-		return false
-	}
-	return a.name != ""
-}
-
-// @api(template/annotation) AnnotationParam.HasValue
-func (a *AnnotationParam) HasValue() bool {
-	if a == nil {
-		return false
-	}
-	return a.value != nil
-}
-
-// @api(template/annotation) AnnotationParam.GetString
-func (a *AnnotationParam) GetString() (string, error) {
+// @api(template/annotation) AnnotationParam.AsString
+func (a *AnnotationParam) AsString() (string, error) {
 	if a == nil {
 		return "", ErrParamNotFound
 	}
@@ -75,8 +58,8 @@ func (a *AnnotationParam) GetString() (string, error) {
 	return "", ErrUnpexpectedParamType
 }
 
-// @api(template/annotation) AnnotationParam.GetInt
-func (a *AnnotationParam) GetInt() (int64, error) {
+// @api(template/annotation) AnnotationParam.AsInt
+func (a *AnnotationParam) AsInt() (int64, error) {
 	if a == nil {
 		return 0, ErrParamNotFound
 	}
@@ -86,8 +69,8 @@ func (a *AnnotationParam) GetInt() (int64, error) {
 	return 0, ErrUnpexpectedParamType
 }
 
-// @api(template/annotation) AnnotationParam.GetFloat
-func (a *AnnotationParam) GetFloat() (float64, error) {
+// @api(template/annotation) AnnotationParam.AsFloat
+func (a *AnnotationParam) AsFloat() (float64, error) {
 	if a == nil {
 		return 0, ErrParamNotFound
 	}
@@ -97,13 +80,17 @@ func (a *AnnotationParam) GetFloat() (float64, error) {
 	return 0, ErrUnpexpectedParamType
 }
 
-// @api(template/annotation) AnnotationParam.GetBool
-func (a *AnnotationParam) GetBool() (bool, error) {
+// @api(template/annotation) AnnotationParam.AsBool
+func (a *AnnotationParam) AsBool() (bool, error) {
 	if a == nil {
 		return false, ErrParamNotFound
 	}
+	if a.value == nil {
+		// Default value is true if the named parameter has no value.
+		return true, nil
+	}
 	if a.value.Kind() == constant.Bool {
-		return strconv.ParseBool(a.value.String())
+		return constant.BoolVal(a.value), nil
 	}
 	return false, ErrUnpexpectedParamType
 }

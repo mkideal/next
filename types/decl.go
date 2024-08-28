@@ -66,6 +66,10 @@ func newDecl(ctx *Context, file *File, src *ast.GenDecl) *Decl {
 	return d
 }
 
+func (d *Decl) File() *File {
+	return d.file
+}
+
 func (d *Decl) resolve(ctx *Context, file *File, scope Scope) {
 	d.Annotations = ctx.resolveAnnotationGroup(file, d.unresolved.annotations)
 	for _, s := range d.Specs {

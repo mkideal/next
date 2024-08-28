@@ -71,10 +71,12 @@ test/src: go/generate go/vet
 .PHONY: test/template
 test/template: install
 	@echo "Running template tests..."
+	@rm -rf testdata/gen
 	@next \
-		-v 1 \
+		-v 3 \
 		-O go=testdata/gen/go -T go=testdata/templates/go \
 		-O cpp=testdata/gen/cpp -T cpp=testdata/templates/cpp \
+		-O java=testdata/gen/java -T java=testdata/templates/java \
 		testdata/src/
 
 .PHONY: clean

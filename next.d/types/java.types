@@ -13,6 +13,14 @@ bool=boolean
 string=String
 byte=byte
 bytes=byte[]
-map<%K%,%V%>=Map<%K,%V%>
-vector<%T%>=List<%T%>
+map<%K%,%V%>=Map<box(%K%),box(%V%)>
+vector<%T%>=List<box(%T%)>
 array<%T%,%N%>=%T%[]
+
+box(int)=Integer
+box(byte)=Byte
+box(short)=Short
+box(long)=Long
+box(float)=Float
+box(double)=Double
+box(boolean)=Boolean

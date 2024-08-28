@@ -62,6 +62,14 @@ const (
 }
 {{- end}}
 
-{{- define "next/go/struct.field" -}}
-{{next .Doc}}{{.Name | camelCase | capitalize}} {{next .Type}}{{next .Comment}}
+{{- define "next/struct.field" -}}
+{{next .Doc}}{{next .Name}} {{next .Type}};{{next .Comment}}
+{{- end}}
+
+{{- define "next/go/struct.field.type" -}}
+{{if not (.Type.Package.In .Field.Struct.Decl.File.Package)}}{{.Type.Package.Name}}.{{end}}{{next .Type}}
+{{- end}}
+
+{{- define "next/go/struct.field.name" -}}
+{{. | pascalCase }}
 {{- end}}

@@ -40,7 +40,7 @@ import "{{.Path}}";
 {{- end}}
 
 {{- define "next/const" -}}
-{{next .Doc}}const {{.Name}} = {{.Value}}{{next .Comment}}
+{{next .Doc}}const {{.Name}} = {{.Value}};{{next .Comment}}
 {{- end}}
 
 {{- define "next/enums" -}}
@@ -62,7 +62,7 @@ enum {{.Name}} {
 {{- end}}
 
 {{- define "next/enum.member" -}}
-{{next .Doc}}{{.Name}} = {{.Value}}{{next .Comment}}
+{{next .Doc}}{{.Name}} = {{.Value}},{{next .Comment}}
 {{- end}}
 
 {{- define "next/structs" -}}
@@ -84,5 +84,14 @@ enum {{.Name}} {
 {{- end}}
 
 {{- define "next/struct.field" -}}
-{{next .Doc}}{{next .Type}} {{.Name}};{{next .Comment}}
+{{next .Doc}}{{next .Type}} {{next .Name}};{{next .Comment}}
+{{- end}}
+
+{{- define "next/struct.field.type" -}}
+{{next .Type}}
+{{- end}}
+
+
+{{- define "next/struct.field.name" -}}
+{{.}}
 {{- end}}

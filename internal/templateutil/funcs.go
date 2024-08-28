@@ -14,7 +14,6 @@ import (
 	"strings"
 	"time"
 	"unicode"
-	"unicode/utf8"
 )
 
 // Funcs is a map of utility functions for use in templates
@@ -39,7 +38,7 @@ var Funcs = map[string]any{
 	// ```
 	// "Hello, World!"
 	// ```
-	"quote": strconv.Quote,
+	"quote": quote,
 
 	// @api(template/funcs) unquote (s: string)
 	// `unquote` interprets s as a double-quoted string literal and returns the string value that s represents.
@@ -59,7 +58,7 @@ var Funcs = map[string]any{
 	// ```
 	// Hello, World!
 	// ```
-	"unquote": strconv.Unquote,
+	"unquote": unquote,
 
 	// @api(template/funcs) capitalize (s: string)
 	// `capitalize` capitalizes the first character of the given string.
@@ -302,6 +301,25 @@ var Funcs = map[string]any{
 	// helloWorld
 	// ```
 	"camelCase": camelCase,
+
+	// @api(template/funcs) pascalCase (s: string)
+	// `pascalCase` converts the given string to pascal case.
+	//
+	// Example:
+	//
+	// ```
+	// {{pascalCase "hello world"}}
+	// ```
+	// or
+	// ```
+	// {{"hello world" | pascalCase}}
+	// ```
+	//
+	// Output:
+	// ```
+	// HelloWorld
+	// ```
+	"pascalCase": pascalCase,
 
 	// @api(template/funcs) snakeCase (s: string)
 	// `snakeCase` converts the given string to snake case.
@@ -907,12 +925,40 @@ var Funcs = map[string]any{
 
 // String functions
 
-func capitalize(s string) string {
+func quote(v reflect.Value) (string, error) {
+	if v.Kind() != reflect.String {
+		return "", fmt.Errorf("quote: expected string, got %s", v.Type())
+	}
+	return strconv.Quote(v.String()), nil
+}
+
+func unquote(v reflect.Value) (string, error) {
+	if v.Kind() != reflect.String {
+		return "", fmt.Errorf("unquote: expected string, got %s", v.Type())
+	}
+	s, err := strconv.Unquote(v.String())
+	if err != nil {
+		return "", err
+	}
+	return s, nil
+}
+
+func capitalize(v reflect.Value) (string, error) {
+	if v.Kind() != reflect.String {
+		return "", fmt.Errorf("capitalize: expected string, got %s", v.Type())
+	}
+	if strings.HasPrefix(v.String(), "package ") {
+		//panic("capitalize: cannot capitalize " + v.String())
+	}
+	return doCapitalize(v.String()), nil
+}
+
+func doCapitalize(s string) string {
 	if s == "" {
 		return s
 	}
-	r, size := utf8.DecodeRuneInString(s)
-	return string(unicode.ToUpper(r)) + s[size:]
+	r := []rune(s)
+	return string(unicode.ToUpper(r[0])) + string(r[1:])
 }
 
 func replace(s, old, new string, n ...reflect.Value) (string, error) {
@@ -932,22 +978,43 @@ func replace(s, old, new string, n ...reflect.Value) (string, error) {
 	}
 }
 
-func trimPrefix(prefix, s string) string {
-	return strings.TrimPrefix(s, prefix)
+func trimPrefix(p, v reflect.Value) (string, error) {
+	if p.Kind() != reflect.String {
+		return "", fmt.Errorf("trimPrefix: expected string as first argument, got %s", p.Type())
+	}
+	if v.Kind() != reflect.String {
+		return "", fmt.Errorf("trimPrefix: expected string as second argument, got %s", v.Type())
+	}
+	return strings.TrimPrefix(v.String(), p.String()), nil
 }
 
-func trimSuffix(suffix, s string) string {
-	return strings.TrimSuffix(s, suffix)
+func trimSuffix(s, suffix reflect.Value) (string, error) {
+	if s.Kind() != reflect.String {
+		return "", fmt.Errorf("trimSuffix: expected string as first argument, got %s", s.Type())
+	}
+	if suffix.Kind() != reflect.String {
+		return "", fmt.Errorf("trimSuffix: expected string as second argument, got %s", suffix.Type())
+	}
+	return strings.TrimSuffix(s.String(), suffix.String()), nil
 }
 
-func split(sep, s string) []string {
-	return strings.Split(s, sep)
+func split(sep, s reflect.Value) ([]string, error) {
+	if sep.Kind() != reflect.String {
+		return nil, fmt.Errorf("split: expected string as first argument, got %s", sep.Type())
+	}
+	if s.Kind() != reflect.String {
+		return nil, fmt.Errorf("split: expected string as second argument, got %s", s.Type())
+	}
+	return strings.Split(s.String(), sep.String()), nil
 }
 
-func join(sep string, v reflect.Value) (string, error) {
+func join(sep, v reflect.Value) (string, error) {
+	if sep.Kind() != reflect.String {
+		return "", fmt.Errorf("join: expected string as first argument, got %s", sep.Type())
+	}
 	kind := v.Kind()
 	if kind != reflect.Slice && kind != reflect.Array {
-		return "", fmt.Errorf("join: unsupported type %s", v.Type())
+		return "", fmt.Errorf("join: expected slice or array as second argument, got %s", v.Type())
 	}
 
 	length := v.Len()
@@ -957,14 +1024,20 @@ func join(sep string, v reflect.Value) (string, error) {
 		parts[i] = fmt.Sprint(v.Index(i).Interface())
 	}
 
-	return strings.Join(parts, sep), nil
+	return strings.Join(parts, sep.String()), nil
 }
 
-func striptags(s string) string {
-	return regexp.MustCompile("<[^>]*>").ReplaceAllString(s, "")
+func striptags(v reflect.Value) (string, error) {
+	if v.Kind() != reflect.String {
+		return "", fmt.Errorf("striptags: expected string, got %s", v.Type())
+	}
+	return regexp.MustCompile("<[^>]*>").ReplaceAllString(v.String(), ""), nil
 }
 
-func substr(start, length int, s string) string {
+func substr(start, length int, v reflect.Value) (string, error) {
+	if v.Kind() != reflect.String {
+		return "", fmt.Errorf("substr: expected string as third argument, got %s", v.Type())
+	}
 	if start < 0 {
 		start = 0
 	}
@@ -972,27 +1045,75 @@ func substr(start, length int, s string) string {
 		length = 0
 	}
 	end := start + length
+	s := v.String()
 	if end > len(s) {
 		end = len(s)
 	}
-	return s[start:end]
+	if start > end {
+		start = end
+	}
+	return s[start:end], nil
 }
 
-func camelCase(s string) string {
-	words := strings.FieldsFunc(s, func(r rune) bool {
-		return !unicode.IsLetter(r) && !unicode.IsNumber(r)
-	})
-	for i, word := range words {
-		if i == 0 {
-			words[i] = strings.ToLower(word)
+func camelCase(v reflect.Value) (string, error) {
+	if v.Kind() != reflect.String {
+		return "", fmt.Errorf("camelCase: expected string, got %s", v.Type())
+	}
+	s := v.String()
+	if s == "" {
+		return "", nil
+	}
+
+	var result strings.Builder
+	capNext := false
+	for i, r := range s {
+		if unicode.IsLetter(r) || unicode.IsNumber(r) {
+			if i == 0 {
+				result.WriteRune(unicode.ToLower(r))
+			} else if capNext {
+				result.WriteRune(unicode.ToUpper(r))
+				capNext = false
+			} else {
+				result.WriteRune(r)
+			}
 		} else {
-			words[i] = capitalize(strings.ToLower(word))
+			capNext = true
 		}
 	}
-	return strings.Join(words, "")
+	return result.String(), nil
 }
 
-func snakeCase(s string) string {
+func pascalCase(v reflect.Value) (string, error) {
+	if v.Kind() != reflect.String {
+		return "", fmt.Errorf("pascalCase: expected string, got %s", v.Type())
+	}
+	s := v.String()
+	if s == "" {
+		return "", nil
+	}
+
+	var result strings.Builder
+	capNext := true
+	for _, r := range s {
+		if unicode.IsLetter(r) || unicode.IsNumber(r) {
+			if capNext {
+				result.WriteRune(unicode.ToUpper(r))
+				capNext = false
+			} else {
+				result.WriteRune(r)
+			}
+		} else {
+			capNext = true
+		}
+	}
+	return result.String(), nil
+}
+
+func snakeCase(v reflect.Value) (string, error) {
+	if v.Kind() != reflect.String {
+		return "", fmt.Errorf("snakeCase: expected string, got %s", v.Type())
+	}
+	s := v.String()
 	var result strings.Builder
 	for i, r := range s {
 		if i > 0 && (unicode.IsUpper(r) || unicode.IsNumber(r) && !unicode.IsNumber(rune(s[i-1]))) {
@@ -1000,10 +1121,14 @@ func snakeCase(s string) string {
 		}
 		result.WriteRune(unicode.ToLower(r))
 	}
-	return result.String()
+	return result.String(), nil
 }
 
-func kebabCase(s string) string {
+func kebabCase(v reflect.Value) (string, error) {
+	if v.Kind() != reflect.String {
+		return "", fmt.Errorf("kebabCase: expected string, got %s", v.Type())
+	}
+	s := v.String()
 	var result strings.Builder
 	for i, r := range s {
 		if i > 0 && (unicode.IsUpper(r) || unicode.IsNumber(r) && !unicode.IsNumber(rune(s[i-1]))) {
@@ -1011,23 +1136,35 @@ func kebabCase(s string) string {
 		}
 		result.WriteRune(unicode.ToLower(r))
 	}
-	return result.String()
+	return result.String(), nil
 }
 
-func truncate(length int, suffix, s string) string {
+func truncate(length int, suffix, v reflect.Value) (string, error) {
+	if suffix.Kind() != reflect.String {
+		return "", fmt.Errorf("truncate: expected string as second argument, got %s", suffix.Type())
+	}
+	if v.Kind() != reflect.String {
+		return "", fmt.Errorf("truncate: expected string as third argument, got %s", v.Type())
+	}
 	if length <= 0 {
-		return ""
+		return "", nil
 	}
+	s := v.String()
 	if len(s) <= length {
-		return s
+		return s, nil
 	}
-	return s[:length-len(suffix)] + suffix
+	suf := suffix.String()
+	return s[:length-len(suf)] + suf, nil
 }
 
-func wordwrap(width int, s string) string {
+func wordwrap(width int, v reflect.Value) (string, error) {
+	if v.Kind() != reflect.String {
+		return "", fmt.Errorf("wordwrap: expected string as second argument, got %s", v.Type())
+	}
+	s := v.String()
 	words := strings.Fields(s)
 	if len(words) == 0 {
-		return s
+		return s, nil
 	}
 	var lines []string
 	var currentLine string
@@ -1047,29 +1184,46 @@ func wordwrap(width int, s string) string {
 	if currentLine != "" {
 		lines = append(lines, currentLine)
 	}
-	return strings.Join(lines, "\n")
+	return strings.Join(lines, "\n"), nil
 }
 
-func center(width int, s string) string {
+func center(width int, v reflect.Value) (string, error) {
+	if v.Kind() != reflect.String {
+		return "", fmt.Errorf("center: expected string as second argument, got %s", v.Type())
+	}
+	s := v.String()
 	if width <= len(s) {
-		return s
+		return s, nil
 	}
 	left := (width - len(s)) / 2
 	right := width - len(s) - left
-	return strings.Repeat(" ", left) + s + strings.Repeat(" ", right)
+	return strings.Repeat(" ", left) + s + strings.Repeat(" ", right), nil
 }
 
-func matchRegex(pattern, s string) (bool, error) {
-	return regexp.MatchString(pattern, s)
+func matchRegex(pattern, s reflect.Value) (bool, error) {
+	if pattern.Kind() != reflect.String {
+		return false, fmt.Errorf("matchRegex: expected string as first argument, got %s", pattern.Type())
+	}
+	if s.Kind() != reflect.String {
+		return false, fmt.Errorf("matchRegex: expected string as second argument, got %s", s.Type())
+	}
+	return regexp.MatchString(pattern.String(), s.String())
 }
 
-func urlUnescape(s string) (string, error) {
-	return url.QueryUnescape(s)
+func urlUnescape(v reflect.Value) (string, error) {
+	if v.Kind() != reflect.String {
+		return "", fmt.Errorf("urlUnescape: expected string, got %s", v.Type())
+	}
+	return url.QueryUnescape(v.String())
 }
 
 // Encoding functions
 
-func b64dec(s string) (string, error) {
+func b64dec(v reflect.Value) (string, error) {
+	if v.Kind() != reflect.String {
+		return "", fmt.Errorf("b64dec: expected string, got %s", v.Type())
+	}
+	s := v.String()
 	b, err := base64.StdEncoding.DecodeString(s)
 	if err != nil {
 		return "", err

@@ -1,0 +1,14 @@
+{{/*
+this: struct
+path: {{replace (render "java/package.name" this.Package) "." "/"}}/{{this.Name}}.java
+*/}}
+{{head}}
+
+{{- define "java/struct" -}}
+package {{render "java/package.name" .Package}};
+
+{{next .Decl.File.Imports}}
+{{super .}}
+{{- end}}
+
+{{next this}}

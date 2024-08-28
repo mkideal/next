@@ -1,3 +1,8 @@
+@next(
+    go_package="github.com/gopherd/next/testdata/gen/go/b",
+    cpp_namespace="nextlang::test::b",
+    java_package="com.example.nextlang.test.b",
+)
 package b;
 
 import "./a.next";
@@ -19,6 +24,10 @@ assert_eq(TestEnum.D, 8);
 assert_eq(TestEnum.E, 16);
 assert_eq(TestEnum.F, 1);
 assert_eq(TestEnum.G, 2);
+
+struct TestStruct {
+    a.Point2D point;
+}
 
 // error("This is an error message");
 print("All tests passed!");

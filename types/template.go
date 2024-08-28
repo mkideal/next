@@ -534,11 +534,12 @@ func (tc *templateContext[T]) renderWithNames(names []string, data any) (result 
 	defer func() {
 		tc.stack = tc.stack[:len(tc.stack)-1]
 	}()
+	start := tc.buf.Len()
 	if err := tt.Execute(&tc.buf, data); err != nil {
 		return "", fmt.Errorf("failed to execute template %q: %v", tt.Name(), err)
 	}
-	result = tc.buf.String()
-	tc.buf.Reset()
+	result = tc.buf.String()[start:]
+	tc.buf.Truncate(start)
 	return result, nil
 }
 

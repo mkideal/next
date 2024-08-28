@@ -17,6 +17,8 @@ type Package struct {
 
 func (p *Package) Name() string { return p.name }
 
+func (p *Package) In(pkg *Package) bool { return p == nil || p == pkg }
+
 func (p *Package) resolve(c *Context) error {
 	slices.SortFunc(p.files, func(a, b *File) int {
 		return cmp.Compare(a.Path, b.Path)

@@ -30,6 +30,8 @@ func (StructSpecs) ObjectType() string  { return "structs" }
 func (*StructSpec) ObjectType() string  { return "struct" }
 func (*Fields) ObjectType() string      { return "struct.fields" }
 func (*Field) ObjectType() string       { return "struct.field" }
+func (*FieldType) ObjectType() string   { return "struct.field.type" }
+func (FieldName) ObjectType() string    { return "struct.field.name" }
 func (b *BasicType) ObjectType() string { return b.name }
 func (*ArrayType) ObjectType() string   { return "type.array" }
 func (*VectorType) ObjectType() string  { return "type.vector" }
@@ -77,9 +79,17 @@ func (*StructType) symbolType() string { return TypeSymbol }
 // Type represents a Next type.
 type Type interface {
 	Object
+	Package() *Package
 	Kind() Kind
 	String() string
 }
+
+func (*BasicType) Package() *Package    { return nil }
+func (*ArrayType) Package() *Package    { return nil }
+func (*VectorType) Package() *Package   { return nil }
+func (*MapType) Package() *Package      { return nil }
+func (e *EnumType) Package() *Package   { return e.spec.Package() }
+func (s *StructType) Package() *Package { return s.spec.Package() }
 
 func (b *BasicType) Kind() Kind { return b.kind }
 func (*ArrayType) Kind() Kind   { return Array }

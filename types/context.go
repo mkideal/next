@@ -316,11 +316,14 @@ func (c *Context) resolveAnnotationGroup(file *File, annotations *ast.Annotation
 	list := make([]Annotation, len(annotations.List))
 	for i, a := range annotations.List {
 		params := make([]*AnnotationParam, len(a.Params))
+		seen := make(map[string]token.Pos)
 		for j, p := range a.Params {
-			var name string
-			if p.Name != nil {
-				name = p.Name.Name
+			name := p.Name.Name
+			if prev, ok := seen[name]; ok {
+				c.addErrorf(p.Pos(), "named parameter %s redefined, previous definition at\n %s", name, c.fset.Position(prev))
+				continue
 			}
+			seen[name] = p.Name.Pos()
 			var value constant.Value
 			if p.Value != nil {
 				value = c.resolveValue(file, p.Value, nil)

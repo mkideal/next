@@ -102,6 +102,7 @@ type ValueSpec struct {
 	decl  *Decl
 	name  string
 	value constant.Value
+	typ   *BasicType
 	enum  struct {
 		typ   *EnumSpec // parent enum type
 		index int       // index in the enum type. start from 0
@@ -144,9 +145,39 @@ func (v *ValueSpec) Enum() *EnumSpec {
 	return v.enum.typ
 }
 
+// IsFirst returns true if the value is the first member of the enum type.
+func (v *ValueSpec) IsFirst() bool {
+	return v.enum.index == 0
+}
+
+// IsLast returns true if the value is the last member of the enum type.
+func (v *ValueSpec) IsLast() bool {
+	return v.enum.index == len(v.enum.typ.Members.List)-1
+}
+
 // @api(template/object) ValueSpec.Value
 func (v *ValueSpec) Value() constant.Value {
 	return v.value
+}
+
+func (v *ValueSpec) Type() (Type, error) {
+	if v.typ == nil {
+		switch v.Underlying().(type) {
+		case int64:
+			v.typ = basicTypes["int64"]
+		case float32:
+			v.typ = basicTypes["float32"]
+		case float64:
+			v.typ = basicTypes["float64"]
+		case bool:
+			v.typ = basicTypes["bool"]
+		case string:
+			v.typ = basicTypes["string"]
+		default:
+			return nil, ErrUnexpectedConstantType
+		}
+	}
+	return v.typ, nil
 }
 
 // @api(template/object) ValueSpec.Underlying
@@ -160,8 +191,6 @@ func (v *ValueSpec) Underlying() any {
 		if i, exactly := constant.Int64Val(v.value); exactly {
 			return i
 		}
-		u, _ := constant.Uint64Val(v.value)
-		return u
 	case constant.Float:
 		if f, exactly := constant.Float32Val(v.value); exactly {
 			return f
@@ -238,6 +267,15 @@ func newTypeSpec(ctx *Context, file *File, decl *Decl, src *ast.TypeSpec) Spec {
 	}
 }
 
+type FieldName string
+
+func (n FieldName) String() string { return string(n) }
+
+type FieldType struct {
+	Field *Field
+	Type  Type
+}
+
 // Field represents a struct field.
 type Field struct {
 	pos        token.Pos
@@ -246,11 +284,12 @@ type Field struct {
 		typ         ast.Type
 	}
 
+	Struct      *StructSpec
 	Doc         *Doc
 	Comment     *Comment
 	Annotations *AnnotationGroup
-	Name        string
-	Type        Type
+	Name        FieldName
+	Type        *FieldType
 }
 
 func newField(_ *Context, src *ast.Field) *Field {
@@ -258,8 +297,10 @@ func newField(_ *Context, src *ast.Field) *Field {
 		pos:     src.Pos(),
 		Doc:     newDoc(src.Doc),
 		Comment: newComment(src.Comment),
-		Name:    src.Name.Name,
+		Name:    FieldName(src.Name.Name),
+		Type:    &FieldType{},
 	}
+	f.Type.Field = f
 	f.unresolved.annotations = src.Annotations
 	f.unresolved.typ = src.Type
 	return f
@@ -267,7 +308,7 @@ func newField(_ *Context, src *ast.Field) *Field {
 
 func (f *Field) resolve(ctx *Context, file *File, _ Scope) {
 	f.Annotations = ctx.resolveAnnotationGroup(file, f.unresolved.annotations)
-	f.Type = ctx.resolveType(file, f.unresolved.typ)
+	f.Type.Type = ctx.resolveType(file, f.unresolved.typ)
 }
 
 // Fields represents a list of struct fields.
@@ -300,10 +341,13 @@ func newStructSpec(ctx *Context, _ *File, decl *Decl, src *ast.TypeSpec, t *ast.
 			pos:  src.Pos(),
 		},
 	}
+	s.Type.spec = s
 	s.unresolved.annotations = src.Annotations
 	s.Fields = &Fields{Struct: s}
 	for _, f := range t.Fields.List {
-		s.Fields.List = append(s.Fields.List, newField(ctx, f))
+		field := newField(ctx, f)
+		field.Struct = s
+		s.Fields.List = append(s.Fields.List, field)
 	}
 	return s
 }
@@ -354,6 +398,7 @@ func newEnumSpec(ctx *Context, file *File, decl *Decl, src *ast.TypeSpec, t *ast
 			pos:  src.Pos(),
 		},
 	}
+	e.Type.spec = e
 	e.Members = &EnumMembers{Enum: e}
 	e.unresolved.annotations = src.Annotations
 	for i, v := range t.Values {

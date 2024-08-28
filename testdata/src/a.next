@@ -2,7 +2,8 @@
 
 @next(
     go_package="github.com/gopherd/next/testdata/gen/go/a",
-    cpp_namespace="nextlang::test",
+    cpp_namespace="nextlang::test::a",
+    java_package="com.example.nextlang.test.a",
 )
 package a;
 
@@ -226,6 +227,7 @@ struct ComplexStruct {
     bytes byteArray;
     array<int, 5> fixedArray;
     vector<string> dynamicArray;
+    vector<int> intArray;
     map<string, int> dictionary;
 }
 

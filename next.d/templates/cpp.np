@@ -59,7 +59,7 @@ class {{.Name}};
 {{- end}}
 
 {{- define "next/cpp/const" -}}
-{{next .Doc}}constexpr auto {{.Name}} = {{.Value}};{{next .Comment}}
+{{next .Doc}}static constexpr auto {{.Name}} = {{.Value}};{{next .Comment}}
 {{- end}}
 
 {{- define "next/cpp/enum" -}}
@@ -73,7 +73,7 @@ class {{.Name}};
 {{- end}}
 
 {{- define "next/cpp/struct" -}}
-{{.Doc.Text}}class {{.Name}} {
+{{next .Doc}}class {{.Name}} {
 public:
     {{.Name}}() = default;
     ~{{.Name}}() = default;

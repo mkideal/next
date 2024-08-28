@@ -246,8 +246,8 @@ func gen[T Node](tc *templateContext[T], t *template.Template, mt templateMeta[*
 	if meta.Get("skip").value() == "true" {
 		return nil
 	}
-	var sb strings.Builder
-	if err := t.Execute(&sb, tc); err != nil {
+	tc.buf.Reset()
+	if err := t.Execute(&tc.buf, tc); err != nil {
 		return fmt.Errorf("failed to execute template: %v", err)
 	}
 
@@ -265,7 +265,7 @@ func gen[T Node](tc *templateContext[T], t *template.Template, mt templateMeta[*
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 		return fmt.Errorf("failed to create directory %q: %v", tc.dir, err)
 	}
-	if err := os.WriteFile(path, []byte(sb.String()), 0644); err != nil {
+	if err := os.WriteFile(path, []byte(tc.buf.String()), 0644); err != nil {
 		return fmt.Errorf("failed to write file %q: %v", path, err)
 	}
 
