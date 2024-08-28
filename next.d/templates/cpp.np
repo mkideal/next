@@ -23,7 +23,7 @@
 {{- end}}
 
 {{- define "next/cpp/import" -}}
-#include "{{.File.Name}}.next.h"
+#include "{{.File.Name}}.h"
 {{- end}}
 
 {{- define "next/cpp/namespace.begin" -}}

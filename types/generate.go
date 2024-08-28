@@ -107,8 +107,9 @@ func (c *Context) Generate() error {
 	}
 
 	// Generate files for each language
-	for lang, dir := range c.flags.outputs {
-		ext := ".next" + op.Or(c.flags.types[lang+".ext"], "."+lang)
+	for _, lang := range slices.Sorted(maps.Keys(c.flags.outputs)) {
+		dir := c.flags.outputs[lang]
+		ext := op.Or(c.flags.types[lang+".ext"], "."+lang)
 		tempDir := c.flags.templates[lang]
 		if err := c.generateForTemplateDir(lang, ext, dir, tempDir); err != nil {
 			return err
