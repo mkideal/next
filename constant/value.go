@@ -57,11 +57,6 @@ type Value interface {
 // The spec requires at least 256 bits; typical implementations use 512 bits.
 const prec = 512
 
-// TODO(gri) Consider storing "error" information in an unknownVal so clients
-// can provide better error messages. For instance, if a number is
-// too large (incl. infinity), that could be recorded in unknownVal.
-// See also #20583 and #42695 for use cases.
-
 // Representation of values:
 //
 // Values of Int and Float Kind have two different representations each: int64Val

@@ -2,7 +2,7 @@
 
 @next(
     go_package="github.com/gopherd/next/testdata/gen/go/a",
-    cpp_namespace = "nextlang::test"
+    cpp_namespace="nextlang::test",
 )
 package a;
 

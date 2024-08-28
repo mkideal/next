@@ -57,8 +57,8 @@ func (s *StructSpec) Name() string { return s.Type.name }
 // Symbol represents a Next symbol: value(constant, enum member), type(struct, enum)
 type Symbol interface {
 	Object
-	Pos() token.Pos
-	SymbolType() string
+	symbolPos() token.Pos
+	symbolType() string
 }
 
 const (
@@ -66,13 +66,13 @@ const (
 	TypeSymbol  = "type"
 )
 
-func (v *ValueSpec) Pos() token.Pos  { return v.pos }
-func (e *EnumType) Pos() token.Pos   { return e.pos }
-func (s *StructType) Pos() token.Pos { return s.pos }
+func (v *ValueSpec) symbolPos() token.Pos  { return v.pos }
+func (e *EnumType) symbolPos() token.Pos   { return e.pos }
+func (s *StructType) symbolPos() token.Pos { return s.pos }
 
-func (*ValueSpec) SymbolType() string  { return ValueSymbol }
-func (*EnumType) SymbolType() string   { return TypeSymbol }
-func (*StructType) SymbolType() string { return TypeSymbol }
+func (*ValueSpec) symbolType() string  { return ValueSymbol }
+func (*EnumType) symbolType() string   { return TypeSymbol }
+func (*StructType) symbolType() string { return TypeSymbol }
 
 // Type represents a Next type.
 type Type interface {

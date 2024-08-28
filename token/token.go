@@ -4,7 +4,6 @@ package token
 
 import (
 	"strconv"
-	"strings"
 	"unicode"
 )
 
@@ -177,7 +176,7 @@ func (op Token) Precedence() int {
 		return 1
 	case LAND:
 		return 2
-	case EQL, NEQ, LSS, LEQ, GTR, GEQ, ASSIGN:
+	case EQL, NEQ, LSS, LEQ, GTR, GEQ:
 		return 3
 	case ADD, SUB, OR, XOR:
 		return 4
@@ -217,11 +216,6 @@ func (tok Token) IsOperator() bool { return operator_beg < tok && tok < operator
 // IsKeyword returns true for tokens corresponding to keywords;
 // it returns false otherwise.
 func (tok Token) IsKeyword() bool { return keyword_beg < tok && tok < keyword_end }
-
-// IsExported reports whether name does not start with underscore "_".
-func IsExported(name string) bool {
-	return !strings.HasPrefix(name, "_")
-}
 
 // IsKeyword reports whether name is a Go keyword, such as "func" or "return".
 func IsKeyword(name string) bool {

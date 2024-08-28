@@ -222,7 +222,7 @@ var opTests = []string{
 	`? / 0 = ?`,
 	`0 / ? = ?`,
 
-	`0 % 0 = "runtime_error:_integer_divide_by_zero"`, // TODO(gri) should be the same as for /
+	`0 % 0 = "runtime_error:_integer_divide_by_zero"`,
 	`10 % 3 = 1`,
 	`? % 0 = ?`,
 	`0 % ? = ?`,

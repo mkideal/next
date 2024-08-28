@@ -140,17 +140,6 @@ func (a *Annotation) Contains(name string) bool {
 	return false
 }
 
-// @api(template/annotation) Annotation.At
-func (a *Annotation) At(i int) *AnnotationParam {
-	if a == nil {
-		return nil
-	}
-	if i < 0 || i >= len(a.params) {
-		return nil
-	}
-	return a.params[i]
-}
-
 // @api(template/annotation) Annotation.Param
 func (a *Annotation) Param(name string) *AnnotationParam {
 	if a == nil {

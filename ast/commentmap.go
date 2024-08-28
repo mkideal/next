@@ -180,7 +180,6 @@ func NewCommentMap(fset *token.FileSet, node Node, comments []*CommentGroup) Com
 			// (i.e., a node of "importance" such as a declaration);
 			// if that fails, try to associate it with the most recent
 			// node.
-			// TODO(gri) try to simplify the logic below
 			var assoc Node
 			switch {
 			case pg != nil &&

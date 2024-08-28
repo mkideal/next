@@ -56,7 +56,7 @@ func expectTypeSymbol(name string, s Symbol) (Type, error) {
 	if t, ok := s.(Type); ok {
 		return t, nil
 	}
-	return nil, &UnexpectedSymbolTypeError{Name: name, Want: "type", Got: s.SymbolType()}
+	return nil, &UnexpectedSymbolTypeError{Name: name, Want: "type", Got: s.symbolType()}
 }
 
 func expectValueSymbol(name string, s Symbol) (*ValueSpec, error) {
@@ -66,7 +66,7 @@ func expectValueSymbol(name string, s Symbol) (*ValueSpec, error) {
 	if v, ok := s.(*ValueSpec); ok {
 		return v, nil
 	}
-	return nil, &UnexpectedSymbolTypeError{Name: name, Want: "value", Got: s.SymbolType()}
+	return nil, &UnexpectedSymbolTypeError{Name: name, Want: "value", Got: s.symbolType()}
 }
 
 type fileParentScope struct {

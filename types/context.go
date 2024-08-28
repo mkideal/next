@@ -272,7 +272,7 @@ func (c *Context) Resolve() error {
 		for name, symbol := range file.symbols {
 			symbolName := joinSymbolName(file.pkg.name, name)
 			if prev, ok := c.symbols[symbolName]; ok {
-				c.addErrorf(symbol.Pos(), "symbol %s redeclared: previous declaration at %s", symbolName, c.fset.Position(prev.Pos()))
+				c.addErrorf(symbol.symbolPos(), "symbol %s redeclared: previous declaration at %s", symbolName, c.fset.Position(prev.symbolPos()))
 			} else {
 				c.symbols[symbolName] = symbol
 			}
@@ -355,9 +355,9 @@ func (c *Context) resolveSymbolValue(file *File, scope Scope, refs []*ValueSpec,
 	if index := slices.Index(refs, v); index >= 0 {
 		var sb strings.Builder
 		for i := index; i < len(refs); i++ {
-			fmt.Fprintf(&sb, "\n%s: %s ↓", c.fset.Position(refs[i].Pos()), refs[i].name)
+			fmt.Fprintf(&sb, "\n%s: %s ↓", c.fset.Position(refs[i].symbolPos()), refs[i].name)
 		}
-		c.addErrorf(v.pos, "cyclic references: %s\n%s: %s", sb.String(), c.fset.Position(v.Pos()), v.name)
+		c.addErrorf(v.pos, "cyclic references: %s\n%s: %s", sb.String(), c.fset.Position(v.symbolPos()), v.name)
 		return constant.MakeUnknown()
 	}
 	v.resolveValue(c, file, scope, refs)
@@ -404,9 +404,9 @@ func (c *Context) recursiveResolveValue(file *File, scope Scope, refs []*ValueSp
 			c.addErrorf(expr.Pos(), "%s is not defined", name)
 			return constant.MakeUnknown()
 		}
-		file = c.getFileByPos(v.Pos())
+		file = c.getFileByPos(v.symbolPos())
 		if file == nil {
-			c.addErrorf(expr.Pos(), "%s is not defined (file %q not found)", name, c.fset.Position(v.Pos()).Filename)
+			c.addErrorf(expr.Pos(), "%s is not defined (file %q not found)", name, c.fset.Position(v.symbolPos()).Filename)
 			return constant.MakeUnknown()
 		}
 		return c.resolveSymbolValue(file, scope, refs, v)

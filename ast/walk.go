@@ -18,9 +18,6 @@ func walkList[N Node](v Visitor, list []N) {
 	}
 }
 
-// TODO(gri): Investigate if providing a closure to Walk leads to
-// simpler use (and may help eliminate Inspect in turn).
-
 // Walk traverses an AST in depth-first order: It starts by calling
 // v.Visit(node); node must not be nil. If the visitor w returned by
 // v.Visit(node) is not nil, Walk is invoked recursively with visitor
@@ -42,7 +39,7 @@ func Walk(v Visitor, node Node) {
 	case *CommentGroup:
 		walkList(v, n.List)
 
-	case *AnnotationParam:
+	case *NamedParam:
 		if n.Name != nil {
 			Walk(v, n.Name)
 		}
@@ -183,11 +180,6 @@ func Walk(v Visitor, node Node) {
 		// don't walk n.Comments - they have been
 		// visited already through the individual
 		// nodes
-
-	case *Package:
-		for _, f := range n.Files {
-			Walk(v, f)
-		}
 
 	default:
 		panic(fmt.Sprintf("ast.Walk: unexpected node type %T", n))

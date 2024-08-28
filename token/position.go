@@ -366,8 +366,6 @@ func (f *File) unpack(offset int, adjusted bool) (filename string, line, column 
 			}
 		}
 	}
-	// TODO(mvdan): move Unlock back under Lock with a defer statement once
-	// https://go.dev/issue/38471 is fixed to remove the performance penalty.
 	f.mutex.Unlock()
 	return
 }
@@ -600,7 +598,6 @@ func searchInts(a []int, x int) int {
 	// future, but at the moment this change improves the go/printer
 	// benchmark performance by ~30%. This has a direct impact on the
 	// speed of gofmt and thus seems worthwhile (2011-04-29).
-	// TODO(gri): Remove this when compilers have caught up.
 	i, j := 0, len(a)
 	for i < j {
 		h := int(uint(i+j) >> 1) // avoid overflow when computing h

@@ -447,36 +447,14 @@ func (p *parser) parseAnnotationGroup() *ast.AnnotationGroup {
 func (p *parser) parseAnnotation() *ast.Annotation {
 	pos := p.expect(token.AT)
 	name := p.parseIdent()
-	var params []*ast.AnnotationParam
+	var params []*ast.NamedParam
 	var lparen token.Pos
 	var rparen token.Pos
 	if p.tok == token.LPAREN {
 		lparen = p.pos
 		p.next()
 		if p.tok != token.RPAREN {
-			for _, expr := range p.parseExprList(true, true) {
-				expr = ast.Unparen(expr)
-				switch x := expr.(type) {
-				case *ast.Ident:
-					params = append(params, &ast.AnnotationParam{Name: x})
-				case *ast.BinaryExpr:
-					if x.Op == token.ASSIGN {
-						if ident, ok := x.X.(*ast.Ident); ok {
-							params = append(params, &ast.AnnotationParam{
-								Name:      ident,
-								AssignPos: x.OpPos,
-								Value:     x.Y,
-							})
-						} else {
-							p.error(x.Pos(), "expected identifier")
-						}
-					} else {
-						params = append(params, &ast.AnnotationParam{Value: x})
-					}
-				default:
-					params = append(params, &ast.AnnotationParam{Value: x})
-				}
-			}
+			params = p.parseNamedParamList()
 		}
 		rparen = p.expect(token.RPAREN)
 	}
@@ -508,18 +486,40 @@ func (p *parser) parseIdent() *ast.Ident {
 // Common productions
 
 // If lhs is set, result list elements which are identifiers are not resolved.
-func (p *parser) parseExprList(assignAllowed, cmpAllowed bool) (list []ast.Expr) {
+func (p *parser) parseExprList(cmpAllowed bool) (list []ast.Expr) {
 	if p.trace {
 		defer un(trace(p, "ExpressionList"))
 	}
 
-	list = append(list, p.parseExpr(assignAllowed, cmpAllowed))
+	list = append(list, p.parseExpr(cmpAllowed))
 	for p.tok == token.COMMA {
 		p.next()
-		list = append(list, p.parseExpr(assignAllowed, cmpAllowed))
+		list = append(list, p.parseExpr(cmpAllowed))
 	}
 
 	return
+}
+
+func (p *parser) parseNamedParamList() []*ast.NamedParam {
+	if p.trace {
+		defer un(trace(p, "NamedParamList"))
+	}
+	var params []*ast.NamedParam
+	for p.tok != token.RPAREN && p.tok != token.EOF {
+		var param = &ast.NamedParam{
+			Name: p.parseIdent(),
+		}
+		if p.tok == token.ASSIGN {
+			param.AssignPos = p.pos
+			p.next()
+			param.Value = p.parseExpr(true)
+		}
+		params = append(params, param)
+		if p.tok != token.RPAREN && p.tok != token.EOF {
+			p.expect(token.COMMA)
+		}
+	}
+	return params
 }
 
 // ----------------------------------------------------------------------------
@@ -554,7 +554,7 @@ func (p *parser) parseType() ast.Type {
 		p.expect(token.LSS)
 		t := p.parseType()
 		p.expect(token.COMMA)
-		n := p.parseExpr(false, false)
+		n := p.parseExpr(false)
 		gt := p.pos
 		p.expect(token.GTR)
 		typ = &ast.ArrayType{
@@ -669,7 +669,7 @@ func (p *parser) parseEnumType() *ast.EnumType {
 
 // parseOperand may return an expression or a raw type (incl. array
 // types of the form [...]T). Callers must verify the result.
-func (p *parser) parseOperand(assignAllowed, cmpAllowed bool) ast.Expr {
+func (p *parser) parseOperand(cmpAllowed bool) ast.Expr {
 	if p.trace {
 		defer un(trace(p, "Operand"))
 	}
@@ -688,7 +688,7 @@ func (p *parser) parseOperand(assignAllowed, cmpAllowed bool) ast.Expr {
 		lparen := p.pos
 		p.next()
 		p.exprLev++
-		x := p.parseExpr(assignAllowed, cmpAllowed) // types may be parenthesized: (some type)
+		x := p.parseExpr(cmpAllowed) // types may be parenthesized: (some type)
 		p.exprLev--
 		rparen := p.expect(token.RPAREN)
 		return &ast.ParenExpr{Lparen: lparen, X: x, Rparen: rparen}
@@ -721,7 +721,7 @@ func (p *parser) parseCall(fun ast.Expr) *ast.CallExpr {
 	var list []ast.Expr
 	var ellipsis token.Pos
 	for p.tok != token.RPAREN && p.tok != token.EOF && !ellipsis.IsValid() {
-		list = append(list, p.parseExpr(true, true)) // builtins may expect a type: make(some type, ...)
+		list = append(list, p.parseExpr(true)) // builtins may expect a type: make(some type, ...)
 		if !p.atComma("argument list", token.RPAREN) {
 			break
 		}
@@ -733,21 +733,21 @@ func (p *parser) parseCall(fun ast.Expr) *ast.CallExpr {
 	return &ast.CallExpr{Fun: fun, Lparen: lparen, Args: list, Rparen: rparen}
 }
 
-func (p *parser) parseValue(assignAllowed, cmpAllowed bool) ast.Expr {
+func (p *parser) parseValue(cmpAllowed bool) ast.Expr {
 	if p.trace {
 		defer un(trace(p, "Element"))
 	}
 
-	return p.parseExpr(assignAllowed, cmpAllowed)
+	return p.parseExpr(cmpAllowed)
 }
 
-func (p *parser) parsePrimaryExpr(x ast.Expr, assignAllowed, cmpAllowed bool) ast.Expr {
+func (p *parser) parsePrimaryExpr(x ast.Expr, cmpAllowed bool) ast.Expr {
 	if p.trace {
 		defer un(trace(p, "PrimaryExpr"))
 	}
 
 	if x == nil {
-		x = p.parseOperand(assignAllowed, cmpAllowed)
+		x = p.parseOperand(cmpAllowed)
 	}
 	// We track the nesting here rather than at the entry for the function,
 	// since it can iteratively produce a nested output, and we want to
@@ -779,7 +779,7 @@ func (p *parser) parsePrimaryExpr(x ast.Expr, assignAllowed, cmpAllowed bool) as
 	}
 }
 
-func (p *parser) parseUnaryExpr(assignAllowed, cmpAllowed bool) ast.Expr {
+func (p *parser) parseUnaryExpr(cmpAllowed bool) ast.Expr {
 	defer decNestLev(incNestLev(p))
 
 	if p.trace {
@@ -790,11 +790,11 @@ func (p *parser) parseUnaryExpr(assignAllowed, cmpAllowed bool) ast.Expr {
 	case token.ADD, token.SUB, token.NOT, token.XOR, token.AND:
 		pos, op := p.pos, p.tok
 		p.next()
-		x := p.parseUnaryExpr(assignAllowed, cmpAllowed)
+		x := p.parseUnaryExpr(cmpAllowed)
 		return &ast.UnaryExpr{OpPos: pos, Op: op, X: x}
 	}
 
-	return p.parsePrimaryExpr(nil, assignAllowed, cmpAllowed)
+	return p.parsePrimaryExpr(nil, cmpAllowed)
 }
 
 func (p *parser) tokPrec() (token.Token, int) {
@@ -804,15 +804,13 @@ func (p *parser) tokPrec() (token.Token, int) {
 
 // parseBinaryExpr parses a (possibly) binary expression.
 // If x is non-nil, it is used as the left operand.
-//
-// TODO(rfindley): parseBinaryExpr has become overloaded. Consider refactoring.
-func (p *parser) parseBinaryExpr(x ast.Expr, prec1 int, assignAllowed, cmpAllowed bool) ast.Expr {
+func (p *parser) parseBinaryExpr(x ast.Expr, prec1 int, cmpAllowed bool) ast.Expr {
 	if p.trace {
 		defer un(trace(p, "BinaryExpr"))
 	}
 
 	if x == nil {
-		x = p.parseUnaryExpr(assignAllowed, cmpAllowed)
+		x = p.parseUnaryExpr(cmpAllowed)
 	}
 	// We track the nesting here rather than at the entry for the function,
 	// since it can iteratively produce a nested output, and we want to
@@ -825,35 +823,26 @@ func (p *parser) parseBinaryExpr(x ast.Expr, prec1 int, assignAllowed, cmpAllowe
 		if oprec < prec1 {
 			return x
 		}
-		if op == token.ASSIGN {
-			if !assignAllowed {
-				return x
-			}
-			if _, ok := x.(*ast.Ident); !ok {
-				p.error(x.Pos(), "assignment to non-assignable")
-			}
-
-		}
 		if (op == token.LSS || op == token.GTR) && !cmpAllowed {
 			return x
 		}
 		pos := p.expect(op)
-		y := p.parseBinaryExpr(nil, oprec+1, assignAllowed, cmpAllowed)
+		y := p.parseBinaryExpr(nil, oprec+1, cmpAllowed)
 		x = &ast.BinaryExpr{X: x, OpPos: pos, Op: op, Y: y}
 	}
 }
 
 // The result may be a type or even a raw type ([...]int).
-func (p *parser) parseExpr(assignAllowed, cmpAllowed bool) ast.Expr {
+func (p *parser) parseExpr(cmpAllowed bool) ast.Expr {
 	if p.trace {
 		defer un(trace(p, "Expression"))
 	}
 
-	return p.parseBinaryExpr(nil, token.LowestPrec+1, assignAllowed, cmpAllowed)
+	return p.parseBinaryExpr(nil, token.LowestPrec+1, cmpAllowed)
 }
 
 func (p *parser) parseCallExpr(callType string) *ast.CallExpr {
-	x := p.parseExpr(false, true) // could be a conversion: (some type)(x)
+	x := p.parseExpr(true) // could be a conversion: (some type)(x)
 	if t := ast.Unparen(x); t != x {
 		p.error(x.Pos(), fmt.Sprintf("expression in %s must not be parenthesized", callType))
 		x = t
@@ -879,7 +868,7 @@ func (p *parser) parseExprStmt() *ast.ExprStmt {
 	if p.trace {
 		defer un(trace(p, "ExpressionStatement"))
 	}
-	expr := p.parseExpr(true, true)
+	expr := p.parseExpr(true)
 	p.expectSemi()
 	return &ast.ExprStmt{X: expr}
 }
@@ -931,12 +920,12 @@ func (p *parser) parseValueSpec(doc *ast.CommentGroup, annotations *ast.Annotati
 	switch keyword {
 	case token.CONST:
 		p.expect(token.ASSIGN)
-		value = p.parseExpr(false, true)
+		value = p.parseExpr(true)
 		comment = p.expectSemi()
 	case token.ENUM:
 		if p.tok == token.ASSIGN {
 			p.next()
-			value = p.parseExpr(false, true)
+			value = p.parseExpr(true)
 		}
 		p.expect(token.COMMA)
 		comment = p.lineComment

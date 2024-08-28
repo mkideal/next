@@ -213,17 +213,16 @@ func (p *printer) print(x reflect.Value) {
 		for i, n := 0, t.NumField(); i < n; i++ {
 			// exclude non-exported fields because their
 			// values cannot be accessed via reflection
-			if name := t.Field(i).Name; IsExported(name) {
-				value := x.Field(i)
-				if p.filter == nil || p.filter(name, value) {
-					if first {
-						p.printf("\n")
-						first = false
-					}
-					p.printf("%s: ", name)
-					p.print(value)
+			name := t.Field(i).Name
+			value := x.Field(i)
+			if p.filter == nil || p.filter(name, value) {
+				if first {
 					p.printf("\n")
+					first = false
 				}
+				p.printf("%s: ", name)
+				p.print(value)
+				p.printf("\n")
 			}
 		}
 		p.indent--

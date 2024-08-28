@@ -4,10 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"io"
-	"io/fs"
 	"os"
-	"path/filepath"
-	"strings"
 
 	"github.com/gopherd/next/ast"
 	"github.com/gopherd/next/token"
@@ -120,58 +117,6 @@ func ParseFile(fset *token.FileSet, filename string, src any, mode Mode) (f *ast
 	return
 }
 
-// ParseDir calls [ParseFile] for all files with names ending in ".go" in the
-// directory specified by path and returns a map of package name -> package
-// AST with all the packages found.
-//
-// If filter != nil, only the files with [fs.FileInfo] entries passing through
-// the filter (and ending in ".go") are considered. The mode bits are passed
-// to [ParseFile] unchanged. Position information is recorded in fset, which
-// must not be nil.
-//
-// If the directory couldn't be read, a nil map and the respective error are
-// returned. If a parse error occurred, a non-nil but incomplete map and the
-// first error encountered are returned.
-func ParseDir(fset *token.FileSet, path string, filter func(fs.FileInfo) bool, mode Mode) (pkgs map[string]*ast.Package, first error) {
-	list, err := os.ReadDir(path)
-	if err != nil {
-		return nil, err
-	}
-
-	pkgs = make(map[string]*ast.Package)
-	for _, d := range list {
-		if d.IsDir() || !strings.HasSuffix(d.Name(), ".go") {
-			continue
-		}
-		if filter != nil {
-			info, err := d.Info()
-			if err != nil {
-				return nil, err
-			}
-			if !filter(info) {
-				continue
-			}
-		}
-		filename := filepath.Join(path, d.Name())
-		if src, err := ParseFile(fset, filename, nil, mode); err == nil {
-			name := src.Name.Name
-			pkg, found := pkgs[name]
-			if !found {
-				pkg = &ast.Package{
-					Name:  name,
-					Files: make(map[string]*ast.File),
-				}
-				pkgs[name] = pkg
-			}
-			pkg.Files[filename] = src
-		} else if first == nil {
-			first = err
-		}
-	}
-
-	return
-}
-
 // ParseExprFrom is a convenience function for parsing an expression.
 // The arguments have the same meaning as for [ParseFile], but the source must
 // be a valid Go (type or value) expression. Specifically, fset must not
@@ -210,7 +155,7 @@ func ParseExprFrom(fset *token.FileSet, filename string, src any, mode Mode) (ex
 
 	// parse expr
 	p.init(fset, filename, text, mode)
-	expr = p.parseExpr(false, true)
+	expr = p.parseExpr(true)
 
 	// If a semicolon was inserted, consume it;
 	// report an error if there's more tokens.
