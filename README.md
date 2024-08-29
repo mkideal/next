@@ -1,6 +1,6 @@
 # Next Language 🚀
 
-[中文文档](./README_CN.md)
+[中文文档](./README_ZH.md)
 
 Next is a powerful code generation language designed to create highly customized code across multiple programming languages. It leverages a flexible template system to transform high-level specifications into language-specific implementations.
 
