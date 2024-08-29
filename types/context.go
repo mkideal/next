@@ -25,7 +25,7 @@ type Context struct {
 		importDirs flags.Slice
 		macros     flags.Map
 		outputs    flags.Map
-		templates  flags.Map
+		templates  flags.MapSlice
 		types      flags.Map
 	}
 
@@ -61,18 +61,18 @@ func NewContext() *Context {
 	}
 	c.flags.macros = make(flags.Map)
 	c.flags.outputs = make(flags.Map)
-	c.flags.templates = make(flags.Map)
+	c.flags.templates = make(flags.MapSlice)
 	c.flags.types = make(flags.Map)
 
 	return c
 }
 
 func (c *Context) SetupCommandFlags(fs *flag.FlagSet, u flags.UsageFunc) {
-	fs.IntVar(&c.flags.verbose, "v", 0, u("Set verbose logging `level`: 0=off, 1=info, 2=debug, 3=trace"))
+	fs.IntVar(&c.flags.verbose, "v", 0, u("Set `verbose` level for debugging: 0=off, 1=info, 2=debug, 3=trace"))
 	fs.Var(&c.flags.importDirs, "I", u("Add import directories as `dir[,dir2,...]`, e.g. -I dir1 -I dir2 or -I dir1,dir2"))
 	fs.Var(&c.flags.macros, "D", u("Define macro variables as `name[=value]`, e.g. -D A=\"hello next\" -D X=hello -D Y=1 -D Z"))
 	fs.Var(&c.flags.outputs, "O", u("Specify output directories as `lang=dir`, e.g. -O go=gen/go -O ts=gen/ts"))
-	fs.Var(&c.flags.templates, "T", u("Provide template directories or files as `lang=dir|file`, e.g. -T go=tmpl/go -T ts=tmpl/ts.np"))
+	fs.Var(&c.flags.templates, "T", u("Provide template directories or files as `lang=dir|file`, e.g. -T go=tmpl/go -T ts=tmpl/ts.npl"))
 	fs.Var(&c.flags.types, "M", u("Set type mappings as `lang.type=value`, e.g. -M cpp.int=int64_t -M cpp.map<%K%,%V%>=std::map<%K%,%V%>"))
 }
 
@@ -309,39 +309,38 @@ func (c *Context) Resolve() error {
 }
 
 // resolveAnnotationGroup resolves an annotation group
-func (c *Context) resolveAnnotationGroup(file *File, annotations *ast.AnnotationGroup) *AnnotationGroup {
+func (c *Context) resolveAnnotationGroup(file *File, annotations *ast.AnnotationGroup) AnnotationGroup {
 	if annotations == nil {
 		return nil
 	}
-	list := make([]Annotation, len(annotations.List))
-	for i, a := range annotations.List {
-		params := make([]*AnnotationParam, len(a.Params))
-		seen := make(map[string]token.Pos)
-		for j, p := range a.Params {
+	result := make(AnnotationGroup)
+	for _, a := range annotations.List {
+		if _, dup := result[a.Name.Name]; dup {
+			c.addErrorf(a.Pos(), "annotation %s redeclared", a.Name.Name)
+			continue
+		}
+		params := make(Annotation)
+		for _, p := range a.Params {
 			name := p.Name.Name
-			if prev, ok := seen[name]; ok {
-				c.addErrorf(p.Pos(), "named parameter %s redefined, previous definition at\n %s", name, c.fset.Position(prev))
+			if _, dup := params[name]; dup {
+				c.addErrorf(p.Pos(), "named parameter %s redefined", name)
 				continue
 			}
-			seen[name] = p.Name.Pos()
 			var value constant.Value
 			if p.Value != nil {
 				value = c.resolveValue(file, p.Value, nil)
+			} else {
+				value = constant.MakeBool(true)
 			}
-			params[j] = &AnnotationParam{
+			params[name] = &AnnotationParam{
+				pos:   p.Pos(),
 				name:  name,
 				value: value,
 			}
 		}
-		list[i] = Annotation{
-			pos:    c.fset.Position(a.Pos()),
-			name:   a.Name.Name,
-			params: params,
-		}
+		result[a.Name.Name] = params
 	}
-	return &AnnotationGroup{
-		list: list,
-	}
+	return result
 }
 
 // resolveValue resolves a value of an expression

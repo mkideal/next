@@ -54,7 +54,7 @@ type ImportSpec struct {
 
 	Doc         *Doc
 	Comment     *Comment
-	Annotations *AnnotationGroup
+	Annotations AnnotationGroup
 	Path        string
 }
 
@@ -115,16 +115,16 @@ type ValueSpec struct {
 
 	Doc         *Doc
 	Comment     *Comment
-	Annotations *AnnotationGroup
+	Annotations AnnotationGroup
 }
 
 func newValueSpec(_ *Context, _ *File, decl *Decl, src *ast.ValueSpec) *ValueSpec {
 	v := &ValueSpec{
 		pos:     src.Pos(),
+		name:    src.Name.Name,
 		decl:    decl,
 		Doc:     newDoc(src.Doc),
 		Comment: newComment(src.Comment),
-		name:    src.Name.Name,
 	}
 	v.unresolved.annotations = src.Annotations
 	v.unresolved.value = src.Value
@@ -287,7 +287,7 @@ type Field struct {
 	Struct      *StructSpec
 	Doc         *Doc
 	Comment     *Comment
-	Annotations *AnnotationGroup
+	Annotations AnnotationGroup
 	Name        FieldName
 	Type        *FieldType
 }
@@ -327,7 +327,7 @@ type StructSpec struct {
 	Type        *StructType
 	Doc         *Doc
 	Comment     *Comment
-	Annotations *AnnotationGroup
+	Annotations AnnotationGroup
 	Fields      *Fields
 }
 
@@ -384,7 +384,7 @@ type EnumSpec struct {
 	Type        *EnumType
 	Doc         *Doc
 	Comment     *Comment
-	Annotations *AnnotationGroup
+	Annotations AnnotationGroup
 	Members     *EnumMembers
 }
 

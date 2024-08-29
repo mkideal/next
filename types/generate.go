@@ -16,12 +16,10 @@ import (
 )
 
 const (
-	nextDir       = "next.d"    // next directory for configuration files
-	hiddenNextDir = ".next"     // hidden next directory for configuration files in user's home directory
-	typesDir      = "types"     // types directory for types files in next directory
-	templatesDir  = "templates" // templates directory for template files in next directory
-	templateExt   = ".np"       // template file extension
-	typesExt      = ".types"    // types file extension
+	nextDir       = "next.d" // next directory for configuration files
+	hiddenNextDir = ".next"  // hidden next directory for configuration files in user's home directory
+	templateExt   = ".npl"   // next template file extension
+	langMapExt    = ".map"   // next lang map file extension
 )
 
 // searchDirs returns ordered a list of directories to search for types files.
@@ -77,14 +75,15 @@ func (c *Context) Generate() error {
 		return fmt.Errorf("output language 'next' is not supported")
 	}
 
-	// Check whether the template directory exists for each language
+	// Check whether the template directory or file exists for each language
 	for lang := range c.flags.outputs {
-		tmplDir := c.flags.templates[lang]
-		if _, err := os.Stat(tmplDir); err != nil {
-			if os.IsNotExist(err) {
-				return fmt.Errorf("template directory for %q not found: %q", lang, tmplDir)
+		for _, tmplPath := range c.flags.templates[lang] {
+			if _, err := os.Stat(tmplPath); err != nil {
+				if os.IsNotExist(err) {
+					return fmt.Errorf("template path %q not found: %q", lang, tmplPath)
+				}
+				return fmt.Errorf("failed to check template path %q: %v", lang, err)
 			}
-			return fmt.Errorf("failed to check template directory for %q: %v", lang, err)
 		}
 	}
 
@@ -110,9 +109,14 @@ func (c *Context) Generate() error {
 	for _, lang := range slices.Sorted(maps.Keys(c.flags.outputs)) {
 		dir := c.flags.outputs[lang]
 		ext := op.Or(c.flags.types[lang+".ext"], "."+lang)
-		tempDir := c.flags.templates[lang]
-		if err := c.generateForTemplateDir(lang, ext, dir, tempDir); err != nil {
-			return err
+		tempPaths := c.flags.templates[lang]
+		if len(tempPaths) == 0 {
+			return fmt.Errorf("no template directory specified for %q", lang)
+		}
+		for _, tempPath := range tempPaths {
+			if err := c.generateForTemplatePath(lang, ext, dir, tempPath); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -120,7 +124,7 @@ func (c *Context) Generate() error {
 
 func (c *Context) loadTypes(m flags.Map, dirs []string, lang string) error {
 	for _, dir := range dirs {
-		path := filepath.Join(dir, typesDir, lang+typesExt)
+		path := filepath.Join(dir, lang+langMapExt)
 		if err := c.loadTypesFromFile(m, lang, path); err != nil {
 			return fmt.Errorf("failed to load types from %q: %v", path, err)
 		}
@@ -140,10 +144,10 @@ func (c *Context) loadTypesFromFile(m flags.Map, lang, path string) error {
 	return parseLangTypes(m, lang, f)
 }
 
-func (c *Context) generateForTemplateDir(lang, ext, dir, tmplDir string) error {
-	tmplFiles, err := fsutil.AppendFiles(nil, tmplDir, templateExt, true)
+func (c *Context) generateForTemplatePath(lang, ext, dir, tmplPath string) error {
+	tmplFiles, err := fsutil.AppendFiles(nil, tmplPath, templateExt, true)
 	if err != nil {
-		return fmt.Errorf("failed to list template files in %q: %v", tmplDir, err)
+		return fmt.Errorf("failed to list template files in %q: %v", tmplPath, err)
 	}
 
 	// Generate files for each template

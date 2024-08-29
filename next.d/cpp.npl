@@ -27,7 +27,7 @@
 {{- end}}
 
 {{- define "next/cpp/namespace.begin" -}}
-{{- $namespace := ((.Annotations.Lookup "next").Param "cpp_namespace").Value -}}
+{{- $namespace := .Annotations.next.cpp_namespace -}}
 {{- if $namespace}}
 
 namespace {{unquote $namespace.String}} {
@@ -35,7 +35,7 @@ namespace {{unquote $namespace.String}} {
 {{- end}}
 
 {{- define "next/cpp/namespace.end" -}}
-{{- $namespace := ((.Annotations.Lookup "next").Param "cpp_namespace").Value -}}
+{{- $namespace := .Annotations.next.cpp_namespace -}}
 {{- if $namespace}}
 
 } // namespace {{unquote $namespace.String}}
@@ -87,7 +87,7 @@ public:
 
 {{- define "next/cpp/struct.field.type" -}}
 {{if not (.Type.Package.In .Field.Struct.Decl.File.Package) -}}
-{{$namespace := ((.Type.Package.Annotations.Lookup "next").Param "cpp_namespace").Value -}}
+{{$namespace := .Type.Package.Annotations.next.cpp_namespace -}}
 {{if $namespace -}}
 {{unquote $namespace.String}}::
 {{- end -}}

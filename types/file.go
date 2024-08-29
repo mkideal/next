@@ -15,7 +15,7 @@ type File struct {
 
 	Path        string
 	Doc         *Doc
-	Annotations *AnnotationGroup
+	Annotations AnnotationGroup
 
 	decls   []*Decl
 	stmts   []Stmt

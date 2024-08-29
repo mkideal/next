@@ -17,7 +17,7 @@ import java.util.Arrays;
 {{- end}}
 
 {{- define "next/java/package.name" -}}
-{{((.Annotations.Lookup "next").Param "java_package").Value.String | unquote}}
+{{unquote .Annotations.next.java_package.String}}
 {{- end}}
 
 {{- define "next/java/import" -}}

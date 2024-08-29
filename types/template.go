@@ -274,11 +274,11 @@ func (tc *templateContext[T]) init() error {
 	var files []string
 	for _, dir := range tc.context.searchDirs {
 		var err error
-		files, err = fsutil.AppendFiles(files, filepath.Join(dir, templatesDir, "next"+templateExt), templateExt, false)
+		files, err = fsutil.AppendFiles(files, filepath.Join(dir, "next"+templateExt), templateExt, false)
 		if err != nil && !os.IsNotExist(err) {
 			return err
 		}
-		files, err = fsutil.AppendFiles(files, filepath.Join(dir, templatesDir, tc.lang+templateExt), templateExt, false)
+		files, err = fsutil.AppendFiles(files, filepath.Join(dir, tc.lang+templateExt), templateExt, false)
 		if err != nil && !os.IsNotExist(err) {
 			return err
 		}

@@ -12,7 +12,7 @@ type Package struct {
 	types []Type
 
 	Doc         *Doc
-	Annotations *AnnotationGroup
+	Annotations AnnotationGroup
 }
 
 func (p *Package) Name() string { return p.name }
@@ -41,14 +41,13 @@ func (p *Package) resolve(c *Context) error {
 			break
 		}
 	}
-	var annotations []Annotation
+	p.Annotations = make(AnnotationGroup)
 	for _, file := range p.files {
 		if file.Annotations != nil {
-			annotations = append(annotations, file.Annotations.list...)
+			for name, group := range file.Annotations {
+				p.Annotations[name] = group
+			}
 		}
-	}
-	if len(annotations) > 0 {
-		p.Annotations = &AnnotationGroup{list: annotations}
 	}
 	return nil
 }

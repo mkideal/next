@@ -56,6 +56,7 @@ endef
 
 .PHONY: release
 release: go/generate go/vet
+	rm ${BUILD_DIR}/next.*.tar.gz
 	$(call release_cmd,windows,amd64)
 	$(call release_cmd,darwin,amd64)
 	$(call release_cmd,darwin,arm64)

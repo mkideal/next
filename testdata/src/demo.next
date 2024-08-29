@@ -1,0 +1,40 @@
+@next(
+    go_package="github.com/gopherd/next/testdata/gen/go/demo",
+    cpp_namespace="demo",
+    java_package="com.example.demo",
+)
+package demo;
+
+const (
+    Version = "1.0.0";
+    MaxRetries = 3;
+    Timeout = MaxRetries * 1000; // Constant expression
+)
+
+enum Color {
+    Red = iota,
+    Green,
+    Blue,
+    Yellow,
+}
+
+struct User {
+    int64 id;
+    string username;
+    vector<string> tags;
+    map<string, int> scores;
+    array<float64, 3> coordinates;
+    Color favoriteColor;
+}
+
+@message(type=101)
+struct LoginRequest {
+    string username;
+    string password;
+}
+
+@message(type=102)
+struct LoginResponse {
+    string token;
+    User user;
+}

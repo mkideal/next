@@ -48,7 +48,7 @@ type Decl struct {
 	}
 
 	Doc         *Doc
-	Annotations *AnnotationGroup
+	Annotations AnnotationGroup
 	Specs       []Spec
 }
 

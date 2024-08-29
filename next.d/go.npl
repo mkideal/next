@@ -17,7 +17,7 @@ package {{.Package.Name}}
 {{- end}}
 
 {{- define "next/go/import" -}}
-import {{.File.Package.Name}} {{((.File.Package.Annotations.Lookup "next").Param "go_package").Value -}}
+import {{.File.Package.Name}} {{.File.Package.Annotations.next.go_package -}}
 {{- end}}
 
 {{- define "next/go/imports.unused" -}}

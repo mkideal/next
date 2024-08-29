@@ -1,2 +1,6 @@
 github.com/gopherd/core v0.0.0-20240828051435-ebf212ebe44d h1:gzVyIpJhLSDCfF4LzeYHqPLebPGXiIscod3CpVbCPME=
 github.com/gopherd/core v0.0.0-20240828051435-ebf212ebe44d/go.mod h1:KfAPtxaKLEFiby8PpGwdgp86auCmLU82+khBzHhUTaM=
+github.com/gopherd/core v0.0.0-20240829035648-b44d1a5804f3 h1:Izhn4j2/NftJyo7im464quDlHcOCGsGcN7nPfsuAoJk=
+github.com/gopherd/core v0.0.0-20240829035648-b44d1a5804f3/go.mod h1:KfAPtxaKLEFiby8PpGwdgp86auCmLU82+khBzHhUTaM=
+github.com/gopherd/core v0.0.0-20240829040331-93c90e917363 h1:DebaWB40LwHErHfo4OYeK2WLAbH6ZgBAItpJR9+zcPI=
+github.com/gopherd/core v0.0.0-20240829040331-93c90e917363/go.mod h1:KfAPtxaKLEFiby8PpGwdgp86auCmLU82+khBzHhUTaM=

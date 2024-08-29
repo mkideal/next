@@ -2,12 +2,13 @@
 this: enum
 path: {{replace (render "java/package.name" this.Package) "." "/"}}/{{this.Name}}.java
 */}}
-{{head}}
 
 {{- define "java/enum" -}}
 package {{render "java/package.name" .Package}};
 
 {{super .}}
-{{- end}}
+{{- end -}}
+
+{{head}}
 
 {{next this}}

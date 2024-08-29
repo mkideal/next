@@ -1,0 +1,22 @@
+{{/*
+this: file
+path: {{this.Package.Name}}/{{this.Name}}.next.h
+*/}}
+
+{{- /* Overrides "next/cpp/import" */ -}}
+{{- define "cpp/import" -}}
+#include "../{{.File.Package.Name}}/{{.File.Name}}.next.h"
+{{- end -}}
+
+{{- /* Overrides "next/cpp/struct.fields": add method 'message_type' for each message after fields */ -}}
+{{- define "cpp/struct.fields" -}}
+{{- super .}}
+{{- if .Struct.Annotations.message}}
+
+    static int message_type() { return {{.Struct.Annotations.message.type}}; }
+{{- end}}
+{{- end -}}
+
+{{head}}
+
+{{next this}}

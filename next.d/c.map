@@ -14,5 +14,5 @@ string=char*
 byte=uint8_t
 bytes=uint8_t*
 array<%T%,%N%>=%T%[%N%]
-# map<%K%,%V%>=<c.map: not supported>
-# vector<%T%>=<c.vector: not supported>
+# map<%K%,%V%>=<c.map: not supported by default>
+# vector<%T%>=<c.vector: not supported by default>
