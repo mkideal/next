@@ -1,5 +1,7 @@
 # Next Language 🚀
 
+[中文文档](./README_CN.md)
+
 Next is a powerful code generation language designed to create highly customized code across multiple programming languages. It leverages a flexible template system to transform high-level specifications into language-specific implementations.
 
 ## ✨ Key Features
@@ -299,11 +301,7 @@ Next includes built-in templates for various languages, including C++, Go, Java,
 
 ## 📖 Documentation
 
-For detailed information on Next's syntax and features, please refer to the [language specification](docs/language_spec.md).
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our [contributing guidelines](CONTRIBUTING.md) for more information.
+For detailed information on Next's syntax and features, please refer to the [language specification](docs/en/language_spec.md).
 
 ## 📄 License
 

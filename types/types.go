@@ -14,30 +14,30 @@ type Object interface {
 	ObjectType() string
 }
 
-func (*File) ObjectType() string        { return "file" }
-func (*Comment) ObjectType() string     { return "comment" }
-func (*Doc) ObjectType() string         { return "doc" }
-func (*CallStmt) ObjectType() string    { return "stmt.call" }
-func (*Imports) ObjectType() string     { return "imports" }
-func (*ImportSpec) ObjectType() string  { return "import" }
-func (v *ValueSpec) ObjectType() string { return op.If(v.enum.typ != nil, "enum.member", "const") }
-func (*Specs) ObjectType() string       { return "specs" }
-func (*ConstSpecs) ObjectType() string  { return "consts" }
-func (*EnumSpecs) ObjectType() string   { return "enums" }
-func (*EnumSpec) ObjectType() string    { return "enum" }
-func (EnumMembers) ObjectType() string  { return "enum.members" }
-func (StructSpecs) ObjectType() string  { return "structs" }
-func (*StructSpec) ObjectType() string  { return "struct" }
-func (*Fields) ObjectType() string      { return "struct.fields" }
-func (*Field) ObjectType() string       { return "struct.field" }
-func (*FieldType) ObjectType() string   { return "struct.field.type" }
-func (FieldName) ObjectType() string    { return "struct.field.name" }
-func (b *BasicType) ObjectType() string { return b.name }
-func (*ArrayType) ObjectType() string   { return "type.array" }
-func (*VectorType) ObjectType() string  { return "type.vector" }
-func (*MapType) ObjectType() string     { return "type.map" }
-func (*EnumType) ObjectType() string    { return "type.enum" }
-func (*StructType) ObjectType() string  { return "type.struct" }
+func (*File) ObjectType() string            { return "file" }
+func (*Comment) ObjectType() string         { return "comment" }
+func (*Doc) ObjectType() string             { return "doc" }
+func (*CallStmt) ObjectType() string        { return "stmt.call" }
+func (*Imports) ObjectType() string         { return "imports" }
+func (*ImportSpec) ObjectType() string      { return "import" }
+func (v *ValueSpec) ObjectType() string     { return op.If(v.enum.typ != nil, "enum.member", "const") }
+func (*Specs) ObjectType() string           { return "specs" }
+func (*ConstSpecs) ObjectType() string      { return "consts" }
+func (*EnumSpecs) ObjectType() string       { return "enums" }
+func (*EnumSpec) ObjectType() string        { return "enum" }
+func (EnumMembers) ObjectType() string      { return "enum.members" }
+func (StructSpecs) ObjectType() string      { return "structs" }
+func (*StructSpec) ObjectType() string      { return "struct" }
+func (*Fields) ObjectType() string          { return "struct.fields" }
+func (*Field) ObjectType() string           { return "struct.field" }
+func (*FieldType) ObjectType() string       { return "struct.field.type" }
+func (FieldName) ObjectType() string        { return "struct.field.name" }
+func (b *PrimitiveType) ObjectType() string { return b.name }
+func (*ArrayType) ObjectType() string       { return "type.array" }
+func (*VectorType) ObjectType() string      { return "type.vector" }
+func (*MapType) ObjectType() string         { return "type.map" }
+func (*EnumType) ObjectType() string        { return "type.enum" }
+func (*StructType) ObjectType() string      { return "type.struct" }
 
 // Node represents a Next AST node which may be a file, const, enum or struct to be generated.
 type Node interface {
@@ -84,19 +84,19 @@ type Type interface {
 	String() string
 }
 
-func (*BasicType) Package() *Package    { return nil }
-func (*ArrayType) Package() *Package    { return nil }
-func (*VectorType) Package() *Package   { return nil }
-func (*MapType) Package() *Package      { return nil }
-func (e *EnumType) Package() *Package   { return e.spec.Package() }
-func (s *StructType) Package() *Package { return s.spec.Package() }
+func (*PrimitiveType) Package() *Package { return nil }
+func (*ArrayType) Package() *Package     { return nil }
+func (*VectorType) Package() *Package    { return nil }
+func (*MapType) Package() *Package       { return nil }
+func (e *EnumType) Package() *Package    { return e.spec.Package() }
+func (s *StructType) Package() *Package  { return s.spec.Package() }
 
-func (b *BasicType) Kind() Kind { return b.kind }
-func (*ArrayType) Kind() Kind   { return Array }
-func (*VectorType) Kind() Kind  { return Vector }
-func (*MapType) Kind() Kind     { return Map }
-func (*EnumType) Kind() Kind    { return Enum }
-func (*StructType) Kind() Kind  { return Struct }
+func (b *PrimitiveType) Kind() Kind { return b.kind }
+func (*ArrayType) Kind() Kind       { return Array }
+func (*VectorType) Kind() Kind      { return Vector }
+func (*MapType) Kind() Kind         { return Map }
+func (*EnumType) Kind() Kind        { return Enum }
+func (*StructType) Kind() Kind      { return Struct }
 
 // Spec represents a specification: import, value(const, enum member), type(enum, struct)
 type Spec interface {
@@ -113,16 +113,16 @@ func (*StructSpec) specNode() {}
 //-------------------------------------------------------------------------
 // Types
 
-// BasicType represents a basic type.
-type BasicType struct {
+// PrimitiveType represents a primitive type.
+type PrimitiveType struct {
 	pos  token.Pos
 	name string
 	kind Kind
 }
 
-func (b *BasicType) String() string { return b.name }
+func (b *PrimitiveType) String() string { return b.name }
 
-var basicTypes = map[string]*BasicType{
+var basicTypes = map[string]*PrimitiveType{
 	"int":     {kind: Int, name: "int"},
 	"int8":    {kind: Int8, name: "int8"},
 	"int16":   {kind: Int16, name: "int16"},

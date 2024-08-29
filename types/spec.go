@@ -102,7 +102,7 @@ type ValueSpec struct {
 	decl  *Decl
 	name  string
 	value constant.Value
-	typ   *BasicType
+	typ   *PrimitiveType
 	enum  struct {
 		typ   *EnumSpec // parent enum type
 		index int       // index in the enum type. start from 0

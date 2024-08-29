@@ -61,7 +61,7 @@ func resolveLangType[M ~map[string]string](m M, lang string, t Type) (result str
 		}
 	}()
 	switch t := t.(type) {
-	case *BasicType:
+	case *PrimitiveType:
 		p, ok := m[lang+"."+t.name]
 		if !ok {
 			return "", fmt.Errorf("type %q not found", t.name)
