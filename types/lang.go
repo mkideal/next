@@ -116,7 +116,7 @@ func resolveLangType[M ~map[string]string](m M, lang string, t Type) (result str
 			p = strings.ReplaceAll(p, "%T%", e)
 		}
 		if strings.Contains(p, "%N%") {
-			p = strings.ReplaceAll(p, "%N%", strconv.FormatUint(t.N, 10))
+			p = strings.ReplaceAll(p, "%N%", strconv.FormatInt(t.N, 10))
 		}
 		return p, nil
 

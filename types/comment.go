@@ -68,6 +68,13 @@ func (d *Doc) String() string {
 	return strings.Join(ast.TrimComments(d.list), "\n")
 }
 
+func (d *Doc) Format(prefix, indent string, beginAndEnd ...string) string {
+	if d == nil || len(d.list) == 0 {
+		return ""
+	}
+	return formatComments(d.list, true, prefix, indent, beginAndEnd...)
+}
+
 // makeCommentList returns a list of comments from the comment group.
 func makeCommentList(cg *ast.CommentGroup) []string {
 	if cg == nil {
@@ -84,24 +91,24 @@ func makeCommentList(cg *ast.CommentGroup) []string {
 //
 // Example:
 //
-//	cg.FormatIndent("", "")
+//	formatComments(list, "", "")
 //
 //	// comment1
 //	// comment2
 //
-//	cg.FormatIndent("", " *", "/*", "*/")
+//	formatComments(list, "", " *", "/*", "*/")
 //
 //	/* comment1
 //	 * comment2
 //	 */
 //
-//	cg.FormatIndent("  ", " *", "/*", "*/")
+//	formatComments("  ", " *", "/*", "*/")
 //
 //	  /* comment1
 //	   * comment2
 //	   */
 //
-//	cg.FormatIndent("", "", "<!--\n", "-->")
+//	formatComments("", "", "<!--\n", "-->")
 //
 //	<!--
 //	 comment1
@@ -123,19 +130,24 @@ func formatComments(list []string, appendNewline bool, prefix, indent string, be
 			end = beginAndEnd[1]
 		}
 	}
+	begins := strings.Split(begin, "\n")
+	begin = begins[0]
+	if len(begins) > 1 {
+		lines = append(begins[1:], lines...)
+	}
 	if end == "" {
 		for i, line := range lines {
 			lines[i] = prefix + indent + begin + " " + line
 		}
-		if !isLastEmpty && appendNewline {
-			lines = append(lines, prefix)
+	} else {
+		lines = append([]string{prefix + begin + lines[0]}, lines[1:]...)
+		for i := 1; i < len(lines); i++ {
+			lines[i] = prefix + indent + lines[i]
 		}
-		return strings.Join(lines, "\n")
+		lines = append(lines, prefix+end)
 	}
-	lines = append([]string{prefix + begin + " " + lines[0]}, lines[1:]...)
-	for i := 1; i < len(lines); i++ {
-		lines[i] = prefix + indent + " " + lines[i]
+	if !isLastEmpty && appendNewline {
+		lines = append(lines, prefix)
 	}
-	lines = append(lines, prefix+" "+end)
 	return strings.Join(lines, "\n")
 }

@@ -13,6 +13,7 @@ bool=boolean
 string=String
 byte=byte
 bytes=byte[]
+any=Object
 map<%K%,%V%>=Map<box(%K%),box(%V%)>
 vector<%T%>=List<box(%T%)>
 array<%T%,%N%>=%T%[]

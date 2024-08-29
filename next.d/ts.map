@@ -13,6 +13,7 @@ bool=boolean
 string=string
 byte=number
 bytes=Uint8Array
+any=any
 map<%K%,%V%>=Map<%K%,%V%>
 vector<%T%>=Array<%T%>
 array<%T%,%N%>=Array<%T%>

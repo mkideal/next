@@ -94,3 +94,43 @@ public:
 {{- end -}}
 {{next .Type}}
 {{- end}}
+
+{{- define "next/cpp/interface" -}}
+{{next .Doc}}class {{.Name}} {
+public:
+    virtual ~{{.Name}}() = default;
+    {{next .Methods}}
+};
+{{- end}}
+
+{{- define "next/cpp/interface.method" -}}
+{{next .Doc}}virtual {{next .ReturnType}} {{next .Name}}({{next .Params}}) {{if and (.Annotations.next) (.Annotations.next.const)}}const {{end}}= 0;{{next .Comment}}
+{{- end}}
+
+{{- define "next/cpp/interface.method.name" -}}
+{{snakeCase .}}
+{{- end}}
+
+{{- define "next/cpp/interface.method.param.type" -}}
+const {{if not (.Type.Package.In .Param.Method.Interface.Decl.File.Package) -}}
+{{$namespace := .Type.Package.Annotations.next.cpp_namespace -}}
+{{if $namespace -}}
+{{unquote $namespace.String}}::
+{{- end -}}
+{{- end -}}
+{{next .Type}}&
+{{- end}}
+
+{{- define "next/cpp/interface.method.return.type" -}}
+{{if .Type -}}
+{{if not (.Type.Package.In .Method.Interface.Decl.File.Package) -}}
+{{$namespace := .Type.Package.Annotations.next.cpp_namespace -}}
+{{if $namespace -}}
+{{unquote $namespace.String}}::
+{{- end -}}
+{{- end -}}
+{{next .Type}}
+{{- else -}}
+void
+{{- end}}
+{{- end}}

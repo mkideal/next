@@ -13,6 +13,7 @@ bool=Bool
 string=String
 byte=UInt8
 bytes=[UInt8]
+any=Any
 map<%K%,%V%>=[%K%:%V%]
 vector<%T%>=[%T%]
 array<%T%,%N%>=[%T%]

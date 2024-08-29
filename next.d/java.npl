@@ -16,6 +16,10 @@ import java.util.Arrays;
 {{- end}}
 {{- end}}
 
+{{- define "next/java/doc" -}}
+{{.Format "" " * " "/**\n" " */" | align}}
+{{- end}}
+
 {{- define "next/java/package.name" -}}
 {{unquote .Annotations.next.java_package.String}}
 {{- end}}
@@ -87,4 +91,12 @@ public class Constants {
 
 {{- define "next/java/struct.field.name" -}}
 {{.}}
+{{- end}}
+
+{{- define "next/java/interface.method" -}}
+{{next .Doc}}{{next .ReturnType}} {{next .Name}}({{next .Params}}){{if and (.Annotations.next) (.Annotations.next.error)}} throw Exception{{end}};{{next .Comment}}
+{{- end}}
+
+{{- define "next/java/interface.return.type" -}}
+{{if .Type}}{{next .Type}}{{else}}void{{end}}
 {{- end}}

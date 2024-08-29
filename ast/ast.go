@@ -213,6 +213,40 @@ func (g *AnnotationGroup) End() token.Pos { return g.List[len(g.List)-1].End() }
 // ----------------------------------------------------------------------------
 // Expressions and types
 
+type List[T Node] struct {
+	Opening token.Pos // position of opening parenthesis/brace/bracket, if any
+	List    []T       // field list; or nil
+	Closing token.Pos // position of closing parenthesis/brace/bracket, if any
+}
+
+func (l *List[T]) Pos() token.Pos {
+	if l.Opening.IsValid() {
+		return l.Opening
+	}
+	if len(l.List) > 0 {
+		return l.List[0].Pos()
+	}
+	return token.NoPos
+}
+
+func (l *List[T]) End() token.Pos {
+	if l.Closing.IsValid() {
+		return l.Closing + 1
+	}
+	if n := len(l.List); n > 0 {
+		return l.List[n-1].End()
+	}
+	return token.NoPos
+}
+
+// NumFields returns the number of parameters or struct fields represented by a [List].
+func (l *List[T]) NumFields() int {
+	if l != nil {
+		return len(l.List)
+	}
+	return 0
+}
+
 // A Field represents a Field declaration list in a struct type,
 // a method list in an interface type, or a parameter/result declaration
 // in a signature.
@@ -236,43 +270,68 @@ func (f *Field) End() token.Pos {
 
 // A FieldList represents a list of Fields, enclosed by parentheses,
 // curly braces, or square brackets.
-type FieldList struct {
-	Opening token.Pos // position of opening parenthesis/brace/bracket, if any
-	List    []*Field  // field list; or nil
-	Closing token.Pos // position of closing parenthesis/brace/bracket, if any
+type FieldList = List[*Field]
+
+// A ValueList represents a list of ValueSpecs, enclosed by parentheses,
+type ValueList = List[*ValueSpec]
+
+// Method represents a method declaration.
+//
+// Example:
+//
+// MethodName(Type1 param1, Type2 param2) Type3
+type Method struct {
+	Doc         *CommentGroup    // associated documentation; or nil
+	Annotations *AnnotationGroup // associated annotations; or nil
+	Name        *Ident           // method name
+	Type        *FuncType        // method type
+	Comment     *CommentGroup    // line comments; or nil
 }
 
-func (f *FieldList) Pos() token.Pos {
-	if f.Opening.IsValid() {
-		return f.Opening
-	}
-	// the list should not be empty in this case;
-	// be conservative and guard against bad ASTs
-	if len(f.List) > 0 {
-		return f.List[0].Pos()
-	}
-	return token.NoPos
+func (m *Method) Pos() token.Pos {
+	return m.Name.Pos()
 }
 
-func (f *FieldList) End() token.Pos {
-	if f.Closing.IsValid() {
-		return f.Closing + 1
-	}
-	// the list should not be empty in this case;
-	// be conservative and guard against bad ASTs
-	if n := len(f.List); n > 0 {
-		return f.List[n-1].End()
-	}
-	return token.NoPos
+func (m *Method) End() token.Pos {
+	return m.Type.End()
 }
 
-// NumFields returns the number of parameters or struct fields represented by a [FieldList].
-func (f *FieldList) NumFields() int {
-	if f != nil {
-		return len(f.List)
-	}
-	return 0
+// A MethodList represents a list of Method declarations.
+type MethodList = List[*Method]
+
+// FuncType represents a function type.
+type FuncType struct {
+	Params     *MethodParamList // method parameters
+	ReturnType Type             // method return type; or nil
 }
+
+func (ft *FuncType) Pos() token.Pos {
+	return ft.Params.Pos()
+}
+
+func (ft *FuncType) End() token.Pos {
+	if ft.ReturnType != nil {
+		return ft.ReturnType.End()
+	}
+	return ft.Params.End()
+}
+
+// A ValueSpec node represents a constant or variable declaration
+type MethodParam struct {
+	Type Type   // parameter type
+	Name *Ident // parameter name
+}
+
+func (p *MethodParam) Pos() token.Pos {
+	return p.Type.Pos()
+}
+
+func (p *MethodParam) End() token.Pos {
+	return p.Name.End()
+}
+
+// MethodParamList represents a list of function parameters.
+type MethodParamList = List[*MethodParam]
 
 // An expression is represented by a tree consisting of one
 // or more of the following concrete expression nodes.
@@ -364,50 +423,53 @@ type (
 		GT  token.Pos // position of ">"
 	}
 
+	// An InterfaceType node represents an interface type.
+	InterfaceType struct {
+		Methods *MethodList // list of methods
+	}
+
 	// A StructType node represents a struct type.
 	StructType struct {
-		Fields     *FieldList // list of field declarations
-		Incomplete bool       // true if (source) fields are missing in the Fields list
+		Fields *FieldList // list of field declarations
 	}
 
 	// A EnumType node represents an enum type.
 	EnumType struct {
-		Opening    token.Pos    // position of opening "{"
-		Values     []*ValueSpec // values; or nil
-		Closing    token.Pos    // position of closing "}"
-		Incomplete bool         // true if (source) fields are missing in the Fields list
+		Members *ValueList // list of enum members
 	}
 )
 
 // Pos and End implementations for expression/type nodes.
 
-func (x *BadExpr) Pos() token.Pos      { return x.From }
-func (x *Ident) Pos() token.Pos        { return x.NamePos }
-func (x *BasicLit) Pos() token.Pos     { return x.ValuePos }
-func (x *ParenExpr) Pos() token.Pos    { return x.Lparen }
-func (x *SelectorExpr) Pos() token.Pos { return x.X.Pos() }
-func (x *CallExpr) Pos() token.Pos     { return x.Fun.Pos() }
-func (x *UnaryExpr) Pos() token.Pos    { return x.OpPos }
-func (x *BinaryExpr) Pos() token.Pos   { return x.X.Pos() }
-func (x *ArrayType) Pos() token.Pos    { return x.Array }
-func (x *VectorType) Pos() token.Pos   { return x.Vector }
-func (x *MapType) Pos() token.Pos      { return x.Map }
-func (x *StructType) Pos() token.Pos   { return x.Fields.Pos() }
-func (x *EnumType) Pos() token.Pos     { return x.Opening }
+func (x *BadExpr) Pos() token.Pos       { return x.From }
+func (x *Ident) Pos() token.Pos         { return x.NamePos }
+func (x *BasicLit) Pos() token.Pos      { return x.ValuePos }
+func (x *ParenExpr) Pos() token.Pos     { return x.Lparen }
+func (x *SelectorExpr) Pos() token.Pos  { return x.X.Pos() }
+func (x *CallExpr) Pos() token.Pos      { return x.Fun.Pos() }
+func (x *UnaryExpr) Pos() token.Pos     { return x.OpPos }
+func (x *BinaryExpr) Pos() token.Pos    { return x.X.Pos() }
+func (x *ArrayType) Pos() token.Pos     { return x.Array }
+func (x *VectorType) Pos() token.Pos    { return x.Vector }
+func (x *MapType) Pos() token.Pos       { return x.Map }
+func (x *EnumType) Pos() token.Pos      { return x.Members.Pos() }
+func (x *StructType) Pos() token.Pos    { return x.Fields.Pos() }
+func (x *InterfaceType) Pos() token.Pos { return x.Methods.Pos() }
 
-func (x *BadExpr) End() token.Pos      { return x.To }
-func (x *Ident) End() token.Pos        { return token.Pos(int(x.NamePos) + len(x.Name)) }
-func (x *BasicLit) End() token.Pos     { return token.Pos(int(x.ValuePos) + len(x.Value)) }
-func (x *ParenExpr) End() token.Pos    { return x.Rparen + 1 }
-func (x *SelectorExpr) End() token.Pos { return x.Sel.End() }
-func (x *CallExpr) End() token.Pos     { return x.Rparen + 1 }
-func (x *UnaryExpr) End() token.Pos    { return x.X.End() }
-func (x *BinaryExpr) End() token.Pos   { return x.Y.End() }
-func (x *ArrayType) End() token.Pos    { return x.GT }
-func (x *VectorType) End() token.Pos   { return x.GT }
-func (x *MapType) End() token.Pos      { return x.GT }
-func (x *StructType) End() token.Pos   { return x.Fields.End() }
-func (x *EnumType) End() token.Pos     { return x.Closing }
+func (x *BadExpr) End() token.Pos       { return x.To }
+func (x *Ident) End() token.Pos         { return token.Pos(int(x.NamePos) + len(x.Name)) }
+func (x *BasicLit) End() token.Pos      { return token.Pos(int(x.ValuePos) + len(x.Value)) }
+func (x *ParenExpr) End() token.Pos     { return x.Rparen + 1 }
+func (x *SelectorExpr) End() token.Pos  { return x.Sel.End() }
+func (x *CallExpr) End() token.Pos      { return x.Rparen + 1 }
+func (x *UnaryExpr) End() token.Pos     { return x.X.End() }
+func (x *BinaryExpr) End() token.Pos    { return x.Y.End() }
+func (x *ArrayType) End() token.Pos     { return x.GT }
+func (x *VectorType) End() token.Pos    { return x.GT }
+func (x *MapType) End() token.Pos       { return x.GT }
+func (x *EnumType) End() token.Pos      { return x.Members.End() }
+func (x *StructType) End() token.Pos    { return x.Fields.End() }
+func (x *InterfaceType) End() token.Pos { return x.Methods.End() }
 
 // exprNode() ensures that only expression/type nodes can be
 // assigned to an Expr.
@@ -420,20 +482,22 @@ func (*CallExpr) exprNode()     {}
 func (*UnaryExpr) exprNode()    {}
 func (*BinaryExpr) exprNode()   {}
 
-func (*ArrayType) exprNode()  {}
-func (*VectorType) exprNode() {}
-func (*MapType) exprNode()    {}
-func (*StructType) exprNode() {}
-func (*EnumType) exprNode()   {}
+func (*ArrayType) exprNode()     {}
+func (*VectorType) exprNode()    {}
+func (*MapType) exprNode()       {}
+func (*EnumType) exprNode()      {}
+func (*StructType) exprNode()    {}
+func (*InterfaceType) exprNode() {}
 
-func (*BadExpr) typeNode()      {}
-func (*SelectorExpr) typeNode() {}
-func (*Ident) typeNode()        {}
-func (*ArrayType) typeNode()    {}
-func (*VectorType) typeNode()   {}
-func (*MapType) typeNode()      {}
-func (*StructType) typeNode()   {}
-func (*EnumType) typeNode()     {}
+func (*BadExpr) typeNode()       {}
+func (*SelectorExpr) typeNode()  {}
+func (*Ident) typeNode()         {}
+func (*ArrayType) typeNode()     {}
+func (*VectorType) typeNode()    {}
+func (*MapType) typeNode()       {}
+func (*EnumType) typeNode()      {}
+func (*StructType) typeNode()    {}
+func (*InterfaceType) typeNode() {}
 
 // ----------------------------------------------------------------------------
 // Convenience functions for Idents

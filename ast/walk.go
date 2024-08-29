@@ -70,6 +70,35 @@ func Walk(v Visitor, node Node) {
 	case *FieldList:
 		walkList(v, n.List)
 
+	case *ValueList:
+		walkList(v, n.List)
+
+	case *MethodList:
+		walkList(v, n.List)
+
+	case *Method:
+		if n.Doc != nil {
+			Walk(v, n.Doc)
+		}
+		if n.Annotations != nil {
+			Walk(v, n.Annotations)
+		}
+		Walk(v, n.Name)
+		Walk(v, n.Type)
+
+	case *FuncType:
+		Walk(v, n.Params)
+		Walk(v, n.ReturnType)
+
+	case *MethodParam:
+		if n.Name != nil {
+			Walk(v, n.Name)
+		}
+		Walk(v, n.Type)
+
+	case *MethodParamList:
+		walkList(v, n.List)
+
 	// Expressions
 	case *BadExpr, *Ident, *BasicLit:
 		// nothing to do
@@ -108,7 +137,7 @@ func Walk(v Visitor, node Node) {
 		Walk(v, n.Fields)
 
 	case *EnumType:
-		walkList(v, n.Values)
+		Walk(v, n.Members)
 
 	// Declarations
 	case *ImportSpec:

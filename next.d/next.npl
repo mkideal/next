@@ -12,7 +12,10 @@
 {{ end -}}
 {{- if .Structs -}}
 {{next .Structs}}
-{{- end -}}
+{{end -}}
+{{- if .Interfaces -}}
+{{next .Interfaces}}
+{{end -}}
 {{- end }}
 
 {{- define "next/comment" -}}
@@ -91,7 +94,55 @@ enum {{.Name}} {
 {{next .Type}}
 {{- end}}
 
-
 {{- define "next/struct.field.name" -}}
 {{.}}
+{{- end}}
+
+{{- define "next/interfaces" -}}
+{{range $i, $s := .List}}
+{{if $i}}{{print "\n"}}{{end}}{{next . -}}
+{{- end}}
+{{- end}}
+
+{{- define "next/interface" -}}
+{{next .Doc}}interface {{.Name}} {
+    {{- next .Methods}}
+}
+{{- end}}
+
+{{- define "next/interface.methods" -}}
+{{- range .List}}
+    {{next . -}}
+{{- end}}
+{{- end}}
+
+{{- define "next/interface.method" -}}
+{{next .Doc}}{{next .Name}}({{next .Params}}){{next .ReturnType}}{{next .Comment}}
+{{- end}}
+
+{{- define "next/interface.method.name" -}}
+{{.}}
+{{- end}}
+
+{{- define "next/interface.method.params" -}}
+{{- range $i, $p := .List -}}
+    {{if $i}}, {{end}}{{next . -}}
+{{- end}}
+{{- end}}
+
+{{- define "next/interface.method.param" -}}
+{{next .Type}} {{next .Name}}
+{{- end}}
+
+{{- define "next/interface.method.param.type" -}}
+{{next .Type}}
+{{- end}}
+
+{{- define "next/interface.method.param.name" -}}
+{{.}}
+{{- end}}
+
+{{- define "next/interface.method.return.type" -}}
+{{- if .Type}} {{next .Type}}
+{{- end}}
 {{- end}}

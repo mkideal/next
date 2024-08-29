@@ -396,11 +396,12 @@ func (p *parser) advance(to map[token.Token]bool) {
 }
 
 var declStmtStart = map[token.Token]bool{
-	token.IMPORT: true,
-	token.CONST:  true,
-	token.STRUCT: true,
-	token.ENUM:   true,
-	token.IDENT:  true,
+	token.IMPORT:    true,
+	token.CONST:     true,
+	token.STRUCT:    true,
+	token.INTERFACE: true,
+	token.ENUM:      true,
+	token.IDENT:     true,
 }
 
 var exprEnd = map[token.Token]bool{
@@ -603,6 +604,74 @@ func (p *parser) parseTypeName(ident *ast.Ident) ast.Type {
 	return ident
 }
 
+func (p *parser) parseFuncType() *ast.FuncType {
+	if p.trace {
+		defer un(trace(p, "FuncType"))
+	}
+	var returnType ast.Type
+	params := p.parseFuncParamList()
+	if p.tok != token.SEMICOLON {
+		returnType = p.parseType()
+	}
+	return &ast.FuncType{
+		Params:     params,
+		ReturnType: returnType,
+	}
+}
+
+func (p *parser) parseFuncParamList() *ast.MethodParamList {
+	if p.trace {
+		defer un(trace(p, "FuncParamList"))
+	}
+	lparen := p.expect(token.LPAREN)
+	var list []*ast.MethodParam
+	for p.tok != token.RPAREN && p.tok != token.EOF {
+		list = append(list, p.parseFuncParam())
+		if !p.atComma("parameter list", token.RPAREN) {
+			break
+		}
+		p.next()
+	}
+	rparen := p.expect(token.RPAREN)
+	return &ast.MethodParamList{
+		Opening: lparen,
+		List:    list,
+		Closing: rparen,
+	}
+}
+
+func (p *parser) parseFuncParam() *ast.MethodParam {
+	if p.trace {
+		defer un(trace(p, "FuncParam"))
+	}
+	typ := p.parseType()
+	name := p.parseIdent()
+	return &ast.MethodParam{
+		Type: typ,
+		Name: name,
+	}
+}
+
+func (p *parser) parseMethodDecl() *ast.Method {
+	if p.trace {
+		defer un(trace(p, "MethodDecl"))
+	}
+
+	doc := p.leadComment
+	annotations := p.parseAnnotationGroup()
+	name := p.parseIdent()
+	typ := p.parseFuncType()
+	comment := p.expectSemi()
+	method := &ast.Method{
+		Doc:         doc,
+		Annotations: annotations,
+		Name:        name,
+		Type:        typ,
+		Comment:     comment,
+	}
+	return method
+}
+
 func (p *parser) parseFieldDecl() *ast.Field {
 	if p.trace {
 		defer un(trace(p, "FieldDecl"))
@@ -621,6 +690,27 @@ func (p *parser) parseFieldDecl() *ast.Field {
 		Comment:     comment,
 	}
 	return field
+}
+
+func (p *parser) parseInterfaceType() *ast.InterfaceType {
+	if p.trace {
+		defer un(trace(p, "InterfaceType"))
+	}
+
+	lbrace := p.expect(token.LBRACE)
+	var list []*ast.Method
+	for p.tok != token.RBRACE && p.tok != token.EOF {
+		list = append(list, p.parseMethodDecl())
+	}
+	rbrace := p.expect(token.RBRACE)
+
+	return &ast.InterfaceType{
+		Methods: &ast.MethodList{
+			Opening: lbrace,
+			List:    list,
+			Closing: rbrace,
+		},
+	}
 }
 
 func (p *parser) parseStructType() *ast.StructType {
@@ -658,9 +748,11 @@ func (p *parser) parseEnumType() *ast.EnumType {
 	rbrace := p.expect(token.RBRACE)
 
 	return &ast.EnumType{
-		Opening: lbrace,
-		Values:  values,
-		Closing: rbrace,
+		Members: &ast.ValueList{
+			Opening: lbrace,
+			List:    values,
+			Closing: rbrace,
+		},
 	}
 }
 
@@ -950,10 +1042,12 @@ func (p *parser) parseTypeSpec(doc *ast.CommentGroup, annotations *ast.Annotatio
 
 	var typ ast.Type
 	switch keyword {
-	case token.STRUCT:
-		typ = p.parseStructType()
 	case token.ENUM:
 		typ = p.parseEnumType()
+	case token.STRUCT:
+		typ = p.parseStructType()
+	case token.INTERFACE:
+		typ = p.parseInterfaceType()
 	default:
 		p.errorExpected(p.pos, "enum or struct")
 	}
@@ -1016,7 +1110,7 @@ func (p *parser) parseDeclStmt() ast.Node {
 	case token.CONST:
 		f = p.parseValueSpec
 
-	case token.ENUM, token.STRUCT:
+	case token.ENUM, token.STRUCT, token.INTERFACE:
 		f = p.parseTypeSpec
 
 	default:

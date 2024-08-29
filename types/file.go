@@ -42,6 +42,7 @@ func newFile(ctx *Context, src *ast.File) *File {
 	f.specs.Consts = f.getConsts()
 	f.specs.Enums = f.getEnums()
 	f.specs.Structs = f.getStructs()
+	f.specs.Interfaces = f.getInterfaces()
 	for _, s := range src.Stmts {
 		f.stmts = append(f.stmts, newStmt(ctx, f, s))
 	}
@@ -111,6 +112,18 @@ func (f *File) getStructs() *StructSpecs {
 		}
 	}
 	return structs
+}
+
+func (f *File) getInterfaces() *InterfaceSpecs {
+	var interfaces = &InterfaceSpecs{File: f}
+	for _, d := range f.decls {
+		if d.tok == token.INTERFACE {
+			for _, s := range d.Specs {
+				interfaces.List = append(interfaces.List, s.(*InterfaceSpec))
+			}
+		}
+	}
+	return interfaces
 }
 
 // LookupLocalType looks up a type by name in the file's symbol table.

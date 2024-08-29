@@ -13,6 +13,7 @@ bool=bool
 string=string
 byte=byte
 bytes=[]byte
+any=any
 map<%K%,%V%>=map[%K%]%V%
 vector<%T%>=[]%T%
 array<%T%,%N%>=[%N%]%T%

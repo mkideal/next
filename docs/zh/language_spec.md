@@ -192,7 +192,49 @@ struct (
 )
 ```
 
-### 4.3 注解
+### 4.3 接口
+
+接口声明使用 `interface` 关键字：
+
+```
+InterfaceDecl     = "interface" ( InterfaceSpec | "(" { InterfaceSpec ";" } ")" ) .
+InterfaceSpec     = identifier "{" { MethodSpec ";" } "}" .
+MethodSpec        = identifier "(" [ ParameterList ] ")" [ ReturnType ] .
+ParameterList     = Parameter { "," Parameter } .
+Parameter         = [ identifier ] Type .
+ReturnType        = Type .
+```
+
+接口定义了一组方法签名。每个方法都有一个名称、参数列表（可选）和返回类型（可选）。
+
+示例：
+
+```next
+interface Logger {
+    Debug(string x, vector<any> values);
+    GetLevel() Level;
+    SetLevel(Level level);
+}
+
+interface (
+    Reader {
+        Read(bytes buffer) int;
+    }
+
+    Writer {
+        Write(bytes data) int;
+    }
+
+    ReadWriter {
+        Read(bytes buffer) int;
+        Write(bytes data) int;
+    }
+)
+```
+
+接口可以使用注解，方法也可以单独使用注解。
+
+### 4.4 注解
 
 注解可以添加到包、任意的声明、常量、枚举（及其任意字段）、结构体（及其任意字段）、协议（及其任意字段）。注解使用 `@` 符号开头：
 
@@ -343,7 +385,8 @@ len("hello")        // 函数调用
 | **assert_gt**(`x: any`, `y: any`, `args: any...`) | 断言 `x` 是否大于 `y` |
 | **assert_ge**(`x: any`, `y: any`, `args: any...`) | 断言 `x` 是否大于等于 `y` |
 
-## 9. 词法约定
+## 9. 推荐命名风格
 
 - 包名使用小驼峰式命名（建议使用全小写）。
 - 常量，枚举成员，类型名（结构体、枚举、协议）使用大驼峰式命名。
+- 接口方法名使用大驼峰式命名。

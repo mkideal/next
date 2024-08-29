@@ -13,6 +13,7 @@ bool=_Bool
 string=char*
 byte=uint8_t
 bytes=uint8_t*
+any=void*
 array<%T%,%N%>=%T%[%N%]
 # map<%K%,%V%>=<c.map: not supported by default>
 # vector<%T%>=<c.vector: not supported by default>

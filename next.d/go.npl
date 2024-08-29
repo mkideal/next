@@ -73,3 +73,22 @@ const (
 {{- define "next/go/struct.field.name" -}}
 {{. | pascalCase }}
 {{- end}}
+
+{{- define "next/go/interface" -}}
+{{next .Doc}}type {{.Name}} interface {
+    {{- next .Methods}}
+}
+{{- end}}
+
+{{- define "next/go/interface.method.param" -}}
+{{next .Name}} {{next .Type}}
+{{- end}}
+
+{{- define "next/go/interface.method.param.type" -}}
+{{if not (.Type.Package.In .Param.Method.Interface.Decl.File.Package)}}{{.Type.Package.Name}}.{{end}}{{next .Type}}
+{{- end}}
+
+{{- define "next/go/interface.method.return.type" -}}
+{{- if .Type}} {{if not (.Type.Package.In .Method.Interface.Decl.File.Package)}}{{.Type.Package.Name}}.{{end}}{{next .Type}}
+{{- end}}
+{{- end}}

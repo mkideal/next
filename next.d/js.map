@@ -2,17 +2,18 @@
 ext=.js
 comment(%S%)=// %S%
 
-int=number
-int8=number
-int16=number
-int32=number
+int=Number
+int8=Number
+int16=Number
+int32=Number
 int64=BigInt
-float32=number
-float64=number
-bool=boolean
-string=string
-byte=number
+float32=Number
+float64=Number
+bool=Boolean
+string=String
+byte=Number
 bytes=Uint8Array
+any=Object
 map<%K%,%V%>=Map
 vector<%T%>=Array
 array<%T%,%N%>=Array

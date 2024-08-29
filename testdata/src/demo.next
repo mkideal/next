@@ -11,13 +11,16 @@ const (
     Timeout = MaxRetries * 1000; // Constant expression
 )
 
+// Color is an enum type
+// Red: 1, Green: 2, Blue: 4, Yellow: 8
 enum Color {
-    Red = iota,
+    Red = 1 << iota,
     Green,
     Blue,
     Yellow,
 }
 
+// User is a struct type
 struct User {
     int64 id;
     string username;
@@ -27,14 +30,30 @@ struct User {
     Color favoriteColor;
 }
 
+// LoginRequest is a message which type is 101
 @message(type=101)
 struct LoginRequest {
     string username;
     string password;
 }
 
+// LoginResponse is a message which type is 102
 @message(type=102)
 struct LoginResponse {
     string token;
     User user;
+}
+
+// AuthService is a service which has a method Login
+interface AuthService {
+    // @next(error) indicates that the method may return an error, e.g.
+    // - Throws an exception for c++/java.
+    // - Returns (LoginResponse, error) for go.
+    @next(error)
+    Login(LoginRequest request) LoginResponse;
+}
+
+// HelloService is a service which has a method Hello
+interface HelloService {
+    Hello(string name);
 }

@@ -8,26 +8,37 @@ import (
 	"github.com/gopherd/next/token"
 )
 
+// Spec represents a declaration specification.
 type Specs struct {
-	File    *File
-	Consts  *ConstSpecs
-	Enums   *EnumSpecs
-	Structs *StructSpecs
+	File       *File
+	Consts     *ConstSpecs
+	Enums      *EnumSpecs
+	Structs    *StructSpecs
+	Interfaces *InterfaceSpecs
 }
 
+// ConstSpecs represents a list of constant specifications.
 type ConstSpecs struct {
 	File *File
 	List []*ValueSpec
 }
 
+// EnumSpecs represents a list of enumeration specifications.
 type EnumSpecs struct {
 	File *File
 	List []*EnumSpec
 }
 
+// StructSpecs represents a list of struct specifications.
 type StructSpecs struct {
 	File *File
 	List []*StructSpec
+}
+
+// InterfaceSpecs represents a list of interface specifications.
+type InterfaceSpecs struct {
+	File *File
+	List []*InterfaceSpec
 }
 
 func newSpec(ctx *Context, file *File, decl *Decl, s ast.Spec) Spec {
@@ -164,15 +175,15 @@ func (v *ValueSpec) Type() (Type, error) {
 	if v.typ == nil {
 		switch v.Underlying().(type) {
 		case int64:
-			v.typ = basicTypes["int64"]
+			v.typ = primitiveTypes["int64"]
 		case float32:
-			v.typ = basicTypes["float32"]
+			v.typ = primitiveTypes["float32"]
 		case float64:
-			v.typ = basicTypes["float64"]
+			v.typ = primitiveTypes["float64"]
 		case bool:
-			v.typ = basicTypes["bool"]
+			v.typ = primitiveTypes["bool"]
 		case string:
-			v.typ = basicTypes["string"]
+			v.typ = primitiveTypes["string"]
 		default:
 			return nil, ErrUnexpectedConstantType
 		}
@@ -262,60 +273,71 @@ func newTypeSpec(ctx *Context, file *File, decl *Decl, src *ast.TypeSpec) Spec {
 		return newEnumSpec(ctx, file, decl, src, t)
 	case *ast.StructType:
 		return newStructSpec(ctx, file, decl, src, t)
+	case *ast.InterfaceType:
+		return newInterfaceSpec(ctx, file, decl, src, t)
 	default:
 		panic("unexpected type")
 	}
 }
 
-type FieldName string
-
-func (n FieldName) String() string { return string(n) }
-
-type FieldType struct {
-	Field *Field
-	Type  Type
+// EnumMembers represents a list of enum members.
+type EnumMembers struct {
+	Enum *EnumSpec
+	List []*ValueSpec
 }
 
-// Field represents a struct field.
-type Field struct {
-	pos        token.Pos
+// EnumSpec represents an enumeration type declaration.
+type EnumSpec struct {
+	decl       *Decl
 	unresolved struct {
 		annotations *ast.AnnotationGroup
-		typ         ast.Type
 	}
 
-	Struct      *StructSpec
+	Type        *EnumType
 	Doc         *Doc
 	Comment     *Comment
 	Annotations AnnotationGroup
-	Name        FieldName
-	Type        *FieldType
+	Members     *EnumMembers
 }
 
-func newField(_ *Context, src *ast.Field) *Field {
-	f := &Field{
-		pos:     src.Pos(),
+func newEnumSpec(ctx *Context, file *File, decl *Decl, src *ast.TypeSpec, t *ast.EnumType) *EnumSpec {
+	e := &EnumSpec{
+		decl:    decl,
 		Doc:     newDoc(src.Doc),
 		Comment: newComment(src.Comment),
-		Name:    FieldName(src.Name.Name),
-		Type:    &FieldType{},
+		Type: &EnumType{
+			name: src.Name.Name,
+			pos:  src.Pos(),
+		},
 	}
-	f.Type.Field = f
-	f.unresolved.annotations = src.Annotations
-	f.unresolved.typ = src.Type
-	return f
+	e.Type.spec = e
+	e.Members = &EnumMembers{Enum: e}
+	e.unresolved.annotations = src.Annotations
+	for i, v := range t.Members.List {
+		m := newValueSpec(ctx, file, decl, v)
+		m.enum.typ = e
+		m.enum.index = i
+		e.Members.List = append(e.Members.List, m)
+	}
+	return e
 }
 
-func (f *Field) resolve(ctx *Context, file *File, _ Scope) {
-	f.Annotations = ctx.resolveAnnotationGroup(file, f.unresolved.annotations)
-	f.Type.Type = ctx.resolveType(file, f.unresolved.typ)
+func (e *EnumSpec) Decl() *Decl { return e.decl }
+
+func (e *EnumSpec) resolve(ctx *Context, file *File, scope Scope) {
+	e.Annotations = ctx.resolveAnnotationGroup(file, e.unresolved.annotations)
+	if len(e.decl.Specs) == 1 {
+		e.Doc = e.decl.Doc
+		e.decl.Doc = nil
+		e.Annotations = e.decl.Annotations
+		e.decl.Annotations = nil
+	}
+	for _, m := range e.Members.List {
+		m.resolve(ctx, file, e)
+	}
 }
 
-// Fields represents a list of struct fields.
-type Fields struct {
-	Struct *StructSpec
-	List   []*Field
-}
+func (e *EnumSpec) String() string { return e.Type.name }
 
 // StructSpec represents a struct type.
 type StructSpec struct {
@@ -368,61 +390,204 @@ func (s *StructSpec) resolve(ctx *Context, file *File, scope Scope) {
 	}
 }
 
-// EnumMembers represents a list of enum members.
-type EnumMembers struct {
-	Enum *EnumSpec
-	List []*ValueSpec
+// FieldName represents a struct field name.
+type FieldName string
+
+func (n FieldName) String() string { return string(n) }
+
+// FieldType represents a struct field type.
+type FieldType struct {
+	Field *Field
+	Type  Type
 }
 
-// EnumSpec represents an enumeration type declaration.
-type EnumSpec struct {
+// Field represents a struct field.
+type Field struct {
+	pos        token.Pos
+	unresolved struct {
+		annotations *ast.AnnotationGroup
+		typ         ast.Type
+	}
+
+	Struct      *StructSpec
+	Doc         *Doc
+	Comment     *Comment
+	Annotations AnnotationGroup
+	Name        FieldName
+	Type        *FieldType
+}
+
+func newField(_ *Context, src *ast.Field) *Field {
+	f := &Field{
+		pos:     src.Pos(),
+		Doc:     newDoc(src.Doc),
+		Comment: newComment(src.Comment),
+		Name:    FieldName(src.Name.Name),
+		Type:    &FieldType{},
+	}
+	f.Type.Field = f
+	f.unresolved.annotations = src.Annotations
+	f.unresolved.typ = src.Type
+	return f
+}
+
+func (f *Field) resolve(ctx *Context, file *File, _ Scope) {
+	f.Annotations = ctx.resolveAnnotationGroup(file, f.unresolved.annotations)
+	f.Type.Type = ctx.resolveType(file, f.unresolved.typ)
+}
+
+// Fields represents a list of struct fields.
+type Fields struct {
+	Struct *StructSpec
+	List   []*Field
+}
+
+// InterfaceSpec represents an interface specification.
+type InterfaceSpec struct {
 	decl       *Decl
 	unresolved struct {
 		annotations *ast.AnnotationGroup
 	}
 
-	Type        *EnumType
+	Type        *InterfaceType
 	Doc         *Doc
 	Comment     *Comment
 	Annotations AnnotationGroup
-	Members     *EnumMembers
+	Methods     *Methods
 }
 
-func newEnumSpec(ctx *Context, file *File, decl *Decl, src *ast.TypeSpec, t *ast.EnumType) *EnumSpec {
-	e := &EnumSpec{
+func newInterfaceSpec(ctx *Context, file *File, decl *Decl, src *ast.TypeSpec, t *ast.InterfaceType) Spec {
+	i := &InterfaceSpec{
 		decl:    decl,
 		Doc:     newDoc(src.Doc),
 		Comment: newComment(src.Comment),
-		Type: &EnumType{
+		Type: &InterfaceType{
 			name: src.Name.Name,
 			pos:  src.Pos(),
 		},
 	}
-	e.Type.spec = e
-	e.Members = &EnumMembers{Enum: e}
-	e.unresolved.annotations = src.Annotations
-	for i, v := range t.Values {
-		m := newValueSpec(ctx, file, decl, v)
-		m.enum.typ = e
-		m.enum.index = i
-		e.Members.List = append(e.Members.List, m)
+	i.Type.spec = i
+	i.unresolved.annotations = src.Annotations
+	i.Methods = &Methods{Interface: i}
+	for _, m := range t.Methods.List {
+		method := newMethod(ctx, file, i, m)
+		i.Methods.List = append(i.Methods.List, method)
 	}
-	return e
+	return i
 }
 
-func (e *EnumSpec) Decl() *Decl { return e.decl }
+func (i *InterfaceSpec) Decl() *Decl { return i.decl }
 
-func (e *EnumSpec) resolve(ctx *Context, file *File, scope Scope) {
-	e.Annotations = ctx.resolveAnnotationGroup(file, e.unresolved.annotations)
-	if len(e.decl.Specs) == 1 {
-		e.Doc = e.decl.Doc
-		e.decl.Doc = nil
-		e.Annotations = e.decl.Annotations
-		e.decl.Annotations = nil
+func (i *InterfaceSpec) resolve(ctx *Context, file *File, scope Scope) {
+	i.Annotations = ctx.resolveAnnotationGroup(file, i.unresolved.annotations)
+	if len(i.decl.Specs) == 1 {
+		i.Doc = i.decl.Doc
+		i.decl.Doc = nil
+		i.Annotations = i.decl.Annotations
+		i.decl.Annotations = nil
 	}
-	for _, m := range e.Members.List {
-		m.resolve(ctx, file, e)
+	for _, m := range i.Methods.List {
+		m.resolve(ctx, file, nil)
 	}
 }
 
-func (e *EnumSpec) String() string { return e.Type.name }
+// Methods represents a list of interface methods.
+type Methods struct {
+	Interface *InterfaceSpec
+	List      []*Method
+}
+
+type MethodName string
+
+type MethodReturnType struct {
+	Method *Method
+	Type   Type
+}
+
+// Method represents an interface method.
+type Method struct {
+	pos        token.Pos
+	unresolved struct {
+		annotations *ast.AnnotationGroup
+		returnType  ast.Type
+	}
+
+	Interface   *InterfaceSpec
+	Doc         *Doc
+	Comment     *Comment
+	Annotations AnnotationGroup
+	Name        MethodName
+	Params      MethodParams
+	ReturnType  *MethodReturnType
+}
+
+func newMethod(ctx *Context, file *File, spec *InterfaceSpec, src *ast.Method) *Method {
+	m := &Method{
+		pos:       src.Pos(),
+		Interface: spec,
+		Doc:       newDoc(src.Doc),
+		Comment:   newComment(src.Comment),
+		Name:      MethodName(src.Name.Name),
+	}
+	m.Params = MethodParams{Method: m}
+	m.ReturnType = &MethodReturnType{Method: m}
+	m.unresolved.annotations = src.Annotations
+	m.unresolved.returnType = src.Type.ReturnType
+	for _, p := range src.Type.Params.List {
+		param := newMethodParam(ctx, file, m, p)
+		m.Params.List = append(m.Params.List, param)
+	}
+	return m
+}
+
+func (m *Method) resolve(ctx *Context, file *File, _ Scope) {
+	m.Annotations = ctx.resolveAnnotationGroup(file, m.unresolved.annotations)
+	for _, p := range m.Params.List {
+		p.resolve(ctx, file, nil)
+	}
+	if m.unresolved.returnType != nil {
+		m.ReturnType.Type = ctx.resolveType(file, m.unresolved.returnType)
+	}
+}
+
+// MethodParams represents a list of function parameters.
+type MethodParams struct {
+	Method *Method
+	List   []*MethodParam
+}
+
+// MethodParamType represents a function parameter type.
+type MethodParamType struct {
+	Param *MethodParam
+	Type  Type
+}
+
+// MethodParamName represents a function parameter name.
+type MethodParamName string
+
+// MethodParam represents a function parameter.
+type MethodParam struct {
+	pos        token.Pos
+	unresolved struct {
+		typ ast.Type
+	}
+
+	Method *Method
+	Type   *MethodParamType
+	Name   MethodParamName
+}
+
+func newMethodParam(_ *Context, _ *File, method *Method, src *ast.MethodParam) *MethodParam {
+	p := &MethodParam{
+		pos:    src.Pos(),
+		Method: method,
+		Name:   MethodParamName(src.Name.Name),
+	}
+	p.Type = &MethodParamType{Param: p}
+	p.unresolved.typ = src.Type
+	return p
+}
+
+func (p *MethodParam) resolve(ctx *Context, file *File, _ Scope) {
+	p.Type.Type = ctx.resolveType(file, p.unresolved.typ)
+}

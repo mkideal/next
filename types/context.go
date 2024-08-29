@@ -418,7 +418,7 @@ func (c *Context) recursiveResolveValue(file *File, scope Scope, refs []*ValueSp
 		y := c.recursiveResolveValue(file, scope, refs, expr.Y, iota)
 		switch expr.Op {
 		case token.SHL, token.SHR:
-			return constant.Shift(x, expr.Op, uint(c.recursiveResolveUint64(file, scope, expr.Y, refs, iota)))
+			return constant.Shift(x, expr.Op, uint(c.recursiveResolveInt64(file, scope, expr.Y, refs, iota)))
 		case token.LSS, token.LEQ, token.GTR, token.GEQ, token.EQL, token.NEQ:
 			return constant.MakeBool(constant.Compare(x, expr.Op, y))
 		default:
@@ -454,23 +454,23 @@ func (c *Context) recursiveResolveValue(file *File, scope Scope, refs []*ValueSp
 }
 
 // resolveUint64 resolves an unsigned integer value of an expression
-func (c *Context) resolveUint64(file *File, expr ast.Expr) uint64 {
-	return c.recursiveResolveUint64(file, file, expr, make([]*ValueSpec, 0, 16), nil)
+func (c *Context) resolveInt64(file *File, expr ast.Expr) int64 {
+	return c.recursiveResolveInt64(file, file, expr, make([]*ValueSpec, 0, 16), nil)
 }
 
-func (c *Context) recursiveResolveUint64(file *File, scope Scope, expr ast.Expr, refs []*ValueSpec, iota *iotaValue) uint64 {
+func (c *Context) recursiveResolveInt64(file *File, scope Scope, expr ast.Expr, refs []*ValueSpec, iota *iotaValue) int64 {
 	val := c.recursiveResolveValue(file, scope, refs, expr, iota)
 	switch val.Kind() {
 	case constant.Int:
-		n, ok := constant.Uint64Val(val)
+		n, ok := constant.Int64Val(val)
 		if ok {
 			return n
 		}
 		c.addErrorf(expr.Pos(), "constant %s overflows uint64", val)
 	case constant.Float:
 		f, ok := constant.Float64Val(val)
-		if ok && f == float64(uint64(f)) {
-			return uint64(f)
+		if ok && f == float64(int64(f)) {
+			return int64(f)
 		}
 		c.addErrorf(expr.Pos(), "constant %s overflows uint64", val)
 	default:
@@ -499,7 +499,7 @@ func (c *Context) resolveType(file *File, t ast.Type) Type {
 }
 
 func (c *Context) resolveIdentType(file *File, i *ast.Ident) Type {
-	if t, ok := basicTypes[i.Name]; ok {
+	if t, ok := primitiveTypes[i.Name]; ok {
 		return t
 	}
 	t, err := file.LookupLocalType(i.Name)
@@ -552,7 +552,7 @@ func (c *Context) resolveArrayType(file *File, t *ast.ArrayType) Type {
 	return &ArrayType{
 		pos:      t.Pos(),
 		ElemType: c.resolveType(file, t.T),
-		N:        c.resolveUint64(file, t.N),
+		N:        c.resolveInt64(file, t.N),
 	}
 }
 
