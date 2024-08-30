@@ -59,7 +59,7 @@ define release_windows
 	$(eval dir := next.$(subst v,,${BUILD_VERSION}).windows-$(1))
 	@echo "Building ${BUILD_DIR}/${dir}/next..."
 	@mkdir -p ${BUILD_DIR}/${dir}/bin
-	@GOOS=windows GOARCH=$(2) ${GOBUILD} -o ${BUILD_DIR}/${dir}/bin/
+	@GOOS=windows GOARCH=$(1) ${GOBUILD} -o ${BUILD_DIR}/${dir}/bin/
 	@cp ./scripts/install.bat ${BUILD_DIR}/${dir}/
 	@cp README.md ${BUILD_DIR}/${dir}/
 	@cd ${BUILD_DIR} && zip ${dir}.zip -r ${dir} >/dev/null && rm -r ${dir}
