@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"slices"
@@ -52,7 +53,8 @@ type Context struct {
 	searchDirs []string
 }
 
-func NewContext() *Context {
+// TODO: add builtin languages
+func NewContext(languages fs.FS) *Context {
 	c := &Context{
 		fset:       token.NewFileSet(),
 		files:      make(map[string]*File),

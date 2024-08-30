@@ -12,7 +12,7 @@ import (
 
 	"github.com/gopherd/core/flags"
 	"github.com/gopherd/core/op"
-	"github.com/next/next/src/internal/fsutil"
+	"github.com/next/next/src/fsutil"
 )
 
 const (

@@ -39,21 +39,19 @@ build: go/generate go/vet
 	@echo "Building ${BUILD_BIN_DIR}/next..."
 	@mkdir -p ${BUILD_DIR}
 	@mkdir -p ${BUILD_BIN_DIR}
-	@${GOBUILD} -o ${BUILD_BIN_DIR}/ ./src/cmd/next
+	@${GOBUILD} -o ${BUILD_BIN_DIR}/
 
 .PHONY: install
 install: build
 	@echo "Installing to /usr/local/bin/next..."
 	@cp ${BUILD_BIN_DIR}/next /usr/local/bin/
-	@rm -rf /usr/local/etc/next.d
-	@cp -r etc /usr/local/etc/next.d
 
 define release_unix
 	$(eval dir := next.$(subst v,,${BUILD_VERSION}).$(1)-$(2))
 	@echo "Building ${BUILD_DIR}/${dir}/next..."
 	@mkdir -p ${BUILD_DIR}/${dir}/bin
-	@GOOS=$(1) GOARCH=$(2) ${GOBUILD} -o ${BUILD_DIR}/${dir}/bin/ ./src/cmd/next
-	@cp -r etc ${BUILD_DIR}/${dir}/
+	@cp README.md ${BUILD_DIR}/${dir}/
+	@GOOS=$(1) GOARCH=$(2) ${GOBUILD} -o ${BUILD_DIR}/${dir}/bin/
 	@cd ${BUILD_DIR} && tar zcf ${dir}.tar.gz ${dir} && rm -r ${dir}
 endef
 
@@ -61,15 +59,15 @@ define release_windows
 	$(eval dir := next.$(subst v,,${BUILD_VERSION}).windows-$(1))
 	@echo "Building ${BUILD_DIR}/${dir}/next..."
 	@mkdir -p ${BUILD_DIR}/${dir}/bin
-	@GOOS=windows GOARCH=$(2) ${GOBUILD} -o ${BUILD_DIR}/${dir}/bin/ ./src/cmd/next
-	@cp -r etc ${BUILD_DIR}/${dir}/
+	@GOOS=windows GOARCH=$(2) ${GOBUILD} -o ${BUILD_DIR}/${dir}/bin/
 	@cp ./scripts/install.bat ${BUILD_DIR}/${dir}/
-	@cd ${BUILD_DIR} && zip ${dir}.zip -r ${dir} && rm -r ${dir}
+	@cp README.md ${BUILD_DIR}/${dir}/
+	@cd ${BUILD_DIR} && zip ${dir}.zip -r ${dir} >/dev/null && rm -r ${dir}
 endef
 
 .PHONY: release
 release: go/generate go/vet
-	rm -f ${BUILD_DIR}/next.*.tar.gz ${BUILD_DIR}/next.*.zip
+	@rm -f ${BUILD_DIR}/next.*.tar.gz ${BUILD_DIR}/next.*.zip
 	$(call release_unix,darwin,amd64)
 	$(call release_unix,darwin,arm64)
 	$(call release_unix,linux,amd64)

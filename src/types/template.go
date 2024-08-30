@@ -12,8 +12,8 @@ import (
 
 	"github.com/gopherd/core/builder"
 	"github.com/gopherd/core/op"
-	"github.com/next/next/src/internal/fsutil"
-	"github.com/next/next/src/internal/templateutil"
+	"github.com/next/next/src/fsutil"
+	"github.com/next/next/src/templateutil"
 )
 
 // metaValue represents a metadata value with the line number where it was defined.
