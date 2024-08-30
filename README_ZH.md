@@ -2,14 +2,14 @@
 
 [English](./README.md)
 
-Next 是一种强大的代码生成语言,旨在跨多种编程语言创建高度定制的代码。它利用灵活的模板系统将高级规范转换为特定语言的实现。
+Next 是一种强大的通用接口定义语言,旨在跨多种编程语言创建高度可定制的代码生成。它利用灵活的模板系统将高级规范转换为特定语言的实现。
 
 ## ✨ 主要特性
 
 - 🌐 从单一源代码生成多语言代码
 - 📝 基于 Go 的 text/template 的强大模板系统
 - 🧩 通过模板继承和重载实现灵活的定制
-- 🏗️ 丰富的类型系统,支持结构体、枚举和各种数据类型
+- 🏗️ 丰富的类型系统,支持接口、结构体、枚举和各种数据类型
 - 🏷️ 支持元数据和自定义的注解
 
 ## 🛠️ 模板系统
@@ -145,6 +145,21 @@ struct LoginResponse {
     string token;
     User user;
 }
+
+// AuthService is a service which has a method Login
+interface AuthService {
+    // @next(error) indicates that the method may return an error, e.g.
+    // - Throws an exception for c++/java.
+    // - Returns (LoginResponse, error) for go.
+    @next(error)
+    Login(LoginRequest request) LoginResponse;
+}
+
+// HelloService is a service which has a method Hello
+interface HelloService {
+    @next(cpp_const)
+    Hello(string name);
+}
 ```
 
 注意: `@next` 注解应放在 `package` 声明上方。
@@ -171,7 +186,9 @@ next -T java=templates/java/ -O java=./gen/java user.next
 
 创建语言特定的模板以覆盖或扩展内置模板。以下是不同语言的示例:
 
-### C++ 模板 (cpp.npl)
+### C++ 模板
+
+`cpp.npl`:
 
 ```
 {{/*
@@ -198,7 +215,9 @@ path: {{this.Package.Name}}/{{this.Name}}.next.h
 {{next this}}
 ```
 
-### Go 模板 (go.npl)
+### Go 模板
+
+`go.npl`:
 
 ```
 {{/*

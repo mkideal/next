@@ -104,7 +104,7 @@ public:
 {{- end}}
 
 {{- define "next/cpp/interface.method" -}}
-{{next .Doc}}virtual {{next .ReturnType}} {{next .Name}}({{next .Params}}) {{if and (.Annotations.next) (.Annotations.next.const)}}const {{end}}= 0;{{next .Comment}}
+{{next .Doc}}virtual {{next .ReturnType}} {{next .Name}}({{next .Params}}) {{if and (.Annotations.next) (.Annotations.next.cpp_const)}}const {{end}}= 0;{{next .Comment}}
 {{- end}}
 
 {{- define "next/cpp/interface.method.name" -}}

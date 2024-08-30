@@ -55,5 +55,6 @@ interface AuthService {
 
 // HelloService is a service which has a method Hello
 interface HelloService {
+    @next(cpp_const)
     Hello(string name);
 }

@@ -2,14 +2,14 @@
 
 [中文文档](./README_ZH.md)
 
-Next is a powerful code generation language designed to create highly customized code across multiple programming languages. It leverages a flexible template system to transform high-level specifications into language-specific implementations.
+Next is a powerful **Generic Interface Definition Language (IDL)** designed to create highly customized code across multiple programming languages. It leverages a flexible template system to transform high-level specifications into language-specific implementations.
 
 ## ✨ Key Features
 
 - 🌐 Multi-language code generation from a single source
 - 📝 Powerful templating system based on Go's text/template
 - 🧩 Flexible customization through template inheritance and overloading
-- 🏗️ Rich type system supporting structs, enums, and various data types
+- 🏗️ Rich type system supporting interfaces, structs, enums, and various data types
 - 🏷️ Annotation support for metadata and customization
 
 ## 🛠️ Template System
@@ -168,6 +168,21 @@ struct LoginResponse {
     string token;
     User user;
 }
+
+// AuthService is a service which has a method Login
+interface AuthService {
+    // @next(error) indicates that the method may return an error, e.g.
+    // - Throws an exception for c++/java.
+    // - Returns (LoginResponse, error) for go.
+    @next(error)
+    Login(LoginRequest request) LoginResponse;
+}
+
+// HelloService is a service which has a method Hello
+interface HelloService {
+    @next(cpp_const)
+    Hello(string name);
+}
 ```
 
 Note: The `@next` annotation should be placed above the `package` declaration.
@@ -194,7 +209,9 @@ next -T java=templates/java/ -O java=./gen/java user.next
 
 Create language-specific templates to override or extend the built-in ones. Here are examples for different languages:
 
-### C++ Template (cpp.npl)
+### C++ Template
+
+`cpp.npl`:
 
 ```
 {{/*
@@ -221,7 +238,9 @@ path: {{this.Package.Name}}/{{this.Name}}.next.h
 {{next this}}
 ```
 
-### Go Template (go.npl)
+### Go Template
+
+`go.npl`:
 
 ```
 {{/*
