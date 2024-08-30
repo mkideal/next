@@ -63,6 +63,29 @@ Next provides several crucial template functions:
 
 These functions allow for flexible template composition and overriding, making it easy to customize code generation while reusing existing logic.
 
+## 📥 Installation
+
+### Unix-like Systems (Linux, macOS, etc.)
+
+To install Next on Unix-like systems, you can use the following command:
+
+```sh
+curl -fsSL https://getnext.sh | sh
+```
+
+This script will download and install the latest version of Next on your system.
+
+### Windows
+
+For Windows users, follow these steps:
+
+1. Download the installation package from [dl.getnext.sh](https://dl.getnext.sh).
+2. Extract the downloaded ZIP file.
+3. Right-click on the `install.bat` file in the extracted folder.
+4. Select "Run as administrator" to execute the installation script.
+
+This will install the latest version of Next on your Windows system.
+
 ## 🚀 Usage
 
 Generate code using Next:

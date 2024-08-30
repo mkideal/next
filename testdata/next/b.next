@@ -1,0 +1,33 @@
+@next(
+    go_package="github.com/next/next/src/testdata/gen/go/b",
+    cpp_namespace="nextlang::test::b",
+    java_package="com.example.nextlang.test.b",
+)
+package b;
+
+import "./a.next";
+
+enum TestEnum {
+    A = a.A,
+    B = a.A + a.B,
+    C = B << iota,
+    D,
+    E,
+    F = 1 << iota,
+    G,
+}
+
+assert_eq(TestEnum.A, 1);
+assert_eq(TestEnum.B, 4);
+assert_eq(TestEnum.C, 4);
+assert_eq(TestEnum.D, 8);
+assert_eq(TestEnum.E, 16);
+assert_eq(TestEnum.F, 1);
+assert_eq(TestEnum.G, 2);
+
+struct TestStruct {
+    a.Point2D point;
+}
+
+// error("This is an error message");
+print("All tests passed!");

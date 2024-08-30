@@ -12,6 +12,7 @@ GOBUILD = go build -ldflags " \
 	"
 
 BUILD_DIR = ./build
+BUILD_BIN_DIR=${BUILD_DIR}/bin
 
 .PHONY: all
 all: build
@@ -35,34 +36,46 @@ go/vet:
 
 .PHONY: build
 build: go/generate go/vet
-	@echo "Building ${BUILD_DIR}/next..."
+	@echo "Building ${BUILD_BIN_DIR}/next..."
 	@mkdir -p ${BUILD_DIR}
-	@${GOBUILD} -o ${BUILD_DIR}/ ./cmd/next
+	@mkdir -p ${BUILD_BIN_DIR}
+	@${GOBUILD} -o ${BUILD_BIN_DIR}/ ./src/cmd/next
 
 .PHONY: install
 install: build
 	@echo "Installing to /usr/local/bin/next..."
-	@cp ${BUILD_DIR}/next /usr/local/bin/
-	@cp -r next.d /usr/local/etc/
+	@cp ${BUILD_BIN_DIR}/next /usr/local/bin/
+	@rm -rf /usr/local/etc/next.d
+	@cp -r etc /usr/local/etc/next.d
 
-define release_cmd
+define release_unix
 	$(eval dir := next.$(subst v,,${BUILD_VERSION}).$(1)-$(2))
 	@echo "Building ${BUILD_DIR}/${dir}/next..."
-	@mkdir -p ${BUILD_DIR}/${dir}
-	@GOOS=$(1) GOARCH=$(2) ${GOBUILD} -o ${BUILD_DIR}/${dir}/ ./cmd/next
-	@cp -r next.d ${BUILD_DIR}/${dir} 
+	@mkdir -p ${BUILD_DIR}/${dir}/bin
+	@GOOS=$(1) GOARCH=$(2) ${GOBUILD} -o ${BUILD_DIR}/${dir}/bin/ ./src/cmd/next
+	@cp -r etc ${BUILD_DIR}/${dir}/
 	@cd ${BUILD_DIR} && tar zcf ${dir}.tar.gz ${dir} && rm -r ${dir}
+endef
+
+define release_windows
+	$(eval dir := next.$(subst v,,${BUILD_VERSION}).windows-$(1))
+	@echo "Building ${BUILD_DIR}/${dir}/next..."
+	@mkdir -p ${BUILD_DIR}/${dir}/bin
+	@GOOS=windows GOARCH=$(2) ${GOBUILD} -o ${BUILD_DIR}/${dir}/bin/ ./src/cmd/next
+	@cp -r etc ${BUILD_DIR}/${dir}/
+	@cp ./scripts/install.bat ${BUILD_DIR}/${dir}/
+	@cd ${BUILD_DIR} && zip ${dir}.zip -r ${dir} && rm -r ${dir}
 endef
 
 .PHONY: release
 release: go/generate go/vet
-	rm ${BUILD_DIR}/next.*.tar.gz
-	$(call release_cmd,windows,amd64)
-	$(call release_cmd,darwin,amd64)
-	$(call release_cmd,darwin,arm64)
-	$(call release_cmd,linux,amd64)
-	$(call release_cmd,linux,arm64)
-	$(call release_cmd,linux,386)
+	rm -f ${BUILD_DIR}/next.*.tar.gz ${BUILD_DIR}/next.*.zip
+	$(call release_unix,darwin,amd64)
+	$(call release_unix,darwin,arm64)
+	$(call release_unix,linux,amd64)
+	$(call release_unix,linux,arm64)
+	$(call release_unix,linux,386)
+	$(call release_windows,amd64)
 
 .PHONY: test/src
 test/src: go/generate go/vet
@@ -74,11 +87,11 @@ test/template: install
 	@echo "Running template tests..."
 	@rm -rf testdata/gen
 	@next \
-		-v 2 \
+		-v 1 \
 		-O go=testdata/gen/go -T go=testdata/templates/go \
 		-O cpp=testdata/gen/cpp -T cpp=testdata/templates/cpp \
 		-O java=testdata/gen/java -T java=testdata/templates/java \
-		testdata/src/
+		testdata/next/
 
 .PHONY: clean
 clean:
