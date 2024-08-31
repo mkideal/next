@@ -73,6 +73,8 @@ release: go/generate go/vet
 	$(call release_unix,linux,amd64)
 	$(call release_unix,linux,arm64)
 	$(call release_unix,linux,386)
+	$(call release_unix,windows,amd64)
+	$(call release_unix,windows,386)
 	$(call release_windows,amd64)
 
 .PHONY: test/src
@@ -86,6 +88,7 @@ test/template: install
 	@rm -rf testdata/gen
 	@next \
 		-v 1 \
+		-D PROJECT=myapp \
 		-O go=testdata/gen/go -T go=testdata/templates/go \
 		-O cpp=testdata/gen/cpp -T cpp=testdata/templates/cpp \
 		-O java=testdata/gen/java -T java=testdata/templates/java \

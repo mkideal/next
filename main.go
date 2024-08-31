@@ -43,17 +43,16 @@ func main() {
 	// set output color for error messages
 	flagSet.SetOutput(term.ColorizeWriter(os.Stderr, term.Red))
 	usage := func() {
-		var w strings.Builder
 		flagSet.SetOutput(os.Stderr)
-		fmt.Fprint(&w, "Next is an IDL for generating customized code across multiple languages.\n\n")
-		fmt.Fprintf(&w, "Usage: %s [Options] [source dirs and/or files... (default .)]\n", os.Args[0])
-		fmt.Fprintf(&w, "       %s [Options] <stdin>\n", os.Args[0])
-		fmt.Fprintf(&w, "       %s version\n", os.Args[0])
-		fmt.Fprintf(&w, "\nOptions:\n")
-		fmt.Fprint(flagSet.Output(), w.String())
+		name := term.Bold.Colorize(os.Args[0])
+		term.Fprint(flagSet.Output(), "Next is an IDL for generating customized code across multiple languages.\n\n")
+		term.Fprint(flagSet.Output(), "Usage:\n")
+		term.Fprintf(flagSet.Output(), "  %s [Options] [source_dirs_or_files...] (default: current directory)\n", name)
+		term.Fprintf(flagSet.Output(), "  %s [Options] <stdin>\n", name)
+		term.Fprintf(flagSet.Output(), "  %s version\n", name)
+		term.Fprintf(flagSet.Output(), "\nOptions:\n")
 		flagSet.PrintDefaults()
-		term.Fprintf(flagSet.Output(), `
-For more information:
+		term.Fprintf(flagSet.Output(), `For more information:
   Website:    %s
   Repository: %s
 

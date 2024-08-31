@@ -15,5 +15,6 @@ func ({{.Name}}) MessageType() int { return {{.Annotations.message.type}} }
 {{- end -}}
 
 {{head}}
+// project: {{ENV.PROJECT}}
 
 {{next this}}

@@ -43,25 +43,53 @@ print_sub_step() {
     echo "  $1"
 }
 
+align() {
+    local _indent=$1
+    local _text=$2
+    local cols=$(tput cols)
+    if [ "$cols" -gt 80 ]; then
+        cols=100
+    fi
+    echo "$_text" | fold -s -w $((cols - _indent)) | sed -e "2,\$s/^/$(printf '%*s' $_indent '')/"
+}
+
+output() {
+    align 0 "$1"
+}
+
 # Print error message and exit
 die() {
-    local cols=$(tput cols)
     local prefix="${RED}${BOLD}Error: ${NC}"
     local prefix_length=7  # Length of "Error: " without color codes
     local msg="$*"
     printf "\n$prefix"
-    echo "$msg" | fold -s -w $((cols - prefix_length)) | sed -e "2,\$s/^/$(printf '%*s' $prefix_length '')/"
+    align $prefix_length "$msg"
     exit 1
 }
 
 # Print warning message
 warn() {
-    echo "${YELLOW}Warning: $*${NC}" >&2
+    local _prefix="${YELLOW}Warning: ${NC}"
+    local _prefix_length=9  # Length of "Warning: " without color codes
+    local _msg="$*"
+    printf "\n$_prefix"
+    align $_prefix_length "$_msg"
+    echo "${YELLOW}Warning: $*${NC}"
 }
 
 # Print success message
 success() {
-    echo "${GREEN}Success: $*${NC}"
+    local _prefix="${GREEN}Success: ${NC}"
+    local _prefix_length=9  # Length of "Success: " without color codes
+    local _msg="$*"
+    printf "\n$_prefix"
+    align $_prefix_length "$_msg"
+}
+
+# Print information message
+info() {
+    local _msg="$*"
+    align 0 "$_msg"
 }
 
 # Detect OS and architecture
@@ -163,8 +191,8 @@ check_path() {
     print_step "Checking PATH configuration"
     if ! echo "$PATH" | tr ':' '\n' | grep -qx "$BIN_DIR"; then
         warn "Installation directory is not in your PATH."
-        echo "Add the following line to your shell configuration file (.bashrc, .zshrc, etc.):"
-        echo "${MAGENTA}export PATH=\"\$PATH:$BIN_DIR\"${NC}"
+        info "Add the following line to your shell configuration file (.bashrc, .zshrc, etc.):"
+        info "${MAGENTA}export PATH=\"\$PATH:$BIN_DIR\"${NC}"
     else
         print_sub_step "Installation directory is already in PATH"
     fi
@@ -172,10 +200,11 @@ check_path() {
 
 # Display countdown
 countdown() {
-    printf "${YELLOW}Installation will start in ${BOLD}5${NC}${YELLOW} seconds. Press Ctrl+C to cancel.${NC}"
+    local _fmt="${YELLOW}Installation will start in ${BOLD}%d${NC}${YELLOW} seconds. Press Ctrl+C to cancel.${NC}"
+    printf "${_fmt}" 5
     for i in 4 3 2 1; do
         sleep 1
-        printf "\r${YELLOW}Installation will start in ${BOLD}%d${NC}${YELLOW} seconds. Press Ctrl+C to cancel.${NC}" $i
+        printf "\r${_fmt}" $i
     done
 	printf "\r%*s\r" $(tput cols) ""
 }
@@ -212,12 +241,15 @@ main() {
 
     detect_os_arch
     set_default_dirs
-    get_latest_version
 
-    echo
-    echo "If you want to change these locations, please set ${BOLD}NEXT_BIN_DIR${NC} environment variables."
-    echo "To install a specific version, set the ${BOLD}NEXT_VERSION${NC} environment variable."
-    echo
+    if [ -z "${NEXT_VERSION:-}" ]; then
+        get_latest_version
+    fi
+
+    info
+    info "If you want to change these locations, please set ${BOLD}NEXT_BIN_DIR${NC} environment variables."
+    info "To install a specific version, set the ${BOLD}NEXT_VERSION${NC} environment variable."
+    info
 
     countdown
 
@@ -225,9 +257,9 @@ main() {
     install_next
     check_path
 
-    echo
-    echo "${BOLD}${GREEN}Installation Complete!${NC}"
-    echo "To start using Next, run: ${BOLD}$BIN_DIR/next${NC} or ${BOLD}next${NC} if you have added $BIN_DIR to your PATH."
+    info 
+    info "${BOLD}${GREEN}Installation Complete!${NC}"
+    info "To start using Next, run: ${BOLD}$BIN_DIR/next${NC} or ${BOLD}next${NC} if you have added $BIN_DIR to your PATH."
 }
 
 # Run the installation

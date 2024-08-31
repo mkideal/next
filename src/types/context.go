@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/gopherd/core/flags"
+	"github.com/gopherd/core/term"
 
 	"github.com/next/next/src/ast"
 	"github.com/next/next/src/constant"
@@ -25,10 +26,10 @@ type Context struct {
 	flags struct {
 		verbose    int
 		importDirs flags.Slice
-		macros     flags.Map
+		envs       flags.Map
 		outputs    flags.Map
 		templates  flags.MapSlice
-		mapping    flags.Map
+		mappings   flags.Map
 	}
 	// builtin builtin
 	builtin fs.FS
@@ -65,21 +66,77 @@ func NewContext(builtin fs.FS) *Context {
 		symbols:    make(map[string]Symbol),
 		searchDirs: createSearchDirs(),
 	}
-	c.flags.macros = make(flags.Map)
+	c.flags.envs = make(flags.Map)
 	c.flags.outputs = make(flags.Map)
 	c.flags.templates = make(flags.MapSlice)
-	c.flags.mapping = make(flags.Map)
+	c.flags.mappings = make(flags.Map)
 
 	return c
 }
 
-func (c *Context) SetupCommandFlags(fs *flag.FlagSet, u flags.UsageFunc) {
-	fs.IntVar(&c.flags.verbose, "v", 0, u("Set `verbose` level for debugging: 0=off, 1=info, 2=debug, 3=trace"))
-	fs.Var(&c.flags.importDirs, "I", u("Add import directories as `dir[,dir2,...]`, e.g. -I dir1 -I dir2 or -I dir1,dir2"))
-	fs.Var(&c.flags.macros, "D", u("Define macro variables as `name[=value]`, e.g. -D A=\"hello next\" -D X=hello -D Y=1 -D Z"))
-	fs.Var(&c.flags.outputs, "O", u("Specify output directories as `lang=dir`, e.g. -O go=gen/go -O ts=gen/ts"))
-	fs.Var(&c.flags.templates, "T", u("Provide template directories or files as `lang=dir|file`, e.g. -T go=tmpl/go -T ts=tmpl/ts.npl"))
-	fs.Var(&c.flags.mapping, "M", u("Set type mappings as `lang.type=value`, e.g. -M cpp.int=int64_t -M cpp.map<%K%,%V%>=std::map<%K%,%V%>"))
+func (c *Context) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
+	isAnsiSupported := term.IsTerminal(flagSet.Output()) && term.IsSupportsAnsi()
+	grey := func(s string) string {
+		if isAnsiSupported {
+			return term.Gray.Format(s)
+		}
+		return s
+	}
+	b := func(s string) string {
+		if isAnsiSupported {
+			return term.Bold.Format(s)
+		}
+		return s
+	}
+
+	flagSet.IntVar(&c.flags.verbose, "v", 0, u(""+
+		"Control verbosity of compiler output and debugging information.\n"+
+		"`VERBOSE` levels: "+b("0")+"=error, "+b("1")+"=info, "+b("2")+"=debug, "+b("3")+"=trace\n"+
+		"Levels "+b("2")+" (debug) and above enable execution of "+b("print")+" and "+b("printf")+" in Next source files.\n",
+	))
+
+	flagSet.Var(&c.flags.importDirs, "I", u(""+
+		"Specify additional directories for file imports.\n"+
+		"`DIR` is the path to the directory to be included in the import search.\n"+
+		"Example: -I ./common -I ~/project/shared\n",
+	))
+
+	flagSet.Var(&c.flags.envs, "D", u(""+
+		"Define custom environment variables for use in code generation templates.\n"+
+		"`NAME"+grey("[=VALUE]")+"` represents the variable name and its optional value.\n"+
+		"Example: -D VERSION=2.1 -D DEBUG -D NAME=myapp\n"+
+		"Then, use the variables in templates like this: {{ENV.NAME}}, {{ENV.VERSION}}\n",
+	))
+
+	flagSet.Var(&c.flags.outputs, "O", u(""+
+		"Set output directories for generated code, organized by target language.\n"+
+		"`LANG=DIR` specifies the target language and its output directory.\n"+
+		"Example: -O go=./output/go -O ts=./output/ts\n",
+	))
+
+	flagSet.Var(&c.flags.templates, "T", u(""+
+		"Specify custom template directories or files for each target language.\n"+
+		"`LANG=PATH` defines the target language and its template directory or file.\n"+
+		"Multiple templates can be specified for a single language.\n"+
+		"Example:\n"+
+		"  -T go=./templates/go -T go=./templates/go_extra.npl -T python=./templates/python.npl\n",
+	))
+
+	flagSet.Var(&c.flags.mappings, "M", u(""+
+		"Configure language-specific type mappings and features.\n"+
+		"`LANG.KEY=VALUE` specifies the mappings for a given language and type/feature.\n"+
+		"Type mappings: Map Next types to language-specific types.\n"+
+		"  Primitive types: int, int8, int16, int32, int64, bool, string, any, byte, bytes\n"+
+		"  Generic types: vector<%T%>, array<%T%,%N%>, map<%K%,%V%>\n"+
+		"    "+b("%T%")+", "+b("%N%")+", "+b("%K%")+", "+b("%V%")+" are placeholders replaced with actual types or values.\n"+
+		"Feature mappings: Set language-specific properties like file extensions or comment styles.\n"+
+		"Examples:\n"+
+		"  -M \"cpp.vector<%T%>\"=\"std::vector<%T%>\"\n"+
+		"  -M \"java.array<%T%,%N%>\"=\"ArrayList<%T%>\"\n"+
+		"  -M \"go.map<%K%,%V%>\"=\"map[%K%]%V%\"\n"+
+		"  -M python.ext=.py\n"+
+		"  -M \"ruby.comment(%S%)\"=\"# %S%\"\n",
+	))
 }
 
 // FileSet returns the file set used to track file positions

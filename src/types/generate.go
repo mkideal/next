@@ -2,7 +2,6 @@ package types
 
 import (
 	"fmt"
-	"maps"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -67,10 +66,10 @@ func (c *Context) Generate() error {
 		return nil
 	}
 	c.Print("flags.importDirs: ", c.flags.importDirs)
-	c.Print("flags.macros: ", c.flags.macros)
+	c.Print("flags.envs: ", c.flags.envs)
 	c.Print("flags.outputs: ", c.flags.outputs)
 	c.Print("flags.templates: ", c.flags.templates)
-	c.Print("flags.mapping: ", c.flags.mapping)
+	c.Print("flags.mappings: ", c.flags.mappings)
 
 	if c.flags.outputs.Get("next") != "" {
 		return fmt.Errorf("output language 'next' is not supported")
@@ -95,20 +94,30 @@ func (c *Context) Generate() error {
 			return err
 		}
 	}
-	for k, v := range c.flags.mapping {
+	for k, v := range c.flags.mappings {
 		m[k] = v
 	}
-	c.flags.mapping = m
+	c.flags.mappings = m
 	if c.IsDebugEnabled() {
-		for _, k := range slices.Sorted(maps.Keys(m)) {
+		keys := make([]string, 0, len(m))
+		for k := range m {
+			keys = append(keys, k)
+		}
+		slices.Sort(keys)
+		for _, k := range keys {
 			c.Tracef("map[%q] = %q", k, m[k])
 		}
 	}
 
 	// Generate files for each language
-	for _, lang := range slices.Sorted(maps.Keys(c.flags.outputs)) {
+	langs := make([]string, 0, len(c.flags.outputs))
+	for lang := range c.flags.outputs {
+		langs = append(langs, lang)
+	}
+	slices.Sort(langs)
+	for _, lang := range langs {
 		dir := c.flags.outputs[lang]
-		ext := op.Or(c.flags.mapping[lang+".ext"], "."+lang)
+		ext := op.Or(c.flags.mappings[lang+".ext"], "."+lang)
 		tempPaths := c.flags.templates[lang]
 		if len(tempPaths) == 0 {
 			return fmt.Errorf("no template directory specified for %q", lang)

@@ -2,7 +2,6 @@ package ast
 
 import (
 	"fmt"
-	"iter"
 )
 
 // A Visitor's Visit method is invoked for each node encountered by [Walk].
@@ -232,22 +231,4 @@ func (f inspector) Visit(node Node) Visitor {
 // call of f(nil).
 func Inspect(node Node, f func(Node) bool) {
 	Walk(inspector(f), node)
-}
-
-// Preorder returns an iterator over all the nodes of the syntax tree
-// beneath (and including) the specified root, in depth-first
-// preorder.
-//
-// For greater control over the traversal of each subtree, use [Inspect].
-func Preorder(root Node) iter.Seq[Node] {
-	return func(yield func(Node) bool) {
-		ok := true
-		Inspect(root, func(n Node) bool {
-			if n != nil {
-				// yield must not be called once ok is false.
-				ok = ok && yield(n)
-			}
-			return ok
-		})
-	}
 }

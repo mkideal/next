@@ -28,7 +28,7 @@ When rendering a template, Next searches for the most specific template first (u
 
 ## 📥 Installation
 
-### Unix-like Systems (Linux, macOS, etc.)
+### Unix-like Systems (Linux, macOS, Git Bash (for Windows) etc.)
 
 To install Next on Unix-like systems, you can use the following command:
 
@@ -57,7 +57,7 @@ To install Next from source, use the following command:
 go install github.com/next/next@latest
 ```
 
-Make sure you have [Go](https://go.dev) installed on your system before running this command.
+Make sure you have [Go](https://go.dev) `1.21+` installed on your system before running this command.
 
 ## 📚 Built-in Language Support
 
