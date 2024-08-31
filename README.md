@@ -67,6 +67,17 @@ Next includes built-in templates for various languages, including C++, Go, Java,
 
 For detailed information on Next's syntax, features, and usage, please visit the official website at [nextlang.org](https://nextlang.org). The website provides comprehensive documentation, tutorials, and examples to help you get started with Next and make the most of its capabilities.
 
+## 📝 TODO
+
+- [ ] Implement consistency check for enum member types and provide type of enum value
+- [ ] Handle template call stack for traceable error output
+- [ ] Further refine and optimize template functions to simplify usage
+- [ ] Implement annotation solver functionality to call external programs for calculating annotation parameters
+- [ ] Create comprehensive user documentation, supporting both Chinese and English
+- [ ] Support more built-in templates for additional programming languag
+
+> 👋 Contributions welcome! If you'd like to help with these tasks, please check our [contribution guidelines](CONTRIBUTING.md).
+
 ## 📄 License
 
 Next is released under the [MIT License](LICENSE).
