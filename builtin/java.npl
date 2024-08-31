@@ -9,8 +9,8 @@ package {{render "java/package.name" .Package}};
 import java.util.List;
 import java.util.Map;
 import java.util.Arrays;
-{{if .ListForPackage}}
-{{range .ListForPackage}}
+{{if .TrimmedList}}
+{{range .TrimmedList}}
 {{next . -}}
 {{- end}}
 {{- end}}

@@ -22,7 +22,7 @@ func (i *Imports) resolve(ctx *Context, file *File) {
 	}
 }
 
-func (i *Imports) ListForPackage() []*ImportSpec {
+func (i *Imports) TrimmedList() []*ImportSpec {
 	var seen = make(map[string]bool)
 	var pkgs []*ImportSpec
 	for _, spec := range i.List {
@@ -67,6 +67,9 @@ func newDecl(ctx *Context, file *File, src *ast.GenDecl) *Decl {
 }
 
 func (d *Decl) File() *File {
+	if d == nil {
+		return nil
+	}
 	return d.file
 }
 

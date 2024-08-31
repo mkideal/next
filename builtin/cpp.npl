@@ -9,12 +9,13 @@
 {{- end}}
 
 {{- define "next/cpp/imports" -}}
-#include <string>
+#include <any>
 #include <array>
-#include <vector>
-#include <map>
-#include <unordered_map>
 #include <cstdint>
+#include <map>
+#include <string>
+#include <unordered_map>
+#include <vector>
 {{- if .List}}
 {{range .List}}
 {{next . -}}
@@ -26,18 +27,28 @@
 #include "{{.File.Name}}.h"
 {{- end}}
 
-{{- define "next/cpp/namespace.begin" -}}
-{{- $namespace := .Annotations.next.cpp_namespace -}}
-{{- if $namespace}}
+{{- define "next/cpp/type.used" -}}
+{{if not (.Type.In .File.Package) -}}
+{{$ns := .Type.Package.Annotations.next.cpp_namespace -}}
+{{if $ns -}}
+{{unquote $ns.String}}::
+{{- end -}}
+{{- end -}}
+{{next .Type}}
+{{- end}}
 
-namespace {{unquote $namespace.String}} {
+{{- define "next/cpp/namespace.begin" -}}
+{{- $ns := .Annotations.next.cpp_namespace -}}
+{{- if $ns}}
+
+namespace {{unquote $ns.String}} {
 {{end}}
 {{- end}}
 
 {{- define "next/cpp/namespace.end" -}}
-{{- $namespace := .Annotations.next.cpp_namespace -}}
-{{- if $namespace}}
-} // namespace {{unquote $namespace.String}}
+{{- $ns := .Annotations.next.cpp_namespace -}}
+{{- if $ns}}
+} // namespace {{unquote $ns.String}}
 {{- end}}
 {{- end}}
 
@@ -84,16 +95,6 @@ public:
 {{next .Doc}}{{next .Type}} {{.Name | camelCase}};{{next .Comment}}
 {{- end}}
 
-{{- define "next/cpp/struct.field.type" -}}
-{{if not (.Type.Package.In .Field.Struct.Decl.File.Package) -}}
-{{$namespace := .Type.Package.Annotations.next.cpp_namespace -}}
-{{if $namespace -}}
-{{unquote $namespace.String}}::
-{{- end -}}
-{{- end -}}
-{{next .Type}}
-{{- end}}
-
 {{- define "next/cpp/interface" -}}
 {{next .Doc}}class {{.Name}} {
 public:
@@ -110,24 +111,8 @@ public:
 {{snakeCase .}}
 {{- end}}
 
-{{- define "next/cpp/interface.method.param.type" -}}
-const {{if not (.Type.Package.In .Param.Method.Interface.Decl.File.Package) -}}
-{{$namespace := .Type.Package.Annotations.next.cpp_namespace -}}
-{{if $namespace -}}
-{{unquote $namespace.String}}::
-{{- end -}}
-{{- end -}}
-{{next .Type}}&
-{{- end}}
-
 {{- define "next/cpp/interface.method.return.type" -}}
 {{if .Type -}}
-{{if not (.Type.Package.In .Method.Interface.Decl.File.Package) -}}
-{{$namespace := .Type.Package.Annotations.next.cpp_namespace -}}
-{{if $namespace -}}
-{{unquote $namespace.String}}::
-{{- end -}}
-{{- end -}}
 {{next .Type}}
 {{- else -}}
 void

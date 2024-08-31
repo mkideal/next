@@ -43,6 +43,7 @@ func (*MethodParam) ObjectType() string      { return "interface.method.param" }
 func (*MethodParamType) ObjectType() string  { return "interface.method.param.type" }
 func (MethodParamName) ObjectType() string   { return "interface.method.param.name" }
 func (*MethodReturnType) ObjectType() string { return "interface.method.return.type" }
+func (*UsedType) ObjectType() string         { return "type.used" }
 func (*ArrayType) ObjectType() string        { return "type.array" }
 func (*VectorType) ObjectType() string       { return "type.vector" }
 func (*MapType) ObjectType() string          { return "type.map" }
@@ -58,7 +59,12 @@ type Node interface {
 	Name() string
 }
 
-func (x *File) Package() *Package          { return x.pkg }
+func (x *File) Package() *Package {
+	if x == nil {
+		return nil
+	}
+	return x.pkg
+}
 func (x *ValueSpec) Package() *Package     { return x.decl.file.pkg }
 func (x *EnumSpec) Package() *Package      { return x.decl.file.pkg }
 func (x *StructSpec) Package() *Package    { return x.decl.file.pkg }
@@ -92,44 +98,94 @@ func (*EnumType) symbolType() string      { return TypeSymbol }
 func (*StructType) symbolType() string    { return TypeSymbol }
 func (*InterfaceType) symbolType() string { return TypeSymbol }
 
+// Spec represents a specification: import, value(const, enum member), type(enum, struct)
+type Spec interface {
+	Object
+	Decl() *Decl
+
+	resolve(ctx *Context, file *File, scope Scope)
+}
+
+func (x *ImportSpec) Decl() *Decl    { return x.decl }
+func (x *ValueSpec) Decl() *Decl     { return x.decl }
+func (e *EnumSpec) Decl() *Decl      { return e.decl }
+func (s *StructSpec) Decl() *Decl    { return s.decl }
+func (i *InterfaceSpec) Decl() *Decl { return i.decl }
+
 // Type represents a Next type.
 type Type interface {
 	Object
-	Package() *Package
 	Kind() Kind
 	String() string
+	Spec() Spec
+	Package() *Package
+	In(*Package) bool
 }
 
-func (*PrimitiveType) Package() *Package   { return nil }
-func (*ArrayType) Package() *Package       { return nil }
-func (*VectorType) Package() *Package      { return nil }
-func (*MapType) Package() *Package         { return nil }
-func (x *EnumType) Package() *Package      { return x.spec.Package() }
-func (x *StructType) Package() *Package    { return x.spec.Package() }
-func (x *InterfaceType) Package() *Package { return x.spec.Package() }
-
+func (x *UsedType) Kind() Kind      { return x.Type.Kind() }
 func (x *PrimitiveType) Kind() Kind { return x.kind }
 func (*ArrayType) Kind() Kind       { return Array }
 func (*VectorType) Kind() Kind      { return Vector }
 func (*MapType) Kind() Kind         { return Map }
 func (*EnumType) Kind() Kind        { return Enum }
 func (*StructType) Kind() Kind      { return Struct }
+func (*InterfaceType) Kind() Kind   { return Interface }
 
-// Spec represents a specification: import, value(const, enum member), type(enum, struct)
-type Spec interface {
-	Object
-	specNode()
-	resolve(ctx *Context, file *File, scope Scope)
+func (x *UsedType) Spec() Spec      { return x.Type.Spec() }
+func (*PrimitiveType) Spec() Spec   { return globalBuiltinSpec }
+func (*ArrayType) Spec() Spec       { return globalBuiltinSpec }
+func (*VectorType) Spec() Spec      { return globalBuiltinSpec }
+func (*MapType) Spec() Spec         { return globalBuiltinSpec }
+func (x *EnumType) Spec() Spec      { return x.spec }
+func (x *StructType) Spec() Spec    { return x.spec }
+func (x *InterfaceType) Spec() Spec { return x.spec }
+
+func (x *UsedType) Package() *Package      { return packageOfType(x) }
+func (x *PrimitiveType) Package() *Package { return packageOfType(x) }
+func (x *ArrayType) Package() *Package     { return packageOfType(x) }
+func (x *VectorType) Package() *Package    { return packageOfType(x) }
+func (x *MapType) Package() *Package       { return packageOfType(x) }
+func (x *EnumType) Package() *Package      { return packageOfType(x) }
+func (x *StructType) Package() *Package    { return packageOfType(x) }
+func (x *InterfaceType) Package() *Package { return packageOfType(x) }
+
+func (x *UsedType) In(pkg *Package) bool      { return typeInPackage(x, pkg) }
+func (x *PrimitiveType) In(pkg *Package) bool { return typeInPackage(x, pkg) }
+func (x *ArrayType) In(pkg *Package) bool     { return typeInPackage(x, pkg) }
+func (x *VectorType) In(pkg *Package) bool    { return typeInPackage(x, pkg) }
+func (x *MapType) In(pkg *Package) bool       { return typeInPackage(x, pkg) }
+func (x *EnumType) In(pkg *Package) bool      { return typeInPackage(x, pkg) }
+func (x *StructType) In(pkg *Package) bool    { return typeInPackage(x, pkg) }
+func (x *InterfaceType) In(pkg *Package) bool { return typeInPackage(x, pkg) }
+
+func packageOfType(t Type) *Package {
+	if t == nil {
+		return nil
+	}
+	return t.Spec().Decl().File().Package()
 }
 
-func (*ImportSpec) specNode()    {}
-func (*ValueSpec) specNode()     {}
-func (*EnumSpec) specNode()      {}
-func (*StructSpec) specNode()    {}
-func (*InterfaceSpec) specNode() {}
+func typeInPackage(t Type, pkg *Package) bool {
+	if t == nil {
+		return true
+	}
+	return t.Package().In(pkg)
+}
 
 //-------------------------------------------------------------------------
 // Types
+
+type UsedType struct {
+	Type Type
+	File *File
+}
+
+// Use uses a type in a file.
+func Use(t Type, f *File) *UsedType {
+	return &UsedType{Type: t, File: f}
+}
+
+func (u *UsedType) String() string { return u.Type.String() }
 
 // PrimitiveType represents a primitive type.
 type PrimitiveType struct {

@@ -16,12 +16,13 @@ const (
 	Byte
 	Bytes
 	String
+	Any
 	Map
 	Vector
 	Array
-	Struct
 	Enum
-	Any
+	Struct
+	Interface
 )
 
 var primitiveKinds = []Kind{

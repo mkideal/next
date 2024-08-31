@@ -1,5 +1,5 @@
 @next(
-    go_package="github.com/next/next/src/testdata/gen/go/demo",
+    go_package="github.com/next/next/testdata/gen/go/demo",
     cpp_namespace="demo",
     java_package="com.example.demo",
 )
@@ -28,6 +28,8 @@ struct User {
     map<string, int> scores;
     array<float64, 3> coordinates;
     Color favoriteColor;
+
+    any extra;
 }
 
 // LoginRequest is a message which type is 101

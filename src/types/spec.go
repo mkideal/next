@@ -8,6 +8,15 @@ import (
 	"github.com/next/next/src/token"
 )
 
+var globalBuiltinSpec = &builtinSpec{}
+
+type builtinSpec struct{}
+
+func (*builtinSpec) ObjectType() string             { return "<built-in>" }
+func (*builtinSpec) String() string                 { return "<built-in>" }
+func (*builtinSpec) Decl() *Decl                    { return nil }
+func (*builtinSpec) resolve(*Context, *File, Scope) {}
+
 // Spec represents a declaration specification.
 type Specs struct {
 	File       *File
@@ -90,8 +99,6 @@ func (i *ImportSpec) String() string { return i.Path }
 
 func (i *ImportSpec) File() *File { return i.importedFile }
 
-func (i *ImportSpec) Decl() *Decl { return i.decl }
-
 func (i *ImportSpec) resolve(ctx *Context, file *File, _ Scope) {
 	i.Annotations = ctx.resolveAnnotationGroup(file, i.unresolved.annotations)
 	if len(i.decl.Specs) == 1 {
@@ -141,8 +148,6 @@ func newValueSpec(_ *Context, _ *File, decl *Decl, src *ast.ValueSpec) *ValueSpe
 	v.unresolved.value = src.Value
 	return v
 }
-
-func (v *ValueSpec) Decl() *Decl { return v.decl }
 
 func (v *ValueSpec) String() string {
 	if v.value != nil {
@@ -322,8 +327,6 @@ func newEnumSpec(ctx *Context, file *File, decl *Decl, src *ast.TypeSpec, t *ast
 	return e
 }
 
-func (e *EnumSpec) Decl() *Decl { return e.decl }
-
 func (e *EnumSpec) resolve(ctx *Context, file *File, scope Scope) {
 	e.Annotations = ctx.resolveAnnotationGroup(file, e.unresolved.annotations)
 	if len(e.decl.Specs) == 1 {
@@ -374,7 +377,6 @@ func newStructSpec(ctx *Context, _ *File, decl *Decl, src *ast.TypeSpec, t *ast.
 	return s
 }
 
-func (s *StructSpec) Decl() *Decl    { return s.decl }
 func (s *StructSpec) String() string { return s.Type.name }
 
 func (s *StructSpec) resolve(ctx *Context, file *File, scope Scope) {
@@ -475,8 +477,6 @@ func newInterfaceSpec(ctx *Context, file *File, decl *Decl, src *ast.TypeSpec, t
 	}
 	return i
 }
-
-func (i *InterfaceSpec) Decl() *Decl { return i.decl }
 
 func (i *InterfaceSpec) resolve(ctx *Context, file *File, scope Scope) {
 	i.Annotations = ctx.resolveAnnotationGroup(file, i.unresolved.annotations)

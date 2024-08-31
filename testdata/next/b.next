@@ -1,5 +1,5 @@
 @next(
-    go_package="github.com/next/next/src/testdata/gen/go/b",
+    go_package="github.com/next/next/testdata/gen/go/b",
     cpp_namespace="nextlang::test::b",
     java_package="com.example.nextlang.test.b",
 )

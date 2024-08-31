@@ -353,12 +353,105 @@ func (tc *templateContext[T]) type_(t Type) (string, error) {
 	if v, ok := tc.cache.types.Load(t); ok {
 		return v.(string), nil
 	}
-	v, err := resolveLangType(tc.context.flags.mapping, tc.lang, t)
+	v, err := tc.resolveLangType(t)
 	if err != nil {
 		return "", err
 	}
 	tc.cache.types.Store(t, v)
 	return v, nil
+}
+
+func (tc *templateContext[T]) resolveLangType(t Type) (result string, err error) {
+	mapping := tc.context.flags.mapping
+	defer func() {
+		if err == nil && strings.Contains(result, "box(") {
+			// replace box(...) with the actual type
+			for k, v := range mapping {
+				if strings.HasPrefix(k, tc.lang+".box(") {
+					dot := strings.Index(k, ".")
+					if dot > 0 && k[:dot] == tc.lang {
+						result = strings.ReplaceAll(result, k[dot+1:], v)
+					}
+				}
+			}
+			result = removeBox(result)
+		}
+	}()
+	for {
+		x, ok := t.(*UsedType)
+		if !ok {
+			break
+		}
+		t = x.Type
+	}
+	switch t := t.(type) {
+	case *PrimitiveType:
+		p, ok := mapping[tc.lang+"."+t.name]
+		if !ok {
+			return "", fmt.Errorf("type %q not found", t.name)
+		}
+		return p, nil
+
+	case *MapType:
+		p, ok := mapping[tc.lang+".map<%K%,%V%>"]
+		if !ok {
+			return "", fmt.Errorf("type %q not found", "map<%K%,%V%>")
+		}
+		if strings.Contains(p, "%K%") {
+			k, err := tc.next(t.KeyType)
+			if err != nil {
+				return "", err
+			}
+			p = strings.ReplaceAll(p, "%K%", k)
+		}
+		if strings.Contains(p, "%V%") {
+			v, err := tc.next(t.ElemType)
+			if err != nil {
+				return "", err
+			}
+			p = strings.ReplaceAll(p, "%V%", v)
+		}
+		return p, nil
+
+	case *VectorType:
+		p, ok := mapping[tc.lang+".vector<%T%>"]
+		if !ok {
+			return "", fmt.Errorf("type %q not found", "vector<%T%>")
+		}
+		if strings.Contains(p, "%T%") {
+			e, err := tc.next(t.ElemType)
+			if err != nil {
+				return "", err
+			}
+			p = strings.ReplaceAll(p, "%T%", e)
+		}
+		return p, nil
+
+	case *ArrayType:
+		p, ok := mapping[tc.lang+".array<%T%,%N%>"]
+		if !ok {
+			return "", fmt.Errorf("type %q not found", "array<%T%,%N%>")
+		}
+		if strings.Contains(p, "%T%") {
+			e, err := tc.next(t.ElemType)
+			if err != nil {
+				return "", err
+			}
+			p = strings.ReplaceAll(p, "%T%", e)
+		}
+		if strings.Contains(p, "%N%") {
+			p = strings.ReplaceAll(p, "%N%", strconv.FormatInt(t.N, 10))
+		}
+		return p, nil
+
+	default:
+		name := t.String()
+		p, ok := mapping[tc.lang+"."+name]
+		if ok {
+			return p, nil
+		}
+		return name, nil
+	}
 }
 
 // @api(template/context): head

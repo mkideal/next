@@ -24,6 +24,8 @@ var builtin embed.FS
 
 const currentDir = "."
 const nextExt = ".next"
+const website = "https://nextlang.org"
+const repository = "https://github.com/next/next"
 
 func main() {
 	if len(os.Args) == 2 && os.Args[1] == "version" {
@@ -56,8 +58,8 @@ For more information:
   Repository: %s
 
 `,
-			(term.Bold + term.BrightBlue).Colorize("https://nextlang.org"),
-			(term.Bold + term.BrightBlue).Colorize("https://github.com/next/next"),
+			(term.Bold + term.BrightBlue).Colorize(website),
+			(term.Bold + term.BrightBlue).Colorize(repository),
 		)
 	}
 	if err := flagSet.Parse(os.Args[1:]); err != nil {

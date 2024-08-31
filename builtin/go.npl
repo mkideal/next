@@ -9,7 +9,7 @@ package {{.Package.Name}}
 {{- end}}
 
 {{- define "next/go/imports.decl" -}}
-{{- range .ListForPackage}}
+{{- range .TrimmedList}}
 {{- if len .File.Package.Types}}
 {{next .}}
 {{- end}}
@@ -22,22 +22,34 @@ import {{.File.Package.Name}} {{.File.Package.Annotations.next.go_package -}}
 
 {{- define "next/go/imports.unused" -}}
 {{- $n := 0}}
-{{- range .ListForPackage}}
+{{- range .TrimmedList}}
 {{- if len .File.Package.Types}}
 {{- $n = (add ($n) 1)}}
 {{- end}}
 {{- end}}
+
 {{- if $n}}
-{{range $p := .ListForPackage}}
-{{- if len .File.Package.Types}}
-{{render "go/import.unused" .}}
+{{ _ }}
+{{ _ }}
+    {{- range $p := .TrimmedList}}
+        {{- if len .File.Package.Types}}
+            {{- render "go/import.unused" .}}
+{{ _ }}
+        {{- end}}
+    {{- end}}
 {{- end}}
-{{- end}}
-{{- end}}
+
 {{- end}}
 
 {{- define "next/go/import.unused" -}}
 var _ = (*{{.File.Package.Name}}.{{next (index (.File.Package.Types) 0)}})(nil)
+{{- end}}
+
+{{- define "next/go/type.used" -}}
+{{if not (.Type.In .File.Package) -}}
+{{.Type.Package.Name -}}.
+{{- end -}}
+{{next .Type}}
 {{- end}}
 
 {{- define "next/go/const" -}}
@@ -63,11 +75,11 @@ const (
 {{- end}}
 
 {{- define "next/struct.field" -}}
-{{next .Doc}}{{next .Name}} {{next .Type}};{{next .Comment}}
+{{next .Doc}}{{next .Name}} {{next .Type}}{{render "go/struct.field.tag" .}}{{next .Comment}}
 {{- end}}
 
-{{- define "next/go/struct.field.type" -}}
-{{if not (.Type.Package.In .Field.Struct.Decl.File.Package)}}{{.Type.Package.Name}}.{{end}}{{next .Type}}
+{{- define "next/go/struct.field.tag" -}}
+{{/* TODO: write tag */}}
 {{- end}}
 
 {{- define "next/go/struct.field.name" -}}
@@ -84,11 +96,7 @@ const (
 {{next .Name}} {{next .Type}}
 {{- end}}
 
-{{- define "next/go/interface.method.param.type" -}}
-{{if not (.Type.Package.In .Param.Method.Interface.Decl.File.Package)}}{{.Type.Package.Name}}.{{end}}{{next .Type}}
-{{- end}}
-
 {{- define "next/go/interface.method.return.type" -}}
-{{- if .Type}} {{if not (.Type.Package.In .Method.Interface.Decl.File.Package)}}{{.Type.Package.Name}}.{{end}}{{next .Type}}
+{{- if .Type}} {{next .Type}}
 {{- end}}
 {{- end}}

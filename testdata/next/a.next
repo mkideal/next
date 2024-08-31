@@ -1,7 +1,7 @@
 // Package declaration
 
 @next(
-    go_package="github.com/next/next/src/testdata/gen/go/a",
+    go_package="github.com/next/next/testdata/gen/go/a",
     cpp_namespace="nextlang::test::a",
     java_package="com.example.nextlang.test.a",
 )

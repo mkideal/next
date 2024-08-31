@@ -487,21 +487,26 @@ func (c *Context) recursiveResolveInt64(file *File, scope Scope, expr ast.Expr, 
 
 // resolveType resolves a type
 func (c *Context) resolveType(file *File, t ast.Type) Type {
+	var result Type
 	switch t := t.(type) {
 	case *ast.Ident:
-		return c.resolveIdentType(file, t)
+		result = c.resolveIdentType(file, t)
 	case *ast.SelectorExpr:
-		return c.resolveSelectorExprType(file, t)
+		result = c.resolveSelectorExprType(file, t)
 	case *ast.ArrayType:
-		return c.resolveArrayType(file, t)
+		result = c.resolveArrayType(file, t)
 	case *ast.VectorType:
-		return c.resolveVectorType(file, t)
+		result = c.resolveVectorType(file, t)
 	case *ast.MapType:
-		return c.resolveMapType(file, t)
+		result = c.resolveMapType(file, t)
 	default:
 		c.addErrorf(t.Pos(), "unexpected type %T", t)
 		return nil
 	}
+	if result != nil {
+		result = Use(result, file)
+	}
+	return result
 }
 
 func (c *Context) resolveIdentType(file *File, i *ast.Ident) Type {

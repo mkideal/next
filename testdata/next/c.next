@@ -1,9 +1,12 @@
 @next(
-    go_package="github.com/next/next/src/testdata/gen/go/c",
+    go_package="github.com/next/next/testdata/gen/go/c",
     cpp_namespace="nextlang::test::c",
     java_package="com.example.nextlang.test.c",
 )
 package c;
+
+import "./a.next";
+import "./b.next";
 
 const (
     A = 1;
