@@ -69,12 +69,13 @@ For detailed information on Next's syntax, features, and usage, please visit the
 
 ## 📝 TODO
 
-- [ ] Implement consistency check for enum member types and provide type of enum value
-- [ ] Handle template call stack for traceable error output
 - [ ] Further refine and optimize template functions to simplify usage
+- [ ] Handle template call stack for traceable error output
+- [ ] Implement consistency check for enum member types and provide type of enum value
 - [ ] Implement annotation solver functionality to call external programs for calculating annotation parameters
+- [ ] Implement vscode extensions to support Next source and Next template
 - [ ] Create comprehensive user documentation, supporting both Chinese and English
-- [ ] Support more built-in templates for additional programming languag
+- [ ] Support more built-in templates for additional programming languages
 
 ## 🤝 Contributing
 

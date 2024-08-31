@@ -37,7 +37,6 @@ namespace {{unquote $namespace.String}} {
 {{- define "next/cpp/namespace.end" -}}
 {{- $namespace := .Annotations.next.cpp_namespace -}}
 {{- if $namespace}}
-
 } // namespace {{unquote $namespace.String}}
 {{- end}}
 {{- end}}

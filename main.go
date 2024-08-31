@@ -19,8 +19,8 @@ import (
 	"github.com/next/next/src/types"
 )
 
-//go:embed languages/*
-var languages embed.FS
+//go:embed builtin/*
+var builtin embed.FS
 
 const currentDir = "."
 const nextExt = ".next"
@@ -35,20 +35,30 @@ func main() {
 	flagSet.Init(os.Args[0], flag.ContinueOnError)
 	flagSet.Usage = func() {}
 
-	ctx := types.NewContext(languages)
-	ctx.SetupCommandFlags(flagSet, flags.UseUsage(flagSet.Output()))
+	ctx := types.NewContext(builtin)
+	ctx.SetupCommandFlags(flagSet, flags.UseUsage(flagSet.Output(), flags.NameColor(term.Bold)))
 
 	// set output color for error messages
 	flagSet.SetOutput(term.ColorizeWriter(os.Stderr, term.Red))
 	usage := func() {
-		flagSet.SetOutput(os.Stderr)
 		var w strings.Builder
-		fmt.Fprintf(&w, "Usage: %s [Options] [dirs or/and files... (default .)]\n", os.Args[0])
+		flagSet.SetOutput(os.Stderr)
+		fmt.Fprint(&w, "Next is an IDL for generating customized code across multiple languages.\n\n")
+		fmt.Fprintf(&w, "Usage: %s [Options] [source dirs and/or files... (default .)]\n", os.Args[0])
 		fmt.Fprintf(&w, "       %s [Options] <stdin>\n", os.Args[0])
 		fmt.Fprintf(&w, "       %s version\n", os.Args[0])
 		fmt.Fprintf(&w, "\nOptions:\n")
-		fmt.Fprintf(flagSet.Output(), w.String())
+		fmt.Fprint(flagSet.Output(), w.String())
 		flagSet.PrintDefaults()
+		term.Fprintf(flagSet.Output(), `
+For more information:
+  Website:    %s
+  Repository: %s
+
+`,
+			(term.Bold + term.BrightBlue).Colorize("https://nextlang.org"),
+			(term.Bold + term.BrightBlue).Colorize("https://github.com/next/next"),
+		)
 	}
 	if err := flagSet.Parse(os.Args[1:]); err != nil {
 		if err == flag.ErrHelp {

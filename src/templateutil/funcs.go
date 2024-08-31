@@ -18,6 +18,8 @@ import (
 
 // Funcs is a map of utility functions for use in templates
 var Funcs = map[string]any{
+	"_": func() string { return "" },
+
 	// String functions
 
 	// @api(template/funcs) quote (s: string)

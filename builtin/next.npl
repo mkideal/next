@@ -4,19 +4,19 @@
 {{- end}}
 
 {{- define "next/specs" -}}
-{{- if .Consts -}}
+{{- if .Consts.List -}}
 {{next .Consts}}
-{{ end -}}
-{{- if .Enums -}}
+{{end -}}
+{{- if .Enums.List -}}
 {{next .Enums}}
-{{ end -}}
-{{- if .Structs -}}
+{{end -}}
+{{- if .Structs.List -}}
 {{next .Structs}}
 {{end -}}
-{{- if .Interfaces -}}
+{{- if .Interfaces.List -}}
 {{next .Interfaces}}
 {{end -}}
-{{- end }}
+{{- end}}
 
 {{- define "next/comment" -}}
 {{align .Text}}

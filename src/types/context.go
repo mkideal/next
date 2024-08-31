@@ -28,8 +28,10 @@ type Context struct {
 		macros     flags.Map
 		outputs    flags.Map
 		templates  flags.MapSlice
-		types      flags.Map
+		mapping    flags.Map
 	}
+	// builtin builtin
+	builtin fs.FS
 
 	// fset is the file set used to track file positions
 	fset *token.FileSet
@@ -55,8 +57,9 @@ type Context struct {
 }
 
 // TODO: add builtin languages
-func NewContext(languages fs.FS) *Context {
+func NewContext(builtin fs.FS) *Context {
 	c := &Context{
+		builtin:    builtin,
 		fset:       token.NewFileSet(),
 		files:      make(map[string]*File),
 		symbols:    make(map[string]Symbol),
@@ -65,7 +68,7 @@ func NewContext(languages fs.FS) *Context {
 	c.flags.macros = make(flags.Map)
 	c.flags.outputs = make(flags.Map)
 	c.flags.templates = make(flags.MapSlice)
-	c.flags.types = make(flags.Map)
+	c.flags.mapping = make(flags.Map)
 
 	return c
 }
@@ -76,7 +79,7 @@ func (c *Context) SetupCommandFlags(fs *flag.FlagSet, u flags.UsageFunc) {
 	fs.Var(&c.flags.macros, "D", u("Define macro variables as `name[=value]`, e.g. -D A=\"hello next\" -D X=hello -D Y=1 -D Z"))
 	fs.Var(&c.flags.outputs, "O", u("Specify output directories as `lang=dir`, e.g. -O go=gen/go -O ts=gen/ts"))
 	fs.Var(&c.flags.templates, "T", u("Provide template directories or files as `lang=dir|file`, e.g. -T go=tmpl/go -T ts=tmpl/ts.npl"))
-	fs.Var(&c.flags.types, "M", u("Set type mappings as `lang.type=value`, e.g. -M cpp.int=int64_t -M cpp.map<%K%,%V%>=std::map<%K%,%V%>"))
+	fs.Var(&c.flags.mapping, "M", u("Set type mappings as `lang.type=value`, e.g. -M cpp.int=int64_t -M cpp.map<%K%,%V%>=std::map<%K%,%V%>"))
 }
 
 // FileSet returns the file set used to track file positions

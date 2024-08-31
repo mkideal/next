@@ -23,7 +23,7 @@ const (
 	langMapExt    = ".map"   // next lang map file extension
 )
 
-// searchDirs returns ordered a list of directories to search for types files.
+// searchDirs returns ordered a list of directories to search for map files.
 // The order is from the most specific to the least specific.
 // The most specific directory is the user's home directory.
 // The least specific directories are the system directories.
@@ -70,7 +70,7 @@ func (c *Context) Generate() error {
 	c.Print("flags.macros: ", c.flags.macros)
 	c.Print("flags.outputs: ", c.flags.outputs)
 	c.Print("flags.templates: ", c.flags.templates)
-	c.Print("flags.types: ", c.flags.types)
+	c.Print("flags.mapping: ", c.flags.mapping)
 
 	if c.flags.outputs.Get("next") != "" {
 		return fmt.Errorf("output language 'next' is not supported")
@@ -88,28 +88,27 @@ func (c *Context) Generate() error {
 		}
 	}
 
-	// Load all types from all types files
-	searchDirs := c.searchDirs
+	// Load all mappings from all map files
 	m := make(flags.Map)
 	for lang := range c.flags.outputs {
-		if err := c.loadTypes(m, searchDirs, lang); err != nil {
+		if err := c.loadMap(m, lang); err != nil {
 			return err
 		}
 	}
-	for k, v := range c.flags.types {
+	for k, v := range c.flags.mapping {
 		m[k] = v
 	}
-	c.flags.types = m
+	c.flags.mapping = m
 	if c.IsDebugEnabled() {
 		for _, k := range slices.Sorted(maps.Keys(m)) {
-			c.Tracef("types[%q] = %q", k, m[k])
+			c.Tracef("map[%q] = %q", k, m[k])
 		}
 	}
 
 	// Generate files for each language
 	for _, lang := range slices.Sorted(maps.Keys(c.flags.outputs)) {
 		dir := c.flags.outputs[lang]
-		ext := op.Or(c.flags.types[lang+".ext"], "."+lang)
+		ext := op.Or(c.flags.mapping[lang+".ext"], "."+lang)
 		tempPaths := c.flags.templates[lang]
 		if len(tempPaths) == 0 {
 			return fmt.Errorf("no template directory specified for %q", lang)
@@ -123,17 +122,29 @@ func (c *Context) Generate() error {
 	return nil
 }
 
-func (c *Context) loadTypes(m flags.Map, dirs []string, lang string) error {
-	for _, dir := range dirs {
+func (c *Context) loadMap(m flags.Map, lang string) error {
+	f, err := c.builtin.Open("builtin/" + lang + langMapExt)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return fmt.Errorf("failed to open builtin %q: %v", lang+langMapExt, err)
+		}
+	}
+	if f != nil {
+		defer f.Close()
+		if err := parseLangMap(m, lang, f); err != nil {
+			return fmt.Errorf("failed to parse builtin %q: %v", lang+langMapExt, err)
+		}
+	}
+	for _, dir := range c.searchDirs {
 		path := filepath.Join(dir, lang+langMapExt)
-		if err := c.loadTypesFromFile(m, lang, path); err != nil {
-			return fmt.Errorf("failed to load types from %q: %v", path, err)
+		if err := c.loadMapFromFile(m, lang, path); err != nil {
+			return fmt.Errorf("failed to load %q: %v", path, err)
 		}
 	}
 	return nil
 }
 
-func (c *Context) loadTypesFromFile(m flags.Map, lang, path string) error {
+func (c *Context) loadMapFromFile(m flags.Map, lang, path string) error {
 	f, err := os.Open(path)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -142,7 +153,7 @@ func (c *Context) loadTypesFromFile(m flags.Map, lang, path string) error {
 		return err
 	}
 	defer f.Close()
-	return parseLangTypes(m, lang, f)
+	return parseLangMap(m, lang, f)
 }
 
 func (c *Context) generateForTemplatePath(lang, ext, dir, tmplPath string) error {

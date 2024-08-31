@@ -19,7 +19,7 @@ func removeAllSpaces(s string) string {
 	}, s)
 }
 
-func parseLangTypes[M ~map[string]string](m M, lang string, r io.Reader) error {
+func parseLangMap[M ~map[string]string](m M, lang string, r io.Reader) error {
 	s := bufio.NewScanner(r)
 	for s.Scan() {
 		line := strings.TrimSpace(s.Text())
