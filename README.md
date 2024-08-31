@@ -76,7 +76,9 @@ For detailed information on Next's syntax, features, and usage, please visit the
 - [ ] Create comprehensive user documentation, supporting both Chinese and English
 - [ ] Support more built-in templates for additional programming languag
 
-> 👋 Contributions welcome! If you'd like to help with these tasks, please check our [contribution guidelines](CONTRIBUTING.md).
+## 🤝 Contributing
+
+We welcome contributions to Next Language! Please see our [Contribution Guidelines](CONTRIBUTING.md) for more information on how to get started.
 
 ## 📄 License
 
