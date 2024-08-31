@@ -51,7 +51,6 @@ die() {
     local msg="$*"
     printf "\n$prefix"
     echo "$msg" | fold -s -w $((cols - prefix_length)) | sed -e "2,\$s/^/$(printf '%*s' $prefix_length '')/"
-    echo
     exit 1
 }
 
@@ -71,10 +70,9 @@ detect_os_arch() {
     OS=$(uname -s | tr '[:upper:]' '[:lower:]')
     ARCH=$(uname -m)
     case $ARCH in
-        x86_64) ARCH="amd64" ;;
-        aarch64) ARCH="arm64" ;;
-        arm64) ARCH="arm64" ;;
-        i386) ARCH="386" ;;
+        x86_64|amd64) ARCH="amd64" ;;
+        aarch64|arm64) ARCH="arm64" ;;
+        i386|x86) ARCH="386" ;;
         *) die "Unsupported architecture: $ARCH" ;;
     esac
     case $OS in
@@ -94,17 +92,16 @@ set_default_dirs() {
     else
         DEFAULT_BIN_DIR="$HOME/bin"
     fi
-    DEFAULT_ETC_DIR="$HOME/.next"
     BIN_DIR=${NEXT_BIN_DIR:-$DEFAULT_BIN_DIR}
-    ETC_DIR=${NEXT_ETC_DIR:-$DEFAULT_ETC_DIR}
     print_sub_step "Binary directory: ${BOLD}$BIN_DIR${NC}"
-    print_sub_step "Configuration directory: ${BOLD}$ETC_DIR${NC}"
 }
 
 # Get the latest stable version
 get_latest_version() {
+    local _url="https://api.github.com/repos/next/next/releases/latest"
     print_step "Fetching latest version information"
-    LATEST_VERSION=$(curl -sSf https://api.github.com/repos/next/next/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+    print_sub_step "URL: $_url"
+    LATEST_VERSION=$(curl -sSf $_url | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
     if [ -z "$LATEST_VERSION" ]; then
         die "Failed to get the latest version. Please check your internet connection or try again later."
     fi
@@ -151,10 +148,9 @@ install_next() {
         die "Failed to extract Next package."
     fi
 
-    mkdir -p "$BIN_DIR" "$ETC_DIR" || die "Failed to create installation directories."
+    mkdir -p "$BIN_DIR" || die "Failed to create installation directory $BIN_DIR"
 
     mv "$DOWNLOAD_DIR/bin/"* "$BIN_DIR/" || die "Failed to install Next binary."
-    mv "$DOWNLOAD_DIR/etc/"* "$ETC_DIR/" || die "Failed to install Next configuration files."
 
     # Clean up the temporary directory
     rm -rf "$DOWNLOAD_DIR"
@@ -181,21 +177,45 @@ countdown() {
         sleep 1
         printf "\r${YELLOW}Installation will start in ${BOLD}%d${NC}${YELLOW} seconds. Press Ctrl+C to cancel.${NC}" $i
     done
-    #printf "\r${GREEN}Installation starting now...${NC}                                      \n"
 	printf "\r%*s\r" $(tput cols) ""
+}
+
+# Print welcome message in a box
+print_welcome() {
+    message="Welcome to the Next Installer"
+    padding="  "
+    width=$(( $(printf "%s" "$message" | wc -c) + $(printf "%s" "$padding" | wc -c) * 2 ))
+
+    print_line() {
+        i=1
+        while [ $i -le "$1" ]; do
+            printf "%s" "$2"
+            i=$((i + 1))
+        done
+    }
+
+    printf '╭'
+    print_line "$width" "─"
+    printf '╮\n'
+    
+    printf '│%s%b%s%b%s│\n' "$padding" "$BOLD" "$message" "$NC" "$padding"
+    
+    printf '╰'
+    print_line "$width" "─"
+    printf '╯'
+    printf '%b\n\n' "$NC"
 }
 
 # Main installation process
 main() {
-    echo "Welcome to the Next Installer."
-    echo
+    print_welcome
 
     detect_os_arch
     set_default_dirs
     get_latest_version
 
     echo
-    echo "If you want to change these locations, please set ${BOLD}NEXT_BIN_DIR${NC} and/or ${BOLD}NEXT_ETC_DIR${NC} environment variables."
+    echo "If you want to change these locations, please set ${BOLD}NEXT_BIN_DIR${NC} environment variables."
     echo "To install a specific version, set the ${BOLD}NEXT_VERSION${NC} environment variable."
     echo
 
@@ -207,7 +227,7 @@ main() {
 
     echo
     echo "${BOLD}${GREEN}Installation Complete!${NC}"
-    echo "To start using Next, run: ${BOLD}$BIN_DIR/next${NC}"
+    echo "To start using Next, run: ${BOLD}$BIN_DIR/next${NC} or ${BOLD}next${NC} if you have added $BIN_DIR to your PATH."
 }
 
 # Run the installation

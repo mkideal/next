@@ -12,6 +12,7 @@ import (
 
 	"github.com/gopherd/core/builder"
 	"github.com/gopherd/core/op"
+
 	"github.com/next/next/src/fsutil"
 	"github.com/next/next/src/templateutil"
 )
@@ -75,7 +76,7 @@ func resolveMeta[T Node](metaTemplates templateMeta[*template.Template], data *t
 // {{/*
 // # 'this' represents the type of the object to be generated,
 // # default is 'file'
-// this: [file|const|enum|struct]
+// this: [file|const|enum|struct|interface]
 //
 // # 'path' represents the output path of the generated file,
 // # default is the object name with the current extension

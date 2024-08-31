@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/gopherd/core/flags"
+
 	"github.com/next/next/src/ast"
 	"github.com/next/next/src/constant"
 	"github.com/next/next/src/scanner"

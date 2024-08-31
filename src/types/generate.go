@@ -12,6 +12,7 @@ import (
 
 	"github.com/gopherd/core/flags"
 	"github.com/gopherd/core/op"
+
 	"github.com/next/next/src/fsutil"
 )
 
@@ -196,8 +197,11 @@ func (c *Context) generateForTemplateFile(lang, ext, dir, tmplFile string) error
 	case "struct":
 		return generateForSpec(newTemplateContext[*StructSpec](info), tmplFile, string(content), meta)
 
+	case "interface":
+		return generateForSpec(newTemplateContext[*InterfaceSpec](info), tmplFile, string(content), meta)
+
 	default:
-		return fmt.Errorf(`unknown value for 'this': %q, expected "file", "const", "enum" or "struct"`, objType)
+		return fmt.Errorf(`unknown value for 'this': %q, expected "file", "const", "enum", "struct" or "interface"`, objType)
 	}
 }
 
