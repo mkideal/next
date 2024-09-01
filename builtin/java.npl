@@ -51,20 +51,24 @@ public class Constants {
 {{next .Doc}}public enum {{.Name}} {
     {{- next .Members}}
 
-    private final int value;
+    private final {{render "java/enum.type" .}} value;
 
-    {{.Name}}(int value) {
+    {{.Name}}({{render "java/enum.type" .}} value) {
         this.value = value;
     }
 
-    public int getValue() {
+    public {{render "java/enum.type" .}} getValue() {
         return value;
     }
 }
 {{- end}}
 
+{{- define "next/java/enum.type" -}}
+{{if .Annotations.next.type}}{{type .Annotations.next.type.Value}}{{else}}int{{end}}
+{{- end}}
+
 {{- define "next/java/enum.member" -}}
-{{next .Doc}}{{.Name}}({{.Value}}){{if not .IsLast}},{{else}};{{end}}{{next .Comment}}
+{{next .Doc}}{{.Name}}(({{render "java/enum.type" .Decl}}) {{.Value}}){{if not .IsLast}},{{else}};{{end}}{{next .Comment}}
 {{- end}}
 
 {{- define "next/java/struct" -}}
@@ -94,9 +98,9 @@ public class Constants {
 {{- end}}
 
 {{- define "next/java/interface.method" -}}
-{{next .Doc}}{{next .ReturnType}} {{next .Name}}({{next .Params}}){{if .Annotations.next.error}} throws Exception{{end}};{{next .Comment}}
+{{next .Doc}}{{next .Return}} {{next .Name}}({{next .Params}}){{if .Annotations.next.error}} throws Exception{{end}};{{next .Comment}}
 {{- end}}
 
-{{- define "next/java/interface.method.return.type" -}}
+{{- define "next/java/interface.method.return" -}}
 {{if .Type}}{{next .Type}}{{else}}void{{end}}
 {{- end}}

@@ -101,11 +101,14 @@ func Walk(v Visitor, node Node) {
 		}
 		Walk(v, n.Name)
 		Walk(v, n.Params)
-		if n.ReturnType != nil {
-			Walk(v, n.ReturnType)
+		if n.Return != nil {
+			Walk(v, n.Return)
 		}
 
 	case *MethodParam:
+		if n.Annotations != nil {
+			Walk(v, n.Annotations)
+		}
 		if n.Name != nil {
 			Walk(v, n.Name)
 		}

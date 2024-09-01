@@ -356,7 +356,7 @@ func (tc *templateContext[T]) env() flags.Map {
 // std::string
 // std::map<std::string,int>
 // ```
-func (tc *templateContext[T]) type_(t Type, langs ...string) (string, error) {
+func (tc *templateContext[T]) type_(t any, langs ...string) (string, error) {
 	if len(langs) > 1 {
 		return "", fmt.Errorf("too many arguments")
 	}
@@ -375,7 +375,7 @@ func (tc *templateContext[T]) type_(t Type, langs ...string) (string, error) {
 	return v, nil
 }
 
-func (tc *templateContext[T]) resolveLangType(lang string, t Type) (result string, err error) {
+func (tc *templateContext[T]) resolveLangType(lang string, t any) (result string, err error) {
 	mappings := tc.context.flags.mappings
 	defer func() {
 		if err == nil && strings.Contains(result, "box(") {
@@ -399,6 +399,13 @@ func (tc *templateContext[T]) resolveLangType(lang string, t Type) (result strin
 		t = x.Type
 	}
 	switch t := t.(type) {
+	case string:
+		p, ok := mappings[lang+"."+t]
+		if !ok {
+			return "", fmt.Errorf("type %q not found", t)
+		}
+		return p, nil
+
 	case *PrimitiveType:
 		p, ok := mappings[lang+"."+t.name]
 		if !ok {
@@ -459,12 +466,15 @@ func (tc *templateContext[T]) resolveLangType(lang string, t Type) (result strin
 		return p, nil
 
 	default:
-		name := t.String()
-		p, ok := mappings[lang+"."+name]
-		if ok {
-			return p, nil
+		if t, ok := t.(Type); ok {
+			name := t.String()
+			p, ok := mappings[lang+"."+name]
+			if ok {
+				return p, nil
+			}
+			return name, nil
 		}
-		return name, nil
+		return "", fmt.Errorf("unsupported type %T, expected Type or string", t)
 	}
 }
 
@@ -621,11 +631,11 @@ func (tc *templateContext[T]) next(obj Node, langs ...string) (string, error) {
 		lang = langs[0]
 	}
 	names := tc.parseTemplateNames(lang, obj.getType())
-	return tc.nextWithNames(lang, names, obj)
+	return tc.nextWithNames(names, obj)
 }
 
-func (tc *templateContext[T]) nextWithNames(lang string, names []string, obj Node) (string, error) {
-	result, err := tc.renderWithNames(lang, names, obj)
+func (tc *templateContext[T]) nextWithNames(names []string, obj Node) (string, error) {
+	result, err := tc.renderWithNames(names, obj)
 	if err != nil && IsTemplateNotFoundError(err) {
 		if t, ok := obj.(Type); ok {
 			return tc.type_(t)
@@ -653,7 +663,7 @@ func (tc *templateContext[T]) super(obj Node, langs ...string) (string, error) {
 	if len(names) < 2 {
 		return "", fmt.Errorf("invalid template name %q", name)
 	}
-	return tc.nextWithNames(lang, names[1:], obj)
+	return tc.nextWithNames(names[1:], obj)
 }
 
 // @api(template/context): render (name, data)
@@ -670,10 +680,10 @@ func (tc *templateContext[T]) render(name string, data any, langs ...string) (re
 	if len(names) == 0 {
 		return "", fmt.Errorf("invalid template name %q", name)
 	}
-	return tc.renderWithNames(lang, names, data)
+	return tc.renderWithNames(names, data)
 }
 
-func (tc *templateContext[T]) renderWithNames(lang string, names []string, data any) (result string, err error) {
+func (tc *templateContext[T]) renderWithNames(names []string, data any) (result string, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			if e, ok := r.(error); ok {

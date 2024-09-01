@@ -117,7 +117,7 @@ enum {{.Name}} {
 {{- end}}
 
 {{- define "next/interface.method" -}}
-{{next .Doc}}{{next .Name}}({{next .Params}}){{next .ReturnType}}{{next .Comment}}
+{{next .Doc}}{{next .Name}}({{next .Params}}){{next .Return}}{{next .Comment}}
 {{- end}}
 
 {{- define "next/interface.method.name" -}}
@@ -142,7 +142,7 @@ enum {{.Name}} {
 {{.}}
 {{- end}}
 
-{{- define "next/interface.method.return.type" -}}
+{{- define "next/interface.method.return" -}}
 {{- if .Type}} {{next .Type}}
 {{- end}}
 {{- end}}

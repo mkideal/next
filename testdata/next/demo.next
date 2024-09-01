@@ -49,18 +49,51 @@ interface AuthService {
     // @next(error) indicates that the method may return an error, e.g.
     // - Throws an exception for c++/java.
     // - Returns (LoginResponse, error) for go.
-    @next(error)
+    //
+    // @next(mut) applies to the method Login indicating that the method may mutate the object.
+    // For c++, method is const by default, and it is a non-const if @next(mut) is present.
+    @next(error, mut)
     Login(LoginRequest request) LoginResponse;
 }
 
 // HelloService is a service which has a method Hello
 interface HelloService {
-    @next(cpp_const)
     Hello(string name);
-
-    @next(cpp_const)
     GetName() string;
 
-    @next(error)
+    @next(error, mut)
     Print();
+}
+
+// Level is an enum type for logging
+@next(type="int8")
+enum Level {
+    Debug = iota;
+    Info;
+    Warn;
+    Error;
+}
+
+interface Logger {
+    Debug(string x, vector<any> values);
+    GetLevel() Level;
+    @next(mut)
+    SetLevel(Level level);
+}
+
+interface Reader {
+    // @next(mut) applies to the parameter buffer indicating that the buffer may be modified.
+    // For c++, the parameter is const by default, and it is a non-const if @next(mut) is present.
+    Read(@next(mut) bytes buffer) int;
+}
+
+interface Writer {
+    @next(mut)
+    Write(bytes data) int;
+}
+
+interface ReadWriter {
+    Read(@next(mut) bytes buffer) int;
+    @next(mut)
+    Write(bytes data) int;
 }

@@ -430,7 +430,6 @@ func (c *Context) resolveAnnotationGroup(file *File, decl Decl, annotations *ast
 				value = constant.MakeBool(true)
 			}
 			annotation[name] = &AnnotationParam{
-				pos:   p.Pos(),
 				name:  name,
 				value: value,
 			}

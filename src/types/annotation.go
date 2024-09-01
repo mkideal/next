@@ -33,7 +33,6 @@ type Annotation map[string]*AnnotationParam
 // AnnotationParam represents an annotation parameter.
 // @api(template/annotation) AnnotationParam
 type AnnotationParam struct {
-	pos   token.Pos
 	name  string
 	value constant.Value
 }
@@ -76,11 +75,12 @@ func (a *AnnotationParam) Value() any {
 // @api(template/annotation) String
 func (a *AnnotationParam) String() string {
 	if a == nil {
-		return ""
+		return "<nil>"
 	}
 	return a.value.String()
 }
 
+// linkedAnnotation represents an annotation linked to a declaration.
 type linkedAnnotation struct {
 	name       string
 	annotation Annotation
@@ -139,16 +139,26 @@ func (c *Context) solveAnnotations() error {
 					return fmt.Errorf("solver %q: annotation %d not found", words, id)
 				}
 				for name, param := range a.Params {
+					var v constant.Value
+					if param.Value != nil {
+						v = constant.Make(param.Value)
+						if v.Kind() == constant.Unknown {
+							return fmt.Errorf("solver %q: invalid value for parameter %q in annotation %q: %v", words, name, la.name, param.Value)
+						}
+						c.Printf("solver %q: set %q.%q to %v", words, la.name, name, param.Value)
+					}
 					p, ok := la.annotation[name]
 					if !ok {
-						return fmt.Errorf("solver %q:parameter %q not found in annotation %q", words, name, la.name)
-					}
-					if param.Value != nil {
-						v := constant.Make(param.Value)
-						if v.Kind() == constant.Unknown {
-							return fmt.Errorf("solver %q: invalid value for parameter %q in annotation %q", words, name, la.name)
+						if v == nil {
+							return fmt.Errorf("solver %q: add an invalid value for parameter %q in annotation %q: %v", words, name, la.name, param.Value)
 						}
-						c.Printf("solver %q: set %q.%q to %v", words, la.name, name, v)
+						la.annotation[name] = &AnnotationParam{
+							name:  name,
+							value: v,
+						}
+						continue
+					}
+					if v != nil {
 						p.value = constant.Value(v)
 					} else {
 						c.Printf("solver %q: remove %q.%q", words, la.name, name)

@@ -600,11 +600,13 @@ func parseMethodParam(p *parser) *ast.MethodParam {
 	if p.trace {
 		defer un(trace(p, "MethodParam"))
 	}
+	annotations := p.parseAnnotationGroup()
 	typ := p.parseType()
 	name := p.parseIdent()
 	return &ast.MethodParam{
-		Type: typ,
-		Name: name,
+		Annotations: annotations,
+		Type:        typ,
+		Name:        name,
 	}
 }
 
@@ -628,7 +630,7 @@ func (p *parser) parseMethod() *ast.Method {
 		Annotations: annotations,
 		Name:        name,
 		Params:      &ast.MethodParamList{Opening: openging, List: params, Closing: closing},
-		ReturnType:  returnType,
+		Return:      returnType,
 		Comment:     comment,
 	}
 	return method

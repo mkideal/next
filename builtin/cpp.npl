@@ -73,9 +73,13 @@ class {{.Name}};
 {{- end}}
 
 {{- define "next/cpp/enum" -}}
-{{next .Doc}}enum class {{.Name}} : int {
+{{next .Doc}}enum class {{.Name}} : {{render "cpp/enum.type" .}} {
 {{- next .Members}}
 };
+{{- end}}
+
+{{- define "next/cpp/enum.type" -}}
+{{if .Annotations.next.type}}{{type .Annotations.next.type.Value}}{{else}}int{{end}}
 {{- end}}
 
 {{- define "next/cpp/enum.member" -}}
@@ -104,14 +108,18 @@ public:
 {{- end}}
 
 {{- define "next/cpp/interface.method" -}}
-{{next .Doc}}virtual {{next .ReturnType}} {{next .Name}}({{next .Params}}) {{if .Annotations.next.cpp_const}}const {{end}}= 0;{{next .Comment}}
+{{next .Doc}}virtual {{next .Return}} {{next .Name}}({{next .Params}}) {{if not .Annotations.next.mut}}const {{end}}= 0;{{next .Comment}}
 {{- end}}
 
 {{- define "next/cpp/interface.method.name" -}}
 {{snakeCase .}}
 {{- end}}
 
-{{- define "next/cpp/interface.method.return.type" -}}
+{{- define "next/cpp/interface.method.param.type" -}}
+{{if not .Param.Annotations.next.mut}}const {{end}}{{next .Type}}&
+{{- end}}
+
+{{- define "next/cpp/interface.method.return" -}}
 {{if .Type -}}
 {{next .Type}}
 {{- else -}}

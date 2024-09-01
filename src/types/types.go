@@ -24,26 +24,26 @@ func (*VectorType) getType() string      { return "type.vector" }
 func (*MapType) getType() string         { return "type.map" }
 func (x *PrimitiveType) getType() string { return "type." + x.name }
 
-func (*Decls) getType() string                     { return "decls" }
-func (*Const) getType() string                     { return "const" }
-func (ConstName) getType() string                  { return "const.name" }
-func (*Enum) getType() string                      { return "enum" }
-func (EnumName) getType() string                   { return "enum.name" }
-func (*EnumMember) getType() string                { return "enum.member" }
-func (EnumMemberName) getType() string             { return "enum.member.name" }
-func (*Struct) getType() string                    { return "struct" }
-func (StructName) getType() string                 { return "struct.name" }
-func (*StructField) getType() string               { return "struct.field" }
-func (*StructFieldType) getType() string           { return "struct.field.type" }
-func (StructFieldName) getType() string            { return "struct.field.name" }
-func (*Interface) getType() string                 { return "interface" }
-func (InterfaceName) getType() string              { return "interface.name" }
-func (*InterfaceMethod) getType() string           { return "interface.method" }
-func (InterfaceMethodName) getType() string        { return "interface.method.name" }
-func (*InterfaceMethodParam) getType() string      { return "interface.method.param" }
-func (InterfaceMethodParamName) getType() string   { return "interface.method.param.name" }
-func (*InterfaceMethodParamType) getType() string  { return "interface.method.param.type" }
-func (*InterfaceMethodReturnType) getType() string { return "interface.method.return.type" }
+func (*Decls) getType() string                    { return "decls" }
+func (*Const) getType() string                    { return "const" }
+func (ConstName) getType() string                 { return "const.name" }
+func (*Enum) getType() string                     { return "enum" }
+func (EnumName) getType() string                  { return "enum.name" }
+func (*EnumMember) getType() string               { return "enum.member" }
+func (EnumMemberName) getType() string            { return "enum.member.name" }
+func (*Struct) getType() string                   { return "struct" }
+func (StructName) getType() string                { return "struct.name" }
+func (*StructField) getType() string              { return "struct.field" }
+func (*StructFieldType) getType() string          { return "struct.field.type" }
+func (StructFieldName) getType() string           { return "struct.field.name" }
+func (*Interface) getType() string                { return "interface" }
+func (InterfaceName) getType() string             { return "interface.name" }
+func (*InterfaceMethod) getType() string          { return "interface.method" }
+func (InterfaceMethodName) getType() string       { return "interface.method.name" }
+func (*InterfaceMethodParam) getType() string     { return "interface.method.param" }
+func (InterfaceMethodParamName) getType() string  { return "interface.method.param.name" }
+func (*InterfaceMethodParamType) getType() string { return "interface.method.param.type" }
+func (*InterfaceMethodReturn) getType() string    { return "interface.method.return" }
 
 // list types: consts, enums, structs, interfaces
 func (l List[T]) getType() string {
@@ -86,21 +86,23 @@ var _ Object = (*EnumMember)(nil)
 var _ Object = (*StructField)(nil)
 var _ Object = (*InterfaceMethod)(nil)
 
-func (x *File) getName() string             { return x.Name() }
-func (x *Value) getName() string            { return x.name }
-func (x *decl[Self, Name]) getName() string { return string(x.name) }
-func (x *PrimitiveType) getName() string    { return x.name }
-func (x *ArrayType) getName() string        { return x.String() }
-func (x *VectorType) getName() string       { return x.String() }
-func (x *MapType) getName() string          { return x.String() }
+func (x *File) getName() string                 { return x.Name() }
+func (x *Value) getName() string                { return x.name }
+func (x *PrimitiveType) getName() string        { return x.name }
+func (x *ArrayType) getName() string            { return x.String() }
+func (x *VectorType) getName() string           { return x.String() }
+func (x *MapType) getName() string              { return x.String() }
+func (x *InterfaceMethodParam) getName() string { return string(x.Name) }
+func (x *decl[Self, Name]) getName() string     { return string(x.name) }
 
-func (x *File) getPos() token.Pos             { return x.pos }
-func (x *Value) getPos() token.Pos            { return x.namePos }
-func (x *decl[Self, Name]) getPos() token.Pos { return x.pos }
-func (x *PrimitiveType) getPos() token.Pos    { return x.pos }
-func (x *ArrayType) getPos() token.Pos        { return x.pos }
-func (x *VectorType) getPos() token.Pos       { return x.pos }
-func (x *MapType) getPos() token.Pos          { return x.pos }
+func (x *File) getPos() token.Pos                 { return x.pos }
+func (x *Value) getPos() token.Pos                { return x.namePos }
+func (x *PrimitiveType) getPos() token.Pos        { return x.pos }
+func (x *ArrayType) getPos() token.Pos            { return x.pos }
+func (x *VectorType) getPos() token.Pos           { return x.pos }
+func (x *MapType) getPos() token.Pos              { return x.pos }
+func (x *InterfaceMethodParam) getPos() token.Pos { return x.pos }
+func (x *decl[Self, Name]) getPos() token.Pos     { return x.pos }
 
 // -------------------------------------------------------------------------
 // Types

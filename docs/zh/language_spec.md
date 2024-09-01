@@ -166,10 +166,10 @@ struct Location {
 ```
 InterfaceDecl     = "interface" ( InterfaceSpec | "(" { InterfaceSpec ";" } ")" ) .
 InterfaceSpec     = identifier "{" { MethodSpec ";" } "}" .
-MethodSpec        = identifier "(" [ ParameterList ] ")" [ ReturnType ] .
+MethodSpec        = identifier "(" [ ParameterList ] ")" [ Return ] .
 ParameterList     = Parameter { "," Parameter } .
 Parameter         = [ identifier ] Type .
-ReturnType        = Type .
+Return        = Type .
 ```
 
 接口定义了一组方法签名。每个方法都有一个名称、参数列表（可选）和返回类型（可选）。

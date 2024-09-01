@@ -106,17 +106,18 @@ type Decl interface {
 	Package() *Package
 }
 
-func (d *PrimitiveType) Package() *Package   { return nil }
-func (d *ArrayType) Package() *Package       { return nil }
-func (d *VectorType) Package() *Package      { return nil }
-func (d *MapType) Package() *Package         { return nil }
-func (d *Const) Package() *Package           { return d.file.pkg }
-func (d *Enum) Package() *Package            { return d.file.pkg }
-func (d *EnumMember) Package() *Package      { return d.file.pkg }
-func (d *Struct) Package() *Package          { return d.file.pkg }
-func (d *StructField) Package() *Package     { return d.file.pkg }
-func (d *Interface) Package() *Package       { return d.file.pkg }
-func (d *InterfaceMethod) Package() *Package { return d.file.pkg }
+func (d *PrimitiveType) Package() *Package        { return nil }
+func (d *ArrayType) Package() *Package            { return nil }
+func (d *VectorType) Package() *Package           { return nil }
+func (d *MapType) Package() *Package              { return nil }
+func (d *Const) Package() *Package                { return d.file.pkg }
+func (d *Enum) Package() *Package                 { return d.file.pkg }
+func (d *EnumMember) Package() *Package           { return d.file.pkg }
+func (d *Struct) Package() *Package               { return d.file.pkg }
+func (d *StructField) Package() *Package          { return d.file.pkg }
+func (d *Interface) Package() *Package            { return d.file.pkg }
+func (d *InterfaceMethod) Package() *Package      { return d.file.pkg }
+func (d *InterfaceMethodParam) Package() *Package { return d.File().Package() }
 
 var _ Decl = (*PrimitiveType)(nil)
 var _ Decl = (*ArrayType)(nil)
@@ -709,9 +710,9 @@ type InterfaceMethod struct {
 	// @api(object/decl/InterfaceMethod/Params)
 	Params *Fields[*InterfaceMethod, *InterfaceMethodParam]
 
-	// ReturnType is the method return type.
-	// @api(object/decl/InterfaceMethod/ReturnType)
-	ReturnType *InterfaceMethodReturnType
+	// Return is the method return type.
+	// @api(object/decl/InterfaceMethod/Return)
+	Return *InterfaceMethodReturn
 
 	// Comment is the [line comment](#Object.Comment) of the interface method declaration.
 	// @api(object/decl/InterfaceMethod/Comment)
@@ -728,7 +729,7 @@ func newInterfaceMethod(ctx *Context, file *File, i *Interface, src *ast.Method)
 	for _, p := range src.Params.List {
 		m.Params.List = append(m.Params.List, newInterfaceMethodParam(ctx, file, m, p))
 	}
-	m.ReturnType = newInterfaceMethodReturnType(ctx, file, m, src.ReturnType)
+	m.Return = newInterfaceMethodReturn(ctx, file, m, src.Return)
 	return m
 }
 
@@ -737,8 +738,8 @@ func (m *InterfaceMethod) resolve(ctx *Context, file *File, scope Scope) {
 	for _, p := range m.Params.List {
 		p.resolve(ctx, file, scope)
 	}
-	if m.ReturnType != nil {
-		m.ReturnType.resolve(ctx, file, scope)
+	if m.Return != nil {
+		m.Return.resolve(ctx, file, scope)
 	}
 }
 
@@ -749,6 +750,15 @@ type InterfaceMethodName string
 // InterfaceMethodParam represents an interface method parameter declaration.
 // @api(object/decl/InterfaceMethodParam)
 type InterfaceMethodParam struct {
+	pos        token.Pos
+	unresolved struct {
+		annotations *ast.AnnotationGroup
+	}
+
+	// Annotations is the [annotations](#Object.Annotations) for the parameter.
+	// @api(object/decl/InterfaceMethodParam/Annotations)
+	Annotations AnnotationGroup
+
 	// Method is the interface method that contains the parameter.
 	// @api(object/decl/InterfaceMethodParam/Method)
 	Method *InterfaceMethod
@@ -764,15 +774,22 @@ type InterfaceMethodParam struct {
 
 func newInterfaceMethodParam(ctx *Context, file *File, m *InterfaceMethod, src *ast.MethodParam) *InterfaceMethodParam {
 	p := &InterfaceMethodParam{
+		pos:    src.Pos(),
 		Method: m,
 	}
+	p.unresolved.annotations = src.Annotations
 	p.Name = InterfaceMethodParamName(src.Name.Name)
 	p.Type = newInterfaceMethodParamType(ctx, file, p, src.Type)
 	return p
 }
 
 func (p *InterfaceMethodParam) resolve(ctx *Context, file *File, scope Scope) {
+	p.Annotations = ctx.resolveAnnotationGroup(file, p, p.unresolved.annotations)
 	p.Type.resolve(ctx, file, scope)
+}
+
+func (p *InterfaceMethodParam) File() *File {
+	return p.Method.File()
 }
 
 // InterfaceMethodParamName represents an interface method parameter name.
@@ -805,29 +822,29 @@ func (t *InterfaceMethodParamType) resolve(ctx *Context, file *File, scope Scope
 	t.Type = ctx.resolveType(file, t.unresolved.typ)
 }
 
-// InterfaceMethodReturnType represents an interface method return type.
-// @api(object/decl/InterfaceMethodReturnType)
-type InterfaceMethodReturnType struct {
+// InterfaceMethodReturn represents an interface method return type.
+// @api(object/decl/InterfaceMethodReturn)
+type InterfaceMethodReturn struct {
 	unresolved struct {
 		typ ast.Type
 	}
 
 	// Method is the interface method that contains the return type.
-	// @api(object/decl/InterfaceMethodReturnType/Method)
+	// @api(object/decl/InterfaceMethodReturn/Method)
 	Method *InterfaceMethod
 
 	// Type is the return type.
-	// @api(object/decl/InterfaceMethodReturnType/Type)
+	// @api(object/decl/InterfaceMethodReturn/Type)
 	Type Type
 }
 
-func newInterfaceMethodReturnType(_ *Context, _ *File, m *InterfaceMethod, src ast.Type) *InterfaceMethodReturnType {
-	t := &InterfaceMethodReturnType{Method: m}
+func newInterfaceMethodReturn(_ *Context, _ *File, m *InterfaceMethod, src ast.Type) *InterfaceMethodReturn {
+	t := &InterfaceMethodReturn{Method: m}
 	t.unresolved.typ = src
 	return t
 }
 
-func (t *InterfaceMethodReturnType) resolve(ctx *Context, file *File, scope Scope) {
+func (t *InterfaceMethodReturn) resolve(ctx *Context, file *File, scope Scope) {
 	if t.unresolved.typ == nil {
 		return
 	}

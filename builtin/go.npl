@@ -9,9 +9,12 @@ package {{.Package.Name}}
 {{- end}}
 
 {{- define "next/go/imports.decl" -}}
-{{- range .TrimmedList}}
+{{ _ }}
+import "strconv"
+{{range .TrimmedList}}
 {{- if len .File.Package.Types}}
 {{next .}}
+{{ _ }}
 {{- end}}
 {{- end}}
 {{- end}}
@@ -21,15 +24,8 @@ import {{.File.Package.Name}} {{.File.Package.Annotations.next.go_package -}}
 {{- end}}
 
 {{- define "next/go/imports.unused" -}}
-{{- $n := 0}}
-{{- range .TrimmedList}}
-{{- if len .File.Package.Types}}
-{{- $n = (add ($n) 1)}}
-{{- end}}
-{{- end}}
-
-{{- if $n}}
 {{ _ }}
+var _ = strconv.Itoa
 {{ _ }}
     {{- range $p := .TrimmedList}}
         {{- if len .File.Package.Types}}
@@ -37,8 +33,6 @@ import {{.File.Package.Name}} {{.File.Package.Annotations.next.go_package -}}
 {{ _ }}
         {{- end}}
     {{- end}}
-{{- end}}
-
 {{- end}}
 
 {{- define "next/go/import.unused" -}}
@@ -62,6 +56,17 @@ var _ = (*{{.File.Package.Name}}.{{next (index (.File.Package.Types) 0)}})(nil)
 const (
 {{- next .Members}}
 )
+
+func (x {{.Name}}) String() string {
+    {{- $name := .Name}}
+    switch x {
+    {{- range .Members.List}}
+    case {{$name}}_{{.Name}}:
+        return "{{.Name}}"
+    {{- end}}
+    }
+    return "{{$name}}(" + strconv.Itoa(int(x)) + ")"
+}
 {{- end}}
 
 {{- define "next/go/enum.member" -}}
@@ -96,7 +101,7 @@ const (
 {{next .Name}} {{next .Type}}
 {{- end}}
 
-{{- define "next/go/interface.method.return.type" -}}
+{{- define "next/go/interface.method.return" -}}
 {{- if .Method.Annotations.next.error}}
 {{- if .Type}} ({{next .Type}}, error)
 {{- else}} error

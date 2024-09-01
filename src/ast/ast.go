@@ -277,7 +277,7 @@ type Method struct {
 	Annotations *AnnotationGroup // associated annotations; or nil
 	Name        *Ident           // method name
 	Params      *MethodParamList // method parameters
-	ReturnType  Type             // method return type; or nil
+	Return      Type             // method return type; or nil
 	Comment     *CommentGroup    // line comments; or nil
 }
 
@@ -288,8 +288,8 @@ func (m *Method) Pos() token.Pos {
 
 // End returns the position of the character immediately after the method declaration.
 func (m *Method) End() token.Pos {
-	if m.ReturnType != nil {
-		return m.ReturnType.End()
+	if m.Return != nil {
+		return m.Return.End()
 	}
 	return m.Params.End()
 }
@@ -299,8 +299,9 @@ type MethodList = List[*Method]
 
 // MethodParam represents a method parameter declaration.
 type MethodParam struct {
-	Type Type   // parameter type
-	Name *Ident // parameter name
+	Annotations *AnnotationGroup // associated annotations; or nil
+	Type        Type             // parameter type
+	Name        *Ident           // parameter name
 }
 
 // Pos returns the position of the first character in the method parameter.
