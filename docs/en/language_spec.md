@@ -210,6 +210,7 @@ struct User {
 - Integer types: `int`, `int8`, `int16`, `int32`, `int64`
 - Floating-point types: `float32`, `float64`
 - String types: `string`, `byte`, `bytes`
+- Any: `any`
 
 **Note: Unsigned integer types are not supported.**
 
@@ -291,8 +292,8 @@ All expressions used in constant declarations must be valid constant expressions
 | **printf**(`fmt: string`, `args: any...`) | Debug output formatted information, automatically adds a newline if content doesn't have one |
 | **error**(`args: any...`) | Output error message, requires at least one argument |
 | **assert**(`cond: bool`, `args: any...`) | Assert if true |
-| **assert_eq**(`got: any`, `want: any`, `args: any...`) | Assert if equal |
-| **assert_ne**(`got: any`, `want: any`, `args: any...`) | Assert if not equal |
+| **assert_eq**(`x: any`, `y: any`, `args: any...`) | Assert if `x` equals to `y` |
+| **assert_ne**(`x: any`, `y: any`, `args: any...`) | Assert if `x` does not equal to `y` |
 | **assert_lt**(`x: any`, `y: any`, `args: any...`) | Assert if `x` is less than `y` |
 | **assert_le**(`x: any`, `y: any`, `args: any...`) | Assert if `x` is less than or equal to `y` |
 | **assert_gt**(`x: any`, `y: any`, `args: any...`) | Assert if `x` is greater than `y` |

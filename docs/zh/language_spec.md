@@ -250,12 +250,13 @@ struct User {
 - 整数类型：`int`、`int8`、`int16`、`int32`、`int64`
 - 浮点数类型：`float32`、`float64`
 - 字符串类型：`string`、`byte`、`bytes`
+- 任意类型：`any`
 
 **注意: 不支持无符号整数类型。**
 
 ### 5.2 复合类型
 
-- 数组类型：`array<T, N>`，其中 T 是元素类型，N 是数组长度
+- 数组类型：`array<T, N>`，其中 T 是元素类型，N 是数组长度，支持常量表达式
 - 向量类型：`vector<T>`，其中 T 是元素类型
 - 映射类型：`map<K, V>`，其中 K 是键类型，V 是值类型
 
@@ -333,8 +334,8 @@ len("hello")        // 函数调用
 | **printf**(`fmt: string`, `args: any...`) | 调试输出格式化信息，内容没有换行时会自动添加换行符 |
 | **error**(`args: any...`) | 输出错误消息，至少需要一个参数 |
 | **assert**(`cond: bool`, `args: any...`) | 断言是否为真 |
-| **assert_eq**(`got: any`, `want: any`, `args: any...`) | 断言是否相等 |
-| **assert_ne**(`got: any`, `want: any`, `args: any...`) | 断言是否不等 |
+| **assert_eq**(`x: any`, `y: any`, `args: any...`) | 断言 `x` 是否等于 `y` |
+| **assert_ne**(`x: any`, `y: any`, `args: any...`) | 断言 `x` 是否不等于 `y` |
 | **assert_lt**(`x: any`, `y: any`, `args: any...`) | 断言 `x` 是否小于 `y` |
 | **assert_le**(`x: any`, `y: any`, `args: any...`) | 断言 `x` 是否小于等于 `y` |
 | **assert_gt**(`x: any`, `y: any`, `args: any...`) | 断言 `x` 是否大于 `y` |
