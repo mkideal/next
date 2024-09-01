@@ -1,19 +1,19 @@
 {{- define "next/file" -}}
 {{next .Imports -}}
-{{next .Specs -}}
+{{next .Decls -}}
 {{- end}}
 
-{{- define "next/specs" -}}
-{{- if .Consts.List -}}
+{{- define "next/decls" -}}
+{{- if .Consts -}}
 {{next .Consts}}
 {{end -}}
-{{- if .Enums.List -}}
+{{- if .Enums -}}
 {{next .Enums}}
 {{end -}}
-{{- if .Structs.List -}}
+{{- if .Structs -}}
 {{next .Structs}}
 {{end -}}
-{{- if .Interfaces.List -}}
+{{- if .Interfaces -}}
 {{next .Interfaces}}
 {{end -}}
 {{- end}}

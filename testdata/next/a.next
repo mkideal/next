@@ -12,14 +12,12 @@ package a;
 const XX = 1; // XX value
 
 // Constants
-const (
-    ServerName = "Comprehensive Test Server";
-    Version = "1.0.0";
-    MaxConnections = 1000;
-    Pi = 3.14159265358979323846;
-    MaxInt64 = 9223372036854775807;  // 2^63 - 1
-    MinInt64 = -9223372036854775808; // -2^63
-)
+const ServerName = "Comprehensive Test Server";
+const Version = "1.0.0";
+const MaxConnections = 1000;
+const Pi = 3.14159265358979323846;
+const MaxInt64 = 9223372036854775807;  // 2^63 - 1
+const MinInt64 = -9223372036854775808; // -2^63
 
 // Assert constants
 assert_eq(ServerName, "Comprehensive Test Server");
@@ -30,18 +28,16 @@ assert_eq(MaxInt64, 9223372036854775807);
 assert_eq(MinInt64, -9223372036854775808);
 
 // Constants with complex expressions
-const (
-    A = 1;
-    B = A + 2;
-    C = B * 3;
-    D = (C + 5) / 2;
-    E = D << 2;
-    F = E | (1 << 10);
-    G = F & 0xFFFF;
-    H = G ^ 0x1234;
-    I = H + 1.618;  // Approximation of golden ratio
-    J = I / 120;    // 120 is 5!
-)
+const A = 1;
+const B = A + 2;
+const C = B * 3;
+const D = (C + 5) / 2;
+const E = D << 2;
+const F = E | (1 << 10);
+const G = F & 0xFFFF;
+const H = G ^ 0x1234;
+const I = H + 1.618;  // Approximation of golden ratio
+const J = I / 120;    // 120 is 5!
 
 // Assert complex constants
 assert_eq(A, 1);
@@ -56,11 +52,9 @@ assert(I > 5673.0 && I < 5674.0, "I value out of expected range: ", I);
 assert(J > 47.28 && J < 47.29, "J value out of expected range: ", J);
 
 // Constants with function calls
-const (
-    StringLength = len("Hello, World!");
-    MinValue = min(A, B, C, D, E);
-    MaxValue = max(F, G, H, int(I), int(J));
-)
+const StringLength = len("Hello, World!");
+const MinValue = min(A, B, C, D, E);
+const MaxValue = max(F, G, H, int(I), int(J));
 
 // Assert function call constants
 assert_eq(StringLength, 13);
@@ -69,14 +63,14 @@ assert_eq(MaxValue, 5673);
 
 // Enum with iota
 enum Color {
-    Red = 1 << iota, // 1
-    Green,           // 2
-    Blue,            // 4
-    Alpha,           // 8
-    Yellow = Red | Green, // 3
-    Cyan = Green | Blue,  // 6
-    Magenta = Red | Blue, // 5
-    White = Red | Green | Blue, // 7
+    Red = 1 << iota;
+    Green;
+    Blue;
+    Alpha;
+    Yellow = Red | Green;
+    Cyan = Green | Blue;
+    Magenta = Red | Blue;
+    White = Red | Green | Blue;
 }
 
 // Assert Color enum
@@ -91,28 +85,28 @@ assert_eq(Color.White, 7);
 
 // Enum with complex iota usage
 enum FilePermission {
-    None = 0,
-    Execute = 1 << iota, // 1
-    Write,               // 2
-    Read,                // 4
+    None = 0;
+    Execute = 1 << iota;
+    Write;
+    Read;
     
-    UserRead = Read << (3 * iota), // 4
-    UserWrite,                     // 4<<3 = 32
-    UserExecute,                   // 4<<6 = 256
+    UserRead = Read << (3 * iota);
+    UserWrite;
+    UserExecute;
     
-    GroupRead, // 4<<9 = 2048
-    GroupWrite, // 4<<12 = 16384
-    GroupExecute, // 4<<15 = 131072
+    GroupRead;
+    GroupWrite;
+    GroupExecute;
     
-    OthersRead, // 4<<18 = 1048576
-    OthersWrite, // 4<<21 = 8388608
-    OthersExecute, // 4<<24 = 67108864
+    OthersRead;
+    OthersWrite;
+    OthersExecute;
     
     // 4|32|256|2048|16384|131072|1048576|8388608|67108864
     // 4 + 32 + 256 + 2048 + 16384 + 131072 + 1048576 + 8388608 + 67108864
     All = UserRead | UserWrite | UserExecute | 
           GroupRead | GroupWrite | GroupExecute | 
-          OthersRead | OthersWrite | OthersExecute,
+          OthersRead | OthersWrite | OthersExecute;
 }
 
 // Assert FilePermission enum
@@ -131,41 +125,38 @@ assert_eq(FilePermission.OthersWrite, 8388608);
 assert_eq(FilePermission.OthersExecute, 67108864);
 assert_eq(FilePermission.All, (4 + 32 + 256 + 2048 + 16384 + 131072 + 1048576 + 8388608 + 67108864));
 
-// Enum group
-enum (
-    Day {
-        Monday = 1 << iota,
-        Tuesday,
-        Wednesday,
-        Thursday,
-        Friday,
-        Saturday,
-        Sunday,
-        
-        Weekday = Monday | Tuesday | Wednesday | Thursday | Friday,
-        Weekend = Saturday | Sunday,
-    }
+enum Day {
+    Monday = 1 << iota;
+    Tuesday;
+    Wednesday;
+    Thursday;
+    Friday;
+    Saturday;
+    Sunday;
     
-    Month {
-        January = 1 << iota,
-        February,
-        March,
-        April,
-        May,
-        June,
-        July,
-        August,
-        September,
-        October,
-        November,
-        December,
-        
-        Q1 = January | February | March,
-        Q2 = April | May | June,
-        Q3 = July | August | September,
-        Q4 = October | November | December,
-    }
-)
+    Weekday = Monday | Tuesday | Wednesday | Thursday | Friday;
+    Weekend = Saturday | Sunday;
+}
+
+enum Month {
+    January = 1 << iota;
+    February;
+    March;
+    April;
+    May;
+    June;
+    July;
+    August;
+    September;
+    October;
+    November;
+    December;
+    
+    Q1 = January | February | March;
+    Q2 = April | May | June;
+    Q3 = July | August | September;
+    Q4 = October | November | December;
+}
 
 // Assert Day enum
 assert_eq(Day.Monday, 1);
@@ -231,25 +222,22 @@ struct ComplexStruct {
     map<string, int> dictionary;
 }
 
-// Struct group
-struct (
-    User {
-        int64 id;
-        string username;
-        string email;
-        Day preferredDay;
-        Month birthMonth;
-    }
-    
-    @json(name = "UserProfile")
-    UserProfile {
-        User user;
-        string firstName;
-        string lastName;
-        int age;
-        vector<string> interests;
-    }
-)
+struct User {
+    int64 id;
+    string username;
+    string email;
+    Day preferredDay;
+    Month birthMonth;
+}
+
+@json(name = "UserProfile")
+struct UserProfile {
+    User user;
+    string firstName;
+    string lastName;
+    int age;
+    vector<string> interests;
+}
 
 // API types
 @api(req)
@@ -274,32 +262,31 @@ struct LoginResponse {
 }
 
 @api
-struct (
-    GenericRequest {
-        string requestId;
-        int64 timestamp;
-    }
-    
-    GenericResponse {
-        string requestId;
-        int64 timestamp;
-        bool success;
-        @json(omitempty)
-        string errorCode;
-        @json(omitempty)
-        string errorMessage;
-    }
-)
+struct GenericRequest {
+    string requestId;
+    int64 timestamp;
+}
+
+@api
+struct GenericResponse {
+    string requestId;
+    int64 timestamp;
+    bool success;
+    @json(omitempty)
+    string errorCode;
+    @json(omitempty)
+    string errorMessage;
+}
 
 // Test cases for iota
 enum IotatestEnum {
-    A = iota,     // 0
-    B,            // 1
-    C = iota * 2, // 0
-    D,            // 2
-    E = iota * iota,  // 0
-    F,                // 1
-    G = iota + C,     // 0
+    A = iota;     // 0
+    B;            // 1
+    C = iota * 2; // 0
+    D;            // 2
+    E = iota * iota;  // 0
+    F;                // 1
+    G = iota + C;     // 0
 }
 
 // Assert IotatestEnum
@@ -312,18 +299,16 @@ assert_eq(IotatestEnum.F, 1);
 assert_eq(IotatestEnum.G, 0);
 
 // Constants using built-in functions
-const (
-    IntFromBool = int(true);
-    IntFromFloat = int(3.14);
-    FloatFromInt = float(42);
-    FloatFromBool = float(false);
-    BoolFromInt = bool(1);
-    BoolFromString = bool("true");
-    
-    FormattedString1 = sprint("The answer is ", 42);
-    FormattedString2 = sprintf("Pi is approximately %.2f", Pi);
-    FormattedString3 = sprintln("Hello", "World");
-)
+const IntFromBool = int(true);
+const IntFromFloat = int(3.14);
+const FloatFromInt = float(42);
+const FloatFromBool = float(false);
+const BoolFromInt = bool(1);
+const BoolFromString = bool("true");
+
+const FormattedString1 = sprint("The answer is ", 42);
+const FormattedString2 = sprintf("Pi is approximately %.2f", Pi);
+const FormattedString3 = sprintln("Hello", "World");
 
 // Assert built-in function constants
 assert_eq(IntFromBool, 1);
@@ -337,13 +322,11 @@ assert_eq(FormattedString2, "Pi is approximately 3.14");
 assert_eq(FormattedString3, "Hello World\n");
 
 // Constants for testing complex expressions and bitwise operations
-const (
-    Complex1 = (A + B) * (C - D) / (E + F) & (G | H) ^ int(I);
-    Complex2 = min(max(A, B, C), min(D, E, F)) + abs(G - H) * len(sprint(I, J));
-    Complex3 = (Day.Weekday);
-    Complex4 = (Day.Weekday &^ Day.Weekend);
-    Complex5 = Color.Red | (FilePermission.UserRead & FilePermission.GroupWrite) | (Day.Weekday &^ Day.Weekend);
-)
+const Complex1 = (A + B) * (C - D) / (E + F) & (G | H) ^ int(I);
+const Complex2 = min(max(A, B, C), min(D, E, F)) + abs(G - H) * len(sprint(I, J));
+const Complex3 = (Day.Weekday);
+const Complex4 = (Day.Weekday &^ Day.Weekend);
+const Complex5 = Color.Red | (FilePermission.UserRead & FilePermission.GroupWrite) | (Day.Weekday &^ Day.Weekend);
 
 // Assert complex expression constants
 assert_eq(Complex1, 5673);

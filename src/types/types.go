@@ -1,176 +1,129 @@
 package types
 
 import (
-	"path/filepath"
 	"strconv"
 	"strings"
-
-	"github.com/gopherd/core/op"
 
 	"github.com/next/next/src/token"
 )
 
-// Object represents a Next AST node.
-type Object interface {
-	ObjectType() string
-}
-
-func (*File) ObjectType() string             { return "file" }
-func (*Comment) ObjectType() string          { return "comment" }
-func (*Doc) ObjectType() string              { return "doc" }
-func (*CallStmt) ObjectType() string         { return "stmt.call" }
-func (*Imports) ObjectType() string          { return "imports" }
-func (*ImportSpec) ObjectType() string       { return "import" }
-func (x *ValueSpec) ObjectType() string      { return op.If(x.enum.typ != nil, "enum.member", "const") }
-func (*Specs) ObjectType() string            { return "specs" }
-func (*ConstSpecs) ObjectType() string       { return "consts" }
-func (*EnumSpecs) ObjectType() string        { return "enums" }
-func (*EnumSpec) ObjectType() string         { return "enum" }
-func (EnumMembers) ObjectType() string       { return "enum.members" }
-func (StructSpecs) ObjectType() string       { return "structs" }
-func (*StructSpec) ObjectType() string       { return "struct" }
-func (*Fields) ObjectType() string           { return "struct.fields" }
-func (*Field) ObjectType() string            { return "struct.field" }
-func (*FieldType) ObjectType() string        { return "struct.field.type" }
-func (FieldName) ObjectType() string         { return "struct.field.name" }
-func (*InterfaceSpecs) ObjectType() string   { return "interfaces" }
-func (*InterfaceSpec) ObjectType() string    { return "interface" }
-func (*Methods) ObjectType() string          { return "interface.methods" }
-func (*Method) ObjectType() string           { return "interface.method" }
-func (MethodName) ObjectType() string        { return "interface.method.name" }
-func (MethodParams) ObjectType() string      { return "interface.method.params" }
-func (*MethodParam) ObjectType() string      { return "interface.method.param" }
-func (*MethodParamType) ObjectType() string  { return "interface.method.param.type" }
-func (MethodParamName) ObjectType() string   { return "interface.method.param.name" }
-func (*MethodReturnType) ObjectType() string { return "interface.method.return.type" }
-func (*UsedType) ObjectType() string         { return "type.used" }
-func (*ArrayType) ObjectType() string        { return "type.array" }
-func (*VectorType) ObjectType() string       { return "type.vector" }
-func (*MapType) ObjectType() string          { return "type.map" }
-func (*EnumType) ObjectType() string         { return "type.enum" }
-func (*StructType) ObjectType() string       { return "type.struct" }
-func (*InterfaceType) ObjectType() string    { return "type.interface" }
-func (x *PrimitiveType) ObjectType() string  { return x.name }
-
-// Node represents a Next AST node which may be a file, const, enum or struct to be generated.
+// Node represents a Next AST node.
+// @api(object/Node)
 type Node interface {
-	Object
-	Package() *Package
-	Name() string
+	getType() string
 }
 
-func (x *File) Package() *Package {
-	if x == nil {
-		return nil
+func (*File) getType() string            { return "file" }
+func (*Doc) getType() string             { return "doc" }
+func (*Comment) getType() string         { return "comment" }
+func (*Imports) getType() string         { return "imports" }
+func (*Import) getType() string          { return "import" }
+func (*UsedType) getType() string        { return "type.used" }
+func (*ArrayType) getType() string       { return "type.array" }
+func (*VectorType) getType() string      { return "type.vector" }
+func (*MapType) getType() string         { return "type.map" }
+func (x *PrimitiveType) getType() string { return "type." + x.name }
+
+func (*Decls) getType() string                     { return "decls" }
+func (*Const) getType() string                     { return "const" }
+func (ConstName) getType() string                  { return "const.name" }
+func (*Enum) getType() string                      { return "enum" }
+func (EnumName) getType() string                   { return "enum.name" }
+func (*EnumMember) getType() string                { return "enum.member" }
+func (EnumMemberName) getType() string             { return "enum.member.name" }
+func (*Struct) getType() string                    { return "struct" }
+func (StructName) getType() string                 { return "struct.name" }
+func (*StructField) getType() string               { return "struct.field" }
+func (*StructFieldType) getType() string           { return "struct.field.type" }
+func (StructFieldName) getType() string            { return "struct.field.name" }
+func (*Interface) getType() string                 { return "interface" }
+func (InterfaceName) getType() string              { return "interface.name" }
+func (*InterfaceMethod) getType() string           { return "interface.method" }
+func (InterfaceMethodName) getType() string        { return "interface.method.name" }
+func (*InterfaceMethodParam) getType() string      { return "interface.method.param" }
+func (InterfaceMethodParamName) getType() string   { return "interface.method.param.name" }
+func (*InterfaceMethodParamType) getType() string  { return "interface.method.param.type" }
+func (*InterfaceMethodReturnType) getType() string { return "interface.method.return.type" }
+
+// list types: consts, enums, structs, interfaces
+func (l List[T]) getType() string {
+	var zero T
+	return zero.getType() + "s"
+}
+
+func (v *Value) getType() string {
+	if v.enum.typ == nil {
+		return "const.value"
 	}
-	return x.pkg
-}
-func (x *ValueSpec) Package() *Package     { return x.decl.file.pkg }
-func (x *EnumSpec) Package() *Package      { return x.decl.file.pkg }
-func (x *StructSpec) Package() *Package    { return x.decl.file.pkg }
-func (x *InterfaceSpec) Package() *Package { return x.decl.file.pkg }
-
-func (x *File) Name() string          { return strings.TrimSuffix(filepath.Base(x.Path), ".next") }
-func (x *ValueSpec) Name() string     { return x.name }
-func (x *EnumSpec) Name() string      { return x.Type.name }
-func (x *StructSpec) Name() string    { return x.Type.name }
-func (x *InterfaceSpec) Name() string { return x.Type.name }
-
-// Symbol represents a Next symbol: value(constant, enum member), type(struct, enum)
-type Symbol interface {
-	Object
-	symbolPos() token.Pos
-	symbolType() string
+	return "enum.member.value"
 }
 
-const (
-	ValueSymbol = "value"
-	TypeSymbol  = "type"
-)
-
-func (x *ValueSpec) symbolPos() token.Pos     { return x.pos }
-func (x *EnumType) symbolPos() token.Pos      { return x.pos }
-func (x *StructType) symbolPos() token.Pos    { return x.pos }
-func (x *InterfaceType) symbolPos() token.Pos { return x.pos }
-
-func (*ValueSpec) symbolType() string     { return ValueSymbol }
-func (*EnumType) symbolType() string      { return TypeSymbol }
-func (*StructType) symbolType() string    { return TypeSymbol }
-func (*InterfaceType) symbolType() string { return TypeSymbol }
-
-// Spec represents a specification: import, value(const, enum member), type(enum, struct)
-type Spec interface {
-	Object
-	Decl() *Decl
-
-	resolve(ctx *Context, file *File, scope Scope)
+// fields types: enum.members, struct.fields, interface.methods
+func (l *Fields[Parent, Field]) getType() string {
+	return l.typename
 }
 
-func (x *ImportSpec) Decl() *Decl    { return x.decl }
-func (x *ValueSpec) Decl() *Decl     { return x.decl }
-func (e *EnumSpec) Decl() *Decl      { return e.decl }
-func (s *StructSpec) Decl() *Decl    { return s.decl }
-func (i *InterfaceSpec) Decl() *Decl { return i.decl }
+// decl types: type.enum, type.struct, type.interface
+func (t *DeclType[T]) getType() string {
+	return "type." + t.decl.getType()
+}
+
+// Object represents a Next AST node which may be a file, const, enum, struct, interface to be generated.
+type Object interface {
+	Node
+
+	getName() string
+	getPos() token.Pos
+}
+
+var _ Object = (*File)(nil)
+var _ Object = (*Value)(nil)
+var _ Object = (*Const)(nil)
+var _ Object = (*Enum)(nil)
+var _ Object = (*Struct)(nil)
+var _ Object = (*Interface)(nil)
+var _ Object = (*EnumMember)(nil)
+var _ Object = (*StructField)(nil)
+var _ Object = (*InterfaceMethod)(nil)
+
+func (x *File) getName() string             { return x.Name() }
+func (x *Value) getName() string            { return x.name }
+func (x *decl[Self, Name]) getName() string { return string(x.name) }
+
+func (x *File) getPos() token.Pos             { return x.pos }
+func (x *Value) getPos() token.Pos            { return x.namePos }
+func (x *decl[Self, Name]) getPos() token.Pos { return x.pos }
 
 // Type represents a Next type.
 type Type interface {
-	Object
-	Kind() Kind
+	Node
+	Kind() token.Kind
 	String() string
-	Spec() Spec
-	Package() *Package
-	In(*Package) bool
+	Decl() Decl
 }
 
-func (x *UsedType) Kind() Kind      { return x.Type.Kind() }
-func (x *PrimitiveType) Kind() Kind { return x.kind }
-func (*ArrayType) Kind() Kind       { return Array }
-func (*VectorType) Kind() Kind      { return Vector }
-func (*MapType) Kind() Kind         { return Map }
-func (*EnumType) Kind() Kind        { return Enum }
-func (*StructType) Kind() Kind      { return Struct }
-func (*InterfaceType) Kind() Kind   { return Interface }
+var _ Type = (*UsedType)(nil)
+var _ Type = (*PrimitiveType)(nil)
+var _ Type = (*ArrayType)(nil)
+var _ Type = (*VectorType)(nil)
+var _ Type = (*MapType)(nil)
+var _ Type = (*DeclType[*Enum])(nil)
+var _ Type = (*DeclType[*Struct])(nil)
+var _ Type = (*DeclType[*Interface])(nil)
 
-func (x *UsedType) Spec() Spec      { return x.Type.Spec() }
-func (*PrimitiveType) Spec() Spec   { return globalBuiltinSpec }
-func (*ArrayType) Spec() Spec       { return globalBuiltinSpec }
-func (*VectorType) Spec() Spec      { return globalBuiltinSpec }
-func (*MapType) Spec() Spec         { return globalBuiltinSpec }
-func (x *EnumType) Spec() Spec      { return x.spec }
-func (x *StructType) Spec() Spec    { return x.spec }
-func (x *InterfaceType) Spec() Spec { return x.spec }
+func (x *UsedType) Decl() Decl      { return x.Type.Decl() }
+func (x *PrimitiveType) Decl() Decl { return builtinDecl }
+func (*ArrayType) Decl() Decl       { return builtinDecl }
+func (*VectorType) Decl() Decl      { return builtinDecl }
+func (*MapType) Decl() Decl         { return builtinDecl }
+func (x *DeclType[T]) Decl() Decl   { return x.decl }
 
-func (x *UsedType) Package() *Package      { return packageOfType(x) }
-func (x *PrimitiveType) Package() *Package { return packageOfType(x) }
-func (x *ArrayType) Package() *Package     { return packageOfType(x) }
-func (x *VectorType) Package() *Package    { return packageOfType(x) }
-func (x *MapType) Package() *Package       { return packageOfType(x) }
-func (x *EnumType) Package() *Package      { return packageOfType(x) }
-func (x *StructType) Package() *Package    { return packageOfType(x) }
-func (x *InterfaceType) Package() *Package { return packageOfType(x) }
-
-func (x *UsedType) In(pkg *Package) bool      { return typeInPackage(x, pkg) }
-func (x *PrimitiveType) In(pkg *Package) bool { return typeInPackage(x, pkg) }
-func (x *ArrayType) In(pkg *Package) bool     { return typeInPackage(x, pkg) }
-func (x *VectorType) In(pkg *Package) bool    { return typeInPackage(x, pkg) }
-func (x *MapType) In(pkg *Package) bool       { return typeInPackage(x, pkg) }
-func (x *EnumType) In(pkg *Package) bool      { return typeInPackage(x, pkg) }
-func (x *StructType) In(pkg *Package) bool    { return typeInPackage(x, pkg) }
-func (x *InterfaceType) In(pkg *Package) bool { return typeInPackage(x, pkg) }
-
-func packageOfType(t Type) *Package {
-	if t == nil {
-		return nil
-	}
-	return t.Spec().Decl().File().Package()
-}
-
-func typeInPackage(t Type, pkg *Package) bool {
-	if t == nil {
-		return true
-	}
-	return t.Package().In(pkg)
-}
+func (x *UsedType) Kind() token.Kind      { return x.Type.Kind() }
+func (x *PrimitiveType) Kind() token.Kind { return x.kind }
+func (*ArrayType) Kind() token.Kind       { return token.Array }
+func (*VectorType) Kind() token.Kind      { return token.Vector }
+func (*MapType) Kind() token.Kind         { return token.Map }
+func (x *DeclType[T]) Kind() token.Kind   { return x.kind }
 
 //-------------------------------------------------------------------------
 // Types
@@ -191,14 +144,14 @@ func (u *UsedType) String() string { return u.Type.String() }
 type PrimitiveType struct {
 	pos  token.Pos
 	name string
-	kind Kind
+	kind token.Kind
 }
 
 func (b *PrimitiveType) String() string { return b.name }
 
 var primitiveTypes = func() map[string]*PrimitiveType {
 	m := make(map[string]*PrimitiveType)
-	for _, kind := range primitiveKinds {
+	for _, kind := range token.PrimitiveKinds {
 		name := strings.ToLower(kind.String())
 		m[name] = &PrimitiveType{kind: kind, name: name}
 	}
@@ -239,30 +192,3 @@ type MapType struct {
 func (m *MapType) String() string {
 	return "map<" + m.KeyType.String() + "," + m.ElemType.String() + ">"
 }
-
-// EnumType represents an enum type.
-type EnumType struct {
-	name string
-	pos  token.Pos
-	spec *EnumSpec
-}
-
-func (e *EnumType) String() string { return e.name }
-
-// StructType represents a struct type.
-type StructType struct {
-	name string
-	pos  token.Pos
-	spec *StructSpec
-}
-
-func (s *StructType) String() string { return s.name }
-
-// InterfaceType represents an interface type.
-type InterfaceType struct {
-	name string
-	pos  token.Pos
-	spec *InterfaceSpec
-}
-
-func (i *InterfaceType) String() string { return i.name }

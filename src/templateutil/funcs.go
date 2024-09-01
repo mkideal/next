@@ -98,7 +98,7 @@ var Funcs = map[string]any{
 	// ```
 	// hello world
 	// ```
-	"lower": strings.ToLower,
+	"lower": toLower,
 
 	// @api(template/funcs) upper (s: string)
 	// `upper` converts the entire string to uppercase.
@@ -117,7 +117,7 @@ var Funcs = map[string]any{
 	// ```
 	// HELLO WORLD
 	// ```
-	"upper": strings.ToUpper,
+	"upper": toUpper,
 
 	// @api(template/funcs) replace (s: string, old: string, new: string[, n: int])
 	// `replace` returns a copy of the string s with the first n non-overlapping instances of old replaced by new.
@@ -154,7 +154,7 @@ var Funcs = map[string]any{
 	// hello world
 	// hello world
 	// ```
-	"trim": strings.TrimSpace,
+	"trim": trimSpace,
 
 	// @api(template/funcs) trimPrefix (prefix: string, s: string)
 	// `trimPrefix` returns s without the provided leading prefix string.
@@ -283,7 +283,7 @@ var Funcs = map[string]any{
 	// ```
 	// nanana
 	// ```
-	"repeat": strings.Repeat,
+	"repeat": repeat,
 
 	// @api(template/funcs) camelCase (s: string)
 	// `camelCase` converts the given string to camel case.
@@ -963,6 +963,20 @@ func doCapitalize(s string) string {
 	return string(unicode.ToUpper(r[0])) + string(r[1:])
 }
 
+func toLower(v reflect.Value) (string, error) {
+	if v.Kind() != reflect.String {
+		return "", fmt.Errorf("lower: expected string, got %s", v.Type())
+	}
+	return strings.ToLower(v.String()), nil
+}
+
+func toUpper(v reflect.Value) (string, error) {
+	if v.Kind() != reflect.String {
+		return "", fmt.Errorf("upper: expected string, got %s", v.Type())
+	}
+	return strings.ToUpper(v.String()), nil
+}
+
 func replace(s, old, new string, n ...reflect.Value) (string, error) {
 	if len(n) == 0 {
 		return strings.Replace(s, old, new, -1), nil
@@ -978,6 +992,13 @@ func replace(s, old, new string, n ...reflect.Value) (string, error) {
 	default:
 		return "", fmt.Errorf("replace: unsupported type %s", n[0].Type())
 	}
+}
+
+func trimSpace(v reflect.Value) (string, error) {
+	if v.Kind() != reflect.String {
+		return "", fmt.Errorf("trim: expected string, got %s", v.Type())
+	}
+	return strings.TrimSpace(v.String()), nil
 }
 
 func trimPrefix(p, v reflect.Value) (string, error) {
@@ -1055,6 +1076,16 @@ func substr(start, length int, v reflect.Value) (string, error) {
 		start = end
 	}
 	return s[start:end], nil
+}
+
+func repeat(count int, v reflect.Value) (string, error) {
+	if v.Kind() != reflect.String {
+		return "", fmt.Errorf("repeat: expected string as second argument, got %s", v.Type())
+	}
+	if count <= 0 {
+		return "", nil
+	}
+	return strings.Repeat(v.String(), count), nil
 }
 
 func camelCase(v reflect.Value) (string, error) {

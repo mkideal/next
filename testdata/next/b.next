@@ -8,13 +8,13 @@ package b;
 import "./a.next";
 
 enum TestEnum {
-    A = a.A,
-    B = a.A + a.B,
-    C = B << iota,
-    D,
-    E,
-    F = 1 << iota,
-    G,
+    A = a.A;
+    B = a.A + a.B;
+    C = B << iota;
+    D;
+    E;
+    F = 1 << iota;
+    G;
 }
 
 assert_eq(TestEnum.A, 1);

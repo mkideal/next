@@ -17,6 +17,20 @@ func walkList[N Node](v Visitor, list []N) {
 	}
 }
 
+func walkGenDecl[T Node](v Visitor, decl *GenDecl[T]) {
+	if decl.Doc != nil {
+		Walk(v, decl.Doc)
+	}
+	if decl.Annotations != nil {
+		Walk(v, decl.Annotations)
+	}
+	Walk(v, decl.Name)
+	Walk(v, decl.Spec)
+	if decl.Comment != nil {
+		Walk(v, decl.Comment)
+	}
+}
+
 // Walk traverses an AST in depth-first order: It starts by calling
 // v.Visit(node); node must not be nil. If the visitor w returned by
 // v.Visit(node) is not nil, Walk is invoked recursively with visitor
@@ -38,7 +52,7 @@ func Walk(v Visitor, node Node) {
 	case *CommentGroup:
 		walkList(v, n.List)
 
-	case *NamedParam:
+	case *NamedValue:
 		if n.Name != nil {
 			Walk(v, n.Name)
 		}
@@ -53,7 +67,7 @@ func Walk(v Visitor, node Node) {
 	case *AnnotationGroup:
 		walkList(v, n.List)
 
-	case *Field:
+	case *StructField:
 		if n.Doc != nil {
 			Walk(v, n.Doc)
 		}
@@ -69,7 +83,7 @@ func Walk(v Visitor, node Node) {
 	case *FieldList:
 		walkList(v, n.List)
 
-	case *ValueList:
+	case *MemberList:
 		walkList(v, n.List)
 
 	case *MethodList:
@@ -83,11 +97,10 @@ func Walk(v Visitor, node Node) {
 			Walk(v, n.Annotations)
 		}
 		Walk(v, n.Name)
-		Walk(v, n.Type)
-
-	case *FuncType:
 		Walk(v, n.Params)
-		Walk(v, n.ReturnType)
+		if n.ReturnType != nil {
+			Walk(v, n.ReturnType)
+		}
 
 	case *MethodParam:
 		if n.Name != nil {
@@ -139,57 +152,26 @@ func Walk(v Visitor, node Node) {
 		Walk(v, n.Members)
 
 	// Declarations
-	case *ImportSpec:
+	case *ImportDecl:
 		if n.Doc != nil {
 			Walk(v, n.Doc)
-		}
-		if n.Annotations != nil {
-			Walk(v, n.Annotations)
 		}
 		Walk(v, n.Path)
 		if n.Comment != nil {
 			Walk(v, n.Comment)
 		}
 
-	case *ValueSpec:
-		if n.Doc != nil {
-			Walk(v, n.Doc)
-		}
-		if n.Annotations != nil {
-			Walk(v, n.Annotations)
-		}
-		Walk(v, n.Name)
-		if n.Value != nil {
-			Walk(v, n.Value)
-		}
-		if n.Comment != nil {
-			Walk(v, n.Comment)
-		}
+	case *ConstDecl:
+		walkGenDecl(v, n)
 
-	case *TypeSpec:
-		if n.Doc != nil {
-			Walk(v, n.Doc)
-		}
-		if n.Annotations != nil {
-			Walk(v, n.Annotations)
-		}
-		Walk(v, n.Name)
-		Walk(v, n.Type)
-		if n.Comment != nil {
-			Walk(v, n.Comment)
-		}
+	case *EnumDecl:
+		walkGenDecl(v, n)
 
-	case *BadDecl:
-		// nothing to do
+	case *StructDecl:
+		walkGenDecl(v, n)
 
-	case *GenDecl:
-		if n.Doc != nil {
-			Walk(v, n.Doc)
-		}
-		if n.Annotations != nil {
-			Walk(v, n.Annotations)
-		}
-		walkList(v, n.Specs)
+	case *InterfaceDecl:
+		walkGenDecl(v, n)
 
 	// Statements
 	case *ExprStmt:

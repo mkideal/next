@@ -47,7 +47,7 @@ func (m templateMeta[T]) Get(key string) *metaValue[T] {
 }
 
 // resolveMeta resolves the metadata values by executing the metadata templates with the given data.
-func resolveMeta[T Node](metaTemplates templateMeta[*template.Template], data *templateContext[T]) (templateMeta[string], error) {
+func resolveMeta[T Decl](metaTemplates templateMeta[*template.Template], data *templateContext[T]) (templateMeta[string], error) {
 	if metaTemplates == nil {
 		return nil, nil
 	}
@@ -214,13 +214,13 @@ type templateContextInfo struct {
 }
 
 // templateContext represents the context of a template.
-type templateContext[T Node] struct {
+type templateContext[T Decl] struct {
 	templateContextInfo
 
 	// buf is used to buffer the generated content.
 	buf bytes.Buffer
-	// current object to be rendered: File, ValueSpec, EnumType, StructType
-	obj T
+	// current decl object to be rendered: File, Const, Enum, Struct, Interface
+	decl T
 
 	// current entrypoint template
 	entrypoint *template.Template
@@ -237,7 +237,7 @@ type templateContext[T Node] struct {
 	stack         []string
 }
 
-func newTemplateContext[T Node](ctx templateContextInfo) *templateContext[T] {
+func newTemplateContext[T Decl](ctx templateContextInfo) *templateContext[T] {
 	tc := &templateContext[T]{
 		templateContextInfo: ctx,
 		dontOverrides:       make(map[string]bool),
@@ -313,7 +313,7 @@ func (tc *templateContext[T]) init() error {
 }
 
 func (tc *templateContext[T]) reset(obj T) {
-	tc.obj = obj
+	tc.decl = obj
 	tc.buf.Reset()
 }
 
@@ -326,7 +326,7 @@ func (tc *templateContext[T]) reset(obj T) {
 // > {{this.Name}}
 // > ```
 func (tc *templateContext[T]) this() T {
-	return tc.obj
+	return tc.decl
 }
 
 func (tc *templateContext[T]) env() flags.Map {
@@ -604,12 +604,12 @@ func (tc *templateContext[T]) lookupTemplate(names []string) (*template.Template
 // {{next .}}
 // {{end}}
 // ```
-func (tc *templateContext[T]) next(obj Object) (string, error) {
-	names := tc.parseTemplateNames(obj.ObjectType())
+func (tc *templateContext[T]) next(obj Node) (string, error) {
+	names := tc.parseTemplateNames(obj.getType())
 	return tc.nextWithNames(names, obj)
 }
 
-func (tc *templateContext[T]) nextWithNames(names []string, obj Object) (string, error) {
+func (tc *templateContext[T]) nextWithNames(names []string, obj Node) (string, error) {
 	result, err := tc.renderWithNames(names, obj)
 	if err != nil && IsTemplateNotFoundError(err) {
 		if t, ok := obj.(Type); ok {
@@ -621,7 +621,7 @@ func (tc *templateContext[T]) nextWithNames(names []string, obj Object) (string,
 }
 
 // @api(template/context): super (object)
-func (tc *templateContext[T]) super(obj Object) (string, error) {
+func (tc *templateContext[T]) super(obj Node) (string, error) {
 	if len(tc.stack) == 0 {
 		return "", fmt.Errorf("super not allowed in the template")
 	}

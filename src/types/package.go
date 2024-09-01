@@ -24,15 +24,14 @@ func (p *Package) resolve(c *Context) error {
 		return cmp.Compare(a.Path, b.Path)
 	})
 	for _, file := range p.files {
-		for _, decl := range file.decls {
-			for _, spec := range decl.Specs {
-				switch spec := spec.(type) {
-				case *EnumSpec:
-					p.types = append(p.types, spec.Type)
-				case *StructSpec:
-					p.types = append(p.types, spec.Type)
-				}
-			}
+		for _, d := range file.decls.enums {
+			p.types = append(p.types, d.Type)
+		}
+		for _, d := range file.decls.structs {
+			p.types = append(p.types, d.Type)
+		}
+		for _, d := range file.decls.interfaces {
+			p.types = append(p.types, d.Type)
 		}
 	}
 	for _, file := range p.files {

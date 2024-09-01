@@ -30,6 +30,7 @@ type Context struct {
 		outputs    flags.Map
 		templates  flags.MapSlice
 		mappings   flags.Map
+		solvers    flags.MapSlice
 	}
 	// builtin builtin
 	builtin fs.FS
@@ -55,21 +56,26 @@ type Context struct {
 
 	// searchDirs is a list of search directories
 	searchDirs []string
+
+	// all annotations
+	annotations map[token.Pos]*linkedAnnotation
 }
 
 // TODO: add builtin languages
 func NewContext(builtin fs.FS) *Context {
 	c := &Context{
-		builtin:    builtin,
-		fset:       token.NewFileSet(),
-		files:      make(map[string]*File),
-		symbols:    make(map[string]Symbol),
-		searchDirs: createSearchDirs(),
+		builtin:     builtin,
+		fset:        token.NewFileSet(),
+		files:       make(map[string]*File),
+		symbols:     make(map[string]Symbol),
+		searchDirs:  createSearchDirs(),
+		annotations: make(map[token.Pos]*linkedAnnotation),
 	}
 	c.flags.envs = make(flags.Map)
 	c.flags.outputs = make(flags.Map)
 	c.flags.templates = make(flags.MapSlice)
 	c.flags.mappings = make(flags.Map)
+	c.flags.solvers = make(flags.MapSlice)
 
 	return c
 }
@@ -136,6 +142,15 @@ func (c *Context) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 		"  -M \"go.map<%K%,%V%>\"=\"map[%K%]%V%\"\n"+
 		"  -M python.ext=.py\n"+
 		"  -M \"ruby.comment(%S%)\"=\"# %S%\"\n",
+	))
+
+	flagSet.Var(&c.flags.solvers, "S", u(""+
+		"Specify custom annotation solver programs for code generation.\n"+
+		"`ANNOTATION_NAME=SOLVER_PROGRAM` defines the target annotation and its solver program.\n"+
+		"Annotation solvers are executed in a separate process to solve annotations.\n"+
+		"All annotations are passed to the solver program via stdin and stdout.\n"+
+		"See the documentation for more information on annotation solvers.\n"+
+		"Example: -S message=\"message-type-allocator -f message-types.json\"\n",
 	))
 }
 
@@ -372,7 +387,7 @@ func (c *Context) Resolve() error {
 }
 
 // resolveAnnotationGroup resolves an annotation group
-func (c *Context) resolveAnnotationGroup(file *File, annotations *ast.AnnotationGroup) AnnotationGroup {
+func (c *Context) resolveAnnotationGroup(file *File, object Object, annotations *ast.AnnotationGroup) AnnotationGroup {
 	if annotations == nil {
 		return nil
 	}
@@ -382,10 +397,15 @@ func (c *Context) resolveAnnotationGroup(file *File, annotations *ast.Annotation
 			c.addErrorf(a.Pos(), "annotation %s redeclared", a.Name.Name)
 			continue
 		}
-		params := make(Annotation)
+		annotation := make(Annotation)
+		c.annotations[a.Pos()] = &linkedAnnotation{
+			name:       a.Name.Name,
+			object:     object,
+			annotation: annotation,
+		}
 		for _, p := range a.Params {
 			name := p.Name.Name
-			if _, dup := params[name]; dup {
+			if _, dup := annotation[name]; dup {
 				c.addErrorf(p.Pos(), "named parameter %s redefined", name)
 				continue
 			}
@@ -395,41 +415,41 @@ func (c *Context) resolveAnnotationGroup(file *File, annotations *ast.Annotation
 			} else {
 				value = constant.MakeBool(true)
 			}
-			params[name] = &AnnotationParam{
+			annotation[name] = &AnnotationParam{
 				pos:   p.Pos(),
 				name:  name,
 				value: value,
 			}
 		}
-		result[a.Name.Name] = params
+		result[a.Name.Name] = annotation
 	}
 	return result
 }
 
 // resolveValue resolves a value of an expression
 func (c *Context) resolveValue(file *File, expr ast.Expr, iota *iotaValue) constant.Value {
-	return c.recursiveResolveValue(file, file, make([]*ValueSpec, 0, 16), expr, iota)
+	return c.recursiveResolveValue(file, file, make([]*Value, 0, 16), expr, iota)
 }
 
 // resolveSymbolValue resolves a value of a symbol
-func (c *Context) resolveSymbolValue(file *File, scope Scope, refs []*ValueSpec, v *ValueSpec) constant.Value {
-	if v.value != nil {
+func (c *Context) resolveSymbolValue(file *File, scope Scope, refs []*Value, v *Value) constant.Value {
+	if v.val != nil {
 		// value already resolved
-		return v.value
+		return v.val
 	}
 	if index := slices.Index(refs, v); index >= 0 {
 		var sb strings.Builder
 		for i := index; i < len(refs); i++ {
 			fmt.Fprintf(&sb, "\n%s: %s ↓", c.fset.Position(refs[i].symbolPos()), refs[i].name)
 		}
-		c.addErrorf(v.pos, "cyclic references: %s\n%s: %s", sb.String(), c.fset.Position(v.symbolPos()), v.name)
+		c.addErrorf(v.namePos, "cyclic references: %s\n%s: %s", sb.String(), c.fset.Position(v.symbolPos()), v.name)
 		return constant.MakeUnknown()
 	}
 	v.resolveValue(c, file, scope, refs)
-	return v.value
+	return v.val
 }
 
-func (c *Context) recursiveResolveValue(file *File, scope Scope, refs []*ValueSpec, expr ast.Expr, iota *iotaValue) (result constant.Value) {
+func (c *Context) recursiveResolveValue(file *File, scope Scope, refs []*Value, expr ast.Expr, iota *iotaValue) (result constant.Value) {
 	defer func() {
 		if r := recover(); r != nil {
 			c.addErrorf(expr.Pos(), "%v", r)
@@ -518,10 +538,10 @@ func (c *Context) recursiveResolveValue(file *File, scope Scope, refs []*ValueSp
 
 // resolveUint64 resolves an unsigned integer value of an expression
 func (c *Context) resolveInt64(file *File, expr ast.Expr) int64 {
-	return c.recursiveResolveInt64(file, file, expr, make([]*ValueSpec, 0, 16), nil)
+	return c.recursiveResolveInt64(file, file, expr, make([]*Value, 0, 16), nil)
 }
 
-func (c *Context) recursiveResolveInt64(file *File, scope Scope, expr ast.Expr, refs []*ValueSpec, iota *iotaValue) int64 {
+func (c *Context) recursiveResolveInt64(file *File, scope Scope, expr ast.Expr, refs []*Value, iota *iotaValue) int64 {
 	val := c.recursiveResolveValue(file, scope, refs, expr, iota)
 	switch val.Kind() {
 	case constant.Int:

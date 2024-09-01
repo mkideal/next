@@ -49,12 +49,6 @@ type Type interface {
 	typeNode()
 }
 
-// All declaration nodes implement the Decl interface.
-type Decl interface {
-	Node
-	declNode()
-}
-
 // ----------------------------------------------------------------------------
 // Comments
 
@@ -160,20 +154,20 @@ func TrimComments(comments []string) []string {
 	return lines[0:n]
 }
 
-type NamedParam struct {
+type NamedValue struct {
 	Name      *Ident    // name of parameter
 	AssignPos token.Pos // position of "=" if any
 	Value     Expr      // parameter value, or nil
 }
 
-func (p *NamedParam) Pos() token.Pos {
+func (p *NamedValue) Pos() token.Pos {
 	if p.Name != nil {
 		return p.Name.Pos()
 	}
 	return p.Value.Pos()
 }
 
-func (p *NamedParam) End() token.Pos {
+func (p *NamedValue) End() token.Pos {
 	if p.Value != nil {
 		return p.Value.End()
 	}
@@ -185,7 +179,7 @@ type Annotation struct {
 	At     token.Pos     // position of "@"
 	Name   *Ident        // annotation name
 	Lparen token.Pos     // position of "(" if any
-	Params []*NamedParam // annotation parameters; or nil
+	Params []*NamedValue // annotation parameters; or nil
 	Rparen token.Pos     // position of ")" if any
 }
 
@@ -247,12 +241,36 @@ func (l *List[T]) NumFields() int {
 	return 0
 }
 
-// A Field represents a Field declaration list in a struct type,
+// EnumMember represents an enum member declaration.
+type EnumMember struct {
+	Doc         *CommentGroup    // associated documentation; or nil
+	Annotations *AnnotationGroup // associated annotations; or nil
+	Name        *Ident           // value name
+	AssignPos   token.Pos        // position of "=" if any
+	Value       Expr             // value; or nil
+	Comment     *CommentGroup    // line comments; or nil
+}
+
+func (m *EnumMember) Pos() token.Pos {
+	return m.Name.Pos()
+}
+
+func (m *EnumMember) End() token.Pos {
+	if m.Value != nil {
+		return m.Value.End()
+	}
+	return m.Name.End()
+}
+
+// A MemberList represents a list of ValueSpecs, enclosed by parentheses,
+type MemberList = List[*EnumMember]
+
+// A StructField represents a StructField declaration list in a struct type,
 // a method list in an interface type, or a parameter/result declaration
 // in a signature.
-// [Field.Names] is nil for unnamed parameters (parameter lists which only contain types)
+// [StructField.Names] is nil for unnamed parameters (parameter lists which only contain types)
 // and embedded struct fields. In the latter case, the field name is the type name.
-type Field struct {
+type StructField struct {
 	Doc         *CommentGroup    // associated documentation; or nil
 	Annotations *AnnotationGroup // associated annotations; or nil
 	Type        Type             // field/method/parameter type; or nil
@@ -260,20 +278,17 @@ type Field struct {
 	Comment     *CommentGroup    // line comments; or nil
 }
 
-func (f *Field) Pos() token.Pos {
+func (f *StructField) Pos() token.Pos {
 	return f.Type.Pos()
 }
 
-func (f *Field) End() token.Pos {
+func (f *StructField) End() token.Pos {
 	return f.Name.Pos()
 }
 
 // A FieldList represents a list of Fields, enclosed by parentheses,
 // curly braces, or square brackets.
-type FieldList = List[*Field]
-
-// A ValueList represents a list of ValueSpecs, enclosed by parentheses,
-type ValueList = List[*ValueSpec]
+type FieldList = List[*StructField]
 
 // Method represents a method declaration.
 //
@@ -284,7 +299,8 @@ type Method struct {
 	Doc         *CommentGroup    // associated documentation; or nil
 	Annotations *AnnotationGroup // associated annotations; or nil
 	Name        *Ident           // method name
-	Type        *FuncType        // method type
+	Params      *MethodParamList // method parameters
+	ReturnType  Type             // method return type; or nil
 	Comment     *CommentGroup    // line comments; or nil
 }
 
@@ -293,30 +309,16 @@ func (m *Method) Pos() token.Pos {
 }
 
 func (m *Method) End() token.Pos {
-	return m.Type.End()
+	if m.ReturnType != nil {
+		return m.ReturnType.End()
+	}
+	return m.Params.End()
 }
 
 // A MethodList represents a list of Method declarations.
 type MethodList = List[*Method]
 
-// FuncType represents a function type.
-type FuncType struct {
-	Params     *MethodParamList // method parameters
-	ReturnType Type             // method return type; or nil
-}
-
-func (ft *FuncType) Pos() token.Pos {
-	return ft.Params.Pos()
-}
-
-func (ft *FuncType) End() token.Pos {
-	if ft.ReturnType != nil {
-		return ft.ReturnType.End()
-	}
-	return ft.Params.End()
-}
-
-// A ValueSpec node represents a constant or variable declaration
+// MethodParam represents a method parameter declaration.
 type MethodParam struct {
 	Type Type   // parameter type
 	Name *Ident // parameter name
@@ -435,7 +437,7 @@ type (
 
 	// A EnumType node represents an enum type.
 	EnumType struct {
-		Members *ValueList // list of enum members
+		Members *MemberList // list of enum members
 	}
 )
 
@@ -537,123 +539,66 @@ func (*ExprStmt) stmtNode() {}
 // ----------------------------------------------------------------------------
 // Declarations
 
-// A Spec node represents a single (non-parenthesized) import,
-// constant, type (enum, struct) declaration.
+// A Decl node represents a single (non-parenthesized) import,
+// constant, type (enum, struct, interface) declaration.
 type (
-	// The Spec type stands for any of *ImportSpec, *ValueSpec, and *TypeSpec.
-	Spec interface {
+	Decl interface {
 		Node
-		specNode()
+		Token() token.Token
+		declNode()
 	}
 
-	// An ImportSpec node represents a single package import.
-	ImportSpec struct {
-		Doc         *CommentGroup    // associated documentation; or nil
-		Annotations *AnnotationGroup // associated annotations; or nil
-		Path        *BasicLit        // import path
-		Comment     *CommentGroup    // line comments; or nil
-		EndPos      token.Pos        // end of spec (overrides Path.Pos if nonzero)
+	// An ImportDecl node represents a single package import.
+	ImportDecl struct {
+		Doc     *CommentGroup // associated documentation; or nil
+		Path    *BasicLit     // import path
+		Comment *CommentGroup // line comments; or nil
+		EndPos  token.Pos     // end of spec (overrides Path.Pos if nonzero)
 	}
 
-	// A ValueSpec node represents a constant or variable declaration
-	// (ConstSpec or VarSpec production).
-	//
-	ValueSpec struct {
+	GenDecl[T Node] struct {
 		Doc         *CommentGroup    // associated documentation; or nil
 		Annotations *AnnotationGroup // associated annotations; or nil
+		Tok         token.Token      // CONST, ENUM, STRUCT or INTERFACE
+		TokPos      token.Pos        // position of Tok
 		Name        *Ident           // value name
-		Value       Expr             // value; or nil
-		Comment     *CommentGroup    // line comments; or nil
+		Spec        T                // spec of the declaration
+		Comment     *CommentGroup    // line comments const declarations; or nil
 	}
 
-	// A TypeSpec node represents a type declaration (TypeSpec production).
-	TypeSpec struct {
-		Doc         *CommentGroup    // associated documentation; or nil
-		Annotations *AnnotationGroup // associated annotations; or nil
-		Keyword     token.Token      // ENUM, STRUCT
-		Name        *Ident           // type name
-		Type        Type             // any of the *XxxTypes
-		Comment     *CommentGroup    // line comments; or nil
-	}
+	// A ConstDecl node represents a constant declaration
+	ConstDecl = GenDecl[Expr]
+
+	// A EnumDecl node represents a type declaration (EnumDecl production).
+	EnumDecl = GenDecl[*EnumType]
+
+	// A StructDecl node represents a type declaration (StructDecl production).
+	StructDecl = GenDecl[*StructType]
+
+	// An InterfaceDecl node represents a type declaration (InterfaceDecl production).
+	InterfaceDecl = GenDecl[*InterfaceType]
 )
 
-// Pos and End implementations for spec nodes.
+// Pos and End implementations for decl nodes.
+func (s *ImportDecl) Pos() token.Pos { return s.Path.Pos() }
+func (s *GenDecl[T]) Pos() token.Pos { return s.Name.Pos() }
 
-func (s *ImportSpec) Pos() token.Pos {
-	return s.Path.Pos()
-}
-func (s *ValueSpec) Pos() token.Pos { return s.Name.Pos() }
-func (s *TypeSpec) Pos() token.Pos  { return s.Name.Pos() }
-
-func (s *ImportSpec) End() token.Pos {
+func (s *ImportDecl) End() token.Pos {
 	if s.EndPos != 0 {
 		return s.EndPos
 	}
 	return s.Path.End()
 }
 
-func (s *ValueSpec) End() token.Pos {
-	if s.Value != nil {
-		return s.Value.End()
-	}
-	return s.Name.End()
-}
-func (s *TypeSpec) End() token.Pos { return s.Type.End() }
-
-// specNode() ensures that only spec nodes can be
-// assigned to a Spec.
-func (*ImportSpec) specNode() {}
-func (*ValueSpec) specNode()  {}
-func (*TypeSpec) specNode()   {}
-
-// A declaration is represented by one of the following declaration nodes.
-type (
-	// A BadDecl node is a placeholder for a declaration containing
-	// syntax errors for which a correct declaration node cannot be
-	// created.
-	//
-	BadDecl struct {
-		From, To token.Pos // position range of bad declaration
-	}
-
-	// A GenDecl node (generic declaration node) represents an import,
-	// constant, type or variable declaration. A valid Lparen position
-	// (Lparen.IsValid()) indicates a parenthesized declaration.
-	//
-	// Relationship between Tok value and Specs element type:
-	//
-	//	token.IMPORT         *ImportSpec
-	//	token.CONST          *ValueSpec
-	//	token.ENUM/STRUCT    *TypeSpec
-	//
-	GenDecl struct {
-		Doc         *CommentGroup    // associated documentation; or nil
-		Annotations *AnnotationGroup // associated annotations; or nil
-		TokPos      token.Pos        // position of Tok
-		Tok         token.Token      // IMPORT, CONST, ENUM, STRUCT
-		Lparen      token.Pos        // position of '(', if any
-		Specs       []Spec
-		Rparen      token.Pos // position of ')', if any
-	}
-)
-
-// Pos and End implementations for declaration nodes.
-
-func (d *BadDecl) Pos() token.Pos { return d.From }
-func (d *GenDecl) Pos() token.Pos { return d.TokPos }
-
-func (d *BadDecl) End() token.Pos { return d.To }
-func (d *GenDecl) End() token.Pos {
-	if d.Rparen.IsValid() {
-		return d.Rparen + 1
-	}
-	return d.Specs[0].End()
+func (s *GenDecl[T]) End() token.Pos {
+	return s.Spec.End()
 }
 
-// declNode() ensures that only declaration nodes can be
-// assigned to a Decl.
-func (*BadDecl) declNode() {}
-func (*GenDecl) declNode() {}
+func (x *ImportDecl) Token() token.Token { return token.IMPORT }
+func (x *GenDecl[T]) Token() token.Token { return x.Tok }
+
+func (*ImportDecl) declNode() {}
+func (*GenDecl[T]) declNode() {}
 
 // ----------------------------------------------------------------------------
 // Files and packages
@@ -681,11 +626,11 @@ type File struct {
 	Annotations *AnnotationGroup // associated annotations; or nil
 	Package     token.Pos        // position of "package" keyword
 	Name        *Ident           // package name
-	Decls       []Decl           // top-level declarations; or nil
+	Decls       []Decl           // top-level declarations except imports
 	Stmts       []Stmt           // top-level statements; or nil
 
 	FileStart, FileEnd token.Pos       // start and end of entire file
-	Imports            []*ImportSpec   // imports in this file
+	Imports            []*ImportDecl   // imports in this file
 	Comments           []*CommentGroup // list of all comments in the source file
 }
 

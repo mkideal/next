@@ -5,19 +5,17 @@
 )
 package demo;
 
-const (
-    Version = "1.0.0";
-    MaxRetries = 3;
-    Timeout = MaxRetries * 1000; // Constant expression
-)
+const Version = "1.0.0";
+const MaxRetries = 3;
+const Timeout = MaxRetries * 1000; // Constant expression
 
 // Color is an enum type
 // Red: 1, Green: 2, Blue: 4, Yellow: 8
 enum Color {
-    Red = 1 << iota,
-    Green,
-    Blue,
-    Yellow,
+    Red = 1 << iota;
+    Green;
+    Blue;
+    Yellow;
 }
 
 // User is a struct type
@@ -59,4 +57,10 @@ interface AuthService {
 interface HelloService {
     @next(cpp_const)
     Hello(string name);
+
+    @next(cpp_const)
+    GetName() string;
+
+    @next(error)
+    Print();
 }

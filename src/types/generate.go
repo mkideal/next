@@ -209,16 +209,16 @@ func (c *Context) generateForTemplateFile(lang, ext, dir, tmplFile string) error
 		return generateForFile(newTemplateContext[*File](info), tmplFile, string(content), meta)
 
 	case "const":
-		return generateForSpec(newTemplateContext[*ValueSpec](info), tmplFile, string(content), meta)
+		return generateForConst(newTemplateContext[*Const](info), tmplFile, string(content), meta)
 
 	case "enum":
-		return generateForSpec(newTemplateContext[*EnumSpec](info), tmplFile, string(content), meta)
+		return generateForEnum(newTemplateContext[*Enum](info), tmplFile, string(content), meta)
 
 	case "struct":
-		return generateForSpec(newTemplateContext[*StructSpec](info), tmplFile, string(content), meta)
+		return generateForStruct(newTemplateContext[*Struct](info), tmplFile, string(content), meta)
 
 	case "interface":
-		return generateForSpec(newTemplateContext[*InterfaceSpec](info), tmplFile, string(content), meta)
+		return generateForInterface(newTemplateContext[*Interface](info), tmplFile, string(content), meta)
 
 	default:
 		return fmt.Errorf(`unknown value for 'this': %q, expected "file", "const", "enum", "struct" or "interface"`, objType)
@@ -239,21 +239,80 @@ func generateForFile(tc *templateContext[*File], file, content string, meta temp
 	return nil
 }
 
-func generateForSpec[T Node](tc *templateContext[T], file, content string, meta templateMeta[string]) error {
+func generateForConst(tc *templateContext[*Const], file, content string, meta templateMeta[string]) error {
 	t, mt, err := createTemplates(file, content, meta, tc.withThis())
 	if err != nil {
 		return err
 	}
 
 	for _, file := range tc.context.files {
-		for _, decl := range file.decls {
-			for _, spec := range decl.Specs {
-				if spec, ok := spec.(T); ok {
-					tc.reset(spec)
-					if err := gen(tc, t, mt); err != nil {
-						return err
-					}
-				}
+		if file.decls == nil {
+			continue
+		}
+		for _, d := range file.decls.consts {
+			tc.reset(d)
+			if err := gen(tc, t, mt); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func generateForEnum(tc *templateContext[*Enum], file, content string, meta templateMeta[string]) error {
+	t, mt, err := createTemplates(file, content, meta, tc.withThis())
+	if err != nil {
+		return err
+	}
+
+	for _, file := range tc.context.files {
+		if file.decls == nil {
+			continue
+		}
+		for _, d := range file.decls.enums {
+			tc.reset(d)
+			if err := gen(tc, t, mt); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func generateForStruct(tc *templateContext[*Struct], file, content string, meta templateMeta[string]) error {
+	t, mt, err := createTemplates(file, content, meta, tc.withThis())
+	if err != nil {
+		return err
+	}
+
+	for _, file := range tc.context.files {
+		if file.decls == nil {
+			continue
+		}
+		for _, d := range file.decls.structs {
+			tc.reset(d)
+			if err := gen(tc, t, mt); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func generateForInterface(tc *templateContext[*Interface], file, content string, meta templateMeta[string]) error {
+	t, mt, err := createTemplates(file, content, meta, tc.withThis())
+	if err != nil {
+		return err
+	}
+
+	for _, file := range tc.context.files {
+		if file.decls == nil {
+			continue
+		}
+		for _, d := range file.decls.interfaces {
+			tc.reset(d)
+			if err := gen(tc, t, mt); err != nil {
+				return err
 			}
 		}
 	}
@@ -262,7 +321,7 @@ func generateForSpec[T Node](tc *templateContext[T], file, content string, meta 
 
 // gen generates a file using the given template, meta data, and object which may be a
 // file, const, enum or struct.
-func gen[T Node](tc *templateContext[T], t *template.Template, mt templateMeta[*template.Template]) error {
+func gen[T Decl](tc *templateContext[T], t *template.Template, mt templateMeta[*template.Template]) error {
 	tc.entrypoint = t
 	if err := tc.init(); err != nil {
 		return err
@@ -281,7 +340,7 @@ func gen[T Node](tc *templateContext[T], t *template.Template, mt templateMeta[*
 	}
 
 	// write the generated content to the output file
-	path := op.Or(meta.Get("path").value(), tc.obj.Name()+tc.ext)
+	path := op.Or(meta.Get("path").value(), tc.decl.getName()+tc.ext)
 	if !filepath.IsAbs(path) {
 		path = filepath.Join(tc.dir, path)
 	}

@@ -2,7 +2,7 @@
 package {{render "java/package.name" .Package}};
 
 {{next .Imports -}}
-{{next .Specs -}}
+{{next .Decls -}}
 {{- end}}
 
 {{- define "next/java/imports" -}}
@@ -94,9 +94,9 @@ public class Constants {
 {{- end}}
 
 {{- define "next/java/interface.method" -}}
-{{next .Doc}}{{next .ReturnType}} {{next .Name}}({{next .Params}}){{if and (.Annotations.next) (.Annotations.next.error)}} throw Exception{{end}};{{next .Comment}}
+{{next .Doc}}{{next .ReturnType}} {{next .Name}}({{next .Params}}){{if .Annotations.next.error}} throws Exception{{end}};{{next .Comment}}
 {{- end}}
 
-{{- define "next/java/interface.return.type" -}}
+{{- define "next/java/interface.method.return.type" -}}
 {{if .Type}}{{next .Type}}{{else}}void{{end}}
 {{- end}}

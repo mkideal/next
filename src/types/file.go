@@ -1,31 +1,39 @@
 package types
 
 import (
+	"path/filepath"
+	"strings"
+
 	"github.com/next/next/src/ast"
 	"github.com/next/next/src/token"
 )
 
 // File represents a Next source file.
+// @api(object/File)
 type File struct {
-	pos        token.Pos
-	pkg        *Package
+	pos token.Pos // position of the file
+	pkg *Package  // package containing the file
+
+	imports *Imports          // import declarations
+	decls   *Decls            // top-level declarations: const, enum, struct, interface
+	stmts   []Stmt            // top-level statements
+	symbols map[string]Symbol // symbol table: name -> Symbol(Type|Value)
+
 	unresolved struct {
 		annotations *ast.AnnotationGroup
 	}
 
-	Path        string
-	Doc         *Doc
+	// Path is the file full path.
+	// @api(object/File/Path)
+	Path string
+
+	// Doc is the [documentation](#Object.Doc) for the file.
+	// @api(object/File/Doc)
+	Doc *Doc
+
+	// Annotations is the [annotations](#Object.Annotations) for the file.
+	// @api(object/File/Annotations)
 	Annotations AnnotationGroup
-
-	decls   []*Decl
-	stmts   []Stmt
-	imports *Imports
-	specs   Specs
-
-	// all symbols used in current file:
-	// - values: constant, enum member
-	// - types: struct, enum
-	symbols map[string]Symbol
 }
 
 func newFile(ctx *Context, src *ast.File) *File {
@@ -33,16 +41,30 @@ func newFile(ctx *Context, src *ast.File) *File {
 		pos:     src.Pos(),
 		Doc:     newDoc(src.Doc),
 		imports: &Imports{},
+		decls:   &Decls{},
 		symbols: make(map[string]Symbol),
 	}
 	f.unresolved.annotations = src.Annotations
-	for _, d := range src.Decls {
-		f.decls = append(f.decls, newDecl(ctx, f, d.(*ast.GenDecl)))
+
+	for _, i := range src.Imports {
+		f.imports.List = append(f.imports.List, newImport(ctx, f, i))
 	}
-	f.specs.Consts = f.getConsts()
-	f.specs.Enums = f.getEnums()
-	f.specs.Structs = f.getStructs()
-	f.specs.Interfaces = f.getInterfaces()
+
+	for _, d := range src.Decls {
+		switch d := d.(type) {
+		case *ast.ConstDecl:
+			f.decls.consts = append(f.decls.consts, newConst(ctx, f, d))
+		case *ast.EnumDecl:
+			f.decls.enums = append(f.decls.enums, newEnum(ctx, f, d))
+		case *ast.StructDecl:
+			f.decls.structs = append(f.decls.structs, newStruct(ctx, f, d))
+		case *ast.InterfaceDecl:
+			f.decls.interfaces = append(f.decls.interfaces, newInterface(ctx, f, d))
+		default:
+			ctx.addErrorf(d.Pos(), "unsupported declaration: %T", d)
+		}
+	}
+
 	for _, s := range src.Stmts {
 		f.stmts = append(f.stmts, newStmt(ctx, f, s))
 	}
@@ -52,78 +74,34 @@ func newFile(ctx *Context, src *ast.File) *File {
 	return f
 }
 
-func (f *File) Decls() []*Decl {
-	var hasImport bool
-	for _, d := range f.decls {
-		if d.tok == token.IMPORT {
-			hasImport = true
-			break
-		}
+// Name returns the file name without the ".next" extension.
+// @api(object/File/Name)
+func (x *File) Name() string { return strings.TrimSuffix(filepath.Base(x.Path), ".next") }
+
+// File returns the file itself. It is used to implement the Decl interface.
+// @api(object/File/File)
+func (x *File) File() *File { return x }
+
+// Package returns the package containing the file.
+// @api(object/File/Package)
+func (x *File) Package() *Package {
+	if x == nil {
+		return nil
 	}
-	if !hasImport {
-		return f.decls
-	}
-	var decls = make([]*Decl, 0, len(f.decls))
-	for _, d := range f.decls {
-		if d.tok != token.IMPORT {
-			decls = append(decls, d)
-		}
-	}
-	return decls
+	return x.pkg
 }
 
+// Imports returns the file's import declarations.
+// @api(object/File/Imports)
 func (f *File) Imports() *Imports { return f.imports }
 
-func (f *File) Specs() *Specs {
-	return &f.specs
-}
-
-func (f *File) getConsts() *ConstSpecs {
-	var consts = &ConstSpecs{File: f}
-	for _, d := range f.decls {
-		if d.tok == token.CONST {
-			for _, s := range d.Specs {
-				consts.List = append(consts.List, s.(*ValueSpec))
-			}
-		}
+// Decls returns the file's top-level declarations.
+// @api(object/File/Decls)
+func (f *File) Decls() *Decls {
+	if f == nil {
+		return nil
 	}
-	return consts
-}
-
-func (f *File) getEnums() *EnumSpecs {
-	var enums = &EnumSpecs{File: f}
-	for _, d := range f.decls {
-		if d.tok == token.ENUM {
-			for _, s := range d.Specs {
-				enums.List = append(enums.List, s.(*EnumSpec))
-			}
-		}
-	}
-	return enums
-}
-
-func (f *File) getStructs() *StructSpecs {
-	var structs = &StructSpecs{File: f}
-	for _, d := range f.decls {
-		if d.tok == token.STRUCT {
-			for _, s := range d.Specs {
-				structs.List = append(structs.List, s.(*StructSpec))
-			}
-		}
-	}
-	return structs
-}
-
-func (f *File) getInterfaces() *InterfaceSpecs {
-	var interfaces = &InterfaceSpecs{File: f}
-	for _, d := range f.decls {
-		if d.tok == token.INTERFACE {
-			for _, s := range d.Specs {
-				interfaces.List = append(interfaces.List, s.(*InterfaceSpec))
-			}
-		}
-	}
-	return interfaces
+	return f.decls
 }
 
 // LookupLocalType looks up a type by name in the file's symbol table.
@@ -136,7 +114,7 @@ func (f *File) LookupLocalType(name string) (Type, error) {
 // LookupLocalValue looks up a value by name in the file's symbol table.
 // If the value is not found, it returns an error. If the symbol
 // is found but it is not a value, it returns an error.
-func (f *File) LookupLocalValue(name string) (*ValueSpec, error) {
+func (f *File) LookupLocalValue(name string) (*Value, error) {
 	return expectValueSymbol(name, f.symbols[name])
 }
 
@@ -149,37 +127,33 @@ func (f *File) addSymbol(name string, s Symbol) error {
 }
 
 func (f *File) createSymbols() (token.Pos, error) {
-	for _, d := range f.decls {
-		for _, s := range d.Specs {
-			switch s := s.(type) {
-			case *ImportSpec:
-				f.imports.List = append(f.imports.List, s)
-			case *ValueSpec:
-				if err := f.addSymbol(s.name, s); err != nil {
-					return s.pos, err
-				}
-			case *EnumSpec:
-				if err := f.addSymbol(s.Type.name, s.Type); err != nil {
-					return s.Type.pos, err
-				}
-				for _, m := range s.Members.List {
-					if err := f.addSymbol(joinSymbolName(s.Type.name, m.name), m); err != nil {
-						return m.pos, err
-					}
-				}
-			case *StructSpec:
-				if err := f.addSymbol(s.Type.name, s.Type); err != nil {
-					return s.Type.pos, err
-				}
+	if f.decls == nil {
+		return token.NoPos, nil
+	}
+	for _, d := range f.decls.consts {
+		if err := f.addSymbol(d.value.name, d.value); err != nil {
+			return d.pos, err
+		}
+	}
+	for _, d := range f.decls.enums {
+		if err := f.addSymbol(string(d.name), d.Type); err != nil {
+			return d.pos, err
+		}
+		for _, m := range d.Members.List {
+			if err := f.addSymbol(joinSymbolName(string(d.name), string(m.name)), m.value); err != nil {
+				return m.pos, err
 			}
+		}
+	}
+	for _, d := range f.decls.structs {
+		if err := f.addSymbol(string(d.name), d.Type); err != nil {
+			return d.pos, err
 		}
 	}
 	return token.NoPos, nil
 }
 
 func (f *File) resolve(ctx *Context) {
-	f.Annotations = ctx.resolveAnnotationGroup(f, f.unresolved.annotations)
-	for _, d := range f.decls {
-		d.resolve(ctx, f, f)
-	}
+	f.Annotations = ctx.resolveAnnotationGroup(f, f, f.unresolved.annotations)
+	f.decls.resolve(ctx, f)
 }

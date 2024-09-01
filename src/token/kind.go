@@ -1,4 +1,4 @@
-package types
+package token
 
 //go:generate stringer -type=Kind
 type Kind int
@@ -25,7 +25,7 @@ const (
 	Interface
 )
 
-var primitiveKinds = []Kind{
+var PrimitiveKinds = []Kind{
 	Bool,
 	Int,
 	Int8,

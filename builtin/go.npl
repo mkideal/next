@@ -46,8 +46,8 @@ var _ = (*{{.File.Package.Name}}.{{next (index (.File.Package.Types) 0)}})(nil)
 {{- end}}
 
 {{- define "next/go/type.used" -}}
-{{if not (.Type.In .File.Package) -}}
-{{.Type.Package.Name -}}.
+{{if not (.Type.Decl.File.Package.In .File.Package) -}}
+{{.Type.Decl.File.Package.Name -}}.
 {{- end -}}
 {{next .Type}}
 {{- end}}
@@ -65,7 +65,7 @@ const (
 {{- end}}
 
 {{- define "next/go/enum.member" -}}
-{{next .Doc}}{{.Enum.Name}}_{{.Name}} = {{.Value}}{{next .Comment}}
+{{next .Doc}}{{.Decl.Name}}_{{.Name}} = {{.Value}}{{next .Comment}}
 {{- end}}
 
 {{- define "next/go/struct" -}}
@@ -97,6 +97,10 @@ const (
 {{- end}}
 
 {{- define "next/go/interface.method.return.type" -}}
-{{- if .Type}} {{next .Type}}
+{{- if .Method.Annotations.next.error}}
+{{- if .Type}} ({{next .Type}}, error)
+{{- else}} error
+{{- end}}
+{{- else if .Type}} {{next .Type}}
 {{- end}}
 {{- end}}

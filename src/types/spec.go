@@ -1,8 +1,8 @@
 package types
 
-import (
-	"strconv"
+/*
 
+import (
 	"github.com/next/next/src/ast"
 	"github.com/next/next/src/constant"
 	"github.com/next/next/src/token"
@@ -12,106 +12,22 @@ var globalBuiltinSpec = &builtinSpec{}
 
 type builtinSpec struct{}
 
-func (*builtinSpec) ObjectType() string             { return "<built-in>" }
+func (*builtinSpec) getType() string             { return "<built-in>" }
 func (*builtinSpec) String() string                 { return "<built-in>" }
 func (*builtinSpec) Decl() *Decl                    { return nil }
 func (*builtinSpec) resolve(*Context, *File, Scope) {}
 
-// Spec represents a declaration specification.
-type Specs struct {
-	File       *File
-	Consts     *ConstSpecs
-	Enums      *EnumSpecs
-	Structs    *StructSpecs
-	Interfaces *InterfaceSpecs
-}
-
-// ConstSpecs represents a list of constant specifications.
-type ConstSpecs struct {
-	File *File
-	List []*ValueSpec
-}
-
-// EnumSpecs represents a list of enumeration specifications.
-type EnumSpecs struct {
-	File *File
-	List []*EnumSpec
-}
-
-// StructSpecs represents a list of struct specifications.
-type StructSpecs struct {
-	File *File
-	List []*StructSpec
-}
-
-// InterfaceSpecs represents a list of interface specifications.
-type InterfaceSpecs struct {
-	File *File
-	List []*InterfaceSpec
-}
-
-func newSpec(ctx *Context, file *File, decl *Decl, s ast.Spec) Spec {
+func newSpec(ctx *Context, file *File, decl *Decl, s ast.Decl) Spec {
 	switch s := s.(type) {
-	case *ast.ImportSpec:
-		return newImportSpec(ctx, file, decl, s)
-	case *ast.TypeSpec:
+	case *ast.ImportDecl:
+		return newImport(ctx, file, decl, s)
+	case *ast.EnumDecl:
 		return newTypeSpec(ctx, file, decl, s)
-	case *ast.ValueSpec:
+	case *ast.ConstDecl:
 		return newValueSpec(ctx, file, decl, s)
 	default:
 		panic("unexpected spec type")
 	}
-}
-
-// ImportSpec represents a file import.
-type ImportSpec struct {
-	pos          token.Pos
-	importedFile *File
-	decl         *Decl
-	unresolved   struct {
-		annotations *ast.AnnotationGroup
-	}
-
-	Doc         *Doc
-	Comment     *Comment
-	Annotations AnnotationGroup
-	Path        string
-}
-
-func newImportSpec(ctx *Context, _ *File, decl *Decl, src *ast.ImportSpec) *ImportSpec {
-	path, err := strconv.Unquote(src.Path.Value)
-	if err != nil {
-		ctx.addErrorf(src.Path.Pos(), "invalid import path %v: %v", src.Path.Value, err)
-		path = "!BAD-IMPORT-PATH!"
-	}
-	i := &ImportSpec{
-		pos:     src.Pos(),
-		decl:    decl,
-		Doc:     newDoc(src.Doc),
-		Comment: newComment(src.Comment),
-		Path:    path,
-	}
-	i.unresolved.annotations = src.Annotations
-	return i
-}
-
-func (i *ImportSpec) String() string { return i.Path }
-
-func (i *ImportSpec) File() *File { return i.importedFile }
-
-func (i *ImportSpec) resolve(ctx *Context, file *File, _ Scope) {
-	i.Annotations = ctx.resolveAnnotationGroup(file, i.unresolved.annotations)
-	if len(i.decl.Specs) == 1 {
-		i.Doc = i.decl.Doc
-		i.decl.Doc = nil
-		i.Annotations = i.decl.Annotations
-		i.decl.Annotations = nil
-	}
-}
-
-type iotaValue struct {
-	value int
-	found bool
 }
 
 // ValueSpec represents an constant or enum member.
@@ -136,7 +52,7 @@ type ValueSpec struct {
 	Annotations AnnotationGroup
 }
 
-func newValueSpec(_ *Context, _ *File, decl *Decl, src *ast.ValueSpec) *ValueSpec {
+func newValueSpec(_ *Context, _ *File, decl *Decl, src *ast.ConstDecl) *ValueSpec {
 	v := &ValueSpec{
 		pos:     src.Pos(),
 		name:    src.Name.Name,
@@ -222,13 +138,7 @@ func (v *ValueSpec) Underlying() any {
 }
 
 func (v *ValueSpec) resolve(ctx *Context, file *File, scope Scope) {
-	v.Annotations = ctx.resolveAnnotationGroup(file, v.unresolved.annotations)
-	if v.enum.typ == nil && len(v.decl.Specs) == 1 {
-		v.Doc = v.decl.Doc
-		v.decl.Doc = nil
-		v.Annotations = v.decl.Annotations
-		v.decl.Annotations = nil
-	}
+	v.Annotations = ctx.resolveAnnotationGroup(file, v, v.unresolved.annotations)
 	v.resolveValue(ctx, file, scope, make([]*ValueSpec, 0, 16))
 }
 
@@ -272,7 +182,7 @@ func (v *ValueSpec) resolveValue(ctx *Context, file *File, scope Scope, refs []*
 	return v.value
 }
 
-func newTypeSpec(ctx *Context, file *File, decl *Decl, src *ast.TypeSpec) Spec {
+func newTypeSpec(ctx *Context, file *File, decl *Decl, src *ast.EnumDecl) Spec {
 	switch t := src.Type.(type) {
 	case *ast.EnumType:
 		return newEnumSpec(ctx, file, decl, src, t)
@@ -283,12 +193,6 @@ func newTypeSpec(ctx *Context, file *File, decl *Decl, src *ast.TypeSpec) Spec {
 	default:
 		panic("unexpected type")
 	}
-}
-
-// EnumMembers represents a list of enum members.
-type EnumMembers struct {
-	Enum *EnumSpec
-	List []*ValueSpec
 }
 
 // EnumSpec represents an enumeration type declaration.
@@ -305,7 +209,7 @@ type EnumSpec struct {
 	Members     *EnumMembers
 }
 
-func newEnumSpec(ctx *Context, file *File, decl *Decl, src *ast.TypeSpec, t *ast.EnumType) *EnumSpec {
+func newEnumSpec(ctx *Context, file *File, decl *Decl, src *ast.EnumDecl, t *ast.EnumType) *EnumSpec {
 	e := &EnumSpec{
 		decl:    decl,
 		Doc:     newDoc(src.Doc),
@@ -328,13 +232,7 @@ func newEnumSpec(ctx *Context, file *File, decl *Decl, src *ast.TypeSpec, t *ast
 }
 
 func (e *EnumSpec) resolve(ctx *Context, file *File, scope Scope) {
-	e.Annotations = ctx.resolveAnnotationGroup(file, e.unresolved.annotations)
-	if len(e.decl.Specs) == 1 {
-		e.Doc = e.decl.Doc
-		e.decl.Doc = nil
-		e.Annotations = e.decl.Annotations
-		e.decl.Annotations = nil
-	}
+	e.Annotations = ctx.resolveAnnotationGroup(file, e, e.unresolved.annotations)
 	for _, m := range e.Members.List {
 		m.resolve(ctx, file, e)
 	}
@@ -353,10 +251,9 @@ type StructSpec struct {
 	Doc         *Doc
 	Comment     *Comment
 	Annotations AnnotationGroup
-	Fields      *Fields
 }
 
-func newStructSpec(ctx *Context, _ *File, decl *Decl, src *ast.TypeSpec, t *ast.StructType) Spec {
+func newStructSpec(ctx *Context, _ *File, decl *Decl, src *ast.EnumDecl, t *ast.StructType) Spec {
 	s := &StructSpec{
 		decl:    decl,
 		Doc:     newDoc(src.Doc),
@@ -368,7 +265,6 @@ func newStructSpec(ctx *Context, _ *File, decl *Decl, src *ast.TypeSpec, t *ast.
 	}
 	s.Type.spec = s
 	s.unresolved.annotations = src.Annotations
-	s.Fields = &Fields{Struct: s}
 	for _, f := range t.Fields.List {
 		field := newField(ctx, f)
 		field.Struct = s
@@ -380,13 +276,7 @@ func newStructSpec(ctx *Context, _ *File, decl *Decl, src *ast.TypeSpec, t *ast.
 func (s *StructSpec) String() string { return s.Type.name }
 
 func (s *StructSpec) resolve(ctx *Context, file *File, scope Scope) {
-	s.Annotations = ctx.resolveAnnotationGroup(file, s.unresolved.annotations)
-	if len(s.decl.Specs) == 1 {
-		s.Doc = s.decl.Doc
-		s.decl.Doc = nil
-		s.Annotations = s.decl.Annotations
-		s.decl.Annotations = nil
-	}
+	s.Annotations = ctx.resolveAnnotationGroup(file, s, s.unresolved.annotations)
 	for _, f := range s.Fields.List {
 		f.resolve(ctx, file, scope)
 	}
@@ -419,7 +309,7 @@ type Field struct {
 	Type        *FieldType
 }
 
-func newField(_ *Context, src *ast.Field) *Field {
+func newField(_ *Context, src *ast.StructField) *Field {
 	f := &Field{
 		pos:     src.Pos(),
 		Doc:     newDoc(src.Doc),
@@ -434,14 +324,8 @@ func newField(_ *Context, src *ast.Field) *Field {
 }
 
 func (f *Field) resolve(ctx *Context, file *File, _ Scope) {
-	f.Annotations = ctx.resolveAnnotationGroup(file, f.unresolved.annotations)
+	f.Annotations = ctx.resolveAnnotationGroup(file, f, f.unresolved.annotations)
 	f.Type.Type = ctx.resolveType(file, f.unresolved.typ)
-}
-
-// Fields represents a list of struct fields.
-type Fields struct {
-	Struct *StructSpec
-	List   []*Field
 }
 
 // InterfaceSpec represents an interface specification.
@@ -458,7 +342,7 @@ type InterfaceSpec struct {
 	Methods     *Methods
 }
 
-func newInterfaceSpec(ctx *Context, file *File, decl *Decl, src *ast.TypeSpec, t *ast.InterfaceType) Spec {
+func newInterfaceSpec(ctx *Context, file *File, decl *Decl, src *ast.EnumDecl, t *ast.InterfaceType) Spec {
 	i := &InterfaceSpec{
 		decl:    decl,
 		Doc:     newDoc(src.Doc),
@@ -479,13 +363,7 @@ func newInterfaceSpec(ctx *Context, file *File, decl *Decl, src *ast.TypeSpec, t
 }
 
 func (i *InterfaceSpec) resolve(ctx *Context, file *File, scope Scope) {
-	i.Annotations = ctx.resolveAnnotationGroup(file, i.unresolved.annotations)
-	if len(i.decl.Specs) == 1 {
-		i.Doc = i.decl.Doc
-		i.decl.Doc = nil
-		i.Annotations = i.decl.Annotations
-		i.decl.Annotations = nil
-	}
+	i.Annotations = ctx.resolveAnnotationGroup(file, i, i.unresolved.annotations)
 	for _, m := range i.Methods.List {
 		m.resolve(ctx, file, nil)
 	}
@@ -512,11 +390,11 @@ type Method struct {
 		returnType  ast.Type
 	}
 
+	Name        MethodName
 	Interface   *InterfaceSpec
 	Doc         *Doc
 	Comment     *Comment
 	Annotations AnnotationGroup
-	Name        MethodName
 	Params      MethodParams
 	ReturnType  *MethodReturnType
 }
@@ -541,7 +419,7 @@ func newMethod(ctx *Context, file *File, spec *InterfaceSpec, src *ast.Method) *
 }
 
 func (m *Method) resolve(ctx *Context, file *File, _ Scope) {
-	m.Annotations = ctx.resolveAnnotationGroup(file, m.unresolved.annotations)
+	m.Annotations = ctx.resolveAnnotationGroup(file, m, m.unresolved.annotations)
 	for _, p := range m.Params.List {
 		p.resolve(ctx, file, nil)
 	}
@@ -591,3 +469,5 @@ func newMethodParam(_ *Context, _ *File, method *Method, src *ast.MethodParam) *
 func (p *MethodParam) resolve(ctx *Context, file *File, _ Scope) {
 	p.Type.Type = ctx.resolveType(file, p.unresolved.typ)
 }
+
+*/

@@ -7,16 +7,16 @@ path: {{replace (render "java/package.name" this.Package) "." "/"}}/{{this.Name}
 {{- define "java/struct" -}}
 package {{render "java/package.name" .Package}};
 
-{{next .Decl.File.Imports}}
+{{next .File.Imports}}
 {{super .}}
 {{- end -}}
 
 {{- /* Overrides "next/java/struct.fields": add method 'MessageType' for each message after fields */ -}}
 {{- define "java/struct.fields" -}}
 {{- super .}}
-{{- if .Struct.Annotations.message}}
+{{- if .Decl.Annotations.message.type}}
 
-    public static int MessageType() { return {{.Struct.Annotations.message.type}}; }
+    public static int MessageType() { return {{.Decl.Annotations.message.type}}; }
 {{- end}}
 {{- end -}}
 

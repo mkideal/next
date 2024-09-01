@@ -1,0 +1,16 @@
+{{/*
+this: interface
+path: {{replace (render "java/package.name" this.Package) "." "/"}}/{{this.Name}}.java
+*/}}
+
+{{- /* Overrides "next/java/interface": add package and imports before interface */ -}}
+{{- define "java/interface" -}}
+package {{render "java/package.name" .Package}};
+
+{{next .File.Imports}}
+{{super .}}
+{{- end -}}
+
+{{head}}
+
+{{next this}}

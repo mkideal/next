@@ -4,7 +4,7 @@
 {{next .Imports -}}
 {{render "cpp/namespace.begin" . -}}
 {{render "cpp/forward.declarations" . -}}
-{{next .Specs -}}
+{{next .Decls -}}
 {{render "cpp/namespace.end" . -}}
 {{- end}}
 
@@ -28,8 +28,8 @@
 {{- end}}
 
 {{- define "next/cpp/type.used" -}}
-{{if not (.Type.In .File.Package) -}}
-{{$ns := .Type.Package.Annotations.next.cpp_namespace -}}
+{{if not (.Type.Decl.File.Package.In .File.Package) -}}
+{{$ns := .Type.Decl.File.Package.Annotations.next.cpp_namespace -}}
 {{if $ns -}}
 {{unquote $ns.String}}::
 {{- end -}}
@@ -53,16 +53,16 @@ namespace {{unquote $ns.String}} {
 {{- end}}
 
 {{- define "next/cpp/forward.declarations" -}}
-{{- if .Specs.Enums.List}}
+{{- if .Decls.Enums.List}}
 // Enums forward declarations
-{{- range .Specs.Enums.List}}
+{{- range .Decls.Enums.List}}
 enum class {{.Name}};
 {{- end}}
 {{end -}}
 
-{{- if .Specs.Structs.List}}
+{{- if .Decls.Structs.List}}
 // Classes forward declarations
-{{- range .Specs.Structs.List}}
+{{- range .Decls.Structs.List}}
 class {{.Name}};
 {{- end}}
 {{end -}}
@@ -104,7 +104,7 @@ public:
 {{- end}}
 
 {{- define "next/cpp/interface.method" -}}
-{{next .Doc}}virtual {{next .ReturnType}} {{next .Name}}({{next .Params}}) {{if and (.Annotations.next) (.Annotations.next.cpp_const)}}const {{end}}= 0;{{next .Comment}}
+{{next .Doc}}virtual {{next .ReturnType}} {{next .Name}}({{next .Params}}) {{if .Annotations.next.cpp_const}}const {{end}}= 0;{{next .Comment}}
 {{- end}}
 
 {{- define "next/cpp/interface.method.name" -}}

@@ -7,7 +7,6 @@ import (
 )
 
 type Stmt interface {
-	Object
 	stmtNode()
 	resolve(ctx *Context, file *File)
 }

@@ -41,7 +41,7 @@ type parser struct {
 	// Non-syntactic parser control
 	exprLev int // < 0: in control clause, >= 0: in expression
 
-	imports []*ast.ImportSpec // list of imports
+	imports []*ast.ImportDecl // list of imports
 
 	// nestLev is used to track and limit the recursion depth
 	// during parsing.
@@ -344,17 +344,17 @@ func (p *parser) expectSemi() (comment *ast.CommentGroup) {
 	return nil
 }
 
-func (p *parser) atComma(context string, follow token.Token) bool {
-	if p.tok == token.COMMA {
+func (p *parser) atToken(context string, tok, follow token.Token) bool {
+	if p.tok == tok {
 		return true
 	}
 	if p.tok != follow {
-		msg := "missing ','"
-		if p.tok == token.SEMICOLON && p.lit == "\n" {
+		msg := "missing '" + tok.String() + "'"
+		if p.lit == "\n" {
 			msg += " before newline"
 		}
 		p.error(p.pos, msg+" in "+context)
-		return true // "insert" comma and continue
+		return true // continue
 	}
 	return false
 }
@@ -398,9 +398,9 @@ func (p *parser) advance(to map[token.Token]bool) {
 var declStmtStart = map[token.Token]bool{
 	token.IMPORT:    true,
 	token.CONST:     true,
+	token.ENUM:      true,
 	token.STRUCT:    true,
 	token.INTERFACE: true,
-	token.ENUM:      true,
 	token.IDENT:     true,
 }
 
@@ -448,16 +448,13 @@ func (p *parser) parseAnnotationGroup() *ast.AnnotationGroup {
 func (p *parser) parseAnnotation() *ast.Annotation {
 	pos := p.expect(token.AT)
 	name := p.parseIdent()
-	var params []*ast.NamedParam
+	var params []*ast.NamedValue
 	var lparen token.Pos
 	var rparen token.Pos
 	if p.tok == token.LPAREN {
 		lparen = p.pos
 		p.next()
-		if p.tok != token.RPAREN {
-			params = p.parseNamedParamList()
-		}
-		rparen = p.expect(token.RPAREN)
+		rparen, params = parseList("AnnotationParams", p, token.RPAREN, token.COMMA, false, parseNamedValue)
 	}
 	return &ast.Annotation{
 		At:     pos,
@@ -486,41 +483,40 @@ func (p *parser) parseIdent() *ast.Ident {
 // ----------------------------------------------------------------------------
 // Common productions
 
-// If lhs is set, result list elements which are identifiers are not resolved.
-func (p *parser) parseExprList(cmpAllowed bool) (list []ast.Expr) {
+func parseList[T ast.Node](name string, p *parser, rparen, sep token.Token, ending bool, parseElem func(*parser) T) (closing token.Pos, list []T) {
 	if p.trace {
-		defer un(trace(p, "ExpressionList"))
+		defer un(trace(p, name))
 	}
-
-	list = append(list, p.parseExpr(cmpAllowed))
-	for p.tok == token.COMMA {
-		p.next()
-		list = append(list, p.parseExpr(cmpAllowed))
+	for p.tok != rparen && p.tok != token.EOF {
+		list = append(list, parseElem(p))
+		if (ending || p.tok != rparen) && p.tok != token.EOF {
+			if !p.atToken(name, sep, rparen) {
+				break
+			}
+			p.next()
+		}
 	}
-
+	if p.tok == rparen {
+		closing = p.pos
+	}
+	p.expect(rparen)
 	return
 }
 
-func (p *parser) parseNamedParamList() []*ast.NamedParam {
+// parseNamedParamList parses a list of named parameters separated by sep (COMMA or SEMICOLON).
+func parseNamedValue(p *parser) *ast.NamedValue {
 	if p.trace {
-		defer un(trace(p, "NamedParamList"))
+		defer un(trace(p, "NamedValue"))
 	}
-	var params []*ast.NamedParam
-	for p.tok != token.RPAREN && p.tok != token.EOF {
-		var param = &ast.NamedParam{
-			Name: p.parseIdent(),
-		}
-		if p.tok == token.ASSIGN {
-			param.AssignPos = p.pos
-			p.next()
-			param.Value = p.parseExpr(true)
-		}
-		params = append(params, param)
-		if p.tok != token.RPAREN && p.tok != token.EOF {
-			p.expect(token.COMMA)
-		}
+	var param = &ast.NamedValue{
+		Name: p.parseIdent(),
 	}
-	return params
+	if p.tok == token.ASSIGN {
+		param.AssignPos = p.pos
+		p.next()
+		param.Value = p.parseExpr(true)
+	}
+	return param
 }
 
 // ----------------------------------------------------------------------------
@@ -604,45 +600,9 @@ func (p *parser) parseTypeName(ident *ast.Ident) ast.Type {
 	return ident
 }
 
-func (p *parser) parseFuncType() *ast.FuncType {
+func parseMethodParam(p *parser) *ast.MethodParam {
 	if p.trace {
-		defer un(trace(p, "FuncType"))
-	}
-	var returnType ast.Type
-	params := p.parseFuncParamList()
-	if p.tok != token.SEMICOLON {
-		returnType = p.parseType()
-	}
-	return &ast.FuncType{
-		Params:     params,
-		ReturnType: returnType,
-	}
-}
-
-func (p *parser) parseFuncParamList() *ast.MethodParamList {
-	if p.trace {
-		defer un(trace(p, "FuncParamList"))
-	}
-	lparen := p.expect(token.LPAREN)
-	var list []*ast.MethodParam
-	for p.tok != token.RPAREN && p.tok != token.EOF {
-		list = append(list, p.parseFuncParam())
-		if !p.atComma("parameter list", token.RPAREN) {
-			break
-		}
-		p.next()
-	}
-	rparen := p.expect(token.RPAREN)
-	return &ast.MethodParamList{
-		Opening: lparen,
-		List:    list,
-		Closing: rparen,
-	}
-}
-
-func (p *parser) parseFuncParam() *ast.MethodParam {
-	if p.trace {
-		defer un(trace(p, "FuncParam"))
+		defer un(trace(p, "MethodParam"))
 	}
 	typ := p.parseType()
 	name := p.parseIdent()
@@ -652,29 +612,35 @@ func (p *parser) parseFuncParam() *ast.MethodParam {
 	}
 }
 
-func (p *parser) parseMethodDecl() *ast.Method {
+func (p *parser) parseMethod() *ast.Method {
 	if p.trace {
-		defer un(trace(p, "MethodDecl"))
+		defer un(trace(p, "Method"))
 	}
 
 	doc := p.leadComment
 	annotations := p.parseAnnotationGroup()
 	name := p.parseIdent()
-	typ := p.parseFuncType()
+	openging := p.expect(token.LPAREN)
+	closing, params := parseList("MethodParamList", p, token.RPAREN, token.COMMA, false, parseMethodParam)
+	var returnType ast.Type
+	if p.tok != token.SEMICOLON {
+		returnType = p.parseType()
+	}
 	comment := p.expectSemi()
 	method := &ast.Method{
 		Doc:         doc,
 		Annotations: annotations,
 		Name:        name,
-		Type:        typ,
+		Params:      &ast.MethodParamList{Opening: openging, List: params, Closing: closing},
+		ReturnType:  returnType,
 		Comment:     comment,
 	}
 	return method
 }
 
-func (p *parser) parseFieldDecl() *ast.Field {
+func (p *parser) parseField() *ast.StructField {
 	if p.trace {
-		defer un(trace(p, "FieldDecl"))
+		defer un(trace(p, "Field"))
 	}
 
 	doc := p.leadComment
@@ -682,7 +648,7 @@ func (p *parser) parseFieldDecl() *ast.Field {
 	typ := p.parseType()
 	name := p.parseIdent()
 	comment := p.expectSemi()
-	field := &ast.Field{
+	field := &ast.StructField{
 		Doc:         doc,
 		Annotations: annotations,
 		Name:        name,
@@ -692,7 +658,7 @@ func (p *parser) parseFieldDecl() *ast.Field {
 	return field
 }
 
-func (p *parser) parseInterfaceType() *ast.InterfaceType {
+func parseInterfaceType(p *parser) *ast.InterfaceType {
 	if p.trace {
 		defer un(trace(p, "InterfaceType"))
 	}
@@ -700,7 +666,7 @@ func (p *parser) parseInterfaceType() *ast.InterfaceType {
 	lbrace := p.expect(token.LBRACE)
 	var list []*ast.Method
 	for p.tok != token.RBRACE && p.tok != token.EOF {
-		list = append(list, p.parseMethodDecl())
+		list = append(list, p.parseMethod())
 	}
 	rbrace := p.expect(token.RBRACE)
 
@@ -713,15 +679,15 @@ func (p *parser) parseInterfaceType() *ast.InterfaceType {
 	}
 }
 
-func (p *parser) parseStructType() *ast.StructType {
+func parseStructType(p *parser) *ast.StructType {
 	if p.trace {
 		defer un(trace(p, "StructType"))
 	}
 
 	lbrace := p.expect(token.LBRACE)
-	var list []*ast.Field
+	var list []*ast.StructField
 	for p.tok != token.RBRACE && p.tok != token.EOF {
-		list = append(list, p.parseFieldDecl())
+		list = append(list, p.parseField())
 	}
 	rbrace := p.expect(token.RBRACE)
 
@@ -734,21 +700,47 @@ func (p *parser) parseStructType() *ast.StructType {
 	}
 }
 
-func (p *parser) parseEnumType() *ast.EnumType {
+func (p *parser) parseMember() *ast.EnumMember {
 	if p.trace {
-		defer un(trace(p, "StructType"))
+		defer un(trace(p, "Member"))
+	}
+
+	doc := p.leadComment
+	annotations := p.parseAnnotationGroup()
+	name := p.parseIdent()
+	var value ast.Expr
+	var assignPos token.Pos
+	if p.tok == token.ASSIGN {
+		assignPos = p.pos
+		p.next()
+		value = p.parseExpr(true)
+	}
+	comment := p.expectSemi()
+	member := &ast.EnumMember{
+		Doc:         doc,
+		Annotations: annotations,
+		Name:        name,
+		AssignPos:   assignPos,
+		Value:       value,
+		Comment:     comment,
+	}
+	return member
+}
+
+func parseEnumType(p *parser) *ast.EnumType {
+	if p.trace {
+		defer un(trace(p, "EnumType"))
 	}
 
 	lbrace := p.expect(token.LBRACE)
-	var values []*ast.ValueSpec
-	for iota := 0; p.tok != token.RBRACE && p.tok != token.EOF; iota++ {
-		annotations := p.parseAnnotationGroup()
-		values = append(values, p.parseValueSpec(p.leadComment, annotations, token.ENUM, iota).(*ast.ValueSpec))
+	var values []*ast.EnumMember
+	for p.tok != token.RBRACE && p.tok != token.EOF {
+		values = append(values, p.parseMember())
 	}
 	rbrace := p.expect(token.RBRACE)
 
 	return &ast.EnumType{
-		Members: &ast.ValueList{
+		Members: &ast.MemberList{
 			Opening: lbrace,
 			List:    values,
 			Closing: rbrace,
@@ -814,7 +806,7 @@ func (p *parser) parseCall(fun ast.Expr) *ast.CallExpr {
 	var ellipsis token.Pos
 	for p.tok != token.RPAREN && p.tok != token.EOF && !ellipsis.IsValid() {
 		list = append(list, p.parseExpr(true)) // builtins may expect a type: make(some type, ...)
-		if !p.atComma("argument list", token.RPAREN) {
+		if !p.atToken("argument list", token.COMMA, token.RPAREN) {
 			break
 		}
 		p.next()
@@ -825,12 +817,20 @@ func (p *parser) parseCall(fun ast.Expr) *ast.CallExpr {
 	return &ast.CallExpr{Fun: fun, Lparen: lparen, Args: list, Rparen: rparen}
 }
 
-func (p *parser) parseValue(cmpAllowed bool) ast.Expr {
+func parseValue(p *parser) ast.Expr {
 	if p.trace {
-		defer un(trace(p, "Element"))
+		defer un(trace(p, "ValueExpr"))
 	}
 
-	return p.parseExpr(cmpAllowed)
+	return p.parseExpr(true)
+}
+
+func parseConstSpec(p *parser) ast.Expr {
+	if p.trace {
+		defer un(trace(p, "ConstValueExpr"))
+	}
+	p.expect(token.ASSIGN)
+	return p.parseExpr(false)
 }
 
 func (p *parser) parsePrimaryExpr(x ast.Expr, cmpAllowed bool) ast.Expr {
@@ -968,14 +968,16 @@ func (p *parser) parseExprStmt() *ast.ExprStmt {
 // ----------------------------------------------------------------------------
 // Declarations
 
-type parseSpecFunction func(doc *ast.CommentGroup, annotations *ast.AnnotationGroup, keyword token.Token, iota int) ast.Spec
+type parseSpecFunction[T ast.Node] func(p *parser) T
 
-func (p *parser) parseImportSpec(doc *ast.CommentGroup, annotations *ast.AnnotationGroup, _ token.Token, _ int) ast.Spec {
+func (p *parser) parseImportDecl() *ast.ImportDecl {
 	if p.trace {
-		defer un(trace(p, "ImportSpec"))
+		defer un(trace(p, "ImportDecl"))
 	}
+	p.expect(token.IMPORT)
 
 	pos := p.pos
+	doc := p.leadComment
 	var path string
 	if p.tok == token.STRING {
 		path = p.lit
@@ -990,108 +992,40 @@ func (p *parser) parseImportSpec(doc *ast.CommentGroup, annotations *ast.Annotat
 	comment := p.expectSemi()
 
 	// collect imports
-	spec := &ast.ImportSpec{
-		Doc:         doc,
-		Annotations: annotations,
-		Path:        &ast.BasicLit{ValuePos: pos, Kind: token.STRING, Value: path},
-		Comment:     comment,
+	spec := &ast.ImportDecl{
+		Doc:     doc,
+		Path:    &ast.BasicLit{ValuePos: pos, Kind: token.STRING, Value: path},
+		Comment: comment,
 	}
 	p.imports = append(p.imports, spec)
 
 	return spec
 }
 
-func (p *parser) parseValueSpec(doc *ast.CommentGroup, annotations *ast.AnnotationGroup, keyword token.Token, iota int) ast.Spec {
+func parseGenDecl[T ast.Node](p *parser, annotations *ast.AnnotationGroup, f parseSpecFunction[T]) *ast.GenDecl[T] {
+	tok := p.tok
 	if p.trace {
-		defer un(trace(p, keyword.String()+"Spec"))
-	}
-
-	ident := p.parseIdent()
-	var value ast.Expr
-	var comment *ast.CommentGroup
-	switch keyword {
-	case token.CONST:
-		p.expect(token.ASSIGN)
-		value = p.parseExpr(true)
-		comment = p.expectSemi()
-	case token.ENUM:
-		if p.tok == token.ASSIGN {
-			p.next()
-			value = p.parseExpr(true)
-		}
-		p.expect(token.COMMA)
-		comment = p.lineComment
-	default:
-		panic("unreachable")
-	}
-
-	return &ast.ValueSpec{
-		Doc:         doc,
-		Annotations: annotations,
-		Name:        ident,
-		Value:       value,
-		Comment:     comment,
-	}
-}
-
-func (p *parser) parseTypeSpec(doc *ast.CommentGroup, annotations *ast.AnnotationGroup, keyword token.Token, _ int) ast.Spec {
-	if p.trace {
-		defer un(trace(p, "TypeSpec"))
-	}
-	name := p.parseIdent()
-
-	var typ ast.Type
-	switch keyword {
-	case token.ENUM:
-		typ = p.parseEnumType()
-	case token.STRUCT:
-		typ = p.parseStructType()
-	case token.INTERFACE:
-		typ = p.parseInterfaceType()
-	default:
-		p.errorExpected(p.pos, "enum or struct")
-	}
-
-	return &ast.TypeSpec{
-		Doc:         doc,
-		Annotations: annotations,
-		Keyword:     keyword,
-		Name:        name,
-		Type:        typ,
-	}
-}
-
-// isTypeElem reports whether x is a (possibly parenthesized) type element expression.
-// The result is false if x could be a type element OR an ordinary (value) expression.
-func (p *parser) parseGenDecl(annotations *ast.AnnotationGroup, keyword token.Token, f parseSpecFunction) *ast.GenDecl {
-	if p.trace {
-		defer un(trace(p, "GenDecl("+keyword.String()+")"))
+		defer un(trace(p, "GenDecl("+tok.String()+")"))
 	}
 
 	doc := p.leadComment
-	pos := p.expect(keyword)
-	var lparen, rparen token.Pos
-	var list []ast.Spec
-	if p.tok == token.LPAREN {
-		lparen = p.pos
-		p.next()
-		for iota := 0; p.tok != token.RPAREN && p.tok != token.EOF; iota++ {
-			annotations := p.parseAnnotationGroup()
-			list = append(list, f(p.leadComment, annotations, keyword, iota))
-		}
-		rparen = p.expect(token.RPAREN)
-	} else {
-		list = append(list, f(nil, nil, keyword, 0))
+	pos := p.pos
+	p.next()
+	name := p.parseIdent()
+	spec := f(p)
+	var comment *ast.CommentGroup
+	if tok == token.CONST {
+		comment = p.expectSemi()
 	}
 
-	return &ast.GenDecl{
+	return &ast.GenDecl[T]{
 		Doc:         doc,
 		Annotations: annotations,
+		Tok:         tok,
 		TokPos:      pos,
-		Tok:         keyword,
-		Lparen:      lparen,
-		Specs:       list,
-		Rparen:      rparen,
+		Name:        name,
+		Spec:        spec,
+		Comment:     comment,
 	}
 }
 
@@ -1102,22 +1036,25 @@ func (p *parser) parseDeclStmt() ast.Node {
 
 	annotations := p.parseAnnotationGroup()
 
-	var f parseSpecFunction
 	switch p.tok {
 	case token.IMPORT:
-		f = p.parseImportSpec
+		return p.parseImportDecl()
 
 	case token.CONST:
-		f = p.parseValueSpec
+		return parseGenDecl(p, annotations, parseConstSpec)
 
-	case token.ENUM, token.STRUCT, token.INTERFACE:
-		f = p.parseTypeSpec
+	case token.ENUM:
+		return parseGenDecl(p, annotations, parseEnumType)
+
+	case token.STRUCT:
+		return parseGenDecl(p, annotations, parseStructType)
+
+	case token.INTERFACE:
+		return parseGenDecl(p, annotations, parseInterfaceType)
 
 	default:
 		return p.parseStmt()
 	}
-
-	return p.parseGenDecl(annotations, p.tok, f)
 }
 
 // ----------------------------------------------------------------------------
@@ -1154,11 +1091,11 @@ func (p *parser) parseFile() *ast.File {
 
 	var decls []ast.Decl
 	var stmts []ast.Stmt
+	var imports []*ast.ImportDecl
 	if p.mode&PackageClauseOnly == 0 {
 		// import decls
 		for p.tok == token.IMPORT {
-			annotations := p.parseAnnotationGroup()
-			decls = append(decls, p.parseGenDecl(annotations, token.IMPORT, p.parseImportSpec))
+			imports = append(imports, p.parseImportDecl())
 		}
 
 		if p.mode&ImportsOnly == 0 {
@@ -1174,6 +1111,9 @@ func (p *parser) parseFile() *ast.File {
 				node := p.parseDeclStmt()
 				switch node := node.(type) {
 				case ast.Decl:
+					if _, isImport := node.(*ast.ImportDecl); isImport {
+						p.error(node.Pos(), "imports must appear before other declarations")
+					}
 					decls = append(decls, node)
 				case ast.Stmt:
 					stmts = append(stmts, node)

@@ -8,29 +8,26 @@ package c;
 import "./a.next";
 import "./b.next";
 
-const (
-    A = 1;
-    B = "hello";
-    C = 3.14;
-    D = true;
-)
+const A = 1;
+const B = "hello";
+const C = 3.14;
+const D = true;
 
 enum Color {
-    Red = iota,
-    Green,
-    Blue,
+    Red = iota;
+    Green;
+    Blue;
 }
 
-enum (
-    LoginType {
-        Username = 1,
-        Email = 2,
-    }
-    UserType {
-        Admin = 1,
-        User = 2,
-    }
-)
+enum LoginType {
+    Username = 1;
+    Email = 2;
+}
+
+enum UserType {
+    Admin = 1;
+    User = 2;
+}
 
 struct User {
     UserType type;
@@ -46,21 +43,20 @@ struct User {
     array<int, A+3> scores;
 }
 
-struct (
-    LoginRequest {
-        LoginType type;
-        string username;
-        string password;
-        string deviceId;
-        @optional
-        string twoFactorToken;
-    }
-    LoginResponse {
-        bool success;
-        @json(omitempty)
-        string errorMessage;
-        @json(name = "auth_token")
-        string authenticationToken;
-        User user;
-    }
-)
+struct LoginRequest {
+    LoginType type;
+    string username;
+    string password;
+    string deviceId;
+    @optional
+    string twoFactorToken;
+}
+
+struct LoginResponse {
+    bool success;
+    @json(omitempty)
+    string errorMessage;
+    @json(name = "auth_token")
+    string authenticationToken;
+    User user;
+}

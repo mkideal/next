@@ -1,13 +1,13 @@
 {{/*
 this: file
 path: {{replace (render "java/package.name" this.Package) "." "/"}}/Constants.java
-skip: {{eq 0 (len this.Specs.Consts.List)}}
+skip: {{eq 0 (len this.Decls.Consts.List)}}
 */}}
 
 {{- define "java/file" -}}
 package {{render "java/package.name" .Package}};
 
-{{next .Specs.Consts -}}
+{{next .Decls.Consts -}}
 {{- end -}}
 
 {{head}}

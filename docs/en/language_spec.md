@@ -85,8 +85,7 @@ After importing a file, you can use constants, enums, structs, protocols, etc., 
 Constant declarations use the `const` keyword:
 
 ```
-ConstDecl      = "const" ( ConstSpec | "(" { ConstSpec ";" } ")" ) .
-ConstSpec      = identifier "=" Expression ";" .
+ConstDecl      = "const" identifier "=" Expression ";" .
 ```
 
 Constants can be numbers, strings, booleans, or any constant expressions.
@@ -103,13 +102,7 @@ enum Errno {
     OK = 0,
 }
 
-const (
-    A = 1;
-    B = 2.0;
-    C = false;
-    D = "hello";
-    E = Errno.OK;  // enum field reference
-)
+const A = Errno.OK;  // enum field reference
 ```
 
 ### 4.2 Types
@@ -119,8 +112,8 @@ const (
 Enum declarations use the `enum` keyword:
 
 ```
-EnumDecl     = "enum" ( EnumSpec | "(" { EnumSpec ";" } ")" ) .
-EnumSpec     = identifier "{" { identifier [ "=" Expression ] "," } "}" .
+EnumDecl     = "enum" EnumSpec .
+EnumSpec     = identifier "{" { identifier [ "=" Expression ] ";" } "}" .
 ```
 
 Enums can use expressions containing `iota` for derivation. **Note that only enums can use iota derivation; const definitions cannot.**
@@ -129,31 +122,19 @@ Example:
 
 ```next
 enum Color {
-    Red = 1,
-    Green = 2,
-    Blue = 3,
+    Red = 1;
+    Green = 2;
+    Blue = 3;
 }
 
 enum Errno {
-    OK = iota,  // 0
-    Internal,   // 1
-    BadRequest, // 2
+    OK = iotal;  // 0
+    Internal;   // 1
+    BadRequest; // 2
 
-    UserNotFound = iota + 100, // 100
-    ProviderNotFound,          // 101
+    UserNotFound = iota + 100; // 100
+    ProviderNotFound;          // 101
 }
-
-enum (
-    EnumA {
-        A1 = 0,
-        A2 = 1,
-    }
-
-    EnumB {
-        B1 = 0,
-        B2 = 1,
-    }
-)
 ```
 
 Enum fields can be referenced using `EnumName.FieldName` syntax and can be used in constant definitions and constant expressions.
@@ -163,9 +144,9 @@ Enum fields can be referenced using `EnumName.FieldName` syntax and can be used 
 Struct declarations use the `struct` keyword:
 
 ```
-StructDecl     = "struct" ( StructSpec | "(" { StructSpec ";" } ")" ) .
+StructDecl     = "struct" StructSpec .
 StructSpec     = identifier "{" { FieldDecl ";" } "}" .
-FieldDecl      = identifier Type .
+FieldDecl      = Type identifier .
 ```
 
 Example:
@@ -176,20 +157,6 @@ struct Location {
     string city;
     int zipCode;
 }
-
-struct (
-    StructA {
-        int field1;
-        bool field2;
-    }
-
-    StructB {
-        StructA a;
-        vector<StructA> as;
-        string field1;
-        int field2;
-    }
-)
 ```
 
 ### 4.3 Annotations
@@ -197,11 +164,9 @@ struct (
 Annotations can be added to packages, any declarations, constants, enums (and their fields), structs (and their fields), and protocols (and their fields). Annotations start with the `@` symbol:
 
 ```
-Annotation     = "@" identifier [ "(" [ Parameters ] ")" ] ";" .
-Parameters     = PositionalParams | NamedParams .
-PositionalParams = Expression { "," Expression } .
-NamedParams    = NamedParam { "," NamedParam } .
-NamedParam     = identifier "=" Expression .
+Annotation     = "@" identifier [ "(" [ Parameters ] ")" ] .
+Parameters     = NamedParam { "," NamedParam } .
+NamedParam     = identifier [ "=" Expression ] .
 ```
 
 Annotations support forms with no parameters, with parameters (including named and anonymous parameters).
@@ -254,17 +219,7 @@ struct User {
 - Vector type: `vector<T>`, where T is the element type
 - Map type: `map<K, V>`, where K is the key type and V is the value type
 
-## 6. Properties and Fields
-
-Field declarations in structs and protocols follow this syntax:
-
-```
-FieldDecl = identifier Type ";" .
-```
-
-Fields can have annotations.
-
-## 7. Expressions
+## 6. Expressions
 
 In the Next language, all expressions are constant expressions evaluated at compile-time. Expressions are used to compute values and follow this syntax:
 
@@ -317,7 +272,7 @@ len("hello")        // Function call
 
 All expressions used in constant declarations must be valid constant expressions that can be evaluated at compile-time.
 
-## 8. Built-in Variables and Functions
+## 7. Built-in Variables and Functions
 
 | Function or Variable | Usage Description |
 |----------------------|-------------------|
@@ -343,7 +298,7 @@ All expressions used in constant declarations must be valid constant expressions
 | **assert_gt**(`x: any`, `y: any`, `args: any...`) | Assert if `x` is greater than `y` |
 | **assert_ge**(`x: any`, `y: any`, `args: any...`) | Assert if `x` is greater than or equal to `y` |
 
-## 9. Lexical Conventions
+## 8. Lexical Conventions
 
 - Package names use lower camel case (all lowercase is recommended).
 - Constants, enum members, and type names (structs, enums, protocols) use upper camel case.

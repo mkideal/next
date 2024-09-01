@@ -85,8 +85,7 @@ import "./a.next";
 常量声明可以使用 `const` 关键字：
 
 ```
-ConstDecl      = "const" ( ConstSpec | "(" { ConstSpec ";" } ")" ) .
-ConstSpec      = identifier "=" Expression ";" .
+ConstDecl      = "const" identifier "=" Expression ";" .
 ```
 
 常量可以是数字、字符串、布尔值、或者任何常量表达式。
@@ -103,13 +102,7 @@ enum Errno {
     OK = 0,
 }
 
-const (
-    A = 1;
-    B = 2.0;
-    C = false;
-    D = "hello";
-    E = Errno.OK;  // 枚举字段引用
-)
+const A = Errno.OK;  // 枚举字段引用
 ```
 
 ### 4.2 类型
@@ -119,8 +112,8 @@ const (
 枚举声明使用 `enum` 关键字：
 
 ```
-EnumDecl     = "enum" ( EnumSpec | "(" { EnumSpec ";" } ")" ) .
-EnumSpec     = identifier "{" { identifier [ "=" Expression ] "," } "}" .
+EnumDecl     = "enum" EnumSpec .
+EnumSpec     = identifier "{" { identifier [ "=" Expression ] ";" } "}" .
 ```
 
 枚举可以使用含 `iota` 的表达式进行推导。**注意只有枚举可以使用 iota 推导，常量定义 const 不可以。**
@@ -129,31 +122,19 @@ EnumSpec     = identifier "{" { identifier [ "=" Expression ] "," } "}" .
 
 ```next
 enum Color {
-    Red = 1,
-    Green = 2,
-    Blue = 3,
+    Red = 1;
+    Green = 2;
+    Blue = 3;
 }
 
 enum Errno {
-    OK = iota,  // 0
-    Internal,   // 1
-    BadRequest, // 2
+    OK = iota;  // 0
+    Internal;   // 1
+    BadRequest; // 2
 
-    UserNotFound = iota + 100, // 100
-    ProviderNotFound,          // 101
+    UserNotFound = iota + 100; // 100
+    ProviderNotFound;          // 101
 }
-
-enum (
-    EnumA {
-        A1 = 0,
-        A2 = 1,
-    }
-
-    EnumB {
-        B1 = 0,
-        B2 = 1,
-    }
-)
 ```
 
 枚举字段可以通过 `EnumName.FieldName` 的方式引用，可用于常量定义和常量表达式中。
@@ -163,9 +144,9 @@ enum (
 结构体声明使用 `struct` 关键字：
 
 ```
-StructDecl     = "struct" ( StructSpec | "(" { StructSpec ";" } ")" ) .
+StructDecl     = "struct" StructSpec .
 StructSpec     = identifier "{" { FieldDecl ";" } "}" .
-FieldDecl      = identifier Type .
+FieldDecl      = Type identifier .
 ```
 
 示例：
@@ -176,20 +157,6 @@ struct Location {
     string city;
     int zipCode;
 }
-
-struct (
-    StructA {
-        int field1;
-        bool field2;
-    }
-
-    StructB {
-        StructA a;
-        vector<StructA> as;
-        string field1;
-        int field2;
-    }
-)
 ```
 
 ### 4.3 接口
@@ -216,20 +183,18 @@ interface Logger {
     SetLevel(Level level);
 }
 
-interface (
-    Reader {
-        Read(bytes buffer) int;
-    }
+interface Reader {
+    Read(bytes buffer) int;
+}
 
-    Writer {
-        Write(bytes data) int;
-    }
+interface Writer {
+    Write(bytes data) int;
+}
 
-    ReadWriter {
-        Read(bytes buffer) int;
-        Write(bytes data) int;
-    }
-)
+interface ReadWriter {
+    Read(bytes buffer) int;
+    Write(bytes data) int;
+}
 ```
 
 接口可以使用注解，方法也可以单独使用注解。
@@ -239,10 +204,8 @@ interface (
 注解可以添加到包、任意的声明、常量、枚举（及其任意字段）、结构体（及其任意字段）、协议（及其任意字段）。注解使用 `@` 符号开头：
 
 ```
-Annotation     = "@" identifier [ "(" [ Parameters ] ")" ] ";" .
-Parameters     = PositionalParams | NamedParams .
-PositionalParams = Expression { "," Expression } .
-NamedParams    = NamedParam { "," NamedParam } .
+Annotation     = "@" identifier [ "(" [ Parameters ] ")" ] .
+Parameters     = NamedParam { "," NamedParam } .
 NamedParam     = identifier "=" Expression .
 ```
 
@@ -296,17 +259,9 @@ struct User {
 - 向量类型：`vector<T>`，其中 T 是元素类型
 - 映射类型：`map<K, V>`，其中 K 是键类型，V 是值类型
 
-## 6. 属性和字段
-
-结构体和协议中的字段声明遵循以下语法：
-
-```
-FieldDecl = identifier Type ";" .
-```
-
 字段可以有注解。
 
-## 7. 表达式
+## 6. 表达式
 
 在 Next 语言中，所有表达式都是常量表达式，在编译时求值。表达式用于计算值，遵循以下语法：
 
@@ -359,7 +314,7 @@ len("hello")        // 函数调用
 
 在常量声明中使用的所有表达式都必须是有效的常量表达式，可以在编译时求值。
 
-## 8. 内置变量和函数
+## 7. 内置变量和函数
 
 | 函数或变量 | 用法说明 |
 |----------|---------|
@@ -385,7 +340,7 @@ len("hello")        // 函数调用
 | **assert_gt**(`x: any`, `y: any`, `args: any...`) | 断言 `x` 是否大于 `y` |
 | **assert_ge**(`x: any`, `y: any`, `args: any...`) | 断言 `x` 是否大于等于 `y` |
 
-## 9. 推荐命名风格
+## 8. 推荐命名风格
 
 - 包名使用小驼峰式命名（建议使用全小写）。
 - 常量，枚举成员，类型名（结构体、枚举、协议）使用大驼峰式命名。
