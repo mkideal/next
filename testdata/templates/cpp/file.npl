@@ -11,7 +11,7 @@ path: {{this.Package.Name}}/{{this.Name}}.next.h
 {{- /* Overrides "next/cpp/struct.fields": add method 'message_type' for each message after fields */ -}}
 {{- define "cpp/struct.fields" -}}
 {{- super .}}
-{{- if .Decl.Annotations.message}}
+{{- if .Decl.Annotations.message.type}}
 
     static int message_type() { return {{.Decl.Annotations.message.type}}; }
 {{- end}}

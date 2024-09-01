@@ -16,4 +16,4 @@ bytes=byte[]
 any=object
 map<%K%,%V%>=Dictionary<%K%,%V%>
 vector<%T%>=List<%T%>
-array<%T,%N%>=%T%[]
+array<%T%,%N%>=%T%[]

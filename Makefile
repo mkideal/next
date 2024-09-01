@@ -90,8 +90,11 @@ test/template: install
 		-v 1 \
 		-D PROJECT=myapp \
 		-O go=testdata/gen/go -T go=testdata/templates/go \
-		-O cpp=testdata/gen/cpp -T cpp=testdata/templates/cpp \
 		-O java=testdata/gen/java -T java=testdata/templates/java \
+		-O cpp=testdata/gen/cpp -T cpp=testdata/templates/cpp \
+		-O csharp=testdata/gen/csharp -T csharp=testdata/templates/csharp \
+		-O c=testdata/gen/c -T c=testdata/templates/c \
+		-M "c.vector<%T%>=void*" -M "c.map<%K%,%V%>=void*" -M "c.array<%T%,%N%>=void*" \
 		testdata/next/
 
 .PHONY: clean

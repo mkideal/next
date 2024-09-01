@@ -2,10 +2,10 @@
 #pragma once
 
 {{next .Imports -}}
-{{render "cpp/namespace.begin" . -}}
-{{render "cpp/forward.declarations" . -}}
+{{render "cpp/file:namespace.begin" . -}}
+{{render "cpp/file:forward.declarations" . -}}
 {{next .Decls -}}
-{{render "cpp/namespace.end" . -}}
+{{render "cpp/file:namespace.end" . -}}
 {{- end}}
 
 {{- define "next/cpp/imports" -}}
@@ -37,7 +37,7 @@
 {{next .Type}}
 {{- end}}
 
-{{- define "next/cpp/namespace.begin" -}}
+{{- define "next/cpp/file:namespace.begin" -}}
 {{- $ns := .Annotations.next.cpp_namespace -}}
 {{- if $ns}}
 
@@ -45,14 +45,14 @@ namespace {{unquote $ns.String}} {
 {{end}}
 {{- end}}
 
-{{- define "next/cpp/namespace.end" -}}
+{{- define "next/cpp/file:namespace.end" -}}
 {{- $ns := .Annotations.next.cpp_namespace -}}
 {{- if $ns}}
 } // namespace {{unquote $ns.String}}
 {{- end}}
 {{- end}}
 
-{{- define "next/cpp/forward.declarations" -}}
+{{- define "next/cpp/file:forward.declarations" -}}
 {{- if .Decls.Enums.List}}
 // Enums forward declarations
 {{- range .Decls.Enums.List}}

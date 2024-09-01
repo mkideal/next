@@ -1,0 +1,108 @@
+{{- define "next/c/file" -}}
+#ifndef {{.Package.Name | upper}}_H
+#define {{.Package.Name | upper}}_H
+
+#include <stdint.h>
+#include <string.h>
+
+#if !defined(__cplusplus) && !defined(__bool_true_false_are_defined)
+#include <stdbool.h>
+#endif
+
+#if !defined(_Bool)
+typedef unsigned char _Bool;
+#endif
+{{next .Imports -}}
+{{_}}
+{{next .Decls -}}
+{{_}}
+#endif // {{.Package.Name | upper}}_H
+{{- end}}
+
+{{- define "next/c/imports" -}}
+{{- range .List}}
+{{next .}}
+{{- end}}
+{{- end}}
+
+{{- define "next/c/import" -}}
+#include "{{.File.Name}}.h"
+{{- end}}
+
+{{- define "next/c/const" -}}
+{{next .Doc}}#define {{.Name}} {{.Value}}{{next .Comment}}
+{{- end}}
+
+{{- define "next/c/enum" -}}
+{{next .Doc}}typedef enum {
+    {{- next .Members}}
+} {{.Name}};
+{{- end}}
+
+{{- define "next/c/enum.member" -}}
+{{next .Doc}}{{.Name}} = {{.Value}},{{next .Comment}}
+{{- end}}
+
+{{- define "next/c/struct" -}}
+{{next .Doc}}typedef struct {
+    {{- next .Fields}}
+} {{.Name}};
+{{- end}}
+
+{{- define "next/c/struct.field" -}}
+{{next .Doc}}{{next .Type}} {{next .Name}};{{next .Comment}}
+{{- end}}
+
+{{- define "next/c/struct.field.name" -}}
+{{.}}
+{{- end}}
+
+{{- define "next/c/type.used" -}}
+{{next .Type}}
+{{- end}}
+
+{{- define "next/c/interface" -}}
+{{- $s := . -}}
+{{next .Doc}}typedef struct {{.Name}} {{.Name}};
+
+struct {{.Name}} {
+    void* context;
+{{- range .Methods.List}}
+    {{next .Return}} (*{{next .Name}})({{$s.Name}}* self{{if .Params.List}}, {{next .Params}}{{end}});
+{{- end}}
+};
+{{- range .Methods.List}}
+
+{{next .Doc}}static inline {{next .Return}} {{$.Name}}_{{next .Name}}({{$s.Name}}* self{{if .Params.List}}, {{next .Params}}{{end}}) {
+    return self->{{next .Name}}(self{{if .Params.List}}, {{render "c/interface.method.params:names" .Params}}{{end}});
+}
+{{- end}}
+{{- end}}
+
+{{- define "next/c/interface.method.name" -}}
+{{snakeCase .}}
+{{- end}}
+
+{{- define "next/c/interface.method.param" -}}
+{{next .Type}} {{next .Name}}
+{{- end}}
+
+{{- define "next/c/interface.method.param.name" -}}
+{{.}}
+{{- end}}
+
+{{- define "next/c/interface.method.return" -}}
+{{- if .Type}}{{next .Type}}{{else}}void{{end -}}
+{{- end}}
+
+{{- define "next/c/interface.method.params" -}}
+{{- range $i, $p := .List -}}
+    {{if $i}}, {{end}}{{next $p -}}
+{{- end -}}
+{{- end}}
+
+{{- define "next/c/interface.method.params:names" -}}
+{{- range $i, $p := .List -}}
+    {{if $i}}, {{end}}{{next $p.Name -}}
+{{- end -}}
+{{- end}}

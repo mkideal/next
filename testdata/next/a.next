@@ -3,7 +3,7 @@
 @next(
     go_package="github.com/next/next/testdata/gen/go/a",
     cpp_namespace="nextlang::test::a",
-    java_package="com.example.nextlang.test.a",
+    java_package="com.example.a",
 )
 package a;
 

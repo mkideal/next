@@ -1,0 +1,79 @@
+{{- define "next/csharp/file" -}}
+using System;
+using System.Collections.Generic;
+
+namespace {{render "csharp/package:namespace" .Package}}
+{
+    {{next .Imports | align -}}
+    {{next .Decls | align}}
+}
+{{- end}}
+
+{{- define "next/csharp/package:namespace" -}}
+{{.Name}}
+{{- end}}
+
+{{- define "next/csharp/imports" -}}
+{{- if .TrimmedList}}
+{{- range .TrimmedList}}
+{{- next . -}}
+{{- end}}
+{{- end}}
+{{- end}}
+
+{{- define "next/csharp/import" -}}
+using {{render "csharp/package:namespace" .File.Package}};
+{{- end}}
+
+{{- define "next/csharp/const" -}}
+{{next .Doc}}public const {{next .Type}} {{.Name}} = {{.Value}};{{next .Comment}}
+{{- end}}
+
+{{- define "next/csharp/enum" -}}
+{{next .Doc}}public enum {{.Name}}
+{
+    {{- next .Members}}
+}
+{{- end}}
+
+{{- define "next/csharp/enum.member" -}}
+{{next .Doc}}{{.Name}} = {{.Value}},{{next .Comment}}
+{{- end}}
+
+{{- define "next/csharp/struct" -}}
+{{next .Doc}}public class {{.Name}}
+{
+    {{- next .Fields}}
+}
+{{- end}}
+
+{{- define "next/csharp/struct.field" -}}
+{{next .Doc}}public {{next .Type}} {{next .Name}} { get; set; }{{next .Comment}}
+{{- end}}
+
+{{- define "next/csharp/struct.field.name" -}}
+{{. | pascalCase}}
+{{- end}}
+
+{{- define "next/csharp/interface" -}}
+{{next .Doc}}public interface {{.Name}}
+{
+    {{- next .Methods}}
+}
+{{- end}}
+
+{{- define "next/csharp/interface.method" -}}
+{{next .Doc}}{{next .Return}} {{next .Name}}({{next .Params}});{{next .Comment}}
+{{- end}}
+
+{{- define "next/csharp/interface.method.return" -}}
+{{if .Type}}{{next .Type}}{{else}}void{{end}}
+{{- end}}
+
+{{- define "next/csharp/interface.method.param" -}}
+{{if .Annotations.next.mut}}ref {{end}}{{next .Type}} {{next .Name}}
+{{- end}}
+
+{{- define "next/csharp/interface.method.param.name" -}}
+{{. | camelCase}}
+{{- end}}

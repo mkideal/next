@@ -1,0 +1,17 @@
+{{/*
+this: file
+path: {{this.Package.Name}}/{{this.Name}}.cs
+*/}}
+
+{{- /* Overrides "next/csharp/struct.fields": add method 'MessageType' for each message after fields */ -}}
+{{- define "csharp/struct.fields" -}}
+{{- super .}}
+{{- if .Decl.Annotations.message.type}}
+
+    public static int MessageType() { return {{.Decl.Annotations.message.type}}; }
+{{- end}}
+{{- end -}}
+
+{{head}}
+
+{{next this}}
