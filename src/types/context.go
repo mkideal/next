@@ -146,7 +146,7 @@ func (c *Context) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 
 	flagSet.Var(&c.flags.solvers, "S", u(""+
 		"Specify custom annotation solver programs for code generation.\n"+
-		"`ANNOTATION_NAME=SOLVER_PROGRAM` defines the target annotation and its solver program.\n"+
+		"`ANNOTATION=PROGRAM` defines the target annotation and its solver program.\n"+
 		"Annotation solvers are executed in a separate process to solve annotations.\n"+
 		"All annotations are passed to the solver program via stdin and stdout.\n"+
 		"See the documentation for more information on annotation solvers.\n"+
