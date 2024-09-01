@@ -1,55 +1,140 @@
 package types
 
 import (
+	"cmp"
+	"slices"
+	"strconv"
+
 	"github.com/next/next/src/ast"
 	"github.com/next/next/src/constant"
 	"github.com/next/next/src/token"
 )
 
+// Imports holds a list of imports.
+// @api(object/Imports)
+type Imports struct {
+	// List is the list of imports.
+	// @api(object/Imports/List)
+	List []*Import
+}
+
+func (i *Imports) resolve(ctx *Context, file *File) {
+	for _, spec := range i.List {
+		spec.target = ctx.lookupFile(file.Path, spec.Path)
+		if spec.target == nil {
+			ctx.addErrorf(spec.pos, "import file not found: %s", spec.Path)
+		}
+	}
+}
+
+// TrimmedList returns a list of unique imports sorted by package name.
+// @api(object/Imports/TrimmedList)
+func (i *Imports) TrimmedList() []*Import {
+	var seen = make(map[string]bool)
+	var pkgs []*Import
+	for _, spec := range i.List {
+		if seen[spec.target.pkg.name] {
+			continue
+		}
+		seen[spec.target.pkg.name] = true
+		pkgs = append(pkgs, spec)
+	}
+	slices.SortFunc(pkgs, func(a, b *Import) int {
+		return cmp.Compare(a.target.pkg.name, b.target.pkg.name)
+	})
+	return pkgs
+}
+
+// Import represents a file import.
+// @api(object/Import)
+type Import struct {
+	pos    token.Pos // position of the import declaration
+	target *File     // imported file
+	file   *File     // file containing the import
+
+	// Doc is the [documentation](#Object.Doc) for the import declaration.
+	// @api(object/Import/Doc)
+	Doc *Doc
+
+	// Comment is the [line comment](#Object.Comment) of the import declaration.
+	// @api(object/import/Comment)
+	Comment *Comment
+
+	// Path is the import path.
+	// @api(object/import/Path)
+	Path string
+}
+
+func newImport(ctx *Context, file *File, src *ast.ImportDecl) *Import {
+	path, err := strconv.Unquote(src.Path.Value)
+	if err != nil {
+		ctx.addErrorf(src.Path.Pos(), "invalid import path %v: %v", src.Path.Value, err)
+		path = "!BAD-IMPORT-PATH!"
+	}
+	i := &Import{
+		pos:     src.Pos(),
+		file:    file,
+		Doc:     newDoc(src.Doc),
+		Comment: newComment(src.Comment),
+		Path:    path,
+	}
+	return i
+}
+
+// Target returns the imported file.
+// @api(object/Import/Target
+func (i *Import) Target() *File { return i.target }
+
+// File returns the file containing the import.
+// @api(object/Import/File)
+func (i *Import) File() *File { return i.target }
+
+func (i *Import) resolve(ctx *Context, file *File, _ Scope) {}
+
 // Decl represents an decl node.
+// @api(object/decl/Decl)
 type Decl interface {
 	Object
+
+	// File returns the file containing the declaration.
+	// @api(object/decl/File)
 	File() *File
+
+	// Package returns the package containing the declaration.
+	// It's a shortcut for decl.File().Package().
+	// @api(object/decl/Package)
 	Package() *Package
-
-	declNode()
 }
 
-func pkgOfDecl(d Decl) *Package {
-	if d == nil {
-		return nil
-	}
-	return d.File().Package()
-}
+func (d *PrimitiveType) Package() *Package   { return nil }
+func (d *ArrayType) Package() *Package       { return nil }
+func (d *VectorType) Package() *Package      { return nil }
+func (d *MapType) Package() *Package         { return nil }
+func (d *Const) Package() *Package           { return d.file.pkg }
+func (d *Enum) Package() *Package            { return d.file.pkg }
+func (d *EnumMember) Package() *Package      { return d.file.pkg }
+func (d *Struct) Package() *Package          { return d.file.pkg }
+func (d *StructField) Package() *Package     { return d.file.pkg }
+func (d *Interface) Package() *Package       { return d.file.pkg }
+func (d *InterfaceMethod) Package() *Package { return d.file.pkg }
 
-func (d *builtinDeclType) Package() *Package { return nil }
-func (d *Const) Package() *Package           { return pkgOfDecl(d) }
-func (d *Enum) Package() *Package            { return pkgOfDecl(d) }
-func (d *Struct) Package() *Package          { return pkgOfDecl(d) }
-func (d *Interface) Package() *Package       { return pkgOfDecl(d) }
-
-var _ Decl = (*builtinDeclType)(nil)
+var _ Decl = (*PrimitiveType)(nil)
+var _ Decl = (*ArrayType)(nil)
+var _ Decl = (*VectorType)(nil)
+var _ Decl = (*MapType)(nil)
 var _ Decl = (*File)(nil)
 var _ Decl = (*Const)(nil)
 var _ Decl = (*Enum)(nil)
+var _ Decl = (*EnumMember)(nil)
 var _ Decl = (*Struct)(nil)
+var _ Decl = (*StructField)(nil)
 var _ Decl = (*Interface)(nil)
+var _ Decl = (*InterfaceMethod)(nil)
 
-func (*builtinDeclType) declNode() {}
-func (*File) declNode()            {}
-func (*Const) declNode()           {}
-func (*Enum) declNode()            {}
-func (*Struct) declNode()          {}
-func (*Interface) declNode()       {}
-
-type builtinDeclType struct{}
-
-var builtinDecl = &builtinDeclType{}
-
-func (*builtinDeclType) getType() string   { return "builtin" }
-func (*builtinDeclType) getName() string   { return "builtin" }
-func (*builtinDeclType) getPos() token.Pos { return token.NoPos }
-func (*builtinDeclType) File() *File       { return nil }
+func (*PrimitiveType) File() *File { return nil }
+func (*ArrayType) File() *File     { return nil }
+func (*VectorType) File() *File    { return nil }
+func (*MapType) File() *File       { return nil }
 
 // List represents a list of objects.
 // @api(object/decl/List)
@@ -125,7 +210,7 @@ func (d *Decls) Interfaces() List[*Interface] {
 }
 
 // decl represents a declaration header (const, enum, struct, interface).
-type decl[Self Object, Name ~string] struct {
+type decl[Self Decl, Name ~string] struct {
 	self Self      // self represents the declaration object itself
 	pos  token.Pos // position of the declaration
 	name Name      // name of the declaration
@@ -146,7 +231,7 @@ type decl[Self Object, Name ~string] struct {
 	Annotations AnnotationGroup
 }
 
-func newDecl[Self Object, Name ~string](
+func newDecl[Self Decl, Name ~string](
 	self Self, file *File,
 	pos token.Pos, name Name,
 	doc *ast.CommentGroup, annotations *ast.AnnotationGroup,

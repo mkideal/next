@@ -206,6 +206,7 @@ func executeTemplate(t *template.Template, data any) (string, error) {
 	return buf.String(), nil
 }
 
+// templateContextInfo represents the context information of a template.
 type templateContextInfo struct {
 	context *Context
 	lang    string // current language
@@ -244,12 +245,12 @@ func newTemplateContext[T Decl](ctx templateContextInfo) *templateContext[T] {
 	}
 	tc.funcs = template.FuncMap{
 		"ENV":    tc.env,
-		"type":   tc.type_,
 		"head":   tc.head,
+		"align":  tc.align,
+		"type":   tc.type_,
 		"next":   tc.next,
 		"super":  tc.super,
 		"render": tc.render,
-		"align":  tc.align,
 	}
 	return tc
 }
@@ -355,11 +356,18 @@ func (tc *templateContext[T]) env() flags.Map {
 // std::string
 // std::map<std::string,int>
 // ```
-func (tc *templateContext[T]) type_(t Type) (string, error) {
+func (tc *templateContext[T]) type_(t Type, langs ...string) (string, error) {
+	if len(langs) > 1 {
+		return "", fmt.Errorf("too many arguments")
+	}
+	lang := tc.lang
+	if len(langs) == 1 {
+		lang = langs[0]
+	}
 	if v, ok := tc.cache.types.Load(t); ok {
 		return v.(string), nil
 	}
-	v, err := tc.resolveLangType(t)
+	v, err := tc.resolveLangType(lang, t)
 	if err != nil {
 		return "", err
 	}
@@ -367,15 +375,15 @@ func (tc *templateContext[T]) type_(t Type) (string, error) {
 	return v, nil
 }
 
-func (tc *templateContext[T]) resolveLangType(t Type) (result string, err error) {
+func (tc *templateContext[T]) resolveLangType(lang string, t Type) (result string, err error) {
 	mappings := tc.context.flags.mappings
 	defer func() {
 		if err == nil && strings.Contains(result, "box(") {
 			// replace box(...) with the actual type
 			for k, v := range mappings {
-				if strings.HasPrefix(k, tc.lang+".box(") {
+				if strings.HasPrefix(k, lang+".box(") {
 					dot := strings.Index(k, ".")
-					if dot > 0 && k[:dot] == tc.lang {
+					if dot > 0 && k[:dot] == lang {
 						result = strings.ReplaceAll(result, k[dot+1:], v)
 					}
 				}
@@ -392,14 +400,14 @@ func (tc *templateContext[T]) resolveLangType(t Type) (result string, err error)
 	}
 	switch t := t.(type) {
 	case *PrimitiveType:
-		p, ok := mappings[tc.lang+"."+t.name]
+		p, ok := mappings[lang+"."+t.name]
 		if !ok {
 			return "", fmt.Errorf("type %q not found", t.name)
 		}
 		return p, nil
 
 	case *MapType:
-		p, ok := mappings[tc.lang+".map<%K%,%V%>"]
+		p, ok := mappings[lang+".map<%K%,%V%>"]
 		if !ok {
 			return "", fmt.Errorf("type %q not found", "map<%K%,%V%>")
 		}
@@ -420,7 +428,7 @@ func (tc *templateContext[T]) resolveLangType(t Type) (result string, err error)
 		return p, nil
 
 	case *VectorType:
-		p, ok := mappings[tc.lang+".vector<%T%>"]
+		p, ok := mappings[lang+".vector<%T%>"]
 		if !ok {
 			return "", fmt.Errorf("type %q not found", "vector<%T%>")
 		}
@@ -434,7 +442,7 @@ func (tc *templateContext[T]) resolveLangType(t Type) (result string, err error)
 		return p, nil
 
 	case *ArrayType:
-		p, ok := mappings[tc.lang+".array<%T%,%N%>"]
+		p, ok := mappings[lang+".array<%T%,%N%>"]
 		if !ok {
 			return "", fmt.Errorf("type %q not found", "array<%T%,%N%>")
 		}
@@ -452,7 +460,7 @@ func (tc *templateContext[T]) resolveLangType(t Type) (result string, err error)
 
 	default:
 		name := t.String()
-		p, ok := mappings[tc.lang+"."+name]
+		p, ok := mappings[lang+"."+name]
 		if ok {
 			return p, nil
 		}
@@ -531,8 +539,8 @@ func (tc *templateContext[T]) loadTemplate(fs fs.FS, filename string) (*template
 
 const sep = "/"
 
-func (tc *templateContext[T]) parseTemplateNames(name string) []string {
-	op.Assert(tc.lang != "next")
+func (tc *templateContext[T]) parseTemplateNames(lang string, name string) []string {
+	op.Assert(lang != "next")
 	priority := 1
 	parts := strings.Split(name, sep)
 	switch len(parts) {
@@ -541,13 +549,13 @@ func (tc *templateContext[T]) parseTemplateNames(name string) []string {
 		if parts[0] == "next" {
 			name = parts[1]
 			priority = 3
-		} else if parts[0] == tc.lang {
+		} else if parts[0] == lang {
 			name = parts[1]
 		} else {
 			return nil
 		}
 	case 3:
-		if parts[0] == "next" && parts[1] == tc.lang {
+		if parts[0] == "next" && parts[1] == lang {
 			name = parts[2]
 			priority = 2
 		} else {
@@ -559,11 +567,11 @@ func (tc *templateContext[T]) parseTemplateNames(name string) []string {
 	var names []string
 	// <lang>.<name>
 	if priority <= 1 {
-		names = append(names, tc.lang+sep+name)
+		names = append(names, lang+sep+name)
 	}
 	// next.<lang>.<name>
 	if priority <= 2 {
-		names = append(names, "next"+sep+tc.lang+sep+name)
+		names = append(names, "next"+sep+lang+sep+name)
 	}
 	// next.<name>
 	if priority <= 3 {
@@ -604,13 +612,20 @@ func (tc *templateContext[T]) lookupTemplate(names []string) (*template.Template
 // {{next .}}
 // {{end}}
 // ```
-func (tc *templateContext[T]) next(obj Node) (string, error) {
-	names := tc.parseTemplateNames(obj.getType())
-	return tc.nextWithNames(names, obj)
+func (tc *templateContext[T]) next(obj Node, langs ...string) (string, error) {
+	if len(langs) > 1 {
+		return "", fmt.Errorf("too many arguments")
+	}
+	lang := tc.lang
+	if len(langs) == 1 {
+		lang = langs[0]
+	}
+	names := tc.parseTemplateNames(lang, obj.getType())
+	return tc.nextWithNames(lang, names, obj)
 }
 
-func (tc *templateContext[T]) nextWithNames(names []string, obj Node) (string, error) {
-	result, err := tc.renderWithNames(names, obj)
+func (tc *templateContext[T]) nextWithNames(lang string, names []string, obj Node) (string, error) {
+	result, err := tc.renderWithNames(lang, names, obj)
 	if err != nil && IsTemplateNotFoundError(err) {
 		if t, ok := obj.(Type); ok {
 			return tc.type_(t)
@@ -621,30 +636,44 @@ func (tc *templateContext[T]) nextWithNames(names []string, obj Node) (string, e
 }
 
 // @api(template/context): super (object)
-func (tc *templateContext[T]) super(obj Node) (string, error) {
+func (tc *templateContext[T]) super(obj Node, langs ...string) (string, error) {
+	if len(langs) > 1 {
+		return "", fmt.Errorf("too many arguments")
+	}
+	lang := tc.lang
+	if len(langs) == 1 {
+		lang = langs[0]
+	}
 	if len(tc.stack) == 0 {
 		return "", fmt.Errorf("super not allowed in the template")
 	}
 	name := tc.stack[len(tc.stack)-1]
 	tc.context.Tracef("super template %q", name)
-	names := tc.parseTemplateNames(name)
+	names := tc.parseTemplateNames(lang, name)
 	if len(names) < 2 {
 		return "", fmt.Errorf("invalid template name %q", name)
 	}
-	return tc.nextWithNames(names[1:], obj)
+	return tc.nextWithNames(lang, names[1:], obj)
 }
 
 // @api(template/context): render (name, data)
 // render executes the template with the given name and data.
-func (tc *templateContext[T]) render(name string, data any) (result string, err error) {
-	names := tc.parseTemplateNames(name)
+func (tc *templateContext[T]) render(name string, data any, langs ...string) (result string, err error) {
+	if len(langs) > 1 {
+		return "", fmt.Errorf("too many arguments")
+	}
+	lang := tc.lang
+	if len(langs) == 1 {
+		lang = langs[0]
+	}
+	names := tc.parseTemplateNames(lang, name)
 	if len(names) == 0 {
 		return "", fmt.Errorf("invalid template name %q", name)
 	}
-	return tc.renderWithNames(names, data)
+	return tc.renderWithNames(lang, names, data)
 }
 
-func (tc *templateContext[T]) renderWithNames(names []string, data any) (result string, err error) {
+func (tc *templateContext[T]) renderWithNames(lang string, names []string, data any) (result string, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			if e, ok := r.(error); ok {

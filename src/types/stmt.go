@@ -6,6 +6,7 @@ import (
 	"github.com/next/next/src/token"
 )
 
+// Stmt represents a Next statement.
 type Stmt interface {
 	stmtNode()
 	resolve(ctx *Context, file *File)

@@ -1,7 +1,3 @@
-// Copyright 2010 The Go Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
 package token
 
 import (
@@ -14,7 +10,6 @@ import (
 )
 
 // If debug is set, invalid offset and position values cause a panic
-// (go.dev/issue/57490).
 const debug = false
 
 // -----------------------------------------------------------------------------
@@ -245,7 +240,6 @@ type lineInfo struct {
 }
 
 // AddLineInfo is like [File.AddLineColumnInfo] with a column = 1 argument.
-// It is here for backward-compatibility for code prior to Go 1.11.
 func (f *File) AddLineInfo(offset int, filename string, line int) {
 	f.AddLineColumnInfo(offset, filename, line, 1)
 }
@@ -291,27 +285,11 @@ func (f *File) fixOffset(offset int) int {
 }
 
 // Pos returns the Pos value for the given file offset.
-//
-// If offset is negative, the result is the file's start
-// position; if the offset is too large, the result is
-// the file's end position (see also go.dev/issue/57490).
-//
-// The following invariant, though not true for Pos values
-// in general, holds for the result p:
-// f.Pos(f.Offset(p)) == p.
 func (f *File) Pos(offset int) Pos {
 	return Pos(f.base + f.fixOffset(offset))
 }
 
 // Offset returns the offset for the given file position p.
-//
-// If p is before the file's start position (or if p is NoPos),
-// the result is 0; if p is past the file's end position, the
-// the result is the file size (see also go.dev/issue/57490).
-//
-// The following invariant, though not true for offset values
-// in general, holds for the result offset:
-// f.Offset(f.Pos(offset)) == offset
 func (f *File) Offset(p Pos) int {
 	return f.fixOffset(int(p) - f.base)
 }

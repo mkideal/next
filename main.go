@@ -110,7 +110,7 @@ func main() {
 
 	// parse and resolve all files
 	for _, file := range files {
-		f := result(parser.ParseFile(ctx.FileSet(), file, stdin, parser.ParseComments|parser.AllErrors))
+		f := result(parser.ParseFile(ctx.FileSet(), file, stdin, parser.ParseComments))
 		try(ctx.AddFile(f))
 	}
 	try(ctx.Resolve())

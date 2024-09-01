@@ -61,7 +61,7 @@ type Context struct {
 	annotations map[token.Pos]*linkedAnnotation
 }
 
-// TODO: add builtin languages
+// NewContext creates a new context with builtin language supports
 func NewContext(builtin fs.FS) *Context {
 	c := &Context{
 		builtin:     builtin,
@@ -104,20 +104,23 @@ func (c *Context) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 	flagSet.Var(&c.flags.importDirs, "I", u(""+
 		"Specify additional directories for file imports.\n"+
 		"`DIR` is the path to the directory to be included in the import search.\n"+
-		"Example: -I ./common -I ~/project/shared\n",
+		"Example:\n"+
+		"  -I ./common -I ~/project/shared\n",
 	))
 
 	flagSet.Var(&c.flags.envs, "D", u(""+
 		"Define custom environment variables for use in code generation templates.\n"+
 		"`NAME"+grey("[=VALUE]")+"` represents the variable name and its optional value.\n"+
-		"Example: -D VERSION=2.1 -D DEBUG -D NAME=myapp\n"+
-		"Then, use the variables in templates like this: {{ENV.NAME}}, {{ENV.VERSION}}\n",
+		"Example:\n"+
+		"  -D VERSION=2.1 -D DEBUG -D NAME=myapp\n"+
+		"And then, use the variables in templates like this: {{ENV.NAME}}, {{ENV.VERSION}}\n",
 	))
 
 	flagSet.Var(&c.flags.outputs, "O", u(""+
 		"Set output directories for generated code, organized by target language.\n"+
 		"`LANG=DIR` specifies the target language and its output directory.\n"+
-		"Example: -O go=./output/go -O ts=./output/ts\n",
+		"Example:\n"+
+		"  -O go=./output/go -O ts=./output/ts\n",
 	))
 
 	flagSet.Var(&c.flags.templates, "T", u(""+
@@ -125,7 +128,9 @@ func (c *Context) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 		"`LANG=PATH` defines the target language and its template directory or file.\n"+
 		"Multiple templates can be specified for a single language.\n"+
 		"Example:\n"+
-		"  -T go=./templates/go -T go=./templates/go_extra.npl -T python=./templates/python.npl\n",
+		"  -T go=./templates/go\n"+
+		"  -T go=./templates/go_extra.npl\n"+
+		"  -T python=./templates/python.npl\n",
 	))
 
 	flagSet.Var(&c.flags.mappings, "M", u(""+
@@ -136,7 +141,7 @@ func (c *Context) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 		"  Generic types: vector<%T%>, array<%T%,%N%>, map<%K%,%V%>\n"+
 		"    "+b("%T%")+", "+b("%N%")+", "+b("%K%")+", "+b("%V%")+" are placeholders replaced with actual types or values.\n"+
 		"Feature mappings: Set language-specific properties like file extensions or comment styles.\n"+
-		"Examples:\n"+
+		"Example:\n"+
 		"  -M \"cpp.vector<%T%>\"=\"std::vector<%T%>\"\n"+
 		"  -M \"java.array<%T%,%N%>\"=\"ArrayList<%T%>\"\n"+
 		"  -M \"go.map<%K%,%V%>\"=\"map[%K%]%V%\"\n"+
@@ -144,13 +149,14 @@ func (c *Context) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 		"  -M \"ruby.comment(%S%)\"=\"# %S%\"\n",
 	))
 
-	flagSet.Var(&c.flags.solvers, "S", u(""+
+	flagSet.Var(&c.flags.solvers, "X", u(""+
 		"Specify custom annotation solver programs for code generation.\n"+
 		"`ANNOTATION=PROGRAM` defines the target annotation and its solver program.\n"+
 		"Annotation solvers are executed in a separate process to solve annotations.\n"+
 		"All annotations are passed to the solver program via stdin and stdout.\n"+
 		"See the documentation for more information on annotation solvers.\n"+
-		"Example: -S message=\"message-type-allocator -f message-types.json\"\n",
+		"Example:\n"+
+		"  -X message=\"message-type-allocator -f message-types.json\"\n",
 	))
 }
 
@@ -376,18 +382,26 @@ func (c *Context) Resolve() error {
 		return c.errors
 	}
 
-	// finally resolve all statements
+	// resolve all statements
 	for _, file := range files {
 		for _, stmt := range file.stmts {
 			stmt.resolve(c, file)
 		}
+	}
+	if c.errors.Len() > 0 {
+		return c.errors
+	}
+
+	// solve all annotations by external programs
+	if err := c.solveAnnotations(); err != nil {
+		return err
 	}
 
 	return c.errors.Err()
 }
 
 // resolveAnnotationGroup resolves an annotation group
-func (c *Context) resolveAnnotationGroup(file *File, object Object, annotations *ast.AnnotationGroup) AnnotationGroup {
+func (c *Context) resolveAnnotationGroup(file *File, decl Decl, annotations *ast.AnnotationGroup) AnnotationGroup {
 	if annotations == nil {
 		return nil
 	}
@@ -400,7 +414,7 @@ func (c *Context) resolveAnnotationGroup(file *File, object Object, annotations 
 		annotation := make(Annotation)
 		c.annotations[a.Pos()] = &linkedAnnotation{
 			name:       a.Name.Name,
-			object:     object,
+			decl:       decl,
 			annotation: annotation,
 		}
 		for _, p := range a.Params {

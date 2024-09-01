@@ -4,19 +4,22 @@ import (
 	"fmt"
 )
 
-// A Visitor's Visit method is invoked for each node encountered by [Walk].
-// If the result visitor w is not nil, [Walk] visits each of the children
+// Visitor represents an interface for traversing an AST.
+// The Visit method is invoked for each node encountered by Walk.
+// If the result visitor w is not nil, Walk visits each of the children
 // of node with the visitor w, followed by a call of w.Visit(nil).
 type Visitor interface {
 	Visit(node Node) (w Visitor)
 }
 
+// walkList applies the visitor v to each node in the list.
 func walkList[N Node](v Visitor, list []N) {
 	for _, node := range list {
 		Walk(v, node)
 	}
 }
 
+// walkGenDecl applies the visitor v to each part of a generic declaration.
 func walkGenDecl[T Node](v Visitor, decl *GenDecl[T]) {
 	if decl.Doc != nil {
 		Walk(v, decl.Doc)
@@ -41,7 +44,7 @@ func Walk(v Visitor, node Node) {
 		return
 	}
 
-	// walk children
+	// Walk children
 	// (the order of the cases matches the order
 	// of the corresponding node types in ast.go)
 	switch n := node.(type) {
@@ -198,8 +201,10 @@ func Walk(v Visitor, node Node) {
 	v.Visit(nil)
 }
 
+// inspector is a function type that determines whether to continue inspecting an AST.
 type inspector func(Node) bool
 
+// Visit implements the Visitor interface for the inspector type.
 func (f inspector) Visit(node Node) Visitor {
 	if f(node) {
 		return f

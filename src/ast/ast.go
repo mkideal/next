@@ -1,5 +1,4 @@
-// Package ast declares the types used to represent syntax trees for Go
-// packages.
+// Package ast declares the types used to represent syntax trees for Next source code.
 package ast
 
 import (
@@ -8,71 +7,51 @@ import (
 	"github.com/next/next/src/token"
 )
 
-// ----------------------------------------------------------------------------
-// Interfaces
-//
-// There are 3 main classes of nodes: Expressions and type nodes,
-// statement nodes, and declaration nodes. The node names usually
-// match the corresponding Go spec production names to which they
-// correspond. The node fields correspond to the individual parts
-// of the respective productions.
-//
-// All nodes contain position information marking the beginning of
-// the corresponding source text segment; it is accessible via the
-// Pos accessor method. Nodes may contain additional position info
-// for language constructs where comments may be found between parts
-// of the construct (typically any larger, parenthesized subpart).
-// That position information is needed to properly position comments
-// when printing the construct.
-
-// All node types implement the Node interface.
+// Node represents any node in the abstract syntax tree.
 type Node interface {
 	Pos() token.Pos // position of first character belonging to the node
 	End() token.Pos // position of first character immediately after the node
 }
 
-// All expression nodes implement the Expr interface.
+// Expr represents any expression node in the abstract syntax tree.
 type Expr interface {
 	Node
 	exprNode()
 }
 
-// All statement nodes implement the Stmt interface.
+// Stmt represents any statement node in the abstract syntax tree.
 type Stmt interface {
 	Node
 	stmtNode()
 }
 
-// All type nodes implement the Type interface.
+// Type represents any type node in the abstract syntax tree.
 type Type interface {
 	Node
 	typeNode()
 }
 
-// ----------------------------------------------------------------------------
-// Comments
-
-// A Comment node represents a single //-style or /*-style comment.
-//
-// The Text field contains the comment text without carriage returns (\r) that
-// may have been present in the source. Because a comment's end position is
-// computed using len(Text), the position reported by [Comment.End] does not match the
-// true source end position for comments containing carriage returns.
+// Comment represents a single //-style or /*-style comment.
 type Comment struct {
 	Slash token.Pos // position of "/" starting the comment
 	Text  string    // comment text (excluding '\n' for //-style comments)
 }
 
+// Pos returns the position of the first character in the comment.
 func (c *Comment) Pos() token.Pos { return c.Slash }
+
+// End returns the position of the character immediately after the comment.
 func (c *Comment) End() token.Pos { return token.Pos(int(c.Slash) + len(c.Text)) }
 
-// A CommentGroup represents a sequence of comments
-// with no other tokens and no empty lines between.
+// CommentGroup represents a sequence of comments with no other tokens and no empty lines between.
 type CommentGroup struct {
 	List []*Comment // len(List) > 0
 }
 
+// Pos returns the position of the first character in the first comment in the group.
 func (g *CommentGroup) Pos() token.Pos { return g.List[0].Pos() }
+
+// End returns the position of the character immediately after the last comment in the group.
 func (g *CommentGroup) End() token.Pos { return g.List[len(g.List)-1].End() }
 
 func isWhitespace(ch byte) bool { return ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r' }
@@ -85,7 +64,7 @@ func stripTrailingWhitespace(s string) string {
 	return s[0:i]
 }
 
-// Text returns the text of the comment.
+// Text returns the text of the comment group.
 // Comment markers (//, /*, and */), the first space of a line comment, and
 // leading and trailing empty lines are removed.
 // Multiple empty lines are reduced to one, and trailing space on lines is trimmed.
@@ -94,6 +73,7 @@ func (g *CommentGroup) Text() string {
 	return strings.Join(g.TrimComments(), "\n")
 }
 
+// TrimComments returns the trimmed text of the comments in the group.
 func (g *CommentGroup) TrimComments() []string {
 	if g == nil || len(g.List) == 0 {
 		return nil
@@ -103,40 +83,33 @@ func (g *CommentGroup) TrimComments() []string {
 		comments[i] = c.Text
 	}
 	comments = TrimComments(comments)
-	// Add final "" entry to get trailing newline from Join.
 	if len(comments) > 0 && comments[len(comments)-1] != "" {
 		comments = append(comments, "")
 	}
 	return comments
 }
 
+// TrimComments removes comment markers and trims whitespace from a slice of comment strings.
 func TrimComments(comments []string) []string {
 	lines := make([]string, 0, 10) // most comments are less than 10 lines
 	for _, c := range comments {
 		// Remove comment markers.
-		// The parser has given us exactly the comment text.
 		switch c[1] {
 		case '/':
-			//-style comment (no newline at the end)
 			c = c[2:]
 			if len(c) == 0 {
-				// empty line
 				break
 			}
 			if c[0] == ' ' {
-				// strip first space - required for Example tests
 				c = c[1:]
 				break
 			}
 		case '*':
-			/*-style comment */
 			c = c[2 : len(c)-2]
 		}
 
-		// Split on newlines.
+		// Split on newlines and strip trailing whitespace.
 		cl := strings.Split(c, "\n")
-
-		// Walk lines, stripping trailing white space and adding to list.
 		for _, l := range cl {
 			lines = append(lines, stripTrailingWhitespace(l))
 		}
@@ -154,12 +127,14 @@ func TrimComments(comments []string) []string {
 	return lines[0:n]
 }
 
+// NamedValue represents a named value in an annotation.
 type NamedValue struct {
 	Name      *Ident    // name of parameter
 	AssignPos token.Pos // position of "=" if any
 	Value     Expr      // parameter value, or nil
 }
 
+// Pos returns the position of the first character in the named value.
 func (p *NamedValue) Pos() token.Pos {
 	if p.Name != nil {
 		return p.Name.Pos()
@@ -167,6 +142,7 @@ func (p *NamedValue) Pos() token.Pos {
 	return p.Value.Pos()
 }
 
+// End returns the position of the character immediately after the named value.
 func (p *NamedValue) End() token.Pos {
 	if p.Value != nil {
 		return p.Value.End()
@@ -174,7 +150,7 @@ func (p *NamedValue) End() token.Pos {
 	return p.Name.End()
 }
 
-// An Annotation represents an annotation.
+// Annotation represents an annotation in the source code.
 type Annotation struct {
 	At     token.Pos     // position of "@"
 	Name   *Ident        // annotation name
@@ -183,10 +159,12 @@ type Annotation struct {
 	Rparen token.Pos     // position of ")" if any
 }
 
+// Pos returns the position of the first character in the annotation.
 func (a *Annotation) Pos() token.Pos {
 	return a.At
 }
 
+// End returns the position of the character immediately after the annotation.
 func (a *Annotation) End() token.Pos {
 	if a.Rparen.IsValid() {
 		return a.Rparen + 1
@@ -197,22 +175,25 @@ func (a *Annotation) End() token.Pos {
 	return a.Name.End()
 }
 
+// AnnotationGroup represents a group of annotations.
 type AnnotationGroup struct {
 	List []*Annotation // len(List) > 0
 }
 
+// Pos returns the position of the first character in the first annotation of the group.
 func (g *AnnotationGroup) Pos() token.Pos { return g.List[0].Pos() }
+
+// End returns the position of the character immediately after the last annotation in the group.
 func (g *AnnotationGroup) End() token.Pos { return g.List[len(g.List)-1].End() }
 
-// ----------------------------------------------------------------------------
-// Expressions and types
-
+// List represents a generic list of nodes.
 type List[T Node] struct {
 	Opening token.Pos // position of opening parenthesis/brace/bracket, if any
 	List    []T       // field list; or nil
 	Closing token.Pos // position of closing parenthesis/brace/bracket, if any
 }
 
+// Pos returns the position of the first character in the list.
 func (l *List[T]) Pos() token.Pos {
 	if l.Opening.IsValid() {
 		return l.Opening
@@ -223,6 +204,7 @@ func (l *List[T]) Pos() token.Pos {
 	return token.NoPos
 }
 
+// End returns the position of the character immediately after the list.
 func (l *List[T]) End() token.Pos {
 	if l.Closing.IsValid() {
 		return l.Closing + 1
@@ -233,7 +215,7 @@ func (l *List[T]) End() token.Pos {
 	return token.NoPos
 }
 
-// NumFields returns the number of parameters or struct fields represented by a [List].
+// NumFields returns the number of fields in the list.
 func (l *List[T]) NumFields() int {
 	if l != nil {
 		return len(l.List)
@@ -251,10 +233,12 @@ type EnumMember struct {
 	Comment     *CommentGroup    // line comments; or nil
 }
 
+// Pos returns the position of the first character in the enum member.
 func (m *EnumMember) Pos() token.Pos {
 	return m.Name.Pos()
 }
 
+// End returns the position of the character immediately after the enum member.
 func (m *EnumMember) End() token.Pos {
 	if m.Value != nil {
 		return m.Value.End()
@@ -262,14 +246,10 @@ func (m *EnumMember) End() token.Pos {
 	return m.Name.End()
 }
 
-// A MemberList represents a list of ValueSpecs, enclosed by parentheses,
+// MemberList represents a list of enum members.
 type MemberList = List[*EnumMember]
 
-// A StructField represents a StructField declaration list in a struct type,
-// a method list in an interface type, or a parameter/result declaration
-// in a signature.
-// [StructField.Names] is nil for unnamed parameters (parameter lists which only contain types)
-// and embedded struct fields. In the latter case, the field name is the type name.
+// StructField represents a field in a struct type
 type StructField struct {
 	Doc         *CommentGroup    // associated documentation; or nil
 	Annotations *AnnotationGroup // associated annotations; or nil
@@ -278,23 +258,20 @@ type StructField struct {
 	Comment     *CommentGroup    // line comments; or nil
 }
 
+// Pos returns the position of the first character in the struct field.
 func (f *StructField) Pos() token.Pos {
 	return f.Type.Pos()
 }
 
+// End returns the position of the character immediately after the struct field.
 func (f *StructField) End() token.Pos {
 	return f.Name.Pos()
 }
 
-// A FieldList represents a list of Fields, enclosed by parentheses,
-// curly braces, or square brackets.
+// FieldList represents a list of fields, enclosed by parentheses, curly braces, or square brackets.
 type FieldList = List[*StructField]
 
 // Method represents a method declaration.
-//
-// Example:
-//
-// MethodName(Type1 param1, Type2 param2) Type3
 type Method struct {
 	Doc         *CommentGroup    // associated documentation; or nil
 	Annotations *AnnotationGroup // associated annotations; or nil
@@ -304,10 +281,12 @@ type Method struct {
 	Comment     *CommentGroup    // line comments; or nil
 }
 
+// Pos returns the position of the first character in the method declaration.
 func (m *Method) Pos() token.Pos {
 	return m.Name.Pos()
 }
 
+// End returns the position of the character immediately after the method declaration.
 func (m *Method) End() token.Pos {
 	if m.ReturnType != nil {
 		return m.ReturnType.End()
@@ -315,7 +294,7 @@ func (m *Method) End() token.Pos {
 	return m.Params.End()
 }
 
-// A MethodList represents a list of Method declarations.
+// MethodList represents a list of method declarations.
 type MethodList = List[*Method]
 
 // MethodParam represents a method parameter declaration.
@@ -324,10 +303,12 @@ type MethodParam struct {
 	Name *Ident // parameter name
 }
 
+// Pos returns the position of the first character in the method parameter.
 func (p *MethodParam) Pos() token.Pos {
 	return p.Type.Pos()
 }
 
+// End returns the position of the character immediately after the method parameter.
 func (p *MethodParam) End() token.Pos {
 	return p.Name.End()
 }
@@ -335,111 +316,98 @@ func (p *MethodParam) End() token.Pos {
 // MethodParamList represents a list of function parameters.
 type MethodParamList = List[*MethodParam]
 
-// An expression is represented by a tree consisting of one
-// or more of the following concrete expression nodes.
-type (
-	// A BadExpr node is a placeholder for an expression containing
-	// syntax errors for which a correct expression node cannot be
-	// created.
-	//
-	BadExpr struct {
-		From, To token.Pos // position range of bad expression
-	}
+// BadExpr represents an incorrect or unparseable expression.
+type BadExpr struct {
+	From, To token.Pos // position range of bad expression
+}
 
-	// An Ident node represents an identifier.
-	Ident struct {
-		NamePos token.Pos // identifier position
-		Name    string    // identifier name
-	}
+// Ident represents an identifier.
+type Ident struct {
+	NamePos token.Pos // identifier position
+	Name    string    // identifier name
+}
 
-	// A BasicLit node represents a literal of basic type.
-	BasicLit struct {
-		ValuePos token.Pos   // literal position
-		Kind     token.Token // token.INT, token.FLOAT, token.IMAG, token.CHAR, or token.STRING
-		Value    string      // literal string; e.g. 42, 0x7f, 3.14, 1e-9, 2.4i, 'a', '\x7f', "foo" or `\m\n\o`
-	}
+// BasicLit represents a literal of basic type.
+type BasicLit struct {
+	ValuePos token.Pos   // literal position
+	Kind     token.Token // token.INT, token.FLOAT, token.IMAG, token.CHAR, or token.STRING
+	Value    string      // literal string; e.g. 42, 0x7f, 3.14, 1e-9, 2.4i, 'a', '\x7f', "foo" or `\m\n\o`
+}
 
-	// A ParenExpr node represents a parenthesized expression.
-	ParenExpr struct {
-		Lparen token.Pos // position of "("
-		X      Expr      // parenthesized expression
-		Rparen token.Pos // position of ")"
-	}
+// ParenExpr represents a parenthesized expression.
+type ParenExpr struct {
+	Lparen token.Pos // position of "("
+	X      Expr      // parenthesized expression
+	Rparen token.Pos // position of ")"
+}
 
-	// A SelectorExpr node represents an expression followed by a selector.
-	SelectorExpr struct {
-		X   Expr   // expression
-		Sel *Ident // field selector
-	}
+// SelectorExpr represents an expression followed by a selector.
+type SelectorExpr struct {
+	X   Expr   // expression
+	Sel *Ident // field selector
+}
 
-	// A CallExpr node represents an expression followed by an argument list.
-	CallExpr struct {
-		Fun    Expr      // function expression
-		Lparen token.Pos // position of "("
-		Args   []Expr    // function arguments; or nil
-		Rparen token.Pos // position of ")"
-	}
+// CallExpr represents an expression followed by an argument list.
+type CallExpr struct {
+	Fun    Expr      // function expression
+	Lparen token.Pos // position of "("
+	Args   []Expr    // function arguments; or nil
+	Rparen token.Pos // position of ")"
+}
 
-	// A UnaryExpr node represents a unary expression.
-	// Unary "*" expressions are represented via StarExpr nodes.
-	//
-	UnaryExpr struct {
-		OpPos token.Pos   // position of Op
-		Op    token.Token // operator
-		X     Expr        // operand
-	}
+// UnaryExpr represents a unary expression.
+// Unary "*" expressions are represented via StarExpr nodes.
+type UnaryExpr struct {
+	OpPos token.Pos   // position of Op
+	Op    token.Token // operator
+	X     Expr        // operand
+}
 
-	// A BinaryExpr node represents a binary expression.
-	BinaryExpr struct {
-		X     Expr        // left operand
-		OpPos token.Pos   // position of Op
-		Op    token.Token // operator
-		Y     Expr        // right operand
-	}
-)
+// BinaryExpr represents a binary expression.
+type BinaryExpr struct {
+	X     Expr        // left operand
+	OpPos token.Pos   // position of Op
+	Op    token.Token // operator
+	Y     Expr        // right operand
+}
 
-// A type is represented by a tree consisting of one
-// or more of the following type-specific expression
-// nodes.
-type (
-	// An ArrayType node represents an array or slice type.
-	ArrayType struct {
-		Array token.Pos // position of token.ARRAY
-		T     Type      // element type
-		N     Expr      // size of the array
-		GT    token.Pos // position of ">"
-	}
+// ArrayType represents an array or slice type.
+type ArrayType struct {
+	Array token.Pos // position of token.ARRAY
+	T     Type      // element type
+	N     Expr      // size of the array
+	GT    token.Pos // position of ">"
+}
 
-	// A VectorType node represents a vector type.
-	VectorType struct {
-		Vector token.Pos // position of token.VECTOR
-		T      Type      // element type
-		GT     token.Pos // position of ">"
-	}
+// VectorType represents a vector type.
+type VectorType struct {
+	Vector token.Pos // position of token.VECTOR
+	T      Type      // element type
+	GT     token.Pos // position of ">"
+}
 
-	// A MapType node represents a map type.
-	MapType struct {
-		Map token.Pos // position of token.MAP
-		K   Type      // key type
-		V   Type      // value type
-		GT  token.Pos // position of ">"
-	}
+// MapType represents a map type.
+type MapType struct {
+	Map token.Pos // position of token.MAP
+	K   Type      // key type
+	V   Type      // value type
+	GT  token.Pos // position of ">"
+}
 
-	// An InterfaceType node represents an interface type.
-	InterfaceType struct {
-		Methods *MethodList // list of methods
-	}
+// InterfaceType represents an interface type.
+type InterfaceType struct {
+	Methods *MethodList // list of methods
+}
 
-	// A StructType node represents a struct type.
-	StructType struct {
-		Fields *FieldList // list of field declarations
-	}
+// StructType represents a struct type.
+type StructType struct {
+	Fields *FieldList // list of field declarations
+}
 
-	// A EnumType node represents an enum type.
-	EnumType struct {
-		Members *MemberList // list of enum members
-	}
-)
+// EnumType represents an enum type.
+type EnumType struct {
+	Members *MemberList // list of enum members
+}
 
 // Pos and End implementations for expression/type nodes.
 
@@ -501,9 +469,7 @@ func (*EnumType) typeNode()      {}
 func (*StructType) typeNode()    {}
 func (*InterfaceType) typeNode() {}
 
-// ----------------------------------------------------------------------------
-// Convenience functions for Idents
-
+// String returns the identifier name.
 func (id *Ident) String() string {
 	if id != nil {
 		return id.Name
@@ -511,19 +477,15 @@ func (id *Ident) String() string {
 	return "<nil>"
 }
 
-// ----------------------------------------------------------------------------
-// Statements
+// BadStmt represents an invalid statement.
+type BadStmt struct {
+	From, To token.Pos // position range of bad statement
+}
 
-type (
-	BadStmt struct {
-		From, To token.Pos // position range of bad statement
-	}
-
-	// ExprStmt represents a call declaration.
-	ExprStmt struct {
-		X Expr // expression
-	}
-)
+// ExprStmt represents a standalone expression in a statement list.
+type ExprStmt struct {
+	X Expr // expression
+}
 
 func (s *BadStmt) Pos() token.Pos  { return s.From }
 func (s *ExprStmt) Pos() token.Pos { return s.X.Pos() }
@@ -536,48 +498,43 @@ func (s *ExprStmt) End() token.Pos { return s.X.End() }
 func (*BadStmt) stmtNode()  {}
 func (*ExprStmt) stmtNode() {}
 
-// ----------------------------------------------------------------------------
-// Declarations
+// Decl represents a declaration in the Next source code.
+type Decl interface {
+	Node
+	Token() token.Token
+	declNode()
+}
 
-// A Decl node represents a single (non-parenthesized) import,
-// constant, type (enum, struct, interface) declaration.
-type (
-	Decl interface {
-		Node
-		Token() token.Token
-		declNode()
-	}
+// ImportDecl represents a single package import.
+type ImportDecl struct {
+	Doc     *CommentGroup // associated documentation; or nil
+	Path    *BasicLit     // import path
+	Comment *CommentGroup // line comments; or nil
+	EndPos  token.Pos     // end of spec (overrides Path.Pos if nonzero)
+}
 
-	// An ImportDecl node represents a single package import.
-	ImportDecl struct {
-		Doc     *CommentGroup // associated documentation; or nil
-		Path    *BasicLit     // import path
-		Comment *CommentGroup // line comments; or nil
-		EndPos  token.Pos     // end of spec (overrides Path.Pos if nonzero)
-	}
+// GenDecl represents a general declaration node.
+type GenDecl[T Node] struct {
+	Doc         *CommentGroup    // associated documentation; or nil
+	Annotations *AnnotationGroup // associated annotations; or nil
+	Tok         token.Token      // CONST, ENUM, STRUCT or INTERFACE
+	TokPos      token.Pos        // position of Tok
+	Name        *Ident           // value name
+	Spec        T                // spec of the declaration
+	Comment     *CommentGroup    // line comments const declarations; or nil
+}
 
-	GenDecl[T Node] struct {
-		Doc         *CommentGroup    // associated documentation; or nil
-		Annotations *AnnotationGroup // associated annotations; or nil
-		Tok         token.Token      // CONST, ENUM, STRUCT or INTERFACE
-		TokPos      token.Pos        // position of Tok
-		Name        *Ident           // value name
-		Spec        T                // spec of the declaration
-		Comment     *CommentGroup    // line comments const declarations; or nil
-	}
+// ConstDecl represents a constant declaration.
+type ConstDecl = GenDecl[Expr]
 
-	// A ConstDecl node represents a constant declaration
-	ConstDecl = GenDecl[Expr]
+// EnumDecl represents an enum declaration.
+type EnumDecl = GenDecl[*EnumType]
 
-	// A EnumDecl node represents a type declaration (EnumDecl production).
-	EnumDecl = GenDecl[*EnumType]
+// StructDecl represents a struct declaration.
+type StructDecl = GenDecl[*StructType]
 
-	// A StructDecl node represents a type declaration (StructDecl production).
-	StructDecl = GenDecl[*StructType]
-
-	// An InterfaceDecl node represents a type declaration (InterfaceDecl production).
-	InterfaceDecl = GenDecl[*InterfaceType]
-)
+// InterfaceDecl represents an interface declaration.
+type InterfaceDecl = GenDecl[*InterfaceType]
 
 // Pos and End implementations for decl nodes.
 func (s *ImportDecl) Pos() token.Pos { return s.Path.Pos() }
@@ -600,27 +557,7 @@ func (x *GenDecl[T]) Token() token.Token { return x.Tok }
 func (*ImportDecl) declNode() {}
 func (*GenDecl[T]) declNode() {}
 
-// ----------------------------------------------------------------------------
-// Files and packages
-
-// A File node represents a Go source file.
-//
-// The Comments list contains all comments in the source file in order of
-// appearance, including the comments that are pointed to from other nodes
-// via Doc and Comment fields.
-//
-// For correct printing of source code containing comments (using packages
-// go/format and go/printer), special care must be taken to update comments
-// when a File's syntax tree is modified: For printing, comments are interspersed
-// between tokens based on their position. If syntax tree nodes are
-// removed or moved, relevant comments in their vicinity must also be removed
-// (from the [File.Comments] list) or moved accordingly (by updating their
-// positions). A [CommentMap] may be used to facilitate some of these operations.
-//
-// Whether and how a comment is associated with a node depends on the
-// interpretation of the syntax tree by the manipulating program: except for Doc
-// and [Comment] comments directly associated with nodes, the remaining comments
-// are "free-floating"
+// File represents a Next source file.
 type File struct {
 	Doc         *CommentGroup    // associated documentation; or nil
 	Annotations *AnnotationGroup // associated annotations; or nil
@@ -635,53 +572,14 @@ type File struct {
 }
 
 // Pos returns the position of the package declaration.
-// (Use FileStart for the start of the entire file.)
 func (f *File) Pos() token.Pos { return f.Package }
 
 // End returns the end of the last declaration in the file.
-// (Use FileEnd for the end of the entire file.)
 func (f *File) End() token.Pos {
 	if n := len(f.Decls); n > 0 {
 		return f.Decls[n-1].End()
 	}
 	return f.Name.End()
-}
-
-// IsGenerated reports whether the file was generated by a program,
-// not handwritten, by detecting the special comment described
-// at https://go.dev/s/generatedcode.
-//
-// The syntax tree must have been parsed with the [parser.ParseComments] flag.
-// Example:
-//
-//	f, err := parser.ParseFile(fset, filename, src, parser.ParseComments|parser.PackageClauseOnly)
-//	if err != nil { ... }
-//	gen := ast.IsGenerated(f)
-func IsGenerated(file *File) bool {
-	_, ok := generator(file)
-	return ok
-}
-
-func generator(file *File) (string, bool) {
-	for _, group := range file.Comments {
-		for _, comment := range group.List {
-			if comment.Pos() > file.Package {
-				break // after package declaration
-			}
-			// opt: check Contains first to avoid unnecessary array allocation in Split.
-			const prefix = "// Code generated "
-			if strings.Contains(comment.Text, prefix) {
-				for _, line := range strings.Split(comment.Text, "\n") {
-					if rest, ok := strings.CutPrefix(line, prefix); ok {
-						if gen, ok := strings.CutSuffix(rest, " DO NOT EDIT."); ok {
-							return gen, true
-						}
-					}
-				}
-			}
-		}
-	}
-	return "", false
 }
 
 // Unparen returns the expression with any enclosing parentheses removed.

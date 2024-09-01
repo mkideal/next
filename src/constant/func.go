@@ -1,3 +1,6 @@
+// Package constant provides functionality for working with constant values and functions.
+// It includes a set of predefined functions that can be called dynamically,
+// as well as utility functions for type conversion and assertion.
 package constant
 
 import (
@@ -6,15 +9,19 @@ import (
 	"github.com/next/next/src/token"
 )
 
+// FuncContext represents the context in which a function is executed.
+// It provides methods for debugging, printing, and error reporting.
 type FuncContext interface {
 	IsDebugEnabled() bool
 	Print(args ...any)
 	Error(args ...any)
 }
 
+// Func represents a function that can be called with a FuncContext and arguments.
 type Func func(ctx FuncContext, args []Value) Value
 
-// Call calls the function named fun with the arguments args.
+// Call invokes the function named by fun with the provided arguments.
+// It returns the result of the function call and any error that occurred.
 func Call(ctx FuncContext, fun string, args []Value) (v Value, err error) {
 	f, ok := funcs[fun]
 	if !ok {
@@ -22,11 +29,12 @@ func Call(ctx FuncContext, fun string, args []Value) (v Value, err error) {
 	}
 	defer func() {
 		if r := recover(); r != nil {
-			if e, ok := r.(error); ok {
+			switch e := r.(type) {
+			case error:
 				err = e
-			} else if s, ok := r.(string); ok {
-				err = fmt.Errorf("failed to call %q: %s", fun, s)
-			} else {
+			case string:
+				err = fmt.Errorf("failed to call %q: %s", fun, e)
+			default:
 				panic(r)
 			}
 		}
@@ -34,30 +42,32 @@ func Call(ctx FuncContext, fun string, args []Value) (v Value, err error) {
 	return f(ctx, args), nil
 }
 
+// funcs is a map of predefined functions that can be called using the Call function.
 var funcs = map[string]Func{
-	"len":       _len,
-	"min":       _min,
-	"max":       _max,
-	"abs":       _abs,
-	"int":       _int,
-	"float":     _float,
-	"bool":      _bool,
-	"sprint":    _sprint,
-	"sprintf":   _sprintf,
-	"sprintln":  _sprintln,
-	"print":     _print,
-	"printf":    _printf,
-	"error":     _error,
-	"assert":    _assert,
-	"assert_eq": _assert_eq,
-	"assert_ne": _assert_ne,
-	"assert_lt": _assert_lt,
-	"assert_le": _assert_le,
-	"assert_gt": _assert_gt,
-	"assert_ge": _assert_ge,
+	"len":       lenFunc,
+	"min":       minFunc,
+	"max":       maxFunc,
+	"abs":       absFunc,
+	"int":       intFunc,
+	"float":     floatFunc,
+	"bool":      boolFunc,
+	"sprint":    sprintFunc,
+	"sprintf":   sprintfFunc,
+	"sprintln":  sprintlnFunc,
+	"print":     printFunc,
+	"printf":    printfFunc,
+	"error":     errorFunc,
+	"assert":    assertFunc,
+	"assert_eq": assertEqFunc,
+	"assert_ne": assertNeFunc,
+	"assert_lt": assertLtFunc,
+	"assert_le": assertLeFunc,
+	"assert_gt": assertGtFunc,
+	"assert_ge": assertGeFunc,
 }
 
-func _len(ctx FuncContext, args []Value) Value {
+// lenFunc returns the length of a string.
+func lenFunc(ctx FuncContext, args []Value) Value {
 	if len(args) != 1 {
 		return unknownVal{}
 	}
@@ -67,7 +77,8 @@ func _len(ctx FuncContext, args []Value) Value {
 	return unknownVal{}
 }
 
-func _min(ctx FuncContext, args []Value) Value {
+// minFunc returns the minimum value from the provided arguments.
+func minFunc(ctx FuncContext, args []Value) Value {
 	if len(args) < 1 {
 		panic("min: missing arguments")
 	}
@@ -86,7 +97,8 @@ func _min(ctx FuncContext, args []Value) Value {
 	return min
 }
 
-func _max(ctx FuncContext, args []Value) Value {
+// maxFunc returns the maximum value from the provided arguments.
+func maxFunc(ctx FuncContext, args []Value) Value {
 	if len(args) < 1 {
 		panic("max: missing arguments")
 	}
@@ -105,7 +117,8 @@ func _max(ctx FuncContext, args []Value) Value {
 	return max
 }
 
-func _abs(ctx FuncContext, args []Value) Value {
+// absFunc returns the absolute value of the provided argument.
+func absFunc(ctx FuncContext, args []Value) Value {
 	if len(args) != 1 {
 		panic("abs: exactly one argument is required")
 	}
@@ -134,7 +147,8 @@ func _abs(ctx FuncContext, args []Value) Value {
 	return MakeUnknown()
 }
 
-func _int(ctx FuncContext, args []Value) Value {
+// intFunc converts the provided argument to an integer value.
+func intFunc(ctx FuncContext, args []Value) Value {
 	if len(args) != 1 {
 		panic("int: exactly one argument is required")
 	}
@@ -157,9 +171,10 @@ func _int(ctx FuncContext, args []Value) Value {
 	return MakeUnknown()
 }
 
-func _float(ctx FuncContext, args []Value) Value {
+// floatFunc converts the provided argument to a float value.
+func floatFunc(ctx FuncContext, args []Value) Value {
 	if len(args) != 1 {
-		panic("int: exactly one argument is required")
+		panic("float: exactly one argument is required")
 	}
 	v := args[0]
 	if v.Kind() == Unknown {
@@ -183,9 +198,10 @@ func _float(ctx FuncContext, args []Value) Value {
 	return MakeUnknown()
 }
 
-func _bool(ctx FuncContext, args []Value) Value {
+// boolFunc converts the provided argument to a boolean value.
+func boolFunc(ctx FuncContext, args []Value) Value {
 	if len(args) != 1 {
-		panic("int: exactly one argument is required")
+		panic("bool: exactly one argument is required")
 	}
 	v := args[0]
 	if v.Kind() == Unknown {
@@ -209,6 +225,7 @@ func _bool(ctx FuncContext, args []Value) Value {
 	return MakeUnknown()
 }
 
+// toArgs converts a slice of Values to a slice of interface{}.
 func toArgs(args []Value) []any {
 	if len(args) == 0 {
 		return nil
@@ -231,11 +248,13 @@ func toArgs(args []Value) []any {
 	return argv
 }
 
-func _sprint(ctx FuncContext, args []Value) Value {
+// sprintFunc returns a string representation of the provided arguments.
+func sprintFunc(ctx FuncContext, args []Value) Value {
 	return MakeString(fmt.Sprint(toArgs(args)...))
 }
 
-func _sprintf(ctx FuncContext, args []Value) Value {
+// sprintfFunc returns a formatted string using the provided format and arguments.
+func sprintfFunc(ctx FuncContext, args []Value) Value {
 	if len(args) == 0 {
 		panic("sprintf: missing format string")
 	}
@@ -246,11 +265,13 @@ func _sprintf(ctx FuncContext, args []Value) Value {
 	return MakeString(fmt.Sprintf(StringVal(format), toArgs(args[1:])...))
 }
 
-func _sprintln(ctx FuncContext, args []Value) Value {
+// sprintlnFunc returns a string representation of the provided arguments, followed by a newline.
+func sprintlnFunc(ctx FuncContext, args []Value) Value {
 	return MakeString(fmt.Sprintln(toArgs(args)...))
 }
 
-func _print(ctx FuncContext, args []Value) Value {
+// printFunc prints the provided arguments if debugging is enabled.
+func printFunc(ctx FuncContext, args []Value) Value {
 	if !ctx.IsDebugEnabled() {
 		return MakeUnknown()
 	}
@@ -258,7 +279,8 @@ func _print(ctx FuncContext, args []Value) Value {
 	return MakeUnknown()
 }
 
-func _printf(ctx FuncContext, args []Value) Value {
+// printfFunc prints a formatted string using the provided format and arguments if debugging is enabled.
+func printfFunc(ctx FuncContext, args []Value) Value {
 	if !ctx.IsDebugEnabled() {
 		return MakeUnknown()
 	}
@@ -273,7 +295,8 @@ func _printf(ctx FuncContext, args []Value) Value {
 	return MakeUnknown()
 }
 
-func _error(ctx FuncContext, args []Value) Value {
+// errorFunc reports an error with the provided message.
+func errorFunc(ctx FuncContext, args []Value) Value {
 	if len(args) == 0 {
 		panic("error: missing error message")
 	}
@@ -281,6 +304,7 @@ func _error(ctx FuncContext, args []Value) Value {
 	return MakeUnknown()
 }
 
+// printAssert prints an assertion failure message.
 func printAssert(ctx FuncContext, args []any) {
 	if len(args) == 0 {
 		ctx.Error("assertion failed")
@@ -289,7 +313,8 @@ func printAssert(ctx FuncContext, args []any) {
 	ctx.Error("assertion failed: " + fmt.Sprint(args...))
 }
 
-func _assert(ctx FuncContext, args []Value) Value {
+// assertFunc checks if the provided condition is true and reports an error if it's not.
+func assertFunc(ctx FuncContext, args []Value) Value {
 	if len(args) == 0 {
 		panic("assert: missing condition")
 	}
@@ -299,27 +324,30 @@ func _assert(ctx FuncContext, args []Value) Value {
 	return MakeUnknown()
 }
 
-func _assert_eq(ctx FuncContext, args []Value) Value {
+// assertEqFunc checks if two values are equal and reports an error if they're not.
+func assertEqFunc(ctx FuncContext, args []Value) Value {
 	if len(args) < 2 {
 		panic("assert_eq: at least two arguments are required")
 	}
 	if !Compare(args[0], token.EQL, args[1]) {
-		printAssert(ctx, append([]any{fmt.Sprintf("expected %v, but got %v.", args[1], args[0])}, toArgs(args[2:])...))
+		printAssert(ctx, append([]any{fmt.Sprintf("expected %v, but got %v", args[1], args[0])}, toArgs(args[2:])...))
 	}
 	return MakeUnknown()
 }
 
-func _assert_ne(ctx FuncContext, args []Value) Value {
+// assertNeFunc checks if two values are not equal and reports an error if they are.
+func assertNeFunc(ctx FuncContext, args []Value) Value {
 	if len(args) < 2 {
 		panic("assert_ne: at least two arguments are required")
 	}
 	if Compare(args[0], token.EQL, args[1]) {
-		printAssert(ctx, append([]any{fmt.Sprintf("expected not %v, but got %v.", args[1], args[0])}, toArgs(args[2:])...))
+		printAssert(ctx, append([]any{fmt.Sprintf("expected not %v, but got %v", args[1], args[0])}, toArgs(args[2:])...))
 	}
 	return MakeUnknown()
 }
 
-func _assert_lt(ctx FuncContext, args []Value) Value {
+// assertLtFunc checks if the first value is less than the second and reports an error if it's not.
+func assertLtFunc(ctx FuncContext, args []Value) Value {
 	if len(args) < 2 {
 		panic("assert_lt: at least two arguments are required")
 	}
@@ -329,7 +357,8 @@ func _assert_lt(ctx FuncContext, args []Value) Value {
 	return MakeUnknown()
 }
 
-func _assert_le(ctx FuncContext, args []Value) Value {
+// assertLeFunc checks if the first value is less than or equal to the second and reports an error if it's not.
+func assertLeFunc(ctx FuncContext, args []Value) Value {
 	if len(args) < 2 {
 		panic("assert_le: at least two arguments are required")
 	}
@@ -339,7 +368,8 @@ func _assert_le(ctx FuncContext, args []Value) Value {
 	return MakeUnknown()
 }
 
-func _assert_gt(ctx FuncContext, args []Value) Value {
+// assertGtFunc checks if the first value is greater than the second and reports an error if it's not.
+func assertGtFunc(ctx FuncContext, args []Value) Value {
 	if len(args) < 2 {
 		panic("assert_gt: at least two arguments are required")
 	}
@@ -349,7 +379,8 @@ func _assert_gt(ctx FuncContext, args []Value) Value {
 	return MakeUnknown()
 }
 
-func _assert_ge(ctx FuncContext, args []Value) Value {
+// assertGeFunc checks if the first value is greater than or equal to the second and reports an error if it's not.
+func assertGeFunc(ctx FuncContext, args []Value) Value {
 	if len(args) < 2 {
 		panic("assert_ge: at least two arguments are required")
 	}

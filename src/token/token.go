@@ -219,13 +219,13 @@ func (tok Token) IsOperator() bool { return operator_beg < tok && tok < operator
 // it returns false otherwise.
 func (tok Token) IsKeyword() bool { return keyword_beg < tok && tok < keyword_end }
 
-// IsKeyword reports whether name is a Go keyword, such as "func" or "return".
+// IsKeyword reports whether name is a Next keyword, such as "package" or "const".
 func IsKeyword(name string) bool {
 	_, ok := keywords[name]
 	return ok
 }
 
-// IsIdentifier reports whether name is a Go identifier, that is, a non-empty
+// IsIdentifier reports whether name is a Next identifier, that is, a non-empty
 // string made up of letters, digits, and underscores, where the first character
 // is not a digit. Keywords are not identifiers.
 func IsIdentifier(name string) bool {

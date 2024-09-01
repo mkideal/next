@@ -17,29 +17,25 @@ func sortComments(list []*CommentGroup) {
 	})
 }
 
-// A CommentMap maps an AST node to a list of comment groups
-// associated with it. See [NewCommentMap] for a description of
+// CommentMap maps an AST node to a list of comment groups
+// associated with it. See NewCommentMap for a description of
 // the association.
 type CommentMap map[Node][]*CommentGroup
 
+// addComment adds a comment to the CommentMap.
 func (cmap CommentMap) addComment(n Node, c *CommentGroup) {
-	list := cmap[n]
-	if len(list) == 0 {
-		list = []*CommentGroup{c}
-	} else {
-		list = append(list, c)
-	}
-	cmap[n] = list
+	cmap[n] = append(cmap[n], c)
 }
 
+// byInterval implements sort.Interface for sorting nodes by position.
 type byInterval []Node
 
-func (a byInterval) Len() int { return len(a) }
+func (a byInterval) Len() int      { return len(a) }
+func (a byInterval) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 func (a byInterval) Less(i, j int) bool {
 	pi, pj := a[i].Pos(), a[j].Pos()
 	return pi < pj || pi == pj && a[i].End() > a[j].End()
 }
-func (a byInterval) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 
 // nodeList returns the list of nodes of the AST n in source order.
 func nodeList(n Node) []Node {
@@ -54,34 +50,24 @@ func nodeList(n Node) []Node {
 		return true
 	})
 
-	// Note: The current implementation assumes that Inspect traverses the
-	//       AST in depth-first and thus _source_ order. If AST traversal
-	//       does not follow source order, the sorting call below will be
-	//       required.
-	// slices.Sort(list, func(a, b Node) int {
-	//       r := cmp.Compare(a.Pos(), b.Pos())
-	//       if r != 0 {
-	//               return r
-	//       }
-	//       return cmp.Compare(a.End(), b.End())
-	// })
-
 	return list
 }
 
-// A commentListReader helps iterating through a list of comment groups.
+// commentListReader helps iterating through a list of comment groups.
 type commentListReader struct {
 	fset     *token.FileSet
 	list     []*CommentGroup
 	index    int
-	comment  *CommentGroup  // comment group at current index
+	comment  *CommentGroup
 	pos, end token.Position // source interval of comment group at current index
 }
 
+// eol returns true if the reader has reached the end of the list.
 func (r *commentListReader) eol() bool {
 	return r.index >= len(r.list)
 }
 
+// next advances the reader to the next comment group.
 func (r *commentListReader) next() {
 	if !r.eol() {
 		r.comment = r.list[r.index]
@@ -91,7 +77,7 @@ func (r *commentListReader) next() {
 	}
 }
 
-// A nodeStack keeps track of nested nodes.
+// nodeStack keeps track of nested nodes.
 // A node lower on the stack lexically contains the nodes higher on the stack.
 type nodeStack []Node
 
@@ -99,7 +85,7 @@ type nodeStack []Node
 // and then pushes n on the stack.
 func (s *nodeStack) push(n Node) {
 	s.pop(n.Pos())
-	*s = append((*s), n)
+	*s = append(*s, n)
 }
 
 // pop pops all nodes that appear lexically before pos
@@ -111,7 +97,7 @@ func (s *nodeStack) pop(pos token.Pos) (top Node) {
 		top = (*s)[i-1]
 		i--
 	}
-	*s = (*s)[0:i]
+	*s = (*s)[:i]
 	return top
 }
 
@@ -141,7 +127,7 @@ func NewCommentMap(fset *token.FileSet, node Node, comments []*CommentGroup) Com
 	tmp := make([]*CommentGroup, len(comments))
 	copy(tmp, comments) // don't change incoming comments
 	sortComments(tmp)
-	r := commentListReader{fset: fset, list: tmp} // !r.eol() because len(comments) > 0
+	r := commentListReader{fset: fset, list: tmp}
 	r.next()
 
 	// create node list in lexical order
@@ -150,7 +136,7 @@ func NewCommentMap(fset *token.FileSet, node Node, comments []*CommentGroup) Com
 
 	// set up iteration variables
 	var (
-		p     Node           // previous node
+		p     Node
 		pend  token.Position // end of p
 		pg    Node           // previous node group (enclosing nodes of "importance")
 		pgend token.Position // end of pg
@@ -160,13 +146,12 @@ func NewCommentMap(fset *token.FileSet, node Node, comments []*CommentGroup) Com
 	for _, q := range nodes {
 		var qpos token.Position
 		if q != nil {
-			qpos = fset.Position(q.Pos()) // current node position
+			qpos = fset.Position(q.Pos())
 		} else {
 			// set fake sentinel position to infinity so that
 			// all comments get processed before the sentinel
-			const infinity = 1 << 30
-			qpos.Offset = infinity
-			qpos.Line = infinity
+			qpos.Offset = 1 << 30
+			qpos.Line = 1 << 30
 		}
 
 		// process comments before current node
@@ -185,11 +170,10 @@ func NewCommentMap(fset *token.FileSet, node Node, comments []*CommentGroup) Com
 			case pg != nil &&
 				(pgend.Line == r.pos.Line ||
 					pgend.Line+1 == r.pos.Line && r.end.Line+1 < qpos.Line):
-				// 1) comment starts on same line as previous node group ends, or
-				// 2) comment starts on the line immediately after the
-				//    previous node group and there is an empty line before
-				//    the current node
-				// => associate comment with previous node group
+				// comment starts on same line as previous node group ends, or
+				// comment starts on the line immediately after the
+				// previous node group and there is an empty line before
+				// the current node
 				assoc = pg
 			case p != nil &&
 				(pend.Line == r.pos.Line ||
@@ -201,8 +185,6 @@ func NewCommentMap(fset *token.FileSet, node Node, comments []*CommentGroup) Com
 			default:
 				// otherwise, associate comment with current node
 				if q == nil {
-					// we can only reach here if there was no p
-					// which would imply that there were no nodes
 					panic("internal error: no comments should be associated with sentinel")
 				}
 				assoc = q
@@ -264,31 +246,28 @@ func (cmap CommentMap) Comments() []*CommentGroup {
 	return list
 }
 
+// summary returns a condensed string representation of the given comment groups.
 func summary(list []*CommentGroup) string {
 	const maxLen = 40
 	var buf bytes.Buffer
 
-	// collect comments text
-loop:
 	for _, group := range list {
-		// Note: CommentGroup.Text() does too much work for what we
-		//       need and would only replace this innermost loop.
-		//       Just do it explicitly.
 		for _, comment := range group.List {
 			if buf.Len() >= maxLen {
-				break loop
+				break
 			}
 			buf.WriteString(comment.Text)
 		}
+		if buf.Len() >= maxLen {
+			break
+		}
 	}
 
-	// truncate if too long
 	if buf.Len() > maxLen {
 		buf.Truncate(maxLen - 3)
 		buf.WriteString("...")
 	}
 
-	// replace any invisibles with blanks
 	bytes := buf.Bytes()
 	for i, b := range bytes {
 		switch b {
@@ -300,8 +279,8 @@ loop:
 	return string(bytes)
 }
 
+// String returns a string representation of the CommentMap.
 func (cmap CommentMap) String() string {
-	// print map entries in sorted order
 	var nodes []Node
 	for node := range cmap {
 		nodes = append(nodes, node)
@@ -318,7 +297,6 @@ func (cmap CommentMap) String() string {
 	fmt.Fprintln(&buf, "CommentMap {")
 	for _, node := range nodes {
 		comment := cmap[node]
-		// print name of identifiers; print node type for other nodes
 		var s string
 		if ident, ok := node.(*Ident); ok {
 			s = ident.Name

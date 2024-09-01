@@ -228,12 +228,8 @@ func (p *parser) next() {
 	}
 }
 
-// A bailout panic is raised to indicate early termination. pos and msg are
-// only populated when bailing out of object resolution.
-type bailout struct {
-	pos token.Pos
-	msg string
-}
+// A bailout panic is raised to indicate early termination.
+type bailout struct{}
 
 func (p *parser) error(pos token.Pos, msg string) {
 	if p.trace {
@@ -1066,7 +1062,7 @@ func (p *parser) parseFile() *ast.File {
 	}
 
 	// Don't bother parsing the rest if we had errors scanning the first token.
-	// Likely not a Go source file at all.
+	// Likely not a Next source file at all.
 	if p.errors.Len() != 0 {
 		return nil
 	}
@@ -1075,16 +1071,14 @@ func (p *parser) parseFile() *ast.File {
 	doc := p.leadComment
 	annotations := p.parseAnnotationGroup()
 	pos := p.expect(token.PACKAGE)
-	// Go spec: The package clause is not a declaration;
-	// the package name does not appear in any scope.
 	ident := p.parseIdent()
-	if ident.Name == "_" && p.mode&DeclarationErrors != 0 {
+	if ident.Name == "_" {
 		p.error(p.pos, "invalid package name _")
 	}
 	p.expectSemi()
 
 	// Don't bother parsing the rest if we had errors parsing the package clause.
-	// Likely not a Go source file at all.
+	// Likely not a Next source file at all.
 	if p.errors.Len() != 0 {
 		return nil
 	}
@@ -1092,33 +1086,29 @@ func (p *parser) parseFile() *ast.File {
 	var decls []ast.Decl
 	var stmts []ast.Stmt
 	var imports []*ast.ImportDecl
-	if p.mode&PackageClauseOnly == 0 {
-		// import decls
-		for p.tok == token.IMPORT {
-			imports = append(imports, p.parseImportDecl())
+	// import decls
+	for p.tok == token.IMPORT {
+		imports = append(imports, p.parseImportDecl())
+	}
+
+	// rest of package body
+	prev := token.IMPORT
+	for p.tok != token.EOF {
+		// Continue to accept import declarations for error tolerance, but complain.
+		if p.tok == token.IMPORT && prev != token.IMPORT {
+			p.error(p.pos, "imports must appear before other declarations")
 		}
+		prev = p.tok
 
-		if p.mode&ImportsOnly == 0 {
-			// rest of package body
-			prev := token.IMPORT
-			for p.tok != token.EOF {
-				// Continue to accept import declarations for error tolerance, but complain.
-				if p.tok == token.IMPORT && prev != token.IMPORT {
-					p.error(p.pos, "imports must appear before other declarations")
-				}
-				prev = p.tok
-
-				node := p.parseDeclStmt()
-				switch node := node.(type) {
-				case ast.Decl:
-					if _, isImport := node.(*ast.ImportDecl); isImport {
-						p.error(node.Pos(), "imports must appear before other declarations")
-					}
-					decls = append(decls, node)
-				case ast.Stmt:
-					stmts = append(stmts, node)
-				}
+		node := p.parseDeclStmt()
+		switch node := node.(type) {
+		case ast.Decl:
+			if _, isImport := node.(*ast.ImportDecl); isImport {
+				p.error(node.Pos(), "imports must appear before other declarations")
 			}
+			decls = append(decls, node)
+		case ast.Stmt:
+			stmts = append(stmts, node)
 		}
 	}
 
