@@ -2,12 +2,15 @@ package main
 
 import (
 	"embed"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
+	"text/template"
 
 	"github.com/gopherd/core/builder"
 	"github.com/gopherd/core/flags"
@@ -147,7 +150,7 @@ func try(err any) {
 			}
 			fmt.Fprint(os.Stderr, sb.String())
 		} else {
-			fmt.Fprintln(os.Stderr, err)
+			fmt.Fprintln(os.Stderr, tryExtractTemplateTrace(err))
 		}
 		os.Exit(2)
 	case string:
@@ -159,4 +162,31 @@ func try(err any) {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
+}
+
+func tryExtractTemplateTrace(err error) error {
+	if err == nil {
+		return nil
+	}
+	var errs []error
+	for err != nil {
+		if e, ok := err.(template.ExecError); ok {
+			errs = append(errs, err)
+			err = e.Err
+		} else if e := errors.Unwrap(err); e != nil {
+			err = e
+		} else {
+			errs = append(errs, err)
+			break
+		}
+	}
+	for i := 0; i+1 < len(errs); i++ {
+		indent := strings.Repeat(" ", len(errs)-i-1)
+		errs[i] = errors.New(indent + strings.TrimSuffix(strings.TrimPrefix(strings.TrimSuffix(
+			strings.TrimSpace(errs[i].Error()),
+			strings.TrimSpace(errs[i+1].Error()),
+		), "template: "), ": "))
+	}
+	slices.Reverse(errs)
+	return errors.Join(errs...)
 }

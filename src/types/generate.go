@@ -344,7 +344,7 @@ func gen[T Decl](tc *templateContext[T], t *template.Template, mt templateMeta[*
 	}
 	tc.buf.Reset()
 	if err := t.Execute(&tc.buf, tc); err != nil {
-		return fmt.Errorf("failed to execute template: %v", err)
+		return err
 	}
 
 	// write the generated content to the output file

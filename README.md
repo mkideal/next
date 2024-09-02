@@ -71,9 +71,7 @@ For detailed information on Next's syntax, features, and usage, please visit the
 
 ## 📝 TODO
 
-- [ ] Implement annotation solver functionality to call external programs for calculating annotation parameters
 - [ ] Implement vscode extensions to support Next source and Next template
-- [ ] Handle template call stack for traceable error output
 - [ ] Implement consistency check for enum member types and provide type of enum value
 - [ ] Implement import dirs for importing files
 - [ ] Create comprehensive user documentation, supporting both Chinese and English

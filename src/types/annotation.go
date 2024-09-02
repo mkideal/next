@@ -113,6 +113,9 @@ func (c *Context) solveAnnotations() error {
 	programs := make(map[string][][]string)
 	keys := make([]string, 0, len(c.flags.solvers))
 	for name, solvers := range c.flags.solvers {
+		if name == "next" {
+			return fmt.Errorf("'next' is a reserved annotation for the next compiler, please don't use solvers for it")
+		}
 		keys = append(keys, name)
 		for _, solver := range solvers {
 			words, err := parser.Parse(solver)

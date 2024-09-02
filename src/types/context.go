@@ -155,6 +155,7 @@ func (c *Context) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 		"Annotation solvers are executed in a separate process to solve annotations.\n"+
 		"All annotations are passed to the solver program via stdin and stdout.\n"+
 		"See the documentation for more information on annotation solvers.\n"+
+		b("NOTE")+": built-in annotation 'next' is reserved for the Next compiler.\n"+
 		"Example:\n"+
 		"  -X message=\"message-type-allocator -f message-types.json\"\n",
 	))

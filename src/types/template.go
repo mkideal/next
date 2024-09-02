@@ -56,7 +56,7 @@ func resolveMeta[T Decl](metaTemplates templateMeta[*template.Template], data *t
 	for k, t := range metaTemplates {
 		v, err := executeTemplate(t.content, data)
 		if err != nil {
-			return nil, fmt.Errorf("failed to execute template %q: %v", v, err)
+			return nil, err
 		}
 		switch k {
 		case "overwrite":
@@ -202,7 +202,7 @@ func createTemplate(name, content string, funcs template.FuncMap) (*template.Tem
 func executeTemplate(t *template.Template, data any) (string, error) {
 	var buf bytes.Buffer
 	if err := t.Execute(&buf, data); err != nil {
-		return "", fmt.Errorf("failed to execute template: %v", err)
+		return "", err
 	}
 	return buf.String(), nil
 }
@@ -720,7 +720,7 @@ func (tc *templateContext[T]) renderWithNames(names []string, data any) (result 
 	}()
 	start := tc.buf.Len()
 	if err := tt.Execute(&tc.buf, data); err != nil {
-		return "", fmt.Errorf("failed to execute template %q: %v", tt.Name(), err)
+		return "", err
 	}
 	result = tc.buf.String()[start:]
 	tc.buf.Truncate(start)
