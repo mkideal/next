@@ -34,39 +34,39 @@ var Funcs = map[string]any{
 
 	// String functions
 
-	"quote":       Chain(StringFunc(NoError(strconv.Quote))),
-	"unquote":     Chain(StringFunc(strconv.Unquote)),
-	"capitalize":  Chain(StringFunc(NoError(capitalize))),
-	"lower":       Chain(StringFunc(NoError(strings.ToLower))),
-	"upper":       Chain(StringFunc(NoError(strings.ToUpper))),
+	"quote":       Chain(StringFunc("quote", NoError(strconv.Quote))),
+	"unquote":     Chain(StringFunc("unquote", strconv.Unquote)),
+	"capitalize":  Chain(StringFunc("capitalize", NoError(capitalize))),
+	"lower":       Chain(StringFunc("lower", NoError(strings.ToLower))),
+	"upper":       Chain(StringFunc("upper", NoError(strings.ToUpper))),
 	"replace":     Chain3(replace),
 	"replaceN":    Chain4(replaceN),
-	"trim":        Chain(StringFunc(NoError(strings.TrimSpace))),
+	"trim":        Chain(StringFunc("trim", NoError(strings.TrimSpace))),
 	"trimPrefix":  Chain2(trimPrefix),
 	"hasPrefix":   Chain2(hasPrefix),
 	"trimSuffix":  Chain2(trimSuffix),
 	"hasSuffix":   Chain2(hasSuffix),
 	"split":       Chain2(split),
 	"join":        Chain2(join),
-	"striptags":   Chain(StringFunc(striptags)),
+	"striptags":   Chain(StringFunc("striptags", striptags)),
 	"substr":      Chain3(substr),
 	"repeat":      Chain2(repeat),
-	"camelCase":   Chain(StringFunc(NoError(camelCase))),
-	"pascalCase":  Chain(StringFunc(NoError(pascalCase))),
-	"snakeCase":   Chain(StringFunc(NoError(snakeCase))),
-	"kebabCase":   Chain(StringFunc(NoError(kebabCase))),
+	"camelCase":   Chain(StringFunc("camelCase", NoError(camelCase))),
+	"pascalCase":  Chain(StringFunc("pascalCase", NoError(pascalCase))),
+	"snakeCase":   Chain(StringFunc("snakeCase", NoError(snakeCase))),
+	"kebabCase":   Chain(StringFunc("kebabCase", NoError(kebabCase))),
 	"truncate":    Chain3(truncate),
 	"wordwrap":    Chain2(wordwrap),
 	"center":      Chain2(center),
 	"matchRegex":  Chain2(matchRegex),
-	"html":        Chain(StringFunc(NoError(html.EscapeString))),
-	"urlquery":    Chain(StringFunc(NoError(url.QueryEscape))),
-	"urlUnescape": Chain(StringFunc(url.QueryUnescape)),
+	"html":        Chain(StringFunc("html", NoError(html.EscapeString))),
+	"urlquery":    Chain(StringFunc("urlquery", NoError(url.QueryEscape))),
+	"urlUnescape": Chain(StringFunc("urlUnescape", url.QueryUnescape)),
 
 	// Encoding functions
 
-	"b64enc": Chain(StringFunc(NoError(b64enc))),
-	"b64dec": Chain(StringFunc(b64dec)),
+	"b64enc": Chain(StringFunc("b64enc", NoError(b64enc))),
+	"b64dec": Chain(StringFunc("b64dec", b64dec)),
 
 	// List functions
 
@@ -103,10 +103,6 @@ var Funcs = map[string]any{
 
 	"now":       time.Now,
 	"parseTime": parseTime,
-
-	// Conditional functions
-
-	"ternary": ternary,
 }
 
 // String functions
@@ -405,7 +401,7 @@ func first(v reflect.Value) (reflect.Value, error) {
 			}
 			return reflect.ValueOf(s[0]), nil
 		}
-		return reflect.Value{}, fmt.Errorf("first: unsupported type %s", v.Type())
+		return reflect.Value{}, fmt.Errorf("first: expected slice, array or string, got %s", v.Type())
 	}
 }
 
@@ -423,7 +419,7 @@ func last(v reflect.Value) (reflect.Value, error) {
 			}
 			return reflect.ValueOf(s[len(s)-1]), nil
 		}
-		return reflect.Value{}, fmt.Errorf("last: unsupported type %s", v.Type())
+		return reflect.Value{}, fmt.Errorf("last: expected slice, array or string, got %s", v.Type())
 	}
 }
 
@@ -448,13 +444,13 @@ func reverse(v reflect.Value) (reflect.Value, error) {
 		if s, ok := asString(v); ok {
 			return reflect.ValueOf(reverseString(s)), nil
 		}
-		return reflect.Value{}, fmt.Errorf("reverse: unsupported type %s", v.Type())
+		return reflect.Value{}, fmt.Errorf("reverse: expected slice, array or string, got %s", v.Type())
 	}
 }
 
 func sortSlice(v reflect.Value) (reflect.Value, error) {
 	if v.Kind() != reflect.Slice && v.Kind() != reflect.Array {
-		return reflect.Value{}, fmt.Errorf("sortSlice: expected slice or array, got %s", v.Type())
+		return reflect.Value{}, fmt.Errorf("sort: expected slice or array, got %s", v.Type())
 	}
 	isInt := true
 	isUint := true
@@ -494,7 +490,7 @@ func sortSlice(v reflect.Value) (reflect.Value, error) {
 		if s, ok := asString(v.Index(i)); ok {
 			sorted = append(sorted, s)
 		} else {
-			return reflect.Value{}, fmt.Errorf("sortSlice: expected slice of numbers or strings, got %s", v.Type())
+			return reflect.Value{}, fmt.Errorf("sort: expected slice of numbers or strings, got %s", v.Type())
 		}
 	}
 	slices.Sort(sorted)
@@ -503,7 +499,7 @@ func sortSlice(v reflect.Value) (reflect.Value, error) {
 
 func uniq(v reflect.Value) (reflect.Value, error) {
 	if v.Kind() != reflect.Slice && v.Kind() != reflect.Array {
-		return reflect.Value{}, fmt.Errorf("uniq: unsupported type %s", v.Type())
+		return reflect.Value{}, fmt.Errorf("uniq: expected slice or array, got %s", v.Type())
 	}
 
 	length := v.Len()
@@ -538,7 +534,7 @@ func includes(item, collection reflect.Value) (reflect.Value, error) {
 				return reflect.ValueOf(ContainsWord(s, i)), nil
 			}
 		}
-		return reflect.Value{}, fmt.Errorf("includes: unsupported collection type %s", collection.Type())
+		return reflect.Value{}, fmt.Errorf("includes: expected slice, array, map or string as second argument, got %s", collection.Type())
 	}
 }
 
@@ -853,16 +849,4 @@ func timeFormat(t time.Time, layout string) string {
 
 func parseTime(layout, value string) (time.Time, error) {
 	return time.Parse(layout, value)
-}
-
-// Conditional functions
-
-func ternary(cond, trueVal, falseVal reflect.Value) (reflect.Value, error) {
-	if cond.Kind() != reflect.Bool {
-		return reflect.Value{}, fmt.Errorf("ternary: condition must be bool, got %s", cond.Type())
-	}
-	if cond.Bool() {
-		return trueVal, nil
-	}
-	return falseVal, nil
 }

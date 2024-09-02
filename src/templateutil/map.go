@@ -165,11 +165,11 @@ func NoError2[T1, T2, U any](f func(T1, T2) U) func(T1, T2) (U, error) {
 
 // StringFunc converts a function that takes a string and returns a string to a funtion
 // that takes a reflect.Value and returns a reflect.Value.
-func StringFunc(f func(string) (string, error)) Func {
+func StringFunc(name string, f func(string) (string, error)) Func {
 	return func(v reflect.Value) (reflect.Value, error) {
 		s, ok := asString(v)
 		if !ok {
-			return reflect.Value{}, fmt.Errorf("expected string, got %s", v.Type())
+			return reflect.Value{}, fmt.Errorf("%s: expected string, got %s", name, v.Type())
 		}
 		r, err := f(s)
 		return reflect.ValueOf(r), err
