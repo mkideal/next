@@ -5,21 +5,167 @@ import (
 	"reflect"
 )
 
-type ConverterFunc func(...reflect.Value) (reflect.Value, error)
+// Func is a function that converts a reflect.Value to another reflect.Value.
+type Func func(reflect.Value) (reflect.Value, error)
 
-func noError[T, U any](f func(T) U) func(T) (U, error) {
+// Func2 is a function that converts a T and a reflect.Value to another reflect.Value.
+type Func2[T any] func(T, reflect.Value) (reflect.Value, error)
+
+// Func3 is a function that converts a T1, T2 and a reflect.Value to another reflect.Value.
+type Func3[T1, T2 any] func(T1, T2, reflect.Value) (reflect.Value, error)
+
+// Func4 is a function that converts a T1, T2, T3 and a reflect.Value to another reflect.Value.
+type Func4[T1, T2, T3 any] func(T1, T2, T3, reflect.Value) (reflect.Value, error)
+
+// FuncChain is a function chain that can be used to convert values.
+//
+// The function must accept 0 or 1 arguments.
+//
+// If the function accepts 0 arguments, it returns itself (the function).
+// If the function accepts 1 argument and the argument is a FuncChain, it returns a new FuncChain
+// that chains the two functions.
+// Otherwise, it returns the result of calling the function with the argument.
+type FuncChain func(zeroOrOneArgument ...reflect.Value) (reflect.Value, error)
+
+// FuncChain2 is a function chain that can be used to convert values.
+type FuncChain2[T any] func(T, ...reflect.Value) (reflect.Value, error)
+
+// FuncChain3 is a function chain that can be used to convert values.
+type FuncChain3[T1, T2 any] func(T1, T2, ...reflect.Value) (reflect.Value, error)
+
+// FuncChain4 is a function chain that can be used to convert values.
+type FuncChain4[T1, T2, T3 any] func(T1, T2, T3, ...reflect.Value) (reflect.Value, error)
+
+// Chain returns a FuncChain that chains the given function.
+func Chain(f Func) FuncChain {
+	var self FuncChain
+	self = FuncChain(func(values ...reflect.Value) (reflect.Value, error) {
+		return Call(self, f, values...)
+	})
+	return self
+}
+
+// Chain2 returns a FuncChain that chains the given function.
+func Chain2[T any](f Func2[T]) FuncChain2[T] {
+	return func(x T, argument ...reflect.Value) (reflect.Value, error) {
+		var self FuncChain
+		self = FuncChain(func(arg ...reflect.Value) (reflect.Value, error) {
+			return Call(self, func(y reflect.Value) (reflect.Value, error) {
+				return f(x, y)
+			}, arg...)
+		})
+		return self(argument...)
+	}
+}
+
+// Chain3 returns a FuncChain that chains the given function.
+func Chain3[T1, T2 any](f Func3[T1, T2]) FuncChain3[T1, T2] {
+	return func(x T1, y T2, argument ...reflect.Value) (reflect.Value, error) {
+		var self FuncChain
+		self = FuncChain(func(arg ...reflect.Value) (reflect.Value, error) {
+			return Call(self, func(z reflect.Value) (reflect.Value, error) {
+				return f(x, y, z)
+			}, arg...)
+		})
+		return self(argument...)
+	}
+}
+
+// Chain4 returns a FuncChain that chains the given function.
+func Chain4[T1, T2, T3 any](f Func4[T1, T2, T3]) FuncChain4[T1, T2, T3] {
+	return func(x T1, y T2, z T3, argument ...reflect.Value) (reflect.Value, error) {
+		var self FuncChain
+		self = FuncChain(func(arg ...reflect.Value) (reflect.Value, error) {
+			return Call(self, func(w reflect.Value) (reflect.Value, error) {
+				return f(x, y, z, w)
+			}, arg...)
+		})
+		return self(argument...)
+	}
+}
+
+// Call calls the given function with the given arguments in the function chain.
+// If no arguments are given, it returns the function chain itself.
+// If one argument is given and it is a FuncChain, it returns a new FuncChain that
+// chains the two functions.
+// Otherwise, it returns the result of calling the function with the argument.
+func Call(fc FuncChain, f Func, argument ...reflect.Value) (reflect.Value, error) {
+	if len(argument) == 0 {
+		// Return self if no arguments are given.
+		return reflect.ValueOf(fc), nil
+	}
+	if len(argument) > 1 {
+		return reflect.Value{}, fmt.Errorf("expected 0 or 1 arguments, got %d", len(argument))
+	}
+	v := argument[0]
+	if v.Kind() != reflect.Func {
+		return f(v)
+	}
+	if !v.CanInterface() {
+		return reflect.Value{}, fmt.Errorf("function is not exported")
+	}
+	c, ok := v.Interface().(FuncChain)
+	if !ok {
+		return reflect.Value{}, fmt.Errorf("expected function chain, got %s", v.Type())
+	}
+	return reflect.ValueOf(c.Then(f)), nil
+}
+
+// Value returns the reflect.Value of the function chain.
+func (f FuncChain) Value() reflect.Value {
+	return reflect.ValueOf(f)
+}
+
+// Then returns a new function chain that chains the given function with the current function chain.
+func (f FuncChain) Then(next Func) FuncChain {
+	return Chain(func(v reflect.Value) (reflect.Value, error) {
+		v, err := f(v)
+		if err != nil {
+			return reflect.Value{}, err
+		}
+		return next(v)
+	})
+}
+
+// Map maps the given value to a slice of values using the given function chain.
+func Map(f FuncChain, v reflect.Value) (reflect.Value, error) {
+	if v.Kind() != reflect.Slice && v.Kind() != reflect.Array {
+		return reflect.Value{}, fmt.Errorf("map: expected slice or array, got %s", v.Type())
+	}
+	if v.Len() == 0 {
+		return reflect.MakeSlice(reflect.SliceOf(v.Type().Elem()), 0, 0), nil
+	}
+	var result reflect.Value
+	for i := 0; i < v.Len(); i++ {
+		r, err := f(v.Index(i))
+		if err != nil {
+			return reflect.Value{}, err
+		}
+		if i == 0 {
+			result = reflect.MakeSlice(reflect.SliceOf(r.Type()), v.Len(), v.Len())
+		}
+		result.Index(i).Set(r)
+	}
+	return result, nil
+}
+
+// NoError returns a function that calls the given function and returns the result and nil.
+func NoError[T, U any](f func(T) U) func(T) (U, error) {
 	return func(s T) (U, error) {
 		return f(s), nil
 	}
 }
 
-func noError2[T1, T2, U any](f func(T1, T2) U) func(T1, T2) (U, error) {
+// NoError2 returns a function that calls the given function and returns the result and nil.
+func NoError2[T1, T2, U any](f func(T1, T2) U) func(T1, T2) (U, error) {
 	return func(t1 T1, t2 T2) (U, error) {
 		return f(t1, t2), nil
 	}
 }
 
-func stringFunc(f func(string) (string, error)) func(reflect.Value) (reflect.Value, error) {
+// StringFunc converts a function that takes a string and returns a string to a funtion
+// that takes a reflect.Value and returns a reflect.Value.
+func StringFunc(f func(string) (string, error)) Func {
 	return func(v reflect.Value) (reflect.Value, error) {
 		s, ok := asString(v)
 		if !ok {
@@ -28,165 +174,4 @@ func stringFunc(f func(string) (string, error)) func(reflect.Value) (reflect.Val
 		r, err := f(s)
 		return reflect.ValueOf(r), err
 	}
-}
-
-func stringFunc2(f func(string, string) (string, error)) func(reflect.Value, reflect.Value) (reflect.Value, error) {
-	return func(v1, v2 reflect.Value) (reflect.Value, error) {
-		s1, ok := asString(v1)
-		if !ok {
-			return reflect.Value{}, fmt.Errorf("expected first argument to be string, got %s", v1.Type())
-		}
-		s2, ok := asString(v2)
-		if !ok {
-			return reflect.Value{}, fmt.Errorf("expected second argument to be string, got %s", v2.Type())
-		}
-		r, err := f(s1, s2)
-		return reflect.ValueOf(r), err
-	}
-}
-
-// conv returns a ConverterFunc that converts a value to another value using the given function.
-func conv(f func(reflect.Value) (reflect.Value, error)) ConverterFunc {
-	var self ConverterFunc
-	self = ConverterFunc(func(values ...reflect.Value) (reflect.Value, error) {
-		return doConvert(self, f, values...)
-	})
-	return self
-}
-
-func doConvert(self ConverterFunc, f func(reflect.Value) (reflect.Value, error), values ...reflect.Value) (reflect.Value, error) {
-	if len(values) == 0 {
-		// Return self if no arguments are given.
-		return reflect.ValueOf(self), nil
-	}
-	if len(values) > 1 {
-		return reflect.Value{}, fmt.Errorf("expected 0 or 1 arguments, got %d", len(values))
-	}
-	v := values[0]
-	c, err := asConverterFunc(v)
-	if err != nil {
-		return reflect.Value{}, err
-	}
-	if c != nil {
-		return reflect.ValueOf(c.thenAny(f)), nil
-	}
-	return f(v)
-}
-
-func conv2[T any](f func(T, reflect.Value) (reflect.Value, error)) func(T, ...reflect.Value) (reflect.Value, error) {
-	return func(x T, values ...reflect.Value) (reflect.Value, error) {
-		var self ConverterFunc
-		self = ConverterFunc(func(values ...reflect.Value) (reflect.Value, error) {
-			return doConvert(self, func(y reflect.Value) (reflect.Value, error) {
-				return f(x, y)
-			}, values...)
-		})
-		return self(values...)
-	}
-}
-
-func conv3[T1, T2 any](f func(T1, T2, reflect.Value) (reflect.Value, error)) func(T1, T2, ...reflect.Value) (reflect.Value, error) {
-	return func(x T1, y T2, values ...reflect.Value) (reflect.Value, error) {
-		var self ConverterFunc
-		self = ConverterFunc(func(values ...reflect.Value) (reflect.Value, error) {
-			return doConvert(self, func(z reflect.Value) (reflect.Value, error) {
-				return f(x, y, z)
-			}, values...)
-		})
-		return self(values...)
-	}
-}
-
-// convs returns a ConverterFunc that converts a string to another string using the given function.
-func convs(f func(string) (string, error)) ConverterFunc {
-	return conv(stringFunc(f))
-}
-
-func conv2s(f func(string, string) (string, error)) func(reflect.Value, ...reflect.Value) (reflect.Value, error) {
-	return conv2(stringFunc2(f))
-}
-
-func asConverterFunc(v reflect.Value) (ConverterFunc, error) {
-	if v.Kind() != reflect.Func {
-		return nil, nil
-	}
-	c, ok := v.Interface().(ConverterFunc)
-	if !ok {
-		return nil, fmt.Errorf("expected ConverterFunc, got %s", v.Type())
-	}
-	return c, nil
-}
-
-func (f ConverterFunc) value() reflect.Value {
-	return reflect.ValueOf(f)
-}
-
-func (f ConverterFunc) Convert(v reflect.Value) (reflect.Value, error) {
-	v, err := f(v)
-	if err != nil {
-		return reflect.Value{}, err
-	}
-	return v, nil
-}
-
-func (f ConverterFunc) then(next func(string) (string, error)) ConverterFunc {
-	return convs(func(s string) (string, error) {
-		v, err := f.Convert(reflect.ValueOf(s))
-		if err != nil {
-			return "", err
-		}
-		s, ok := asString(v)
-		if !ok {
-			return "", fmt.Errorf("expected string, got %s", v.Type())
-		}
-		return next(s)
-	})
-}
-
-func (f ConverterFunc) thenAny(next func(reflect.Value) (reflect.Value, error)) ConverterFunc {
-	return conv(func(v reflect.Value) (reflect.Value, error) {
-		v, err := f.Convert(v)
-		if err != nil {
-			return reflect.Value{}, err
-		}
-		return next(v)
-	})
-}
-
-func mapFunc(c ConverterFunc, v reflect.Value) ([]string, error) {
-	ss, err := toStrings(v)
-	if err != nil {
-		return nil, err
-	}
-	r := make([]string, 0, len(ss))
-	if len(ss) == 0 {
-		return r, nil
-	}
-	for _, s := range ss {
-		v, err := c.Convert(reflect.ValueOf(s))
-		if err != nil {
-			return nil, err
-		}
-		if s, ok := asString(v); !ok {
-			return nil, fmt.Errorf("expected string, got %s", v.Type())
-		} else {
-			r = append(r, s)
-		}
-	}
-	return r, nil
-}
-
-func compositeConverters(converters ...ConverterFunc) (ConverterFunc, error) {
-	c := converters[len(converters)-1]
-	for i := len(converters) - 2; i >= 0; i-- {
-		r, err := c(reflect.ValueOf(converters[i]))
-		if err != nil {
-			return nil, err
-		}
-		if r.Kind() != reflect.Func {
-			return nil, fmt.Errorf("expected func, got %s", r.Type())
-		}
-		c = r.Interface().(ConverterFunc)
-	}
-	return c, nil
 }

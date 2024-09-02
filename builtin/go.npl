@@ -4,16 +4,16 @@ package {{.Package.Name}}
 {{- end}}
 
 {{- define "next/go/imports" -}}
-{{render "go/imports.decl" . -}}
-{{render "go/imports.unused" . -}}
+{{render "go/imports:decl" . -}}
+{{render "go/imports:unused" . -}}
 {{- end}}
 
-{{- define "next/go/imports.decl" -}}
+{{- define "next/go/imports:decl" -}}
 {{ _ }}
 import "strconv"
 {{- if .File.Annotations.next.go_imports}}
-{{- range (.File.Annotations.next.go_imports | split "," | map (split "." | first | trimPrefix "*") | sort | uniq)}}
-import "{{. | trimPrefix "*"}}"
+{{- range (.File.Annotations.next.go_imports | split "," | map (trim | split "." | first | trimPrefix "*") | sort | uniq)}}
+import "{{.}}"
 {{- end}}
 {{- end}}
 {{range .TrimmedList}}
@@ -28,7 +28,7 @@ import "{{. | trimPrefix "*"}}"
 import {{.File.Package.Name}} {{.File.Package.Annotations.next.go_package -}}
 {{- end}}
 
-{{- define "next/go/imports.unused" -}}
+{{- define "next/go/imports:unused" -}}
 {{ _ }}
 var _ = strconv.Itoa
 {{- if .File.Annotations.next.go_imports}}
@@ -47,13 +47,13 @@ var _ = {{$pkg}}.{{$val}}
 {{ _ }}
     {{- range $p := .TrimmedList}}
         {{- if len .File.Package.Types}}
-            {{- render "go/import.unused" .}}
+            {{- render "go/import:unused" .}}
 {{ _ }}
         {{- end}}
     {{- end}}
 {{- end}}
 
-{{- define "next/go/import.unused" -}}
+{{- define "next/go/import:unused" -}}
 var _ = (*{{.File.Package.Name}}.{{next (index (.File.Package.Types) 0)}})(nil)
 {{- end}}
 

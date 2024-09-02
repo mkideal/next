@@ -3,7 +3,7 @@
     // import "net/http" for go_alias "net/http.HandlerFunc"
     // import "fmt" for demonstrating import with go type
     //
-    // - path/to/pkg.Func
+    // - path/to/pkg.Func (or Var, Const, etc.)
     // - *path/to/pkg.Type
     //
     // Please don't duplicate the import path, like: "net/http.HandlerFunc", "*net/http.Server"

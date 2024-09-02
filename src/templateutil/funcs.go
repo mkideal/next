@@ -9,12 +9,19 @@ import (
 	"net/url"
 	"reflect"
 	"regexp"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
 	"unicode"
 )
+
+// ContainsWord returns true if the given word is found in the string s.
+func ContainsWord(s, word string) bool {
+	pattern := fmt.Sprintf(`\b%s\b`, regexp.QuoteMeta(word))
+	matched, _ := regexp.MatchString(pattern, s)
+	return matched
+}
 
 // Funcs is a map of utility functions for use in templates
 var Funcs = map[string]any{
@@ -22,74 +29,75 @@ var Funcs = map[string]any{
 	// It's useful to place a newline in the template.
 	"_": func() string { return "" },
 
-	// map maps a list of values using the given converter.
-	"map": mapFunc,
+	// map maps a list of values using the given function and returns a list of results.
+	"map": Chain2(Map),
 
 	// String functions
 
-	"quote":       convs(noError(strconv.Quote)),
-	"unquote":     convs(strconv.Unquote),
-	"capitalize":  convs(noError(capitalize)),
-	"lower":       convs(noError(strings.ToLower)),
-	"upper":       convs(noError(strings.ToUpper)),
-	"replace":     replace,
-	"trim":        convs(noError(strings.TrimSpace)),
-	"trimPrefix":  conv2s(trimPrefix),
-	"hasPrefix":   hasPrefix,
-	"trimSuffix":  conv2s(trimSuffix),
-	"hasSuffix":   hasSuffix,
-	"split":       conv2(split),
-	"join":        conv2(join),
-	"striptags":   convs(striptags),
-	"substr":      conv3(substr),
-	"repeat":      conv2(repeat),
-	"camelCase":   convs(noError(camelCase)),
-	"pascalCase":  convs(noError(pascalCase)),
-	"snakeCase":   convs(noError(snakeCase)),
-	"kebabCase":   convs(noError(kebabCase)),
-	"truncate":    conv3(truncate),
-	"wordwrap":    conv2(wordwrap),
-	"center":      conv2(center),
-	"matchRegex":  matchRegex,
-	"html":        convs(noError(html.EscapeString)),
-	"urlquery":    convs(noError(url.QueryEscape)),
-	"urlUnescape": convs(url.QueryUnescape),
+	"quote":       Chain(StringFunc(NoError(strconv.Quote))),
+	"unquote":     Chain(StringFunc(strconv.Unquote)),
+	"capitalize":  Chain(StringFunc(NoError(capitalize))),
+	"lower":       Chain(StringFunc(NoError(strings.ToLower))),
+	"upper":       Chain(StringFunc(NoError(strings.ToUpper))),
+	"replace":     Chain3(replace),
+	"replaceN":    Chain4(replaceN),
+	"trim":        Chain(StringFunc(NoError(strings.TrimSpace))),
+	"trimPrefix":  Chain2(trimPrefix),
+	"hasPrefix":   Chain2(hasPrefix),
+	"trimSuffix":  Chain2(trimSuffix),
+	"hasSuffix":   Chain2(hasSuffix),
+	"split":       Chain2(split),
+	"join":        Chain2(join),
+	"striptags":   Chain(StringFunc(striptags)),
+	"substr":      Chain3(substr),
+	"repeat":      Chain2(repeat),
+	"camelCase":   Chain(StringFunc(NoError(camelCase))),
+	"pascalCase":  Chain(StringFunc(NoError(pascalCase))),
+	"snakeCase":   Chain(StringFunc(NoError(snakeCase))),
+	"kebabCase":   Chain(StringFunc(NoError(kebabCase))),
+	"truncate":    Chain3(truncate),
+	"wordwrap":    Chain2(wordwrap),
+	"center":      Chain2(center),
+	"matchRegex":  Chain2(matchRegex),
+	"html":        Chain(StringFunc(NoError(html.EscapeString))),
+	"urlquery":    Chain(StringFunc(NoError(url.QueryEscape))),
+	"urlUnescape": Chain(StringFunc(url.QueryUnescape)),
 
 	// Encoding functions
 
-	"b64enc": convs(noError(b64enc)),
-	"b64dec": convs(b64dec),
+	"b64enc": Chain(StringFunc(NoError(b64enc))),
+	"b64dec": Chain(StringFunc(b64dec)),
 
 	// List functions
 
 	"list":     list,
-	"first":    conv(first),
-	"last":     conv(last),
-	"reverse":  conv(reverse),
-	"sort":     conv(sortStrings),
-	"uniq":     conv(uniq),
-	"includes": includes,
+	"first":    Chain(first),
+	"last":     Chain(last),
+	"reverse":  Chain(reverse),
+	"sort":     Chain(sortSlice),
+	"uniq":     Chain(uniq),
+	"includes": Chain2(includes),
 
 	// Math functions
 
-	"add":   conv2(add),
-	"sub":   conv2(sub),
-	"mul":   conv2(mul),
-	"quo":   conv2(quo),
-	"rem":   conv2(rem),
-	"mod":   conv2(mod),
-	"ceil":  conv(ceil),
-	"floor": conv(floor),
-	"round": conv2(round),
-	"min":   min,
-	"max":   max,
+	"add":   Chain2(add),
+	"sub":   Chain2(sub),
+	"mul":   Chain2(mul),
+	"quo":   Chain2(quo),
+	"rem":   Chain2(rem),
+	"mod":   Chain2(mod),
+	"ceil":  Chain(ceil),
+	"floor": Chain(floor),
+	"round": Chain2(round),
+	"min":   minFunc,
+	"max":   maxFunc,
 
 	// Type conversion functions
 
-	"int":    conv(toInt64),
-	"float":  conv(toFloat64),
-	"string": conv(toString),
-	"bool":   conv(toBool),
+	"int":    Chain(toInt64),
+	"float":  Chain(toFloat64),
+	"string": Chain(toString),
+	"bool":   Chain(toBool),
 
 	// Date functions
 
@@ -111,89 +119,52 @@ func capitalize(s string) string {
 	return string(unicode.ToUpper(r[0])) + string(r[1:])
 }
 
-func replace(old, new string, args ...reflect.Value) (reflect.Value, error) {
-	switch len(args) {
-	case 0:
-		return convs(noError(func(s string) string {
-			return strings.Replace(s, old, new, -1)
-		})).value(), nil
-	case 1:
-		if s, ok := asString(args[0]); ok {
-			return reflect.ValueOf(strings.Replace(s, old, new, -1)), nil
-		} else if n, err := toInt64(args[0]); err == nil {
-			return convs(noError(func(s string) string {
-				return strings.Replace(s, old, new, int(n.Int()))
-			})).value(), nil
-		} else if c, err := asConverterFunc(args[0]); err != nil {
-			return reflect.Value{}, err
-		} else if c != nil {
-			return reflect.ValueOf(c.then(func(s string) (string, error) {
-				return strings.Replace(s, old, new, -1), nil
-			})), nil
-		} else {
-			return reflect.Value{}, fmt.Errorf("replace: expected string, int or ConverterFunc, got %s", args[0].Type())
-		}
-	case 2:
-		n, err := toInt64(args[0])
-		if err != nil {
-			return reflect.Value{}, err
-		}
-		s, ok := asString(args[1])
-		if ok {
-			return reflect.ValueOf(strings.Replace(s, old, new, int(n.Int()))), nil
-		}
-		if c, err := asConverterFunc(args[1]); err != nil {
-			return reflect.Value{}, err
-		} else if c != nil {
-			return reflect.ValueOf(c.then(func(s string) (string, error) {
-				return strings.Replace(s, old, new, int(n.Int())), nil
-			})), nil
-		} else {
-			return reflect.Value{}, fmt.Errorf("replace: expected string or ConverterFunc, got %s", args[1].Type())
-		}
-	default:
-		return reflect.Value{}, fmt.Errorf("replace: expected 0, 1 or 2 arguments, got %d", len(args))
-	}
-}
-
-func trimSpace(v reflect.Value) (string, error) {
+func replace(old, new string, v reflect.Value) (reflect.Value, error) {
 	s, ok := asString(v)
 	if !ok {
-		return "", fmt.Errorf("trim: expected string, got %s", v.Type())
+		return reflect.Value{}, fmt.Errorf("replace: expected string as third argument, got %s", v.Type())
 	}
-	return strings.TrimSpace(s), nil
+	return reflect.ValueOf(strings.Replace(s, old, new, -1)), nil
 }
 
-func trimPrefix(prefix, v string) (string, error) {
-	return strings.TrimPrefix(v, prefix), nil
+func replaceN(old, new string, n int, v reflect.Value) (reflect.Value, error) {
+	s, ok := asString(v)
+	if !ok {
+		return reflect.Value{}, fmt.Errorf("replaceN: expected string as fourth argument, got %s", v.Type())
+	}
+	return reflect.ValueOf(strings.Replace(s, old, new, n)), nil
 }
 
-func hasPrefix(prefix, v reflect.Value) (bool, error) {
-	sp, ok := asString(prefix)
+func trimPrefix(prefix string, v reflect.Value) (reflect.Value, error) {
+	s, ok := asString(v)
 	if !ok {
-		return false, fmt.Errorf("hasPrefix: expected string as first argument, got %s", prefix.Type())
+		return reflect.Value{}, fmt.Errorf("trimPrefix: expected string as second argument, got %s", v.Type())
 	}
-	sv, ok := asString(v)
-	if !ok {
-		return false, fmt.Errorf("hasPrefix: expected string as second argument, got %s", v.Type())
-	}
-	return strings.HasPrefix(sv, sp), nil
+	return reflect.ValueOf(strings.TrimPrefix(s, prefix)), nil
 }
 
-func trimSuffix(suffix, v string) (string, error) {
-	return strings.TrimSuffix(v, suffix), nil
+func hasPrefix(prefix string, v reflect.Value) (reflect.Value, error) {
+	s, ok := asString(v)
+	if !ok {
+		return reflect.Value{}, fmt.Errorf("hasPrefix: expected string as second argument, got %s", v.Type())
+	}
+	return reflect.ValueOf(strings.HasPrefix(s, prefix)), nil
 }
 
-func hasSuffix(suffix, v reflect.Value) (bool, error) {
-	ss, ok := asString(suffix)
+func trimSuffix(suffix string, v reflect.Value) (reflect.Value, error) {
+	s, ok := asString(v)
 	if !ok {
-		return false, fmt.Errorf("hasSuffix: expected string as first argument, got %s", suffix.Type())
+		return reflect.Value{}, fmt.Errorf("trimSuffix: expected string as second argument, got %s", v.Type())
 	}
-	sv, ok := asString(v)
+	return reflect.ValueOf(strings.TrimSuffix(s, suffix)), nil
+}
+
+func hasSuffix(suffix string, v reflect.Value) (reflect.Value, error) {
+	s, ok := asString(v)
 	if !ok {
-		return false, fmt.Errorf("hasSuffix: expected string as second argument, got %s", v.Type())
+		return reflect.Value{}, fmt.Errorf("hasSuffix: expected string as second argument, got %s", v.Type())
 	}
-	return strings.HasSuffix(sv, ss), nil
+	return reflect.ValueOf(strings.HasSuffix(s, suffix)), nil
 }
 
 func split(sep string, v reflect.Value) (reflect.Value, error) {
@@ -381,16 +352,16 @@ func center(width int, v reflect.Value) (reflect.Value, error) {
 	return reflect.ValueOf(strings.Repeat(" ", left) + s + strings.Repeat(" ", right)), nil
 }
 
-func matchRegex(pattern, v reflect.Value) (bool, error) {
-	p, ok := asString(pattern)
-	if !ok {
-		return false, fmt.Errorf("matchRegex: expected string as first argument, got %s", pattern.Type())
-	}
+func matchRegex(pattern string, v reflect.Value) (reflect.Value, error) {
 	s, ok := asString(v)
 	if !ok {
-		return false, fmt.Errorf("matchRegex: expected string as second argument, got %s", v.Type())
+		return reflect.Value{}, fmt.Errorf("matchRegex: expected string as second argument, got %s", v.Type())
 	}
-	return regexp.MatchString(p, s)
+	matched, err := regexp.MatchString(pattern, s)
+	if err != nil {
+		return reflect.Value{}, err
+	}
+	return reflect.ValueOf(matched), nil
 }
 
 // Encoding functions
@@ -477,26 +448,56 @@ func reverse(v reflect.Value) (reflect.Value, error) {
 		if s, ok := asString(v); ok {
 			return reflect.ValueOf(reverseString(s)), nil
 		}
-		if c, err := asConverterFunc(v); err != nil {
-			return reflect.Value{}, err
-		} else if c != nil {
-			return reflect.ValueOf(c.then(func(s string) (string, error) {
-				return reverseString(s), nil
-			})), nil
-		}
 		return reflect.Value{}, fmt.Errorf("reverse: unsupported type %s", v.Type())
 	}
 }
 
-func sortStrings(v reflect.Value) (reflect.Value, error) {
-	if v.Kind() != reflect.Slice || v.Type().Elem().Kind() != reflect.String {
-		return reflect.Value{}, fmt.Errorf("sortStrings: expected []string, got %s", v.Type())
+func sortSlice(v reflect.Value) (reflect.Value, error) {
+	if v.Kind() != reflect.Slice && v.Kind() != reflect.Array {
+		return reflect.Value{}, fmt.Errorf("sortSlice: expected slice or array, got %s", v.Type())
 	}
-	sorted := make([]string, v.Len())
+	isInt := true
+	isUint := true
+	isNumber := true
 	for i := 0; i < v.Len(); i++ {
-		sorted[i] = v.Index(i).String()
+		isInt = isInt && v.Index(i).CanInt()
+		isUint = isUint && v.Index(i).CanUint()
+		isNumber = isNumber && v.Index(i).CanFloat()
 	}
-	sort.Strings(sorted)
+	if isUint {
+		sorted := make([]uint64, v.Len())
+		for i := 0; i < v.Len(); i++ {
+			sorted[i] = v.Index(i).Uint()
+		}
+		slices.Sort(sorted)
+		return reflect.ValueOf(sorted), nil
+	}
+	if isInt {
+		sorted := make([]int64, v.Len())
+		for i := 0; i < v.Len(); i++ {
+			sorted[i] = v.Index(i).Int()
+		}
+		slices.Sort(sorted)
+		return reflect.ValueOf(sorted), nil
+	}
+	if isNumber {
+		sorted := make([]float64, v.Len())
+		for i := 0; i < v.Len(); i++ {
+			sorted[i] = v.Index(i).Float()
+		}
+		slices.Sort(sorted)
+		return reflect.ValueOf(sorted), nil
+	}
+
+	sorted := make([]string, 0, v.Len())
+	for i := 0; i < v.Len(); i++ {
+		if s, ok := asString(v.Index(i)); ok {
+			sorted = append(sorted, s)
+		} else {
+			return reflect.Value{}, fmt.Errorf("sortSlice: expected slice of numbers or strings, got %s", v.Type())
+		}
+	}
+	slices.Sort(sorted)
 	return reflect.ValueOf(sorted), nil
 }
 
@@ -520,30 +521,24 @@ func uniq(v reflect.Value) (reflect.Value, error) {
 	return uniqueSlice, nil
 }
 
-func ContainsWord(s, word string) bool {
-	pattern := fmt.Sprintf(`\b%s\b`, regexp.QuoteMeta(word))
-	matched, _ := regexp.MatchString(pattern, s)
-	return matched
-}
-
-func includes(item, collection reflect.Value) (bool, error) {
+func includes(item, collection reflect.Value) (reflect.Value, error) {
 	switch collection.Kind() {
 	case reflect.Slice, reflect.Array:
 		for i := 0; i < collection.Len(); i++ {
 			if reflect.DeepEqual(item.Interface(), collection.Index(i).Interface()) {
-				return true, nil
+				return reflect.ValueOf(true), nil
 			}
 		}
-		return false, nil
+		return reflect.ValueOf(false), nil
 	case reflect.Map:
-		return collection.MapIndex(item).IsValid(), nil
+		return reflect.ValueOf(collection.MapIndex(item).IsValid()), nil
 	default:
 		if s, ok := asString(collection); ok {
 			if i, ok := asString(item); ok {
-				return ContainsWord(s, i), nil
+				return reflect.ValueOf(ContainsWord(s, i)), nil
 			}
 		}
-		return false, fmt.Errorf("includes: unsupported collection type %s", collection.Type())
+		return reflect.Value{}, fmt.Errorf("includes: unsupported collection type %s", collection.Type())
 	}
 }
 
@@ -597,32 +592,9 @@ func mod(a, b reflect.Value) (reflect.Value, error) {
 	})
 }
 
-func max(args ...reflect.Value) (reflect.Value, error) {
-	if len(args) == 0 {
-		return reflect.Value{}, fmt.Errorf("max: at least one argument is required")
-	}
-
-	maxVal := args[0]
-	for _, arg := range args[1:] {
-		result, err := numericCompare(maxVal, arg)
-		if err != nil {
-			return reflect.Value{}, err
-		}
-		if result < 0 {
-			maxVal = arg
-		}
-	}
-
-	return maxVal, nil
-}
-
-func min(args ...reflect.Value) (reflect.Value, error) {
-	if len(args) == 0 {
-		return reflect.Value{}, fmt.Errorf("min: at least one argument is required")
-	}
-
-	minVal := args[0]
-	for _, arg := range args[1:] {
+func minFunc(x reflect.Value, y ...reflect.Value) (reflect.Value, error) {
+	minVal := x
+	for _, arg := range y {
 		result, err := numericCompare(minVal, arg)
 		if err != nil {
 			return reflect.Value{}, err
@@ -633,6 +605,21 @@ func min(args ...reflect.Value) (reflect.Value, error) {
 	}
 
 	return minVal, nil
+}
+
+func maxFunc(x reflect.Value, y ...reflect.Value) (reflect.Value, error) {
+	maxVal := x
+	for _, arg := range y {
+		result, err := numericCompare(maxVal, arg)
+		if err != nil {
+			return reflect.Value{}, err
+		}
+		if result < 0 {
+			maxVal = arg
+		}
+	}
+
+	return maxVal, nil
 }
 
 func ceil(x reflect.Value) (reflect.Value, error) {
@@ -719,25 +706,6 @@ func toBigFloat(v reflect.Value) (*big.Float, error) {
 	default:
 		return nil, fmt.Errorf("unsupported type for numeric operation: %s", v.Type())
 	}
-}
-
-// toStrings converts a slice or array of reflect.Value to a slice of strings.
-func toStrings(v reflect.Value) ([]string, error) {
-	if v.Kind() != reflect.Slice && v.Kind() != reflect.Array {
-		return nil, fmt.Errorf("toStrings: expected slice or array, got %s", v.Type())
-	}
-	if v.Len() == 0 {
-		return nil, nil
-	}
-	s := make([]string, v.Len())
-	for i := 0; i < v.Len(); i++ {
-		if str, ok := asString(v.Index(i)); ok {
-			s[i] = str
-		} else {
-			return nil, fmt.Errorf("toStrings: expected string, got %s", v.Index(i).Type())
-		}
-	}
-	return s, nil
 }
 
 // Type checking functions
