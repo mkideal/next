@@ -18,944 +18,92 @@ import (
 
 // Funcs is a map of utility functions for use in templates
 var Funcs = map[string]any{
+	// _ is a no-op function that returns an empty string.
+	// It's useful to place a newline in the template.
 	"_": func() string { return "" },
+
+	// map maps a list of values using the given converter.
+	"map": mapFunc,
 
 	// String functions
 
-	// @api(template/funcs) quote (s: string)
-	// `quote` returns a double-quoted string literal representing s.
-	// Special characters are escaped with backslashes.
-	//
-	// Example:
-	//
-	// ```
-	// {{quote "Hello, World!"}}
-	// ```
-	// or
-	// ```
-	// {{"Hello, World!" | quote}}
-	// ```
-	//
-	// Output:
-	// ```
-	// "Hello, World!"
-	// ```
-	"quote": quote,
-
-	// @api(template/funcs) unquote (s: string)
-	// `unquote` interprets s as a double-quoted string literal and returns the string value that s represents.
-	// Special characters are unescaped.
-	//
-	// Example:
-	//
-	// ```
-	// {{unquote "\"Hello, World!\""}}
-	// ```
-	// or
-	// ```
-	// {{"\"Hello, World!\"" | unquote}}
-	// ```
-	//
-	// Output:
-	// ```
-	// Hello, World!
-	// ```
-	"unquote": unquote,
-
-	// @api(template/funcs) capitalize (s: string)
-	// `capitalize` capitalizes the first character of the given string.
-	//
-	// Example:
-	//
-	// ```
-	// {{capitalize "hello world"}}
-	// ```
-	// or
-	// ```
-	// {{"hello world" | capitalize}}
-	// ```
-	//
-	// Output:
-	// ```
-	// Hello world
-	// ```
-	"capitalize": capitalize,
-
-	// @api(template/funcs) lower (s: string)
-	// `lower` converts the entire string to lowercase.
-	//
-	// Example:
-	//
-	// ```
-	// {{lower "Hello World"}}
-	// ```
-	// or
-	// ```
-	// {{"Hello World" | lower}}
-	// ```
-	//
-	// Output:
-	// ```
-	// hello world
-	// ```
-	"lower": toLower,
-
-	// @api(template/funcs) upper (s: string)
-	// `upper` converts the entire string to uppercase.
-	//
-	// Example:
-	//
-	// ```
-	// {{upper "hello world"}}
-	// ```
-	// or
-	// ```
-	// {{"hello world" | upper}}
-	// ```
-	//
-	// Output:
-	// ```
-	// HELLO WORLD
-	// ```
-	"upper": toUpper,
-
-	// @api(template/funcs) replace (s: string, old: string, new: string[, n: int])
-	// `replace` returns a copy of the string s with the first n non-overlapping instances of old replaced by new.
-	//
-	// Example:
-	//
-	// ```
-	// {{replace "oink oink oink" "oink" "moo" 2}}
-	// {{replace "oink oink oink" "oink" "moo"}}
-	// ```
-	//
-	// Output:
-	// ```
-	// moo moo oink
-	// moo moo moo
-	// ```
-	"replace": replace,
-
-	// @api(template/funcs) trim (s: string)
-	// `trim` returns a slice of the string s with all leading and trailing white space removed.
-	//
-	// Example:
-	//
-	// ```
-	// {{trim "  hello world  "}}
-	// ```
-	// or
-	// ```
-	// {{"  hello world  " | trim}}
-	// ```
-	//
-	// Output:
-	// ```
-	// hello world
-	// hello world
-	// ```
-	"trim": trimSpace,
-
-	// @api(template/funcs) trimPrefix (prefix: string, s: string)
-	// `trimPrefix` returns s without the provided leading prefix string.
-	//
-	// Example:
-	//
-	// ```
-	// {{trimPrefix "Hello" "Hello, World!"}}
-	// ```
-	// or
-	// ```
-	// {{"Hello, World!" | trimPrefix "Hello"}}
-	// ```
-	//
-	// Output:
-	// ```
-	// , World!
-	// ```
-	"trimPrefix": trimPrefix,
-
-	// @api(template/funcs) trimSuffix (suffix: string, s: string)
-	// `trimSuffix` returns s without the provided trailing suffix string.
-	//
-	// Example:
-	//
-	// ```
-	// {{trimSuffix "!" "Hello, World!"}}
-	// ```
-	// or
-	// ```
-	// {{"Hello, World!" | trimSuffix "!"}}
-	// ```
-	//
-	// Output:
-	// ```
-	// Hello, World
-	// ```
-	"trimSuffix": trimSuffix,
-
-	// @api(template/funcs) split (sep: string, s: string)
-	// `split` slices s into all substrings separated by sep and returns a slice of the substrings between those separators.
-	//
-	// Example:
-	//
-	// ```
-	// {{split "," "a,b,c"}}
-	// ```
-	// or
-	// ```
-	// {{"a,b,c" | split ","}}
-	// ```
-	//
-	// Output:
-	// ```
-	// [a b c]
-	// ```
-	"split": split,
-
-	// @api(template/funcs) join (sep: string, v: []string)
-	// `join` concatenates the elements of v to create a single string. The separator string sep is placed between elements in the resulting string.
-	//
-	// Example:
-	//
-	// ```
-	// {{join ", " (slice "apple" "banana" "cherry")}}
-	// ```
-	//
-	// Output:
-	// ```
-	// apple, banana, cherry
-	// ```
-	"join": join,
-
-	// @api(template/funcs) striptags (s: string)
-	// `striptags` removes all HTML tags from the given string.
-	//
-	// Example:
-	//
-	// ```
-	// {{striptags "<p>Hello <b>World</b>!</p>"}}
-	// ```
-	// or
-	// ```
-	// {{"<p>Hello <b>World</b>!</p>" | striptags}}
-	// ```
-	//
-	// Output:
-	// ```
-	// Hello World!
-	// ```
-	"striptags": striptags,
-
-	// @api(template/funcs) substr (start: int, length: int, s: string)
-	// `substr` returns a substring of s starting at index start with the given length.
-	//
-	// Example:
-	//
-	// ```
-	// {{substr 7 5 "Hello, World!"}}
-	// ```
-	// or
-	// ```
-	// {{"Hello, World!" | substr 7 5}}
-	// ```
-	//
-	// Output:
-	// ```
-	// World
-	// ```
-	"substr": substr,
-
-	// @api(template/funcs) repeat (count: int, s: string)
-	// `repeat` returns a new string consisting of count copies of the string s.
-	//
-	// Example:
-	//
-	// ```
-	// {{repeat 3 "na"}}
-	// ```
-	// or
-	// ```
-	// {{"na" | repeat 3}}
-	// ```
-	//
-	// Output:
-	// ```
-	// nanana
-	// ```
-	"repeat": repeat,
-
-	// @api(template/funcs) camelCase (s: string)
-	// `camelCase` converts the given string to camel case.
-	//
-	// Example:
-	//
-	// ```
-	// {{camelCase "hello world"}}
-	// ```
-	// or
-	// ```
-	// {{"hello world" | camelCase}}
-	// ```
-	//
-	// Output:
-	// ```
-	// helloWorld
-	// ```
-	"camelCase": camelCase,
-
-	// @api(template/funcs) pascalCase (s: string)
-	// `pascalCase` converts the given string to pascal case.
-	//
-	// Example:
-	//
-	// ```
-	// {{pascalCase "hello world"}}
-	// ```
-	// or
-	// ```
-	// {{"hello world" | pascalCase}}
-	// ```
-	//
-	// Output:
-	// ```
-	// HelloWorld
-	// ```
-	"pascalCase": pascalCase,
-
-	// @api(template/funcs) snakeCase (s: string)
-	// `snakeCase` converts the given string to snake case.
-	//
-	// Example:
-	//
-	// ```
-	// {{snakeCase "helloWorld"}}
-	// ```
-	// or
-	// ```
-	// {{"helloWorld" | snakeCase}}
-	// ```
-	//
-	// Output:
-	// ```
-	// hello_world
-	// ```
-	"snakeCase": snakeCase,
-
-	// @api(template/funcs) kebabCase (s: string)
-	// `kebabCase` converts the given string to kebab case.
-	//
-	// Example:
-	//
-	// ```
-	// {{kebabCase "helloWorld"}}
-	// ```
-	// or
-	// ```
-	// {{"helloWorld" | kebabCase}}
-	// ```
-	//
-	// Output:
-	// ```
-	// hello-world
-	// ```
-	"kebabCase": kebabCase,
-
-	// @api(template/funcs) truncate (s: string, length: int, suffix: string)
-	// `truncate` truncates the given string to the specified length and adds the suffix if truncation occurred.
-	//
-	// Example:
-	//
-	// ```
-	// {{truncate 10 "..." "This is a long sentence."}}
-	// ```
-	// or
-	// ```
-	// {{"This is a long sentence." | truncate 10 "..."}}
-	// ```
-	//
-	// Output:
-	// ```
-	// This is...
-	// ```
-	"truncate": truncate,
-
-	// @api(template/funcs) wordwrap (s: string, width: int)
-	// `wordwrap` wraps the given string to a maximum width.
-	//
-	// Example:
-	//
-	// ```
-	// {{wordwrap 20 "This is a long sentence that needs wrapping."}}
-	// ```
-	// or
-	// ```
-	// {{"This is a long sentence that needs wrapping." | wordwrap 20}}
-	// ```
-	//
-	// Output:
-	// ```
-	// This is a long
-	// sentence that needs
-	// wrapping.
-	// ```
-	"wordwrap": wordwrap,
-
-	// @api(template/funcs) center (s: string, width: int)
-	// `center` centers the string in a field of the specified width.
-	//
-	// Example:
-	//
-	// ```
-	// {{center 11 "hello"}}
-	// ```
-	// or
-	// ```
-	// {{"hello" | center 11}}
-	//
-	// Output:
-	// ```
-	//    hello
-	// ```
-	"center": center,
-
-	// @api(template/funcs) matchRegex (pattern: string, s: string)
-	// `matchRegex` checks if the string matches the given regular expression pattern.
-	//
-	// Example:
-	//
-	// ```
-	// {{matchRegex "^[a-z]+$" "hello"}}
-	// ```
-	// or
-	// ```
-	// {{"hello" | matchRegex "^[a-z]+$"}}
-	// ```
-	//
-	// Output:
-	// ```
-	// true
-	// ```
-	"matchRegex": matchRegex,
-
-	// Escaping functions
-
-	// @api(template/funcs) html (s: string)
-	// `html` escapes special characters like "<" to become "&lt;". It escapes only five such characters: <, >, &, ' and ".
-	//
-	// Example:
-	//
-	// ```
-	// {{html "<script>alert('XSS')</script>"}}
-	// ```
-	// or
-	// ```
-	// {{"<script>alert('XSS')</script>" | html}}
-	// ```
-	//
-	// Output:
-	// ```
-	// &lt;script&gt;alert(&#39;XSS&#39;)&lt;/script&gt;
-	// ```
-	"html": html.EscapeString,
-
-	// @api(template/funcs) urlquery (s: string)
-	// `urlquery` escapes the string so it can be safely placed inside a URL query.
-	//
-	// Example:
-	//
-	// ```
-	// {{urlquery "hello world"}}
-	// ```
-	// or
-	// ```
-	// {{"hello world" | urlquery}}
-	// ```
-	//
-	// Output:
-	// ```
-	// hello+world
-	// ```
-	"urlquery": url.QueryEscape,
-
-	// @api(template/funcs) urlUnescape (s: string)
-	// `urlUnescape` does the inverse transformation of urlquery, converting each 3-byte encoded substring of the form "%AB" into the hex-decoded byte 0xAB.
-	//
-	// Example:
-	//
-	// ```
-	// {{urlUnescape "hello+world"}}
-	// ```
-	// or
-	// ```
-	// {{"hello+world" | urlUnescape}}
-	// ```
-	//
-	// Output:
-	// ```
-	// hello world
-	// ```
-	"urlUnescape": urlUnescape,
+	"quote":       convs(noError(strconv.Quote)),
+	"unquote":     convs(strconv.Unquote),
+	"capitalize":  convs(noError(capitalize)),
+	"lower":       convs(noError(strings.ToLower)),
+	"upper":       convs(noError(strings.ToUpper)),
+	"replace":     replace,
+	"trim":        convs(noError(strings.TrimSpace)),
+	"trimPrefix":  conv2s(trimPrefix),
+	"hasPrefix":   hasPrefix,
+	"trimSuffix":  conv2s(trimSuffix),
+	"hasSuffix":   hasSuffix,
+	"split":       conv2(split),
+	"join":        conv2(join),
+	"striptags":   convs(striptags),
+	"substr":      conv3(substr),
+	"repeat":      conv2(repeat),
+	"camelCase":   convs(noError(camelCase)),
+	"pascalCase":  convs(noError(pascalCase)),
+	"snakeCase":   convs(noError(snakeCase)),
+	"kebabCase":   convs(noError(kebabCase)),
+	"truncate":    conv3(truncate),
+	"wordwrap":    conv2(wordwrap),
+	"center":      conv2(center),
+	"matchRegex":  matchRegex,
+	"html":        convs(noError(html.EscapeString)),
+	"urlquery":    convs(noError(url.QueryEscape)),
+	"urlUnescape": convs(url.QueryUnescape),
 
 	// Encoding functions
 
-	// @api(template/funcs) b64enc (v: string)
-	// `b64enc` encodes the given string to base64.
-	//
-	// Example:
-	//
-	// ```
-	// {{b64enc "hello world"}}
-	// ```
-	// or
-	// ```
-	// {{"hello world" | b64enc}}
-	// ```
-	//
-	// Output:
-	// ```
-	// aGVsbG8gd29ybGQ=
-	// ```
-	"b64enc": base64.StdEncoding.EncodeToString,
-
-	// @api(template/funcs) b64dec (s: string)
-	// `b64dec` decodes the given base64 string.
-	//
-	// Example:
-	//
-	// ```
-	// {{b64dec "aGVsbG8gd29ybGQ="}}
-	// ```
-	// or
-	// ```
-	// {{"aGVsbG8gd29ybGQ=" | b64dec}}
-	// ```
-	//
-	// Output:
-	// ```
-	// hello world
-	// ```
-	"b64dec": b64dec,
+	"b64enc": convs(noError(b64enc)),
+	"b64dec": convs(b64dec),
 
 	// List functions
 
-	// @api(template/funcs) first (list: []any)
-	// `first` returns the first element of a list.
-	//
-	// Example:
-	//
-	// ```
-	// {{first (slice 1 2 3)}}
-	// ```
-	//
-	// Output:
-	// ```
-	// 1
-	// ```
-	"first": first,
-
-	// @api(template/funcs) last (list: []any)
-	// `last` returns the last element of a list.
-	//
-	// Example:
-	//
-	// ```
-	// {{last (slice 1 2 3)}}
-	// ```
-	//
-	// Output:
-	// ```
-	// 3
-	// ```
-	"last": last,
-
-	// @api(template/funcs) rest (list: []any)
-	// `rest` returns all elements of a list except the first.
-	//
-	// Example:
-	//
-	// ```
-	// {{rest (slice 1 2 3)}}
-	// ```
-	//
-	// Output:
-	// ```
-	// [2 3]
-	// ```
-	"rest": rest,
-
-	// @api(template/funcs) reverse (list: []any)
-	// `reverse` reverses the order of elements in a list.
-	//
-	// Example:
-	//
-	// ```
-	// {{reverse (slice 1 2 3)}}
-	// ```
-	//
-	// Output:
-	// ```
-	// [3 2 1]
-	// ```
-	"reverse": reverse,
-
-	// @api(template/funcs) sort (list: []string)
-	// `sort` sorts a list of strings in ascending order.
-	//
-	// Example:
-	//
-	// ```
-	// {{sort (slice "banana" "apple" "cherry")}}
-	// ```
-	//
-	// Output:
-	// ```
-	// [apple banana cherry]
-	// ```
-	"sort": sortStrings,
-
-	// @api(template/funcs) uniq (list: []any)
-	// `uniq` removes duplicate elements from a list.
-	//
-	// Example:
-	//
-	// ```
-	// {{uniq (slice 1 2 2 3 3 3)}}
-	// ```
-	//
-	// Output:
-	// ```
-	// [1 2 3]
-	// ```
-	"uniq": uniq,
-
-	// @api(template/funcs) in (item: any, list: []any)
-	// `in` checks if an item is present in a list.
-	//
-	// Example:
-	//
-	// ```
-	// {{in "b" (slice "a" "b" "c")}}
-	// ```
-	//
-	// Output:
-	// ```
-	// true
-	// ```
-	"in": in,
+	"list":     list,
+	"first":    conv(first),
+	"last":     conv(last),
+	"reverse":  conv(reverse),
+	"sort":     conv(sortStrings),
+	"uniq":     conv(uniq),
+	"includes": includes,
 
 	// Math functions
 
-	// @api(template/funcs) add (a: number, b: number)
-	// `add` adds two numbers.
-	//
-	// Example:
-	//
-	// ```
-	// {{add 1 2}}
-	// ```
-	//
-	// Output:
-	// ```
-	// 3
-	// ```
-	"add": add,
-
-	// @api(template/funcs) sub (a: number, b: number)
-	// `sub` subtracts the second number from the first.
-	//
-	// Example:
-	//
-	// ```
-	// {{sub 5 3}}
-	// ```
-	//
-	// Output:
-	// ```
-	// 2
-	// ```
-	"sub": sub,
-
-	// @api(template/funcs) mul (a: number, b: number)
-	// `mul` multiplies two numbers.
-	//
-	// Example:
-	//
-	// ```
-	// {{mul 2 3}}
-	// ```
-	//
-	// Output:
-	// ```
-	// 6
-	// ```
-	"mul": mul,
-
-	// @api(template/funcs) quo (a: number, b: number)
-	// `quo` divides the first number by the second.
-	//
-	// Example:
-	//
-	// ```
-	// {{quo 6 3}}
-	// ```
-	//
-	// Output:
-	// ```
-	// 2
-	// ```
-	"quo": quo,
-
-	// @api(template/funcs) rem (a: number, b: number)
-	// `rem` returns the remainder of dividing the first number by the second.
-	//
-	// Example:
-	//
-	// ```
-	// {{rem 7 3}}
-	// ```
-	//
-	// Output:
-	// ```
-	// 1
-	// ```
-	"rem": rem,
-
-	// @api(template/funcs) mod (a: number, b: number)
-	// `mod` returns the modulus of dividing the first number by the second.
-	//
-	// Example:
-	//
-	// ```
-	// {{mod -7 3}}
-	// ```
-	//
-	// Output:
-	// ```
-	// 2
-	// ```
-	"mod": mod,
-
-	// @api(template/funcs) max (numbers: ...number)
-	// `max` returns the largest of the given numbers.
-	//
-	// Example:
-	//
-	// ```
-	// {{max 1 5 3 2}}
-	// ```
-	//
-	// Output:
-	// ```
-	// 5
-	// ```
-	"max": max,
-
-	// @api(template/funcs) min (numbers: ...number)
-	// `min` returns the smallest of the given numbers.
-	//
-	// Example:
-	//
-	// ```
-	// {{min 1 5 3 2}}
-	// ```
-	//
-	// Output:
-	// ```
-	// 1
-	// ```
-	"min": min,
-
-	// @api(template/funcs) ceil (x: number)
-	// `ceil` returns the least integer value greater than or equal to x.
-	//
-	// Example:
-	//
-	// ```
-	// {{ceil 1.5}}
-	// ```
-	//
-	// Output:
-	// ```
-	// 2
-	// ```
-	"ceil": ceil,
-
-	// @api(template/funcs) floor (x: number)
-	// `floor` returns the greatest integer value less than or equal to x.
-	//
-	// Example:
-	//
-	// ```
-	// {{floor 1.5}}
-	// ```
-	//
-	// Output:
-	// ```
-	// 1
-	// ```
-	"floor": floor,
-
-	// @api(template/funcs) round (x: number, precision: int)
-	// `round` returns x rounded to the specified precision.
-	//
-	// Example:
-	//
-	// ```
-	// {{round 1.234 2}}
-	// ```
-	//
-	// Output:
-	// ```
-	// 1.23
-	// ```
-	"round": round,
+	"add":   conv2(add),
+	"sub":   conv2(sub),
+	"mul":   conv2(mul),
+	"quo":   conv2(quo),
+	"rem":   conv2(rem),
+	"mod":   conv2(mod),
+	"ceil":  conv(ceil),
+	"floor": conv(floor),
+	"round": conv2(round),
+	"min":   min,
+	"max":   max,
 
 	// Type conversion functions
 
-	// @api(template/funcs) int (v: any)
-	// `int` converts the given value to an integer.
-	//
-	// Example:
-	//
-	// ```
-	// {{int "123"}}
-	// ```
-	//
-	// Output:
-	// ```
-	// 123
-	// ```
-	"int": toInt,
-
-	// @api(template/funcs) float (v: any)
-	// `float` converts the given value to a float.
-	//
-	// Example:
-	//
-	// ```
-	// {{float "1.23"}}
-	// ```
-	//
-	// Output:
-	// ```
-	// 1.23
-	// ```
-	"float": toFloat,
-
-	// @api(template/funcs) string (v: any)
-	// `string` converts the given value to a string.
-	//
-	// Example:
-	//
-	// ```
-	// {{string 123}}
-	// ```
-	//
-	// Output:
-	// ```
-	// 123
-	// ```
-	"string": toString,
-
-	// @api(template/funcs) bool (v: any)
-	// `bool` converts the given value to a boolean.
-	//
-	// Example:
-	//
-	// ```
-	// {{bool 1}}
-	// ```
-	//
-	// Output:
-	// ```
-	// true
-	// ```
-	"bool": toBool,
+	"int":    conv(toInt64),
+	"float":  conv(toFloat64),
+	"string": conv(toString),
+	"bool":   conv(toBool),
 
 	// Date functions
 
-	// @api(template/funcs) now ()
-	// `now` returns the current local time.
-	//
-	// Example:
-	//
-	// ```
-	// {{now}}
-	// {{now.Format "2006-01-02 15:04:05"}}
-	// ```
-	//
-	// Output:
-	// ```
-	// 2023-05-17 14:30:45.123456789 +0000 UTC
-	// 2023-05-17 14:30:45
-	// ```
-	"now": time.Now,
-
-	// @api(template/funcs) parse (layout: string, value: string)
-	// `parse` parses a formatted string and returns the time value it represents.
-	//
-	// Example:
-	//
-	// ```
-	// {{parseTime "2006-01-02" "2023-05-17"}}
-	// ```
-	//
-	// Output:
-	// ```
-	// 2023-05-17 00:00:00 +0000 UTC
-	// ```
+	"now":       time.Now,
 	"parseTime": parseTime,
 
 	// Conditional functions
 
-	// @api(template/funcs) ternary (cond: bool, trueVal: any, falseVal: any)
-	// `ternary` returns trueVal if the condition is true, falseVal otherwise.
-	//
-	// Example:
-	//
-	// ```
-	// {{ternary (eq 1 1) "yes" "no"}}
-	// ```
-	//
-	// Output:
-	// ```
-	// yes
-	// ```
 	"ternary": ternary,
 }
 
 // String functions
 
-func quote(v reflect.Value) (string, error) {
-	if v.Kind() != reflect.String {
-		return "", fmt.Errorf("quote: expected string, got %s", v.Type())
-	}
-	return strconv.Quote(v.String()), nil
-}
-
-func unquote(v reflect.Value) (string, error) {
-	if v.Kind() != reflect.String {
-		return "", fmt.Errorf("unquote: expected string, got %s", v.Type())
-	}
-	s, err := strconv.Unquote(v.String())
-	if err != nil {
-		return "", err
-	}
-	return s, nil
-}
-
-func capitalize(v reflect.Value) (string, error) {
-	if v.Kind() != reflect.String {
-		return "", fmt.Errorf("capitalize: expected string, got %s", v.Type())
-	}
-	if strings.HasPrefix(v.String(), "package ") {
-		//panic("capitalize: cannot capitalize " + v.String())
-	}
-	return doCapitalize(v.String()), nil
-}
-
-func doCapitalize(s string) string {
+func capitalize(s string) string {
 	if s == "" {
 		return s
 	}
@@ -963,81 +111,103 @@ func doCapitalize(s string) string {
 	return string(unicode.ToUpper(r[0])) + string(r[1:])
 }
 
-func toLower(v reflect.Value) (string, error) {
-	if v.Kind() != reflect.String {
-		return "", fmt.Errorf("lower: expected string, got %s", v.Type())
-	}
-	return strings.ToLower(v.String()), nil
-}
-
-func toUpper(v reflect.Value) (string, error) {
-	if v.Kind() != reflect.String {
-		return "", fmt.Errorf("upper: expected string, got %s", v.Type())
-	}
-	return strings.ToUpper(v.String()), nil
-}
-
-func replace(s, old, new string, n ...reflect.Value) (string, error) {
-	if len(n) == 0 {
-		return strings.Replace(s, old, new, -1), nil
-	}
-	if len(n) > 1 {
-		return "", fmt.Errorf("replace: too many arguments")
-	}
-	switch n[0].Kind() {
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return strings.Replace(s, old, new, int(n[0].Int())), nil
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		return strings.Replace(s, old, new, int(n[0].Uint())), nil
+func replace(old, new string, args ...reflect.Value) (reflect.Value, error) {
+	switch len(args) {
+	case 0:
+		return convs(noError(func(s string) string {
+			return strings.Replace(s, old, new, -1)
+		})).value(), nil
+	case 1:
+		if s, ok := asString(args[0]); ok {
+			return reflect.ValueOf(strings.Replace(s, old, new, -1)), nil
+		} else if n, err := toInt64(args[0]); err == nil {
+			return convs(noError(func(s string) string {
+				return strings.Replace(s, old, new, int(n.Int()))
+			})).value(), nil
+		} else if c, err := asConverterFunc(args[0]); err != nil {
+			return reflect.Value{}, err
+		} else if c != nil {
+			return reflect.ValueOf(c.then(func(s string) (string, error) {
+				return strings.Replace(s, old, new, -1), nil
+			})), nil
+		} else {
+			return reflect.Value{}, fmt.Errorf("replace: expected string, int or ConverterFunc, got %s", args[0].Type())
+		}
+	case 2:
+		n, err := toInt64(args[0])
+		if err != nil {
+			return reflect.Value{}, err
+		}
+		s, ok := asString(args[1])
+		if ok {
+			return reflect.ValueOf(strings.Replace(s, old, new, int(n.Int()))), nil
+		}
+		if c, err := asConverterFunc(args[1]); err != nil {
+			return reflect.Value{}, err
+		} else if c != nil {
+			return reflect.ValueOf(c.then(func(s string) (string, error) {
+				return strings.Replace(s, old, new, int(n.Int())), nil
+			})), nil
+		} else {
+			return reflect.Value{}, fmt.Errorf("replace: expected string or ConverterFunc, got %s", args[1].Type())
+		}
 	default:
-		return "", fmt.Errorf("replace: unsupported type %s", n[0].Type())
+		return reflect.Value{}, fmt.Errorf("replace: expected 0, 1 or 2 arguments, got %d", len(args))
 	}
 }
 
 func trimSpace(v reflect.Value) (string, error) {
-	if v.Kind() != reflect.String {
+	s, ok := asString(v)
+	if !ok {
 		return "", fmt.Errorf("trim: expected string, got %s", v.Type())
 	}
-	return strings.TrimSpace(v.String()), nil
+	return strings.TrimSpace(s), nil
 }
 
-func trimPrefix(p, v reflect.Value) (string, error) {
-	if p.Kind() != reflect.String {
-		return "", fmt.Errorf("trimPrefix: expected string as first argument, got %s", p.Type())
-	}
-	if v.Kind() != reflect.String {
-		return "", fmt.Errorf("trimPrefix: expected string as second argument, got %s", v.Type())
-	}
-	return strings.TrimPrefix(v.String(), p.String()), nil
+func trimPrefix(prefix, v string) (string, error) {
+	return strings.TrimPrefix(v, prefix), nil
 }
 
-func trimSuffix(s, suffix reflect.Value) (string, error) {
-	if s.Kind() != reflect.String {
-		return "", fmt.Errorf("trimSuffix: expected string as first argument, got %s", s.Type())
+func hasPrefix(prefix, v reflect.Value) (bool, error) {
+	sp, ok := asString(prefix)
+	if !ok {
+		return false, fmt.Errorf("hasPrefix: expected string as first argument, got %s", prefix.Type())
 	}
-	if suffix.Kind() != reflect.String {
-		return "", fmt.Errorf("trimSuffix: expected string as second argument, got %s", suffix.Type())
+	sv, ok := asString(v)
+	if !ok {
+		return false, fmt.Errorf("hasPrefix: expected string as second argument, got %s", v.Type())
 	}
-	return strings.TrimSuffix(s.String(), suffix.String()), nil
+	return strings.HasPrefix(sv, sp), nil
 }
 
-func split(sep, s reflect.Value) ([]string, error) {
-	if sep.Kind() != reflect.String {
-		return nil, fmt.Errorf("split: expected string as first argument, got %s", sep.Type())
-	}
-	if s.Kind() != reflect.String {
-		return nil, fmt.Errorf("split: expected string as second argument, got %s", s.Type())
-	}
-	return strings.Split(s.String(), sep.String()), nil
+func trimSuffix(suffix, v string) (string, error) {
+	return strings.TrimSuffix(v, suffix), nil
 }
 
-func join(sep, v reflect.Value) (string, error) {
-	if sep.Kind() != reflect.String {
-		return "", fmt.Errorf("join: expected string as first argument, got %s", sep.Type())
+func hasSuffix(suffix, v reflect.Value) (bool, error) {
+	ss, ok := asString(suffix)
+	if !ok {
+		return false, fmt.Errorf("hasSuffix: expected string as first argument, got %s", suffix.Type())
 	}
+	sv, ok := asString(v)
+	if !ok {
+		return false, fmt.Errorf("hasSuffix: expected string as second argument, got %s", v.Type())
+	}
+	return strings.HasSuffix(sv, ss), nil
+}
+
+func split(sep string, v reflect.Value) (reflect.Value, error) {
+	s, ok := asString(v)
+	if !ok {
+		return reflect.Value{}, fmt.Errorf("split: expected string as second argument, got %s", v.Type())
+	}
+	return reflect.ValueOf(strings.Split(s, sep)), nil
+}
+
+func join(sep string, v reflect.Value) (reflect.Value, error) {
 	kind := v.Kind()
 	if kind != reflect.Slice && kind != reflect.Array {
-		return "", fmt.Errorf("join: expected slice or array as second argument, got %s", v.Type())
+		return reflect.Value{}, fmt.Errorf("join: expected slice or array as second argument, got %s", v.Type())
 	}
 
 	length := v.Len()
@@ -1047,19 +217,17 @@ func join(sep, v reflect.Value) (string, error) {
 		parts[i] = fmt.Sprint(v.Index(i).Interface())
 	}
 
-	return strings.Join(parts, sep.String()), nil
+	return reflect.ValueOf(strings.Join(parts, sep)), nil
 }
 
-func striptags(v reflect.Value) (string, error) {
-	if v.Kind() != reflect.String {
-		return "", fmt.Errorf("striptags: expected string, got %s", v.Type())
-	}
-	return regexp.MustCompile("<[^>]*>").ReplaceAllString(v.String(), ""), nil
+func striptags(s string) (string, error) {
+	return regexp.MustCompile("<[^>]*>").ReplaceAllString(s, ""), nil
 }
 
-func substr(start, length int, v reflect.Value) (string, error) {
-	if v.Kind() != reflect.String {
-		return "", fmt.Errorf("substr: expected string as third argument, got %s", v.Type())
+func substr(start, length int, v reflect.Value) (reflect.Value, error) {
+	s, ok := asString(v)
+	if !ok {
+		return reflect.Value{}, fmt.Errorf("substr: expected string as third argument, got %s", v.Type())
 	}
 	if start < 0 {
 		start = 0
@@ -1068,35 +236,27 @@ func substr(start, length int, v reflect.Value) (string, error) {
 		length = 0
 	}
 	end := start + length
-	s := v.String()
 	if end > len(s) {
 		end = len(s)
 	}
 	if start > end {
 		start = end
 	}
-	return s[start:end], nil
+	return reflect.ValueOf(s[start:end]), nil
 }
 
-func repeat(count int, v reflect.Value) (string, error) {
-	if v.Kind() != reflect.String {
-		return "", fmt.Errorf("repeat: expected string as second argument, got %s", v.Type())
+func repeat(count int, v reflect.Value) (reflect.Value, error) {
+	s, ok := asString(v)
+	if !ok {
+		return reflect.Value{}, fmt.Errorf("repeat: expected string as second argument, got %s", v.Type())
 	}
 	if count <= 0 {
-		return "", nil
+		return reflect.ValueOf(""), nil
 	}
-	return strings.Repeat(v.String(), count), nil
+	return reflect.ValueOf(strings.Repeat(s, count)), nil
 }
 
-func camelCase(v reflect.Value) (string, error) {
-	if v.Kind() != reflect.String {
-		return "", fmt.Errorf("camelCase: expected string, got %s", v.Type())
-	}
-	s := v.String()
-	if s == "" {
-		return "", nil
-	}
-
+func camelCase(s string) string {
 	var result strings.Builder
 	capNext := false
 	for i, r := range s {
@@ -1113,16 +273,12 @@ func camelCase(v reflect.Value) (string, error) {
 			capNext = true
 		}
 	}
-	return result.String(), nil
+	return result.String()
 }
 
-func pascalCase(v reflect.Value) (string, error) {
-	if v.Kind() != reflect.String {
-		return "", fmt.Errorf("pascalCase: expected string, got %s", v.Type())
-	}
-	s := v.String()
+func pascalCase(s string) string {
 	if s == "" {
-		return "", nil
+		return ""
 	}
 
 	var result strings.Builder
@@ -1139,14 +295,10 @@ func pascalCase(v reflect.Value) (string, error) {
 			capNext = true
 		}
 	}
-	return result.String(), nil
+	return result.String()
 }
 
-func snakeCase(v reflect.Value) (string, error) {
-	if v.Kind() != reflect.String {
-		return "", fmt.Errorf("snakeCase: expected string, got %s", v.Type())
-	}
-	s := v.String()
+func snakeCase(s string) string {
 	var result strings.Builder
 	for i, r := range s {
 		if i > 0 && (unicode.IsUpper(r) || unicode.IsNumber(r) && !unicode.IsNumber(rune(s[i-1]))) {
@@ -1154,14 +306,10 @@ func snakeCase(v reflect.Value) (string, error) {
 		}
 		result.WriteRune(unicode.ToLower(r))
 	}
-	return result.String(), nil
+	return result.String()
 }
 
-func kebabCase(v reflect.Value) (string, error) {
-	if v.Kind() != reflect.String {
-		return "", fmt.Errorf("kebabCase: expected string, got %s", v.Type())
-	}
-	s := v.String()
+func kebabCase(s string) string {
 	var result strings.Builder
 	for i, r := range s {
 		if i > 0 && (unicode.IsUpper(r) || unicode.IsNumber(r) && !unicode.IsNumber(rune(s[i-1]))) {
@@ -1169,35 +317,35 @@ func kebabCase(v reflect.Value) (string, error) {
 		}
 		result.WriteRune(unicode.ToLower(r))
 	}
-	return result.String(), nil
+	return result.String()
 }
 
-func truncate(length int, suffix, v reflect.Value) (string, error) {
-	if suffix.Kind() != reflect.String {
-		return "", fmt.Errorf("truncate: expected string as second argument, got %s", suffix.Type())
+func truncate(length int, suffix, v reflect.Value) (reflect.Value, error) {
+	ss, ok := asString(suffix)
+	if !ok {
+		return reflect.Value{}, fmt.Errorf("truncate: expected string as first argument, got %s", suffix.Type())
 	}
-	if v.Kind() != reflect.String {
-		return "", fmt.Errorf("truncate: expected string as third argument, got %s", v.Type())
+	s, ok := asString(v)
+	if !ok {
+		return reflect.Value{}, fmt.Errorf("truncate: expected string as second argument, got %s", v.Type())
 	}
 	if length <= 0 {
-		return "", nil
+		return reflect.ValueOf(""), nil
 	}
-	s := v.String()
 	if len(s) <= length {
-		return s, nil
+		return reflect.ValueOf(s), nil
 	}
-	suf := suffix.String()
-	return s[:length-len(suf)] + suf, nil
+	return reflect.ValueOf(s[:length-len(ss)] + ss), nil
 }
 
-func wordwrap(width int, v reflect.Value) (string, error) {
-	if v.Kind() != reflect.String {
-		return "", fmt.Errorf("wordwrap: expected string as second argument, got %s", v.Type())
+func wordwrap(width int, v reflect.Value) (reflect.Value, error) {
+	s, ok := asString(v)
+	if !ok {
+		return reflect.Value{}, fmt.Errorf("wordwrap: expected string, got %s", v.Type())
 	}
-	s := v.String()
 	words := strings.Fields(s)
 	if len(words) == 0 {
-		return s, nil
+		return reflect.ValueOf(s), nil
 	}
 	var lines []string
 	var currentLine string
@@ -1217,46 +365,41 @@ func wordwrap(width int, v reflect.Value) (string, error) {
 	if currentLine != "" {
 		lines = append(lines, currentLine)
 	}
-	return strings.Join(lines, "\n"), nil
+	return reflect.ValueOf(strings.Join(lines, "\n")), nil
 }
 
-func center(width int, v reflect.Value) (string, error) {
-	if v.Kind() != reflect.String {
-		return "", fmt.Errorf("center: expected string as second argument, got %s", v.Type())
+func center(width int, v reflect.Value) (reflect.Value, error) {
+	s, ok := asString(v)
+	if !ok {
+		return reflect.Value{}, fmt.Errorf("center: expected string, got %s", v.Type())
 	}
-	s := v.String()
 	if width <= len(s) {
-		return s, nil
+		return reflect.ValueOf(s), nil
 	}
 	left := (width - len(s)) / 2
 	right := width - len(s) - left
-	return strings.Repeat(" ", left) + s + strings.Repeat(" ", right), nil
+	return reflect.ValueOf(strings.Repeat(" ", left) + s + strings.Repeat(" ", right)), nil
 }
 
-func matchRegex(pattern, s reflect.Value) (bool, error) {
-	if pattern.Kind() != reflect.String {
+func matchRegex(pattern, v reflect.Value) (bool, error) {
+	p, ok := asString(pattern)
+	if !ok {
 		return false, fmt.Errorf("matchRegex: expected string as first argument, got %s", pattern.Type())
 	}
-	if s.Kind() != reflect.String {
-		return false, fmt.Errorf("matchRegex: expected string as second argument, got %s", s.Type())
+	s, ok := asString(v)
+	if !ok {
+		return false, fmt.Errorf("matchRegex: expected string as second argument, got %s", v.Type())
 	}
-	return regexp.MatchString(pattern.String(), s.String())
-}
-
-func urlUnescape(v reflect.Value) (string, error) {
-	if v.Kind() != reflect.String {
-		return "", fmt.Errorf("urlUnescape: expected string, got %s", v.Type())
-	}
-	return url.QueryUnescape(v.String())
+	return regexp.MatchString(p, s)
 }
 
 // Encoding functions
 
-func b64dec(v reflect.Value) (string, error) {
-	if v.Kind() != reflect.String {
-		return "", fmt.Errorf("b64dec: expected string, got %s", v.Type())
-	}
-	s := v.String()
+func b64enc(s string) string {
+	return base64.StdEncoding.EncodeToString([]byte(s))
+}
+
+func b64dec(s string) (string, error) {
 	b, err := base64.StdEncoding.DecodeString(s)
 	if err != nil {
 		return "", err
@@ -1266,50 +409,63 @@ func b64dec(v reflect.Value) (string, error) {
 
 // List functions
 
+func list(values ...reflect.Value) (reflect.Value, error) {
+	if len(values) == 0 {
+		return reflect.ValueOf([]string{}), nil
+	}
+	result := reflect.MakeSlice(reflect.SliceOf(values[0].Type()), len(values), len(values))
+	for i, v := range values {
+		result.Index(i).Set(v)
+	}
+	return result, nil
+}
+
 func first(v reflect.Value) (reflect.Value, error) {
 	switch v.Kind() {
-	case reflect.Slice, reflect.Array, reflect.String:
+	case reflect.Slice, reflect.Array:
 		if v.Len() == 0 {
 			return reflect.Value{}, nil
 		}
 		return v.Index(0), nil
 	default:
+		if s, ok := asString(v); ok {
+			if len(s) == 0 {
+				return reflect.Value{}, nil
+			}
+			return reflect.ValueOf(s[0]), nil
+		}
 		return reflect.Value{}, fmt.Errorf("first: unsupported type %s", v.Type())
 	}
 }
 
 func last(v reflect.Value) (reflect.Value, error) {
 	switch v.Kind() {
-	case reflect.Slice, reflect.Array, reflect.String:
+	case reflect.Slice, reflect.Array:
 		if v.Len() == 0 {
 			return reflect.Value{}, nil
 		}
 		return v.Index(v.Len() - 1), nil
 	default:
+		if s, ok := asString(v); ok {
+			if len(s) == 0 {
+				return reflect.Value{}, nil
+			}
+			return reflect.ValueOf(s[len(s)-1]), nil
+		}
 		return reflect.Value{}, fmt.Errorf("last: unsupported type %s", v.Type())
 	}
 }
 
-func rest(v reflect.Value) (reflect.Value, error) {
-	switch v.Kind() {
-	case reflect.Slice, reflect.Array, reflect.String:
-		if v.Len() <= 1 {
-			return reflect.MakeSlice(v.Type(), 0, 0), nil
-		}
-		return v.Slice(1, v.Len()), nil
-	default:
-		return reflect.Value{}, fmt.Errorf("rest: unsupported type %s", v.Type())
+func reverseString(s string) string {
+	runes := []rune(s)
+	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
+		runes[i], runes[j] = runes[j], runes[i]
 	}
+	return string(runes)
 }
 
 func reverse(v reflect.Value) (reflect.Value, error) {
 	switch v.Kind() {
-	case reflect.String:
-		runes := []rune(v.String())
-		for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
-			runes[i], runes[j] = runes[j], runes[i]
-		}
-		return reflect.ValueOf(string(runes)), nil
 	case reflect.Slice, reflect.Array:
 		length := v.Len()
 		reversed := reflect.MakeSlice(v.Type(), length, length)
@@ -1318,6 +474,16 @@ func reverse(v reflect.Value) (reflect.Value, error) {
 		}
 		return reversed, nil
 	default:
+		if s, ok := asString(v); ok {
+			return reflect.ValueOf(reverseString(s)), nil
+		}
+		if c, err := asConverterFunc(v); err != nil {
+			return reflect.Value{}, err
+		} else if c != nil {
+			return reflect.ValueOf(c.then(func(s string) (string, error) {
+				return reverseString(s), nil
+			})), nil
+		}
 		return reflect.Value{}, fmt.Errorf("reverse: unsupported type %s", v.Type())
 	}
 }
@@ -1354,7 +520,13 @@ func uniq(v reflect.Value) (reflect.Value, error) {
 	return uniqueSlice, nil
 }
 
-func in(item, collection reflect.Value) (bool, error) {
+func ContainsWord(s, word string) bool {
+	pattern := fmt.Sprintf(`\b%s\b`, regexp.QuoteMeta(word))
+	matched, _ := regexp.MatchString(pattern, s)
+	return matched
+}
+
+func includes(item, collection reflect.Value) (bool, error) {
 	switch collection.Kind() {
 	case reflect.Slice, reflect.Array:
 		for i := 0; i < collection.Len(); i++ {
@@ -1365,10 +537,13 @@ func in(item, collection reflect.Value) (bool, error) {
 		return false, nil
 	case reflect.Map:
 		return collection.MapIndex(item).IsValid(), nil
-	case reflect.String:
-		return strings.Contains(collection.String(), fmt.Sprint(item.Interface())), nil
 	default:
-		return false, fmt.Errorf("in: unsupported collection type %s", collection.Type())
+		if s, ok := asString(collection); ok {
+			if i, ok := asString(item); ok {
+				return ContainsWord(s, i), nil
+			}
+		}
+		return false, fmt.Errorf("includes: unsupported collection type %s", collection.Type())
 	}
 }
 
@@ -1461,28 +636,28 @@ func min(args ...reflect.Value) (reflect.Value, error) {
 }
 
 func ceil(x reflect.Value) (reflect.Value, error) {
-	f, err := toFloat(x)
+	f, err := toFloat64(x)
 	if err != nil {
 		return reflect.Value{}, err
 	}
-	return reflect.ValueOf(math.Ceil(f)), nil
+	return reflect.ValueOf(math.Ceil(f.Float())), nil
 }
 
 func floor(x reflect.Value) (reflect.Value, error) {
-	f, err := toFloat(x)
+	f, err := toFloat64(x)
 	if err != nil {
 		return reflect.Value{}, err
 	}
-	return reflect.ValueOf(math.Floor(f)), nil
+	return reflect.ValueOf(math.Floor(f.Float())), nil
 }
 
-func round(x reflect.Value, precision int) (reflect.Value, error) {
-	f, err := toFloat(x)
+func round(precision int, x reflect.Value) (reflect.Value, error) {
+	f, err := toFloat64(x)
 	if err != nil {
 		return reflect.Value{}, err
 	}
 	shift := math.Pow10(precision)
-	return reflect.ValueOf(math.Round(f*shift) / shift), nil
+	return reflect.ValueOf(math.Round(f.Float()*shift) / shift), nil
 }
 
 // Helper functions for numeric operations
@@ -1546,6 +721,25 @@ func toBigFloat(v reflect.Value) (*big.Float, error) {
 	}
 }
 
+// toStrings converts a slice or array of reflect.Value to a slice of strings.
+func toStrings(v reflect.Value) ([]string, error) {
+	if v.Kind() != reflect.Slice && v.Kind() != reflect.Array {
+		return nil, fmt.Errorf("toStrings: expected slice or array, got %s", v.Type())
+	}
+	if v.Len() == 0 {
+		return nil, nil
+	}
+	s := make([]string, v.Len())
+	for i := 0; i < v.Len(); i++ {
+		if str, ok := asString(v.Index(i)); ok {
+			s[i] = str
+		} else {
+			return nil, fmt.Errorf("toStrings: expected string, got %s", v.Index(i).Type())
+		}
+	}
+	return s, nil
+}
+
 // Type checking functions
 
 func isInt(v reflect.Value) bool {
@@ -1577,80 +771,110 @@ func isFloat(v reflect.Value) bool {
 
 // Type conversion functions
 
-func toInt(v reflect.Value) (int64, error) {
+func toInt64(v reflect.Value) (reflect.Value, error) {
+	if v.Kind() == reflect.Int64 {
+		return v, nil
+	}
 	switch v.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return v.Int(), nil
+		return reflect.ValueOf(v.Int()), nil
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		return int64(v.Uint()), nil
+		return reflect.ValueOf(int64(v.Uint())), nil
 	case reflect.Float32, reflect.Float64:
-		return int64(v.Float()), nil
+		return reflect.ValueOf(int64(v.Float())), nil
 	case reflect.String:
-		return strconv.ParseInt(v.String(), 10, 64)
+		i, err := strconv.ParseInt(v.String(), 10, 64)
+		if err != nil {
+			return reflect.Value{}, err
+		}
+		return reflect.ValueOf(i), nil
 	case reflect.Bool:
 		if v.Bool() {
-			return 1, nil
+			return reflect.ValueOf(int64(1)), nil
 		}
-		return 0, nil
+		return reflect.ValueOf(int64(0)), nil
 	default:
-		return 0, fmt.Errorf("cannot convert %s to int", v.Type())
+		return reflect.Value{}, fmt.Errorf("cannot convert %s to int", v.Type())
 	}
 }
 
-func toFloat(v reflect.Value) (float64, error) {
+func toFloat64(v reflect.Value) (reflect.Value, error) {
 	switch v.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return float64(v.Int()), nil
+		return reflect.ValueOf(float64(v.Int())), nil
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		return float64(v.Uint()), nil
+		return reflect.ValueOf(float64(v.Uint())), nil
 	case reflect.Float32, reflect.Float64:
-		return v.Float(), nil
+		return reflect.ValueOf(v.Float()), nil
 	case reflect.String:
-		return strconv.ParseFloat(v.String(), 64)
+		f, err := strconv.ParseFloat(v.String(), 64)
+		if err != nil {
+			return reflect.Value{}, err
+		}
+		return reflect.ValueOf(f), nil
 	case reflect.Bool:
 		if v.Bool() {
-			return 1, nil
+			return reflect.ValueOf(float64(1)), nil
 		}
-		return 0, nil
+		return reflect.ValueOf(float64(0)), nil
 	default:
-		return 0, fmt.Errorf("cannot convert %s to float", v.Type())
+		return reflect.Value{}, fmt.Errorf("cannot convert %s to float", v.Type())
 	}
 }
 
-func toString(v reflect.Value) (string, error) {
+func toString(v reflect.Value) (reflect.Value, error) {
 	switch v.Kind() {
 	case reflect.String:
-		return v.String(), nil
+		return v, nil
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return strconv.FormatInt(v.Int(), 10), nil
+		return reflect.ValueOf(strconv.FormatInt(v.Int(), 10)), nil
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		return strconv.FormatUint(v.Uint(), 10), nil
+		return reflect.ValueOf(strconv.FormatUint(v.Uint(), 10)), nil
 	case reflect.Float32:
-		return strconv.FormatFloat(v.Float(), 'f', -1, 32), nil
+		return reflect.ValueOf(strconv.FormatFloat(v.Float(), 'f', -1, 32)), nil
 	case reflect.Float64:
-		return strconv.FormatFloat(v.Float(), 'f', -1, 64), nil
+		return reflect.ValueOf(strconv.FormatFloat(v.Float(), 'f', -1, 64)), nil
 	case reflect.Bool:
-		return strconv.FormatBool(v.Bool()), nil
+		return reflect.ValueOf(strconv.FormatBool(v.Bool())), nil
 	default:
-		return "", fmt.Errorf("cannot convert %s to string", v.Type())
+		return reflect.Value{}, fmt.Errorf("cannot convert %s to string", v.Type())
 	}
 }
 
-func toBool(v reflect.Value) (bool, error) {
-	switch v.Kind() {
-	case reflect.Bool:
-		return v.Bool(), nil
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return v.Int() != 0, nil
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		return v.Uint() != 0, nil
-	case reflect.Float32, reflect.Float64:
-		return v.Float() != 0, nil
-	case reflect.String:
-		return strconv.ParseBool(v.String())
-	default:
-		return false, fmt.Errorf("cannot convert %s to bool", v.Type())
+func toBool(v reflect.Value) (reflect.Value, error) {
+	if v.Kind() == reflect.Bool {
+		return v, nil
 	}
+	switch v.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return reflect.ValueOf(v.Int() != 0), nil
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		return reflect.ValueOf(v.Uint() != 0), nil
+	case reflect.Float32, reflect.Float64:
+		f := v.Float()
+		return reflect.ValueOf(f != 0 && !math.IsNaN(f)), nil
+	case reflect.String:
+		x, err := strconv.ParseBool(v.String())
+		if err != nil {
+			return reflect.Value{}, err
+		}
+		return reflect.ValueOf(x), nil
+	default:
+		return reflect.Value{}, fmt.Errorf("cannot convert %s to bool", v.Type())
+	}
+}
+
+func asString(v reflect.Value) (string, bool) {
+	if v.Kind() == reflect.String {
+		return v.String(), true
+	}
+	// If v implements fmt.Stringer, use its String method
+	if v.CanInterface() {
+		if s, ok := v.Interface().(fmt.Stringer); ok {
+			return s.String(), true
+		}
+	}
+	return "", false
 }
 
 // Date functions

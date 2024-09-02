@@ -47,9 +47,7 @@ import "{{.Path}}";
 {{- end}}
 
 {{- define "next/enums" -}}
-{{range $i, $e := .List}}
-{{if $i}}{{print "\n"}}{{end}}{{next . -}}
-{{- end}}
+{{render "next/decl.types" .}}
 {{- end}}
 
 {{- define "next/enum" -}}
@@ -69,9 +67,7 @@ enum {{.Name}} {
 {{- end}}
 
 {{- define "next/structs" -}}
-{{range $i, $s := .List}}
-{{if $i}}{{print "\n"}}{{end}}{{next . -}}
-{{- end}}
+{{render "next/decl.types" .}}
 {{- end}}
 
 {{- define "next/struct" -}}
@@ -99,8 +95,18 @@ enum {{.Name}} {
 {{- end}}
 
 {{- define "next/interfaces" -}}
-{{range $i, $s := .List}}
-{{if $i}}{{print "\n"}}{{end}}{{next . -}}
+{{render "next/decl.types" .}}
+{{- end}}
+
+{{- define "next/decl.types" -}}
+{{- $n := 0 -}}
+{{range .List}}
+    {{- if or (not .Annotations.next) (not (index .Annotations.next (printf "%s_alias" lang))) }}
+{{_}}
+        {{- if $n}}{{print "\n"}}{{end -}}
+            {{next .}}
+        {{- end}}
+    {{- $n = add 1 $n}}
 {{- end}}
 {{- end}}
 
@@ -145,4 +151,32 @@ enum {{.Name}} {
 {{- define "next/interface.method.return" -}}
 {{- if .Type}} {{next .Type}}
 {{- end}}
+{{- end}}
+
+{{- define "next/type.enum" -}}
+{{render "internal.type:alias" .}}
+{{- end}}
+
+{{- define "next/type.struct" -}}
+{{render "internal.type:alias" .}}
+{{- end}}
+
+{{- define "next/type.interface" -}}
+{{render "internal.type:alias" .}}
+{{- end}}
+
+{{- define "next/internal.type:alias" -}}
+{{- if or (not .Decl.Annotations.next) (not (index .Decl.Annotations.next (printf "%s_alias" lang))) }}
+{{- type . -}}
+{{- else -}}
+{{- render "type:alias" . | trim -}}
+{{- end}}
+{{- end}}
+
+{{- define "next/type:alias" -}}
+{{- errorf "%s_alias not supported! Did you define \"%s/type:alias\"?" (lang) (lang) -}}
+{{- end}}
+
+{{- define "next/type:used" -}}
+{{- next .Type -}}
 {{- end}}

@@ -57,7 +57,7 @@ typedef unsigned char _Bool;
 {{.}}
 {{- end}}
 
-{{- define "next/c/type.used" -}}
+{{- define "next/c/type:used" -}}
 {{next .Type}}
 {{- end}}
 

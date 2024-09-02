@@ -27,11 +27,11 @@
 #include "{{.File.Name}}.h"
 {{- end}}
 
-{{- define "next/cpp/type.used" -}}
+{{- define "next/cpp/type:used" -}}
 {{if not (.Type.Decl.File.Package.In .File.Package) -}}
 {{$ns := .Type.Decl.File.Package.Annotations.next.cpp_namespace -}}
 {{if $ns -}}
-{{unquote $ns.String}}::
+{{$ns}}::
 {{- end -}}
 {{- end -}}
 {{next .Type}}
@@ -41,14 +41,14 @@
 {{- $ns := .Annotations.next.cpp_namespace -}}
 {{- if $ns}}
 
-namespace {{unquote $ns.String}} {
+namespace {{$ns}} {
 {{end}}
 {{- end}}
 
 {{- define "next/cpp/file:namespace.end" -}}
 {{- $ns := .Annotations.next.cpp_namespace -}}
 {{- if $ns}}
-} // namespace {{unquote $ns.String}}
+} // namespace {{$ns}}
 {{- end}}
 {{- end}}
 

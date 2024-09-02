@@ -1,6 +1,6 @@
 {{/*
 this: enum
-path: {{replace (render "java/package.name" this.Package) "." "/"}}/{{this.Name}}.java
+path: {{render "java/package.name" this.Package | replace "." "/"}}/{{this.Name}}.java
 */}}
 
 {{- define "java/enum" -}}

@@ -11,6 +11,11 @@ package {{.Package.Name}}
 {{- define "next/go/imports.decl" -}}
 {{ _ }}
 import "strconv"
+{{- if .File.Annotations.next.go_imports}}
+{{- range (.File.Annotations.next.go_imports | split "," | map (split "." | first | trimPrefix "*") | sort | uniq)}}
+import "{{. | trimPrefix "*"}}"
+{{- end}}
+{{- end}}
 {{range .TrimmedList}}
 {{- if len .File.Package.Types}}
 {{next .}}
@@ -26,6 +31,19 @@ import {{.File.Package.Name}} {{.File.Package.Annotations.next.go_package -}}
 {{- define "next/go/imports.unused" -}}
 {{ _ }}
 var _ = strconv.Itoa
+{{- if .File.Annotations.next.go_imports}}
+{{- range (.File.Annotations.next.go_imports | split "," | sort | uniq)}}
+{{- $pkg := . | split "." | first}}
+{{- $ptr := (hasPrefix "*" $pkg)}}
+{{- $val := . | split "." | last}}
+{{- $pkg = $pkg | split "/" | last}}
+{{- if $ptr}}
+var _ = ({{$pkg}}.{{$val}})(nil)
+{{- else}}
+var _ = {{$pkg}}.{{$val}}
+{{- end}}
+{{- end}}
+{{- end}}
 {{ _ }}
     {{- range $p := .TrimmedList}}
         {{- if len .File.Package.Types}}
@@ -39,7 +57,7 @@ var _ = strconv.Itoa
 var _ = (*{{.File.Package.Name}}.{{next (index (.File.Package.Types) 0)}})(nil)
 {{- end}}
 
-{{- define "next/go/type.used" -}}
+{{- define "next/go/type:used" -}}
 {{if not (.Type.Decl.File.Package.In .File.Package) -}}
 {{.Type.Decl.File.Package.Name -}}.
 {{- end -}}
@@ -108,4 +126,21 @@ func (x {{.Name}}) String() string {
 {{- end}}
 {{- else if .Type}} {{next .Type}}
 {{- end}}
+{{- end}}
+
+{{- define "next/go/type:alias" -}}
+{{- $alias := .Decl.Annotations.next.go_alias -}}
+{{- $parts := split "." $alias -}}
+{{- if eq 1 (len $parts) -}}
+    {{index $parts 0}}
+{{- else if eq 2 (len $parts) -}}
+    {{- $pkg := (index $parts 0) -}}
+    {{- $typ := (index $parts 1) -}}
+    {{- $ptr := (hasPrefix "*" $pkg) -}}
+    {{- $pkg = (split "/" $pkg | last)}}
+    {{- if $ptr -}}*{{- end -}}
+    {{$pkg}}.{{$typ}}
+{{- else }}
+{{- errorf "bad go_alias format: %q" $alias}}
+{{- end -}}
 {{- end}}

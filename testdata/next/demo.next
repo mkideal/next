@@ -1,5 +1,13 @@
 @next(
     go_package="github.com/next/next/testdata/gen/go/demo",
+    // import "net/http" for go_alias "net/http.HandlerFunc"
+    // import "fmt" for demonstrating import with go type
+    //
+    // - path/to/pkg.Func
+    // - *path/to/pkg.Type
+    //
+    // Please don't duplicate the import path, like: "net/http.HandlerFunc", "*net/http.Server"
+    go_imports="net/http.HandlerFunc,*fmt.Stringer",
     cpp_namespace="demo",
     java_package="com.example.demo",
 )
@@ -96,4 +104,65 @@ interface ReadWriter {
     Read(@next(mut) bytes buffer) int;
     @next(mut)
     Write(bytes data) int;
+}
+
+@next(
+    available="go,java",
+    go_alias="net/http.HandlerFunc",
+    java_alias="java.util.function.Function<com.sun.net.httpserver.HttpExchange, String>",
+)
+interface HTTPHandlerFunc {}
+
+@next(available="go,java")
+interface HTTPServer {
+    @next(error)
+    HandleFunc(string path, HTTPHandlerFunc handler);
+}
+
+// HTTPClient is an interface for making HTTP requests
+interface HTTPClient {
+    // All is available for all languages
+    All(string url) string;
+
+    // Get is available for go and java
+    @next(error, available="go,java")
+    Get(string url) string;
+
+    // Post is available for java and cpp
+    @next(error, available="java,cpp")
+    Post(string url, string body) string;
+
+    // GoMethod is available for go
+    @next(available="go")
+    GoMethod();
+
+    // JavaMethod is available for java
+    @next(available="java")
+    JavaMethod();
+
+    // CppMethod is available for cpp
+    @next(available="cpp")
+    CppMethod();
+}
+
+// LanguageSpecificed is a struct type with language-specific fields
+struct LanguageSpecificed {
+    // id is available for all languages
+    string id;
+
+    // name is available for go, java, and cpp
+    @next(available="go,java,cpp")
+    string name;
+
+    // x is available for go
+    @next(available="go")
+    string x;
+
+    // y is available for java
+    @next(available="java")
+    string y;
+
+    // z is available for cpp
+    @next(available="cpp")
+    string z;
 }

@@ -18,6 +18,13 @@ import (
 // @api(template/annotation) AnnotationGroup
 type AnnotationGroup map[string]Annotation
 
+func (a AnnotationGroup) get(name string) Annotation {
+	if a == nil {
+		return nil
+	}
+	return a[name]
+}
+
 // Annotation represents an annotation.
 //
 // Example:
@@ -29,6 +36,13 @@ type AnnotationGroup map[string]Annotation
 // ```
 // @api(template/annotation) Annotation
 type Annotation map[string]*AnnotationParam
+
+func (a Annotation) get(name string) *AnnotationParam {
+	if a == nil {
+		return nil
+	}
+	return a[name]
+}
 
 // AnnotationParam represents an annotation parameter.
 // @api(template/annotation) AnnotationParam
@@ -76,6 +90,9 @@ func (a *AnnotationParam) Value() any {
 func (a *AnnotationParam) String() string {
 	if a == nil {
 		return "<nil>"
+	}
+	if a.value != nil && a.value.Kind() == constant.String {
+		return constant.StringVal(a.value)
 	}
 	return a.value.String()
 }

@@ -5,14 +5,18 @@ import (
 	"slices"
 	"strconv"
 
+	"github.com/gopherd/core/op"
 	"github.com/next/next/src/ast"
 	"github.com/next/next/src/constant"
+	"github.com/next/next/src/templateutil"
 	"github.com/next/next/src/token"
 )
 
 // Imports holds a list of imports.
 // @api(object/Imports)
 type Imports struct {
+	// File is the file containing the imports.
+	File *File
 	// List is the list of imports.
 	// @api(object/Imports/List)
 	List []*Import
@@ -96,6 +100,9 @@ func (i *Import) resolve(ctx *Context, file *File, _ Scope) {}
 type Decl interface {
 	Object
 
+	// annotations returns the annotations for the declaration.
+	annotations() AnnotationGroup
+
 	// File returns the file containing the declaration.
 	// @api(object/decl/File)
 	File() *File
@@ -118,6 +125,12 @@ func (d *StructField) Package() *Package          { return d.file.pkg }
 func (d *Interface) Package() *Package            { return d.file.pkg }
 func (d *InterfaceMethod) Package() *Package      { return d.file.pkg }
 func (d *InterfaceMethodParam) Package() *Package { return d.File().Package() }
+
+func (d *PrimitiveType) annotations() AnnotationGroup { return nil }
+func (d *ArrayType) annotations() AnnotationGroup     { return nil }
+func (d *VectorType) annotations() AnnotationGroup    { return nil }
+func (d *MapType) annotations() AnnotationGroup       { return nil }
+func (d *File) annotations() AnnotationGroup          { return d.Annotations }
 
 var _ Decl = (*PrimitiveType)(nil)
 var _ Decl = (*ArrayType)(nil)
@@ -154,6 +167,8 @@ type Decls struct {
 	enums      List[*Enum]
 	structs    List[*Struct]
 	interfaces List[*Interface]
+
+	lang string
 }
 
 func (d *Decls) resolve(ctx *Context, file *File) {
@@ -180,7 +195,7 @@ func (d *Decls) Consts() List[*Const] {
 	if d == nil {
 		return nil
 	}
-	return d.consts
+	return availableList(d.consts, d.lang)
 }
 
 // Enums returns the list of enum declarations.
@@ -189,7 +204,7 @@ func (d *Decls) Enums() List[*Enum] {
 	if d == nil {
 		return nil
 	}
-	return d.enums
+	return availableList(d.enums, d.lang)
 }
 
 // Structs returns the list of struct declarations.
@@ -198,7 +213,7 @@ func (d *Decls) Structs() List[*Struct] {
 	if d == nil {
 		return nil
 	}
-	return d.structs
+	return availableList(d.structs, d.lang)
 }
 
 // Interfaces returns the list of interface declarations.
@@ -207,7 +222,7 @@ func (d *Decls) Interfaces() List[*Interface] {
 	if d == nil {
 		return nil
 	}
-	return d.interfaces
+	return availableList(d.interfaces, d.lang)
 }
 
 // decl represents a declaration header (const, enum, struct, interface).
@@ -265,6 +280,10 @@ func (d *decl[Self, Name]) File() *File {
 
 func (d *decl[Self, Name]) resolve(ctx *Context, file *File, scope Scope) {
 	d.Annotations = ctx.resolveAnnotationGroup(file, d.self, d.unresolved.annotations)
+}
+
+func (d *decl[Self, Name]) annotations() AnnotationGroup {
+	return d.Annotations
 }
 
 // iotaValue represents the iota value of an enum member.
@@ -570,13 +589,15 @@ func (m *EnumMember) IsLast() bool {
 type Struct struct {
 	*decl[*Struct, StructName]
 
+	// lang is the current language to generate the struct.
+	lang string
+
+	// fields is the list of struct fields.
+	fields *Fields[*Struct, *StructField]
+
 	// Type is the struct type.
 	// @api(object/decl/Struct/Type)
 	Type *DeclType[*Struct]
-
-	// Fields is the list of struct fields.
-	// @api(object/decl/Struct/Fields)
-	Fields *Fields[*Struct, *StructField]
 }
 
 // StructName represents a struct name.
@@ -587,18 +608,23 @@ func newStruct(ctx *Context, file *File, src *ast.GenDecl[*ast.StructType]) *Str
 	s := &Struct{}
 	s.decl = newDecl(s, file, src.Pos(), StructName(src.Name.Name), src.Doc, src.Annotations)
 	s.Type = newDeclType(src.Pos(), src.Name.Name, token.Struct, s)
-	s.Fields = &Fields[*Struct, *StructField]{typename: "struct.fields", Decl: s}
+	s.fields = &Fields[*Struct, *StructField]{typename: "struct.fields", Decl: s}
 	for _, f := range src.Spec.Fields.List {
-		s.Fields.List = append(s.Fields.List, newStructField(ctx, file, s, f))
+		s.fields.List = append(s.fields.List, newStructField(ctx, file, s, f))
 	}
 	return s
 }
 
 func (s *Struct) resolve(ctx *Context, file *File, scope Scope) {
 	s.decl.resolve(ctx, file, scope)
-	for _, f := range s.Fields.List {
+	for _, f := range s.fields.List {
 		f.resolve(ctx, file, scope)
 	}
+}
+
+// Fields returns the list of struct fields.
+func (s *Struct) Fields() *Fields[*Struct, *StructField] {
+	return availableFields(s.fields, s.lang)
 }
 
 // Field represents a struct field declaration.
@@ -666,13 +692,15 @@ func (t *StructFieldType) resolve(ctx *Context, file *File, scope Scope) {
 type Interface struct {
 	*decl[*Interface, InterfaceName]
 
+	// lang is the current language to generate the interface.
+	lang string
+
+	// methods is the list of interface methods.
+	methods *Fields[*Interface, *InterfaceMethod]
+
 	// Type is the interface type.
 	// @api(object/decl/Interface/Type)
 	Type *DeclType[*Interface]
-
-	// Methods is the list of interface methods.
-	// @api(object/decl/Interface/Methods)
-	Methods *Fields[*Interface, *InterfaceMethod]
 }
 
 // InterfaceName represents an interface name.
@@ -683,18 +711,24 @@ func newInterface(ctx *Context, file *File, src *ast.GenDecl[*ast.InterfaceType]
 	i := &Interface{}
 	i.decl = newDecl(i, file, src.Pos(), InterfaceName(src.Name.Name), src.Doc, src.Annotations)
 	i.Type = newDeclType(src.Pos(), src.Name.Name, token.Interface, i)
-	i.Methods = &Fields[*Interface, *InterfaceMethod]{typename: "interface.methods", Decl: i}
+	i.methods = &Fields[*Interface, *InterfaceMethod]{typename: "interface.methods", Decl: i}
 	for _, m := range src.Spec.Methods.List {
-		i.Methods.List = append(i.Methods.List, newInterfaceMethod(ctx, file, i, m))
+		i.methods.List = append(i.methods.List, newInterfaceMethod(ctx, file, i, m))
 	}
 	return i
 }
 
 func (i *Interface) resolve(ctx *Context, file *File, scope Scope) {
 	i.decl.resolve(ctx, file, scope)
-	for _, m := range i.Methods.List {
+	for _, m := range i.methods.List {
 		m.resolve(ctx, file, scope)
 	}
+}
+
+// Methods returns the list of interface methods.
+// @api(object/decl/Interface/Methods)
+func (i *Interface) Methods() *Fields[*Interface, *InterfaceMethod] {
+	return availableFields(i.methods, i.lang)
 }
 
 // InterfaceMethod represents an interface method declaration.
@@ -792,6 +826,10 @@ func (p *InterfaceMethodParam) File() *File {
 	return p.Method.File()
 }
 
+func (p *InterfaceMethodParam) annotations() AnnotationGroup {
+	return p.Annotations
+}
+
 // InterfaceMethodParamName represents an interface method parameter name.
 // @api(object/decl/InterfaceMethodParamName)
 type InterfaceMethodParamName string
@@ -849,4 +887,58 @@ func (t *InterfaceMethodReturn) resolve(ctx *Context, file *File, scope Scope) {
 		return
 	}
 	t.Type = ctx.resolveType(file, t.unresolved.typ)
+}
+
+// isAvailable reports whether the declaration is available in the current language.
+func isAvailable(decl Decl, lang string) bool {
+	s, ok := decl.annotations().get("next").get("available").Value().(string)
+	return !ok || templateutil.ContainsWord(s, lang)
+}
+
+// available returns the declaration if it is available in the current language.
+func available[T Decl](decl T, lang string) (T, bool) {
+	op.Assertf(lang != "", "language must not be empty")
+	if !isAvailable(decl, lang) {
+		return decl, false
+	}
+	switch decl := any(decl).(type) {
+	case *File:
+		decl.decls.lang = lang
+	case *Struct:
+		decl.lang = lang
+	case *Interface:
+		decl.lang = lang
+	}
+	return decl, true
+}
+
+// availableFields returns the list of fields that are available in the current language.
+func availableFields[D, F Decl](fields *Fields[D, F], lang string) *Fields[D, F] {
+	op.Assertf(lang != "", "language must not be empty")
+	for i, f := range fields.List {
+		if isAvailable(f, lang) {
+			continue
+		}
+		list := make([]F, 0, len(fields.List))
+		list = append(list, fields.List[:i]...)
+		for j := i + 1; j < len(fields.List); j++ {
+			if isAvailable(fields.List[j], lang) {
+				list = append(list, fields.List[j])
+			}
+		}
+		return &Fields[D, F]{typename: fields.typename, Decl: fields.Decl, List: list}
+	}
+	return fields
+}
+
+// availableList returns the list of declarations that are available in the current language.
+func availableList[T Decl](list List[T], lang string) List[T] {
+	op.Assertf(lang != "", "language must not be empty")
+	availables := make([]T, 0, len(list))
+	for i, d := range list {
+		if _, ok := available(d, lang); ok {
+			availables = append(availables, list[i])
+		}
+	}
+	return availables
 }

@@ -1,6 +1,6 @@
 {{/*
 this: file
-path: {{replace (render "java/package.name" this.Package) "." "/"}}/Constants.java
+path: {{render "java/package.name" this.Package | replace "." "/"}}/Constants.java
 skip: {{eq 0 (len this.Decls.Consts.List)}}
 */}}
 

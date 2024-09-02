@@ -2,6 +2,7 @@ package types
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -245,6 +246,9 @@ func newTemplateContext[T Decl](ctx templateContextInfo) *templateContext[T] {
 	}
 	tc.funcs = template.FuncMap{
 		"ENV":    tc.env,
+		"lang":   tc.getLang,
+		"error":  tc.error,
+		"errorf": tc.errorf,
 		"head":   tc.head,
 		"align":  tc.align,
 		"type":   tc.type_,
@@ -332,6 +336,18 @@ func (tc *templateContext[T]) this() T {
 
 func (tc *templateContext[T]) env() flags.Map {
 	return tc.context.flags.envs
+}
+
+func (tc *templateContext[T]) getLang() string {
+	return tc.lang
+}
+
+func (tc *templateContext[T]) error(msg string) (string, error) {
+	return "", errors.New(msg)
+}
+
+func (tc *templateContext[T]) errorf(format string, args ...any) (string, error) {
+	return "", fmt.Errorf(format, args...)
 }
 
 // @api(template/context): type (Type)

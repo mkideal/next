@@ -21,7 +21,7 @@ import java.util.Arrays;
 {{- end}}
 
 {{- define "next/java/package.name" -}}
-{{unquote .Annotations.next.java_package.String}}
+{{.Annotations.next.java_package}}
 {{- end}}
 
 {{- define "next/java/import" -}}
@@ -103,4 +103,8 @@ public class Constants {
 
 {{- define "next/java/interface.method.return" -}}
 {{if .Type}}{{next .Type}}{{else}}void{{end}}
+{{- end}}
+
+{{- define "next/java/type:alias" -}}
+{{- .Decl.Annotations.next.java_alias -}}
 {{- end}}

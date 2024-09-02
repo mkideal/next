@@ -1,6 +1,6 @@
 {{/*
 this: struct
-path: {{replace (render "java/package.name" this.Package) "." "/"}}/{{this.Name}}.java
+path: {{render "java/package.name" this.Package | replace "." "/"}}/{{this.Name}}.java
 */}}
 
 {{- /* Overrides "next/java/struct": add package and imports before struct */ -}}

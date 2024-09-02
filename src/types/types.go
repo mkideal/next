@@ -18,7 +18,7 @@ func (*Doc) getType() string             { return "doc" }
 func (*Comment) getType() string         { return "comment" }
 func (*Imports) getType() string         { return "imports" }
 func (*Import) getType() string          { return "import" }
-func (*UsedType) getType() string        { return "type.used" }
+func (*UsedType) getType() string        { return "type:used" }
 func (*ArrayType) getType() string       { return "type.array" }
 func (*VectorType) getType() string      { return "type.vector" }
 func (*MapType) getType() string         { return "type.map" }

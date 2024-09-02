@@ -322,6 +322,14 @@ func generateForInterface(tc *templateContext[*Interface], file, content string,
 // gen generates a file using the given template, meta data, and object which may be a
 // file, const, enum or struct.
 func gen[T Decl](tc *templateContext[T], t *template.Template, mt templateMeta[*template.Template]) error {
+	if tc.decl.annotations().get("next").get(tc.lang+"_alias") != nil {
+		return nil
+	}
+	var ok bool
+	tc.decl, ok = available(tc.decl, tc.lang)
+	if !ok {
+		return nil
+	}
 	tc.entrypoint = t
 	if err := tc.init(); err != nil {
 		return err

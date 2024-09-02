@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"unicode/utf8"
 
 	"github.com/next/next/src/token"
 )
@@ -79,17 +78,7 @@ func (x boolVal) String() string  { return strconv.FormatBool(bool(x)) }
 
 // String returns a possibly shortened quoted form of the String value.
 func (x *stringVal) String() string {
-	const maxLen = 72 // a reasonable length
-	s := strconv.Quote(x.string())
-	if utf8.RuneCountInString(s) > maxLen {
-		i := 0
-		for n := 0; n < maxLen-3; n++ {
-			_, size := utf8.DecodeRuneInString(s[i:])
-			i += size
-		}
-		s = s[:i] + "..."
-	}
-	return s
+	return strconv.Quote(x.string())
 }
 
 // string constructs and returns the actual string literal value.

@@ -104,10 +104,10 @@ func newFile(ctx *Context, src *ast.File) *File {
 	f := &File{
 		pos:     src.Pos(),
 		Doc:     newDoc(src.Doc),
-		imports: &Imports{},
 		decls:   &Decls{},
 		symbols: make(map[string]Symbol),
 	}
+	f.imports = &Imports{File: f}
 	f.unresolved.annotations = src.Annotations
 
 	for _, i := range src.Imports {
@@ -210,6 +210,11 @@ func (f *File) createSymbols() (token.Pos, error) {
 		}
 	}
 	for _, d := range f.decls.structs {
+		if err := f.addSymbol(string(d.name), d.Type); err != nil {
+			return d.pos, err
+		}
+	}
+	for _, d := range f.decls.interfaces {
 		if err := f.addSymbol(string(d.name), d.Type); err != nil {
 			return d.pos, err
 		}
