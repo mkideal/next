@@ -72,6 +72,9 @@ For detailed information on Next's syntax, features, and usage, please visit the
 ## 📝 TODO
 
 - [ ] Implement vscode extensions to support Next source and Next template
+    - [ ] Implement syntax highlight
+    - [ ] Implemnet next language server
+- [ ] Implement load external template file: `{{import "../path/to/template/lib.npl"}}`
 - [ ] Implement consistency check for enum member types and provide type of enum value
 - [ ] Implement import dirs for importing files
 - [ ] Create comprehensive user documentation, supporting both Chinese and English

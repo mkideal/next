@@ -43,17 +43,25 @@ import "{{.Path}}";
 {{- end}}
 
 {{- define "next/const" -}}
-{{next .Doc}}const {{.Name}} = {{.Value}};{{next .Comment}}
+{{next .Doc}}const {{next .Name}} = {{.Value}};{{next .Comment}}
+{{- end}}
+
+{{- define "next/const.name" -}}
+{{.}}
 {{- end}}
 
 {{- define "next/enums" -}}
-{{render "next/decl.types" .}}
+{{render "next/decl:types" .}}
 {{- end}}
 
 {{- define "next/enum" -}}
-enum {{.Name}} {
+enum {{next .Type}} {
     {{- next .Members}}
 }
+{{- end}}
+
+{{- define "next/type.enum" -}}
+{{render "next/internal.type:alias" .}}
 {{- end}}
 
 {{- define "next/enum.members" -}}
@@ -63,17 +71,25 @@ enum {{.Name}} {
 {{- end}}
 
 {{- define "next/enum.member" -}}
-{{next .Doc}}{{.Name}} = {{.Value}},{{next .Comment}}
+{{next .Doc}}{{next .Name}} = {{.Value}},{{next .Comment}}
+{{- end}}
+
+{{- define "next/enum.member.name" -}}
+{{.}}
 {{- end}}
 
 {{- define "next/structs" -}}
-{{render "next/decl.types" .}}
+{{render "next/decl:types" .}}
 {{- end}}
 
 {{- define "next/struct" -}}
-{{next .Doc}}struct {{.Name}} {
+{{next .Doc}}struct {{next .Type}} {
     {{- next .Fields}}
 }
+{{- end}}
+
+{{- define "next/type.struct" -}}
+{{render "next/internal.type:alias" .}}
 {{- end}}
 
 {{- define "next/struct.fields" -}}
@@ -95,10 +111,10 @@ enum {{.Name}} {
 {{- end}}
 
 {{- define "next/interfaces" -}}
-{{render "next/decl.types" .}}
+{{render "next/decl:types" .}}
 {{- end}}
 
-{{- define "next/decl.types" -}}
+{{- define "next/decl:types" -}}
 {{- $n := 0 -}}
 {{range .List}}
     {{- if or (not .Annotations.next) (not (index .Annotations.next (printf "%s_alias" lang))) }}
@@ -111,9 +127,13 @@ enum {{.Name}} {
 {{- end}}
 
 {{- define "next/interface" -}}
-{{next .Doc}}interface {{.Name}} {
+{{next .Doc}}interface {{next .Type}} {
     {{- next .Methods}}
 }
+{{- end}}
+
+{{- define "next/type.interface" -}}
+{{render "next/internal.type:alias" .}}
 {{- end}}
 
 {{- define "next/interface.methods" -}}
@@ -153,24 +173,16 @@ enum {{.Name}} {
 {{- end}}
 {{- end}}
 
-{{- define "next/type.enum" -}}
-{{render "internal.type:alias" .}}
-{{- end}}
-
-{{- define "next/type.struct" -}}
-{{render "internal.type:alias" .}}
-{{- end}}
-
-{{- define "next/type.interface" -}}
-{{render "internal.type:alias" .}}
-{{- end}}
-
 {{- define "next/internal.type:alias" -}}
 {{- if or (not .Decl.Annotations.next) (not (index .Decl.Annotations.next (printf "%s_alias" lang))) }}
-{{- type . -}}
+{{- render "type" . -}}
 {{- else -}}
 {{- render "type:alias" . | trim -}}
 {{- end}}
+{{- end}}
+
+{{- define "next/type" -}}
+{{- type . -}}
 {{- end}}
 
 {{- define "next/type:alias" -}}

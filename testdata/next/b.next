@@ -1,7 +1,8 @@
 @next(
     go_package="github.com/next/next/testdata/gen/go/b",
-    cpp_namespace="nextlang::test::b",
-    java_package="com.example.b",
+    cpp_namespace="demo::b",
+    c_prefix="DEMO_B_",
+    java_package="com.demo.b",
 )
 package b;
 

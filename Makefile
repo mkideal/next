@@ -88,7 +88,7 @@ test/template: install
 	@rm -rf testdata/gen
 	@next \
 		-v 1 \
-		-D PROJECT=myapp \
+		-D PROJECT_NAME=demo \
 		-O go=testdata/gen/go -T go=testdata/templates/go \
 		-O java=testdata/gen/java -T java=testdata/templates/java \
 		-O cpp=testdata/gen/cpp -T cpp=testdata/templates/cpp \

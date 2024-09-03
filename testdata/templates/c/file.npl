@@ -10,17 +10,12 @@ path: {{this.Package.Name}}/{{this.Name}}.next.h
 
 {{- /* Overrides "next/c/struct": add method 'message_type' for each message after fields */ -}}
 {{- define "c/struct" -}}
-{{next .Doc}}typedef struct {
-{{- next .Fields}}
-} {{.Name}};
+{{super .}}
 
 {{- if .Annotations.message.type}}
+{{_}}
 static inline int {{.Name}}_message_type() { return {{.Annotations.message.type}}; }
 {{- end}}
-{{- end -}}
-
-{{- define "next/c/enum.member" -}}
-{{next .Doc}}{{.Decl.Name}}_{{.Name}} = {{.Value}},{{next .Comment}}
 {{- end -}}
 
 {{head}}

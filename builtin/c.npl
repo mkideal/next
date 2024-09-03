@@ -1,6 +1,6 @@
 {{- define "next/c/file" -}}
-#ifndef {{.Package.Name | upper}}_H
-#define {{.Package.Name | upper}}_H
+#ifndef {{render "c/this:file.header.macro" .}}
+#define {{render "c/this:file.header.macro" .}}
 
 #include <stdint.h>
 #include <string.h>
@@ -16,7 +16,26 @@ typedef unsigned char _Bool;
 {{_}}
 {{next .Decls -}}
 {{_}}
-#endif // {{.Package.Name | upper}}_H
+#endif /* {{render "c/this:file.header.macro" .}} */
+{{- end}}
+
+{{- define "next/c/decl:name" -}}
+{{this.File.Annotations.next.c_prefix | upper}}{{.}}
+{{- end}}
+
+{{- define "next/c/this:file.header.macro" -}}
+{{render "c/decl:name" this.Name | upper}}_H
+{{- end}}
+
+{{- define "next/c/doc" -}}
+{{.Format "" " * " "/**\n" " */" | align}}
+{{- end}}
+
+{{- define "next/c/comment" -}}
+{{- $c := . | trim -}}
+{{- if $c -}}
+{{_}} /* {{$c}} */
+{{- end}}
 {{- end}}
 
 {{- define "next/c/imports" -}}
@@ -30,50 +49,45 @@ typedef unsigned char _Bool;
 {{- end}}
 
 {{- define "next/c/const" -}}
-{{next .Doc}}#define {{.Name}} {{.Value}}{{next .Comment}}
+{{next .Doc}}#define {{next .Name}} {{.Value}}{{next .Comment}}
+{{- end}}
+
+{{- define "next/c/const.name" -}}
+{{render "c/decl:name" .}}
 {{- end}}
 
 {{- define "next/c/enum" -}}
 {{next .Doc}}typedef enum {
     {{- next .Members}}
-} {{.Name}};
+} {{next .Type}};
 {{- end}}
 
 {{- define "next/c/enum.member" -}}
-{{next .Doc}}{{.Name}} = {{.Value}},{{next .Comment}}
+{{next .Doc}}{{next .Decl.Type}}_{{.Name}} = {{.Value}},{{next .Comment}}
 {{- end}}
 
 {{- define "next/c/struct" -}}
 {{next .Doc}}typedef struct {
     {{- next .Fields}}
-} {{.Name}};
+} {{next .Type}};
 {{- end}}
 
 {{- define "next/c/struct.field" -}}
 {{next .Doc}}{{next .Type}} {{next .Name}};{{next .Comment}}
 {{- end}}
 
-{{- define "next/c/struct.field.name" -}}
-{{.}}
-{{- end}}
-
-{{- define "next/c/type:used" -}}
-{{next .Type}}
-{{- end}}
-
 {{- define "next/c/interface" -}}
-{{- $s := . -}}
-{{next .Doc}}typedef struct {{.Name}} {{.Name}};
+{{next .Doc}}typedef struct {{next .Type}} {{next .Type}};
 
-struct {{.Name}} {
+struct {{next .Type}} {
     void* context;
 {{- range .Methods.List}}
-    {{next .Return}} (*{{next .Name}})({{$s.Name}}* self{{if .Params.List}}, {{next .Params}}{{end}});
+    {{next .Return}} (*{{next .Name}})({{next $.Type}}* self{{if .Params.List}}, {{next .Params}}{{end}});
 {{- end}}
 };
 {{- range .Methods.List}}
 
-{{next .Doc}}static inline {{next .Return}} {{$.Name}}_{{next .Name}}({{$s.Name}}* self{{if .Params.List}}, {{next .Params}}{{end}}) {
+{{next .Doc}}static inline {{next .Return}} {{next $.Type}}_{{next .Name}}({{next $.Type}}* self{{if .Params.List}}, {{next .Params}}{{end}}) {
     return self->{{next .Name}}(self{{if .Params.List}}, {{render "c/interface.method.params:names" .Params}}{{end}});
 }
 {{- end}}
@@ -105,4 +119,8 @@ struct {{.Name}} {
 {{- range $i, $p := .List -}}
     {{if $i}}, {{end}}{{next $p.Name -}}
 {{- end -}}
+{{- end}}
+
+{{- define "next/c/type" -}}
+{{super . | render "c/decl:name"}}
 {{- end}}

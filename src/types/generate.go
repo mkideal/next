@@ -226,7 +226,7 @@ func (c *Context) generateForTemplateFile(lang, ext, dir, tmplFile string) error
 }
 
 func generateForFile(tc *templateContext[*File], file, content string, meta templateMeta[string]) error {
-	t, mt, err := createTemplates(file, content, meta, tc.withThis())
+	t, mt, err := createTemplates(file, content, meta, tc.funcs)
 	if err != nil {
 		return err
 	}
@@ -240,7 +240,7 @@ func generateForFile(tc *templateContext[*File], file, content string, meta temp
 }
 
 func generateForConst(tc *templateContext[*Const], file, content string, meta templateMeta[string]) error {
-	t, mt, err := createTemplates(file, content, meta, tc.withThis())
+	t, mt, err := createTemplates(file, content, meta, tc.funcs)
 	if err != nil {
 		return err
 	}
@@ -260,7 +260,7 @@ func generateForConst(tc *templateContext[*Const], file, content string, meta te
 }
 
 func generateForEnum(tc *templateContext[*Enum], file, content string, meta templateMeta[string]) error {
-	t, mt, err := createTemplates(file, content, meta, tc.withThis())
+	t, mt, err := createTemplates(file, content, meta, tc.funcs)
 	if err != nil {
 		return err
 	}
@@ -280,7 +280,7 @@ func generateForEnum(tc *templateContext[*Enum], file, content string, meta temp
 }
 
 func generateForStruct(tc *templateContext[*Struct], file, content string, meta templateMeta[string]) error {
-	t, mt, err := createTemplates(file, content, meta, tc.withThis())
+	t, mt, err := createTemplates(file, content, meta, tc.funcs)
 	if err != nil {
 		return err
 	}
@@ -300,7 +300,7 @@ func generateForStruct(tc *templateContext[*Struct], file, content string, meta 
 }
 
 func generateForInterface(tc *templateContext[*Interface], file, content string, meta templateMeta[string]) error {
-	t, mt, err := createTemplates(file, content, meta, tc.withThis())
+	t, mt, err := createTemplates(file, content, meta, tc.funcs)
 	if err != nil {
 		return err
 	}

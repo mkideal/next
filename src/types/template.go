@@ -246,6 +246,7 @@ func newTemplateContext[T Decl](ctx templateContextInfo) *templateContext[T] {
 	}
 	tc.funcs = template.FuncMap{
 		"ENV":    tc.env,
+		"this":   tc.this,
 		"lang":   tc.getLang,
 		"error":  tc.error,
 		"errorf": tc.errorf,
@@ -257,15 +258,6 @@ func newTemplateContext[T Decl](ctx templateContextInfo) *templateContext[T] {
 		"render": tc.render,
 	}
 	return tc
-}
-
-func (tc *templateContext[T]) withThis() template.FuncMap {
-	m := make(template.FuncMap)
-	for k, v := range tc.funcs {
-		m[k] = v
-	}
-	m["this"] = tc.this
-	return m
 }
 
 func (tc *templateContext[T]) init() error {

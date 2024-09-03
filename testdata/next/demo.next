@@ -9,7 +9,8 @@
     // Please don't duplicate the import path, like: "net/http.HandlerFunc", "*net/http.Server"
     go_imports="net/http.HandlerFunc,*fmt.Stringer",
     cpp_namespace="demo",
-    java_package="com.example.demo",
+    c_prefix="DEMO_",
+    java_package="com.demo",
 )
 package demo;
 
