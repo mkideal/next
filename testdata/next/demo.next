@@ -75,7 +75,7 @@ interface HelloService {
 }
 
 // Level is an enum type for logging
-@next(type="int8")
+@next(type=int8)
 enum Level {
     Debug = iota;
     Info;

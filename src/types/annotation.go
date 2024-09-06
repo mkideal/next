@@ -35,66 +35,13 @@ func (a AnnotationGroup) get(name string) Annotation {
 // @message(name="Login", type=100)
 // ```
 // @api(template/annotation) Annotation
-type Annotation map[string]*AnnotationParam
+type Annotation map[string]any
 
-func (a Annotation) get(name string) *AnnotationParam {
+func (a Annotation) get(name string) any {
 	if a == nil {
 		return nil
 	}
 	return a[name]
-}
-
-// AnnotationParam represents an annotation parameter.
-// @api(template/annotation) AnnotationParam
-type AnnotationParam struct {
-	name  string
-	value constant.Value
-}
-
-// Name returns the name of the annotation parameter.
-// @api(template/annotation) Name
-func (a *AnnotationParam) Name() string {
-	return a.name
-}
-
-// Value returns the value of the annotation parameter.
-// @api(template/annotation) Value
-func (a *AnnotationParam) Value() any {
-	if a == nil {
-		return nil
-	}
-	switch a.value.Kind() {
-	case constant.String:
-		return constant.StringVal(a.value)
-	case constant.Int:
-		if i, exactly := constant.Int64Val(a.value); exactly {
-			return i
-		}
-		u, _ := constant.Uint64Val(a.value)
-		return u
-	case constant.Float:
-		if f, exactly := constant.Float32Val(a.value); exactly {
-			return f
-		}
-		f, _ := constant.Float64Val(a.value)
-		return f
-	case constant.Bool:
-		return constant.BoolVal(a.value)
-	default:
-		return nil
-	}
-}
-
-// String returns the string representation of the annotation parameter.
-// @api(template/annotation) String
-func (a *AnnotationParam) String() string {
-	if a == nil {
-		return "<nil>"
-	}
-	if a.value != nil && a.value.Kind() == constant.String {
-		return constant.StringVal(a.value)
-	}
-	return a.value.String()
 }
 
 // linkedAnnotation represents an annotation linked to a declaration.
@@ -167,19 +114,16 @@ func (c *Context) solveAnnotations() error {
 						}
 						c.Printf("solver %q: set %q.%q to %v", words, la.name, name, param.Value)
 					}
-					p, ok := la.annotation[name]
+					_, ok := la.annotation[name]
 					if !ok {
 						if v == nil {
 							return fmt.Errorf("solver %q: add an invalid value for parameter %q in annotation %q: %v", words, name, la.name, param.Value)
 						}
-						la.annotation[name] = &AnnotationParam{
-							name:  name,
-							value: v,
-						}
+						la.annotation[name] = constant.Underlying(v)
 						continue
 					}
 					if v != nil {
-						p.value = constant.Value(v)
+						la.annotation[name] = constant.Underlying(v)
 					} else {
 						c.Printf("solver %q: remove %q.%q", words, la.name, name)
 						delete(la.annotation, name)
@@ -204,8 +148,8 @@ func (c *Context) createAnnotationSolverRequest(name string) *api.AnnotationSolv
 		var params = make(map[string]api.Parameter)
 		for name, param := range a.annotation {
 			params[name] = api.Parameter{
-				Name:  param.name,
-				Value: param.Value(),
+				Name:  name,
+				Value: param,
 			}
 		}
 		req.Annotations[api.ID(pos)] = &api.Annotation{

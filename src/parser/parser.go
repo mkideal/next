@@ -444,13 +444,13 @@ func (p *parser) parseAnnotationGroup() *ast.AnnotationGroup {
 func (p *parser) parseAnnotation() *ast.Annotation {
 	pos := p.expect(token.AT)
 	name := p.parseIdent()
-	var params []*ast.NamedValue
+	var params []*ast.AnnotationParam
 	var lparen token.Pos
 	var rparen token.Pos
 	if p.tok == token.LPAREN {
 		lparen = p.pos
 		p.next()
-		rparen, params = parseList("AnnotationParams", p, token.RPAREN, token.COMMA, false, parseNamedValue)
+		rparen, params = parseList("AnnotationParams", p, token.RPAREN, token.COMMA, false, parseAnnotationParam)
 	}
 	return &ast.Annotation{
 		At:     pos,
@@ -500,17 +500,22 @@ func parseList[T ast.Node](name string, p *parser, rparen, sep token.Token, endi
 }
 
 // parseNamedParamList parses a list of named parameters separated by sep (COMMA or SEMICOLON).
-func parseNamedValue(p *parser) *ast.NamedValue {
+func parseAnnotationParam(p *parser) *ast.AnnotationParam {
 	if p.trace {
-		defer un(trace(p, "NamedValue"))
+		defer un(trace(p, "AnnotationParam"))
 	}
-	var param = &ast.NamedValue{
+	var param = &ast.AnnotationParam{
 		Name: p.parseIdent(),
 	}
 	if p.tok == token.ASSIGN {
 		param.AssignPos = p.pos
 		p.next()
-		param.Value = p.parseExpr(true)
+		switch p.tok {
+		case token.ARRAY, token.MAP, token.VECTOR:
+			param.Value = p.parseType()
+		default:
+			param.Value = p.parseExpr(true)
+		}
 	}
 	return param
 }

@@ -55,10 +55,8 @@ func Walk(v Visitor, node Node) {
 	case *CommentGroup:
 		walkList(v, n.List)
 
-	case *NamedValue:
-		if n.Name != nil {
-			Walk(v, n.Name)
-		}
+	case *AnnotationParam:
+		Walk(v, n.Name)
 		if n.Value != nil {
 			Walk(v, n.Value)
 		}

@@ -424,16 +424,21 @@ func (c *Context) resolveAnnotationGroup(file *File, decl Decl, annotations *ast
 				c.addErrorf(p.Pos(), "named parameter %s redefined", name)
 				continue
 			}
-			var value constant.Value
-			if p.Value != nil {
-				value = c.resolveValue(file, p.Value, nil)
-			} else {
-				value = constant.MakeBool(true)
+			if p.Value == nil {
+				annotation[name] = true
+				continue
 			}
-			annotation[name] = &AnnotationParam{
-				name:  name,
-				value: value,
+			if t, ok := p.Value.(ast.Type); ok {
+				if typ := c.resolveType(file, t, true); typ != nil {
+					annotation[name] = typ
+					continue
+				}
 			}
+			if e, ok := p.Value.(ast.Expr); ok {
+				annotation[name] = constant.Underlying(c.resolveValue(file, e, nil))
+				continue
+			}
+			c.addErrorf(p.Pos(), "unexpected parameter %T", p.Value)
 		}
 		result[a.Name.Name] = annotation
 	}
@@ -497,7 +502,7 @@ func (c *Context) recursiveResolveValue(file *File, scope Scope, refs []*Value, 
 		return c.resolveSymbolValue(file, scope, refs, v)
 
 	case *ast.SelectorExpr:
-		name := joinSymbolName(c.resolveSelectorExprChain(expr)...)
+		name := joinSymbolName(c.resolveSelectorExprChain(expr, false)...)
 		v, err := lookupValue(scope, name)
 		if err != nil {
 			c.addErrorf(expr.Pos(), "%s is not defined", name)
@@ -577,20 +582,23 @@ func (c *Context) recursiveResolveInt64(file *File, scope Scope, expr ast.Expr, 
 }
 
 // resolveType resolves a type
-func (c *Context) resolveType(file *File, t ast.Type) Type {
+func (c *Context) resolveType(file *File, t ast.Type, ignoreError bool) Type {
 	var result Type
 	switch t := t.(type) {
 	case *ast.Ident:
-		result = c.resolveIdentType(file, t)
+		result = c.resolveIdentType(file, t, ignoreError)
 	case *ast.SelectorExpr:
-		result = c.resolveSelectorExprType(file, t)
+		result = c.resolveSelectorExprType(file, t, ignoreError)
 	case *ast.ArrayType:
-		result = c.resolveArrayType(file, t)
+		result = c.resolveArrayType(file, t, ignoreError)
 	case *ast.VectorType:
-		result = c.resolveVectorType(file, t)
+		result = c.resolveVectorType(file, t, ignoreError)
 	case *ast.MapType:
-		result = c.resolveMapType(file, t)
+		result = c.resolveMapType(file, t, ignoreError)
 	default:
+		if ignoreError {
+			return nil
+		}
 		c.addErrorf(t.Pos(), "unexpected type %T", t)
 		return nil
 	}
@@ -600,19 +608,21 @@ func (c *Context) resolveType(file *File, t ast.Type) Type {
 	return result
 }
 
-func (c *Context) resolveIdentType(file *File, i *ast.Ident) Type {
+func (c *Context) resolveIdentType(file *File, i *ast.Ident, ignoreError bool) Type {
 	if t, ok := primitiveTypes[i.Name]; ok {
 		return t
 	}
 	t, err := file.LookupLocalType(i.Name)
 	if err != nil {
-		c.addErrorf(i.Pos(), "failed to lookup type %s: %s", i.Name, err)
+		if !ignoreError {
+			c.addErrorf(i.Pos(), "failed to lookup type %s: %s", i.Name, err)
+		}
 		return nil
 	}
 	return t
 }
 
-func (c *Context) resolveSelectorExprChain(t *ast.SelectorExpr) []string {
+func (c *Context) resolveSelectorExprChain(t *ast.SelectorExpr, ignoreError bool) []string {
 	var names []string
 	for t != nil {
 		names = append(names, t.Sel.Name)
@@ -623,7 +633,9 @@ func (c *Context) resolveSelectorExprChain(t *ast.SelectorExpr) []string {
 		case *ast.SelectorExpr:
 			t = x
 		default:
-			c.addErrorf(t.Pos(), "unexpected selector expression %T", t)
+			if !ignoreError {
+				c.addErrorf(t.Pos(), "unexpected selector expression %T", t)
+			}
 			return nil
 		}
 	}
@@ -632,43 +644,63 @@ func (c *Context) resolveSelectorExprChain(t *ast.SelectorExpr) []string {
 	return names
 }
 
-func (c *Context) resolveSelectorExprType(file *File, t *ast.SelectorExpr) Type {
-	names := c.resolveSelectorExprChain(t)
+func (c *Context) resolveSelectorExprType(file *File, t *ast.SelectorExpr, ignoreError bool) Type {
+	names := c.resolveSelectorExprChain(t, ignoreError)
 	if len(names) < 2 {
 		return nil
 	}
 	if len(names) != 2 {
-		c.addErrorf(t.Pos(), "unexpected selector expression %s", names)
+		if !ignoreError {
+			c.addErrorf(t.Pos(), "unexpected selector expression %s", names)
+		}
 		return nil
 	}
 	fullName := joinSymbolName(names...)
 	typ, err := lookupType(file, fullName)
 	if err != nil {
-		c.addError(t.Pos(), err.Error())
+		if !ignoreError {
+			c.addError(t.Pos(), err.Error())
+		}
 		return nil
 	}
 	return typ
 }
 
-func (c *Context) resolveArrayType(file *File, t *ast.ArrayType) Type {
+func (c *Context) resolveArrayType(file *File, t *ast.ArrayType, ignoreError bool) Type {
+	typ := c.resolveType(file, t.T, ignoreError)
+	if typ == nil {
+		return nil
+	}
 	return &ArrayType{
 		pos:      t.Pos(),
-		ElemType: c.resolveType(file, t.T),
+		ElemType: typ,
 		N:        c.resolveInt64(file, t.N),
 	}
 }
 
-func (c *Context) resolveVectorType(file *File, t *ast.VectorType) Type {
+func (c *Context) resolveVectorType(file *File, t *ast.VectorType, ignoreError bool) Type {
+	typ := c.resolveType(file, t.T, ignoreError)
+	if typ == nil {
+		return nil
+	}
 	return &VectorType{
 		pos:      t.Pos(),
-		ElemType: c.resolveType(file, t.T),
+		ElemType: typ,
 	}
 }
 
-func (c *Context) resolveMapType(file *File, t *ast.MapType) Type {
+func (c *Context) resolveMapType(file *File, t *ast.MapType, ignoreError bool) Type {
+	k := c.resolveType(file, t.K, ignoreError)
+	if k == nil {
+		return nil
+	}
+	v := c.resolveType(file, t.V, ignoreError)
+	if v == nil {
+		return nil
+	}
 	return &MapType{
 		pos:      t.Pos(),
-		KeyType:  c.resolveType(file, t.K),
-		ElemType: c.resolveType(file, t.V),
+		KeyType:  k,
+		ElemType: v,
 	}
 }

@@ -1138,3 +1138,31 @@ func abs(x int64) int64 {
 	}
 	return x
 }
+
+// Value returns the value of the annotation parameter.
+// @api(template/annotation) Value
+func Underlying(value Value) any {
+	if value == nil {
+		return nil
+	}
+	switch value.Kind() {
+	case String:
+		return StringVal(value)
+	case Int:
+		if i, exactly := Int64Val(value); exactly {
+			return i
+		}
+		u, _ := Uint64Val(value)
+		return u
+	case Float:
+		if f, exactly := Float32Val(value); exactly {
+			return f
+		}
+		f, _ := Float64Val(value)
+		return f
+	case Bool:
+		return BoolVal(value)
+	default:
+		return nil
+	}
+}

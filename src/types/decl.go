@@ -684,7 +684,7 @@ func newStructFieldType(_ *Context, _ *File, f *StructField, src ast.Type) *Stru
 }
 
 func (t *StructFieldType) resolve(ctx *Context, file *File, scope Scope) {
-	t.Type = ctx.resolveType(file, t.unresolved.typ)
+	t.Type = ctx.resolveType(file, t.unresolved.typ, false)
 }
 
 // Interface represents an interface declaration.
@@ -857,7 +857,7 @@ func newInterfaceMethodParamType(_ *Context, _ *File, p *InterfaceMethodParam, s
 }
 
 func (t *InterfaceMethodParamType) resolve(ctx *Context, file *File, scope Scope) {
-	t.Type = ctx.resolveType(file, t.unresolved.typ)
+	t.Type = ctx.resolveType(file, t.unresolved.typ, false)
 }
 
 // InterfaceMethodReturn represents an interface method return type.
@@ -886,12 +886,12 @@ func (t *InterfaceMethodReturn) resolve(ctx *Context, file *File, scope Scope) {
 	if t.unresolved.typ == nil {
 		return
 	}
-	t.Type = ctx.resolveType(file, t.unresolved.typ)
+	t.Type = ctx.resolveType(file, t.unresolved.typ, false)
 }
 
 // isAvailable reports whether the declaration is available in the current language.
 func isAvailable(decl Decl, lang string) bool {
-	s, ok := decl.annotations().get("next").get("available").Value().(string)
+	s, ok := decl.annotations().get("next").get("available").(string)
 	return !ok || templateutil.ContainsWord(s, lang)
 }
 

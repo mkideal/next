@@ -68,8 +68,12 @@ var _ = (*{{.File.Package.Name}}.{{next (index (.File.Package.Types) 0)}})(nil)
 {{next .Doc}}const {{.Name}} = {{.Value}}{{next .Comment}}
 {{- end}}
 
+{{- define "next/go/enum.type" -}}
+{{if .Annotations.next.type}}{{type .Annotations.next.type}}{{else}}int{{end}}
+{{- end}}
+
 {{- define "next/go/enum" -}}
-{{next .Doc}}type {{.Name}} int
+{{next .Doc}}type {{.Name}} {{render "go/enum.type" .}}
 
 const (
 {{- next .Members}}

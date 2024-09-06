@@ -12,6 +12,10 @@ Next is a powerful Generic **Interface Definition Language (IDL)** designed to c
 - 🏗️ Rich type system supporting interfaces, structs, enums, and various data types
 - 🏷️ Annotation support for metadata and customization
 
+## 📚 Built-in Language Support
+
+Next includes built-in templates for various languages, including **C**, **C++**, **C#**, **Go**, **Java**, **JavaScript**, **PHP**, **Python**, **Rust**, **Swift**, **TypeScript**, **JSON**, **Protobuf**, **Markdown**, **Kotlin**, **SQL**, **R**, **Objective-C**, **Lua** and more. These serve as a foundation for code generation and can be easily customized or extended using the template hierarchy system.
+
 ## 🛠️ Template System
 
 Next uses a template system based on Go's [text/template](https://pkg.go.dev/text/template/) package, with custom enhancements for code generation. Templates in Next use the `.npl` file extension.
@@ -30,7 +34,7 @@ When rendering a template, Next searches for the most specific template first (u
 
 ## 📥 Installation
 
-### Unix-like Systems (Linux, macOS, Git Bash (for Windows) etc.)
+### Unix-like Systems (Linux, macOS, Git Bash for Windows, etc.)
 
 To install Next on Unix-like systems, you can use the following command:
 
@@ -60,10 +64,6 @@ go install github.com/next/next@latest
 ```
 
 Make sure you have [Go](https://go.dev) `1.21+` installed on your system before running this command.
-
-## 📚 Built-in Language Support
-
-Next includes built-in templates for various languages, including C++, Go, Java, and more. These serve as a foundation for code generation and can be easily customized or extended using the template hierarchy system.
 
 ## 📖 Documentation
 

@@ -127,23 +127,19 @@ func TrimComments(comments []string) []string {
 	return lines[0:n]
 }
 
-// NamedValue represents a named value in an annotation.
-type NamedValue struct {
+type AnnotationParam struct {
 	Name      *Ident    // name of parameter
 	AssignPos token.Pos // position of "=" if any
-	Value     Expr      // parameter value, or nil
+	Value     Node      // parameter value (Expr or Type), or nil
 }
 
-// Pos returns the position of the first character in the named value.
-func (p *NamedValue) Pos() token.Pos {
-	if p.Name != nil {
-		return p.Name.Pos()
-	}
-	return p.Value.Pos()
+// Pos returns the position of the first character in the annotation parameter.
+func (p *AnnotationParam) Pos() token.Pos {
+	return p.Name.Pos()
 }
 
-// End returns the position of the character immediately after the named value.
-func (p *NamedValue) End() token.Pos {
+// End returns the position of the character immediately after the annotation parameter.
+func (p *AnnotationParam) End() token.Pos {
 	if p.Value != nil {
 		return p.Value.End()
 	}
@@ -152,11 +148,11 @@ func (p *NamedValue) End() token.Pos {
 
 // Annotation represents an annotation in the source code.
 type Annotation struct {
-	At     token.Pos     // position of "@"
-	Name   *Ident        // annotation name
-	Lparen token.Pos     // position of "(" if any
-	Params []*NamedValue // annotation parameters; or nil
-	Rparen token.Pos     // position of ")" if any
+	At     token.Pos          // position of "@"
+	Name   *Ident             // annotation name
+	Lparen token.Pos          // position of "(" if any
+	Params []*AnnotationParam // annotation parameters; or nil
+	Rparen token.Pos          // position of ")" if any
 }
 
 // Pos returns the position of the first character in the annotation.

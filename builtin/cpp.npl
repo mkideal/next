@@ -79,7 +79,7 @@ class {{.Name}};
 {{- end}}
 
 {{- define "next/cpp/enum.type" -}}
-{{if .Annotations.next.type}}{{type .Annotations.next.type.Value}}{{else}}int{{end}}
+{{if .Annotations.next.type}}{{next .Annotations.next.type}}{{else}}int{{end}}
 {{- end}}
 
 {{- define "next/cpp/enum.member" -}}
