@@ -19,26 +19,23 @@ func (*Doc) getType() string             { return "doc" }
 func (*Comment) getType() string         { return "comment" }
 func (*Imports) getType() string         { return "imports" }
 func (*Import) getType() string          { return "import" }
-func (*UsedType) getType() string        { return "type:used" }
-func (*ArrayType) getType() string       { return "type.array" }
-func (*VectorType) getType() string      { return "type.vector" }
-func (*MapType) getType() string         { return "type.map" }
-func (x *PrimitiveType) getType() string { return "type." + x.name }
+func (*UsedType) getType() string        { return "used.type" }
+func (*ArrayType) getType() string       { return "array.type" }
+func (*VectorType) getType() string      { return "vector.type" }
+func (*MapType) getType() string         { return "map.type" }
+func (x *PrimitiveType) getType() string { return x.name + ".type" }
 
 func (*Decls) getType() string                    { return "decls" }
 func (*Const) getType() string                    { return "const" }
 func (ConstName) getType() string                 { return "const.name" }
 func (*Enum) getType() string                     { return "enum" }
-func (EnumName) getType() string                  { return "enum.name" }
 func (*EnumMember) getType() string               { return "enum.member" }
 func (EnumMemberName) getType() string            { return "enum.member.name" }
 func (*Struct) getType() string                   { return "struct" }
-func (StructName) getType() string                { return "struct.name" }
 func (*StructField) getType() string              { return "struct.field" }
 func (*StructFieldType) getType() string          { return "struct.field.type" }
 func (StructFieldName) getType() string           { return "struct.field.name" }
 func (*Interface) getType() string                { return "interface" }
-func (InterfaceName) getType() string             { return "interface.name" }
 func (*InterfaceMethod) getType() string          { return "interface.method" }
 func (InterfaceMethodName) getType() string       { return "interface.method.name" }
 func (*InterfaceMethodParam) getType() string     { return "interface.method.param" }
@@ -68,7 +65,7 @@ func (l *Fields[Parent, Field]) getType() string {
 
 // decl types: type.enum, type.struct, type.interface
 func (t *DeclType[T]) getType() string {
-	return "type." + t.decl.getType()
+	return t.decl.getType() + ".type"
 }
 
 // Object represents a Next AST node which may be a file, const, enum, struct, interface to be generated.

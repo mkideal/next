@@ -51,24 +51,24 @@ public class Constants {
 {{next .Doc}}public enum {{.Name}} {
     {{- next .Members}}
 
-    private final {{render "java/enum.type" .}} value;
+    private final {{render "java/enum:value_type" .}} value;
 
-    {{.Name}}({{render "java/enum.type" .}} value) {
+    {{.Name}}({{render "java/enum:value_type" .}} value) {
         this.value = value;
     }
 
-    public {{render "java/enum.type" .}} getValue() {
+    public {{render "java/enum:value_type" .}} getValue() {
         return value;
     }
 }
 {{- end}}
 
-{{- define "next/java/enum.type" -}}
-{{if .Annotations.next.type}}{{type .Annotations.next.type}}{{else}}int{{end}}
+{{- define "next/java/enum:value_type" -}}
+{{if .Annotations.next.type}}{{next .Annotations.next.type}}{{else}}int{{end}}
 {{- end}}
 
 {{- define "next/java/enum.member" -}}
-{{next .Doc}}{{.Name}}(({{render "java/enum.type" .Decl}}) {{.Value}}){{if not .IsLast}},{{else}};{{end}}{{next .Comment}}
+{{next .Doc}}{{.Name}}(({{render "java/enum:value_type" .Decl}}) {{.Value}}){{if not .IsLast}},{{else}};{{end}}{{next .Comment}}
 {{- end}}
 
 {{- define "next/java/struct" -}}

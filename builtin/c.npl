@@ -63,7 +63,7 @@ typedef unsigned char _Bool;
 {{- end}}
 
 {{- define "next/c/enum.member" -}}
-{{next .Doc}}{{next .Decl.Type}}_{{.Name}} = {{.Value}},{{next .Comment}}
+{{next .Doc}}{{next .Decl.Type}}_{{next .Name}} = {{.Value}},{{next .Comment}}
 {{- end}}
 
 {{- define "next/c/struct" -}}

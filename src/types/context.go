@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"log/slog"
 	"os"
 	"path/filepath"
 	"slices"
@@ -602,7 +601,6 @@ func (c *Context) resolveType(file *File, t ast.Type, ignoreError bool) Type {
 	}
 	if result != nil {
 		result = Use(result, file, t)
-		slog.Warn("FIXME: resolveType", "type", fmt.Sprintf("%p", t))
 		file.addNode(c, t, result)
 	}
 	return result

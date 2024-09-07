@@ -60,7 +60,7 @@ enum {{next .Type}} {
 }
 {{- end}}
 
-{{- define "next/type.enum" -}}
+{{- define "next/enum.type" -}}
 {{render "next/type:internal.alias" .}}
 {{- end}}
 
@@ -88,7 +88,7 @@ enum {{next .Type}} {
 }
 {{- end}}
 
-{{- define "next/type.struct" -}}
+{{- define "next/struct.type" -}}
 {{render "next/type:internal.alias" .}}
 {{- end}}
 
@@ -132,7 +132,7 @@ enum {{next .Type}} {
 }
 {{- end}}
 
-{{- define "next/type.interface" -}}
+{{- define "next/interface.type" -}}
 {{render "next/type:internal.alias" .}}
 {{- end}}
 
@@ -186,9 +186,9 @@ enum {{next .Type}} {
 {{- end}}
 
 {{- define "next/type:alias" -}}
-{{- errorf "%s_alias not supported! Did you define \"%s/type:alias\"?" (lang) (lang) -}}
+{{- index .Decl.Annotations.next (printf "%s_alias" lang) -}}
 {{- end}}
 
-{{- define "next/type:used" -}}
+{{- define "next/used.type" -}}
 {{- next .Type -}}
 {{- end}}

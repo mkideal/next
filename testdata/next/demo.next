@@ -27,6 +27,13 @@ enum Color {
     Yellow;
 }
 
+@next(
+    available="go,cpp",
+    go_alias="uint64",
+    cpp_alias="uint64_t",
+)
+interface uint64 {}
+
 // User is a struct type
 struct User {
     int64 id;
@@ -35,6 +42,9 @@ struct User {
     map<string, int> scores;
     array<float64, 3> coordinates;
     Color favoriteColor;
+
+    @next(available="go,cpp")
+    uint64 timestamp;
 
     any extra;
 }

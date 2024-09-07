@@ -2,7 +2,6 @@ package types
 
 import (
 	"cmp"
-	"log/slog"
 	"path/filepath"
 	"slices"
 	"strconv"
@@ -91,7 +90,6 @@ func newImport(ctx *Context, file *File, src *ast.ImportDecl) *Import {
 	}
 	if len(path) > 0 && path[0] != '/' {
 		var err error
-		slog.Info("FIXME: filepath.Abs", "file.Path", file.Path, "path", path)
 		path, err = filepath.Abs(filepath.Join(filepath.Dir(file.Path), path))
 		if err != nil {
 			ctx.addErrorf(token.NoPos, "failed to get absolute path of %s: %v", i.Path, err)
@@ -242,7 +240,7 @@ func (d *Decls) Interfaces() List[*Interface] {
 	return availableList(d.interfaces, d.lang)
 }
 
-// decl represents a declaration header (const, enum, struct, interface).
+// decl represents a declaration common header
 type decl[Self Decl, Name ~string] struct {
 	self Self      // self represents the declaration object itself
 	pos  token.Pos // position of the declaration
@@ -413,7 +411,7 @@ func (v *Value) String() string {
 	return v.val.String()
 }
 
-// Underlying returns the underlying value of the constant or enum member.
+// Any returns the underlying value of the constant or enum member.
 // @api(object/decl/Value/Any)
 func (v *Value) Any() any {
 	if v.val == nil {
@@ -443,7 +441,8 @@ func (v *Value) Any() any {
 type Const struct {
 	*decl[*Const, ConstName]
 
-	value *Value // Value is the constant value.
+	// value is the constant value.
+	value *Value
 
 	// Comment is the [line comment](#Object.Comment) of the constant declaration.
 	// @api(object/decl/Const/Comment)
@@ -506,9 +505,6 @@ type DeclType[T Decl] struct {
 	pos  token.Pos
 	name string
 	kind token.Kind
-
-	// Decl is the declaration object that contains the type.
-	// @api(object/decl/DeclType/Decl)
 	decl T
 }
 
@@ -526,7 +522,7 @@ func (d *DeclType[T]) Pos() token.Pos { return d.pos }
 // Enum represents an enum declaration.
 // @api(object/decl/Enum)
 type Enum struct {
-	*decl[*Enum, EnumName]
+	*decl[*Enum, string]
 
 	// Type is the enum type.
 	// @api(object/decl/Enum/Type)
@@ -537,14 +533,10 @@ type Enum struct {
 	Members *Fields[*Enum, *EnumMember]
 }
 
-// EnumName represents an enum name.
-// @api(object/decl/EnumName)
-type EnumName string
-
 func newEnum(ctx *Context, file *File, src *ast.GenDecl[*ast.EnumType]) *Enum {
 	e := &Enum{}
 	file.addNode(ctx, src, e)
-	e.decl = newDecl(e, file, src.Pos(), EnumName(src.Name.Name), src.Doc, src.Annotations)
+	e.decl = newDecl(e, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	e.Type = newDeclType(src.Pos(), src.Name.Name, token.Enum, e)
 	e.Members = &Fields[*Enum, *EnumMember]{typename: "enum.members", Decl: e}
 	for i, m := range src.Spec.Members.List {
@@ -618,7 +610,7 @@ func (m *EnumMember) IsLast() bool {
 // Struct represents a struct declaration.
 // @api(object/decl/Struct)
 type Struct struct {
-	*decl[*Struct, StructName]
+	*decl[*Struct, string]
 
 	// lang is the current language to generate the struct.
 	lang string
@@ -631,14 +623,10 @@ type Struct struct {
 	Type *DeclType[*Struct]
 }
 
-// StructName represents a struct name.
-// @api(object/decl/StructName)
-type StructName string
-
 func newStruct(ctx *Context, file *File, src *ast.GenDecl[*ast.StructType]) *Struct {
 	s := &Struct{}
 	file.addNode(ctx, src, s)
-	s.decl = newDecl(s, file, src.Pos(), StructName(src.Name.Name), src.Doc, src.Annotations)
+	s.decl = newDecl(s, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	s.Type = newDeclType(src.Pos(), src.Name.Name, token.Struct, s)
 	s.fields = &Fields[*Struct, *StructField]{typename: "struct.fields", Decl: s}
 	for _, f := range src.Spec.Fields.List {
@@ -710,7 +698,7 @@ type StructFieldType struct {
 	Field *StructField
 }
 
-func newStructFieldType(ctx *Context, file *File, f *StructField, src ast.Type) *StructFieldType {
+func newStructFieldType(_ *Context, _ *File, f *StructField, src ast.Type) *StructFieldType {
 	t := &StructFieldType{Field: f}
 	t.unresolved.typ = src
 	return t
@@ -723,7 +711,7 @@ func (t *StructFieldType) resolve(ctx *Context, file *File, scope Scope) {
 // Interface represents an interface declaration.
 // @api(object/decl/Interface)
 type Interface struct {
-	*decl[*Interface, InterfaceName]
+	*decl[*Interface, string]
 
 	// lang is the current language to generate the interface.
 	lang string
@@ -736,14 +724,10 @@ type Interface struct {
 	Type *DeclType[*Interface]
 }
 
-// InterfaceName represents an interface name.
-// @api(object/decl/InterfaceName)
-type InterfaceName string
-
 func newInterface(ctx *Context, file *File, src *ast.GenDecl[*ast.InterfaceType]) *Interface {
 	i := &Interface{}
 	file.addNode(ctx, src, i)
-	i.decl = newDecl(i, file, src.Pos(), InterfaceName(src.Name.Name), src.Doc, src.Annotations)
+	i.decl = newDecl(i, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	i.Type = newDeclType(src.Pos(), src.Name.Name, token.Interface, i)
 	i.methods = &Fields[*Interface, *InterfaceMethod]{typename: "interface.methods", Decl: i}
 	for _, m := range src.Spec.Methods.List {
@@ -886,7 +870,7 @@ type InterfaceMethodParamType struct {
 	Type Type
 }
 
-func newInterfaceMethodParamType(ctx *Context, file *File, p *InterfaceMethodParam, src ast.Type) *InterfaceMethodParamType {
+func newInterfaceMethodParamType(_ *Context, _ *File, p *InterfaceMethodParam, src ast.Type) *InterfaceMethodParamType {
 	t := &InterfaceMethodParamType{Param: p}
 	t.unresolved.typ = src
 	return t
@@ -912,7 +896,7 @@ type InterfaceMethodReturn struct {
 	Type Type
 }
 
-func newInterfaceMethodReturn(ctx *Context, file *File, m *InterfaceMethod, src ast.Type) *InterfaceMethodReturn {
+func newInterfaceMethodReturn(_ *Context, _ *File, m *InterfaceMethod, src ast.Type) *InterfaceMethodReturn {
 	t := &InterfaceMethodReturn{Method: m}
 	t.unresolved.typ = src
 	return t

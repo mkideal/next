@@ -45,7 +45,7 @@ var _ = {{$pkg}}.{{$val}}
 {{- end}}
 {{- end}}
 {{ _ }}
-    {{- range $p := .TrimmedList}}
+    {{- range .TrimmedList}}
         {{- if len .File.Package.Types}}
             {{- render "go/import:unused" .}}
 {{ _ }}
@@ -57,7 +57,7 @@ var _ = {{$pkg}}.{{$val}}
 var _ = (*{{.File.Package.Name}}.{{next (index (.File.Package.Types) 0)}})(nil)
 {{- end}}
 
-{{- define "next/go/type:used" -}}
+{{- define "next/go/used.type" -}}
 {{if not (.Type.Decl.File.Package.In .File.Package) -}}
 {{.Type.Decl.File.Package.Name -}}.
 {{- end -}}
@@ -68,12 +68,12 @@ var _ = (*{{.File.Package.Name}}.{{next (index (.File.Package.Types) 0)}})(nil)
 {{next .Doc}}const {{.Name}} = {{.Value}}{{next .Comment}}
 {{- end}}
 
-{{- define "next/go/enum.type" -}}
-{{if .Annotations.next.type}}{{type .Annotations.next.type}}{{else}}int{{end}}
+{{- define "next/go/enum:value_type" -}}
+{{if .Annotations.next.type}}{{next .Annotations.next.type}}{{else}}int{{end}}
 {{- end}}
 
 {{- define "next/go/enum" -}}
-{{next .Doc}}type {{.Name}} {{render "go/enum.type" .}}
+{{next .Doc}}type {{.Name}} {{render "go/enum:value_type" .}}
 
 const (
 {{- next .Members}}

@@ -27,7 +27,7 @@
 #include "{{.File.Name}}.h"
 {{- end}}
 
-{{- define "next/cpp/type:used" -}}
+{{- define "next/cpp/used.type" -}}
 {{if not (.Type.Decl.File.Package.In .File.Package) -}}
 {{$ns := .Type.Decl.File.Package.Annotations.next.cpp_namespace -}}
 {{if $ns -}}
@@ -73,12 +73,12 @@ class {{.Name}};
 {{- end}}
 
 {{- define "next/cpp/enum" -}}
-{{next .Doc}}enum class {{.Name}} : {{render "cpp/enum.type" .}} {
+{{next .Doc}}enum class {{.Name}} : {{render "cpp/enum:value_type" .}} {
 {{- next .Members}}
 };
 {{- end}}
 
-{{- define "next/cpp/enum.type" -}}
+{{- define "next/cpp/enum:value_type" -}}
 {{if .Annotations.next.type}}{{next .Annotations.next.type}}{{else}}int{{end}}
 {{- end}}
 
