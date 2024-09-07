@@ -504,10 +504,11 @@ type Decl interface {
 
 // ImportDecl represents a single package import.
 type ImportDecl struct {
-	Doc     *CommentGroup // associated documentation; or nil
-	Path    *BasicLit     // import path
-	Comment *CommentGroup // line comments; or nil
-	EndPos  token.Pos     // end of spec (overrides Path.Pos if nonzero)
+	Doc       *CommentGroup // associated documentation; or nil
+	ImportPos token.Pos     // position of "import" keyword
+	Path      *BasicLit     // import path
+	Comment   *CommentGroup // line comments; or nil
+	EndPos    token.Pos     // end of spec (overrides Path.Pos if nonzero)
 }
 
 // GenDecl represents a general declaration node.
@@ -534,8 +535,8 @@ type StructDecl = GenDecl[*StructType]
 type InterfaceDecl = GenDecl[*InterfaceType]
 
 // Pos and End implementations for decl nodes.
-func (s *ImportDecl) Pos() token.Pos { return s.Path.Pos() }
-func (s *GenDecl[T]) Pos() token.Pos { return s.Name.Pos() }
+func (s *ImportDecl) Pos() token.Pos { return s.ImportPos }
+func (s *GenDecl[T]) Pos() token.Pos { return s.TokPos }
 
 func (s *ImportDecl) End() token.Pos {
 	if s.EndPos != 0 {

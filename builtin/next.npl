@@ -61,7 +61,7 @@ enum {{next .Type}} {
 {{- end}}
 
 {{- define "next/type.enum" -}}
-{{render "next/internal.type:alias" .}}
+{{render "next/type:internal.alias" .}}
 {{- end}}
 
 {{- define "next/enum.members" -}}
@@ -89,7 +89,7 @@ enum {{next .Type}} {
 {{- end}}
 
 {{- define "next/type.struct" -}}
-{{render "next/internal.type:alias" .}}
+{{render "next/type:internal.alias" .}}
 {{- end}}
 
 {{- define "next/struct.fields" -}}
@@ -133,7 +133,7 @@ enum {{next .Type}} {
 {{- end}}
 
 {{- define "next/type.interface" -}}
-{{render "next/internal.type:alias" .}}
+{{render "next/type:internal.alias" .}}
 {{- end}}
 
 {{- define "next/interface.methods" -}}
@@ -173,7 +173,7 @@ enum {{next .Type}} {
 {{- end}}
 {{- end}}
 
-{{- define "next/internal.type:alias" -}}
+{{- define "next/type:internal.alias" -}}
 {{- if or (not .Decl.Annotations.next) (not (index .Decl.Annotations.next (printf "%s_alias" lang))) }}
 {{- render "type" . -}}
 {{- else -}}

@@ -23,6 +23,16 @@ func ContainsWord(s, word string) bool {
 	return matched
 }
 
+type Bool = reflect.Value
+type Int = reflect.Value
+type Number = reflect.Value
+type String = reflect.Value
+type Slice = reflect.Value
+type SliceOrString = reflect.Value
+type Any = reflect.Value
+
+var null reflect.Value
+
 // Funcs is a map of utility functions for use in templates
 var Funcs = map[string]any{
 	// _ is a no-op function that returns an empty string.
@@ -34,39 +44,39 @@ var Funcs = map[string]any{
 
 	// String functions
 
-	"quote":       Chain(StringFunc("quote", NoError(strconv.Quote))),
-	"unquote":     Chain(StringFunc("unquote", strconv.Unquote)),
-	"capitalize":  Chain(StringFunc("capitalize", NoError(capitalize))),
-	"lower":       Chain(StringFunc("lower", NoError(strings.ToLower))),
-	"upper":       Chain(StringFunc("upper", NoError(strings.ToUpper))),
+	"quote":       Chain(stringFunc("quote", noError(strconv.Quote))),
+	"unquote":     Chain(stringFunc("unquote", strconv.Unquote)),
+	"capitalize":  Chain(stringFunc("capitalize", noError(capitalize))),
+	"lower":       Chain(stringFunc("lower", noError(strings.ToLower))),
+	"upper":       Chain(stringFunc("upper", noError(strings.ToUpper))),
 	"replace":     Chain3(replace),
 	"replaceN":    Chain4(replaceN),
-	"trim":        Chain(StringFunc("trim", NoError(strings.TrimSpace))),
+	"trim":        Chain(stringFunc("trim", noError(strings.TrimSpace))),
 	"trimPrefix":  Chain2(trimPrefix),
 	"hasPrefix":   Chain2(hasPrefix),
 	"trimSuffix":  Chain2(trimSuffix),
 	"hasSuffix":   Chain2(hasSuffix),
 	"split":       Chain2(split),
 	"join":        Chain2(join),
-	"striptags":   Chain(StringFunc("striptags", striptags)),
+	"striptags":   Chain(stringFunc("striptags", striptags)),
 	"substr":      Chain3(substr),
 	"repeat":      Chain2(repeat),
-	"camelCase":   Chain(StringFunc("camelCase", NoError(camelCase))),
-	"pascalCase":  Chain(StringFunc("pascalCase", NoError(pascalCase))),
-	"snakeCase":   Chain(StringFunc("snakeCase", NoError(snakeCase))),
-	"kebabCase":   Chain(StringFunc("kebabCase", NoError(kebabCase))),
+	"camelCase":   Chain(stringFunc("camelCase", noError(camelCase))),
+	"pascalCase":  Chain(stringFunc("pascalCase", noError(pascalCase))),
+	"snakeCase":   Chain(stringFunc("snakeCase", noError(snakeCase))),
+	"kebabCase":   Chain(stringFunc("kebabCase", noError(kebabCase))),
 	"truncate":    Chain3(truncate),
 	"wordwrap":    Chain2(wordwrap),
 	"center":      Chain2(center),
 	"matchRegex":  Chain2(matchRegex),
-	"html":        Chain(StringFunc("html", NoError(html.EscapeString))),
-	"urlquery":    Chain(StringFunc("urlquery", NoError(url.QueryEscape))),
-	"urlUnescape": Chain(StringFunc("urlUnescape", url.QueryUnescape)),
+	"html":        Chain(stringFunc("html", noError(html.EscapeString))),
+	"urlquery":    Chain(stringFunc("urlquery", noError(url.QueryEscape))),
+	"urlUnescape": Chain(stringFunc("urlUnescape", url.QueryUnescape)),
 
 	// Encoding functions
 
-	"b64enc": Chain(StringFunc("b64enc", NoError(b64enc))),
-	"b64dec": Chain(StringFunc("b64dec", b64dec)),
+	"b64enc": Chain(stringFunc("b64enc", noError(b64enc))),
+	"b64dec": Chain(stringFunc("b64dec", b64dec)),
 
 	// List functions
 
@@ -115,66 +125,66 @@ func capitalize(s string) string {
 	return string(unicode.ToUpper(r[0])) + string(r[1:])
 }
 
-func replace(old, new string, v reflect.Value) (reflect.Value, error) {
+func replace(old, new string, v String) (String, error) {
 	s, ok := asString(v)
 	if !ok {
-		return reflect.Value{}, fmt.Errorf("replace: expected string as third argument, got %s", v.Type())
+		return null, fmt.Errorf("replace: expected string as third argument, got %s", v.Type())
 	}
 	return reflect.ValueOf(strings.Replace(s, old, new, -1)), nil
 }
 
-func replaceN(old, new string, n int, v reflect.Value) (reflect.Value, error) {
+func replaceN(old, new string, n int, v String) (String, error) {
 	s, ok := asString(v)
 	if !ok {
-		return reflect.Value{}, fmt.Errorf("replaceN: expected string as fourth argument, got %s", v.Type())
+		return null, fmt.Errorf("replaceN: expected string as fourth argument, got %s", v.Type())
 	}
 	return reflect.ValueOf(strings.Replace(s, old, new, n)), nil
 }
 
-func trimPrefix(prefix string, v reflect.Value) (reflect.Value, error) {
+func trimPrefix(prefix string, v String) (String, error) {
 	s, ok := asString(v)
 	if !ok {
-		return reflect.Value{}, fmt.Errorf("trimPrefix: expected string as second argument, got %s", v.Type())
+		return null, fmt.Errorf("trimPrefix: expected string as second argument, got %s", v.Type())
 	}
 	return reflect.ValueOf(strings.TrimPrefix(s, prefix)), nil
 }
 
-func hasPrefix(prefix string, v reflect.Value) (reflect.Value, error) {
+func hasPrefix(prefix string, v String) (String, error) {
 	s, ok := asString(v)
 	if !ok {
-		return reflect.Value{}, fmt.Errorf("hasPrefix: expected string as second argument, got %s", v.Type())
+		return null, fmt.Errorf("hasPrefix: expected string as second argument, got %s", v.Type())
 	}
 	return reflect.ValueOf(strings.HasPrefix(s, prefix)), nil
 }
 
-func trimSuffix(suffix string, v reflect.Value) (reflect.Value, error) {
+func trimSuffix(suffix string, v String) (String, error) {
 	s, ok := asString(v)
 	if !ok {
-		return reflect.Value{}, fmt.Errorf("trimSuffix: expected string as second argument, got %s", v.Type())
+		return null, fmt.Errorf("trimSuffix: expected string as second argument, got %s", v.Type())
 	}
 	return reflect.ValueOf(strings.TrimSuffix(s, suffix)), nil
 }
 
-func hasSuffix(suffix string, v reflect.Value) (reflect.Value, error) {
+func hasSuffix(suffix string, v String) (String, error) {
 	s, ok := asString(v)
 	if !ok {
-		return reflect.Value{}, fmt.Errorf("hasSuffix: expected string as second argument, got %s", v.Type())
+		return null, fmt.Errorf("hasSuffix: expected string as second argument, got %s", v.Type())
 	}
 	return reflect.ValueOf(strings.HasSuffix(s, suffix)), nil
 }
 
-func split(sep string, v reflect.Value) (reflect.Value, error) {
+func split(sep string, v String) (String, error) {
 	s, ok := asString(v)
 	if !ok {
-		return reflect.Value{}, fmt.Errorf("split: expected string as second argument, got %s", v.Type())
+		return null, fmt.Errorf("split: expected string as second argument, got %s", v.Type())
 	}
 	return reflect.ValueOf(strings.Split(s, sep)), nil
 }
 
-func join(sep string, v reflect.Value) (reflect.Value, error) {
+func join(sep string, v String) (String, error) {
 	kind := v.Kind()
 	if kind != reflect.Slice && kind != reflect.Array {
-		return reflect.Value{}, fmt.Errorf("join: expected slice or array as second argument, got %s", v.Type())
+		return null, fmt.Errorf("join: expected slice or array as second argument, got %s", v.Type())
 	}
 
 	length := v.Len()
@@ -191,10 +201,10 @@ func striptags(s string) (string, error) {
 	return regexp.MustCompile("<[^>]*>").ReplaceAllString(s, ""), nil
 }
 
-func substr(start, length int, v reflect.Value) (reflect.Value, error) {
+func substr(start, length int, v String) (String, error) {
 	s, ok := asString(v)
 	if !ok {
-		return reflect.Value{}, fmt.Errorf("substr: expected string as third argument, got %s", v.Type())
+		return null, fmt.Errorf("substr: expected string as third argument, got %s", v.Type())
 	}
 	if start < 0 {
 		start = 0
@@ -212,10 +222,10 @@ func substr(start, length int, v reflect.Value) (reflect.Value, error) {
 	return reflect.ValueOf(s[start:end]), nil
 }
 
-func repeat(count int, v reflect.Value) (reflect.Value, error) {
+func repeat(count int, v String) (String, error) {
 	s, ok := asString(v)
 	if !ok {
-		return reflect.Value{}, fmt.Errorf("repeat: expected string as second argument, got %s", v.Type())
+		return null, fmt.Errorf("repeat: expected string as second argument, got %s", v.Type())
 	}
 	if count <= 0 {
 		return reflect.ValueOf(""), nil
@@ -287,14 +297,14 @@ func kebabCase(s string) string {
 	return result.String()
 }
 
-func truncate(length int, suffix, v reflect.Value) (reflect.Value, error) {
+func truncate(length int, suffix, v String) (String, error) {
 	ss, ok := asString(suffix)
 	if !ok {
-		return reflect.Value{}, fmt.Errorf("truncate: expected string as first argument, got %s", suffix.Type())
+		return null, fmt.Errorf("truncate: expected string as first argument, got %s", suffix.Type())
 	}
 	s, ok := asString(v)
 	if !ok {
-		return reflect.Value{}, fmt.Errorf("truncate: expected string as second argument, got %s", v.Type())
+		return null, fmt.Errorf("truncate: expected string as second argument, got %s", v.Type())
 	}
 	if length <= 0 {
 		return reflect.ValueOf(""), nil
@@ -305,10 +315,10 @@ func truncate(length int, suffix, v reflect.Value) (reflect.Value, error) {
 	return reflect.ValueOf(s[:length-len(ss)] + ss), nil
 }
 
-func wordwrap(width int, v reflect.Value) (reflect.Value, error) {
+func wordwrap(width int, v String) (String, error) {
 	s, ok := asString(v)
 	if !ok {
-		return reflect.Value{}, fmt.Errorf("wordwrap: expected string, got %s", v.Type())
+		return null, fmt.Errorf("wordwrap: expected string, got %s", v.Type())
 	}
 	words := strings.Fields(s)
 	if len(words) == 0 {
@@ -335,10 +345,10 @@ func wordwrap(width int, v reflect.Value) (reflect.Value, error) {
 	return reflect.ValueOf(strings.Join(lines, "\n")), nil
 }
 
-func center(width int, v reflect.Value) (reflect.Value, error) {
+func center(width int, v String) (String, error) {
 	s, ok := asString(v)
 	if !ok {
-		return reflect.Value{}, fmt.Errorf("center: expected string, got %s", v.Type())
+		return null, fmt.Errorf("center: expected string, got %s", v.Type())
 	}
 	if width <= len(s) {
 		return reflect.ValueOf(s), nil
@@ -348,14 +358,14 @@ func center(width int, v reflect.Value) (reflect.Value, error) {
 	return reflect.ValueOf(strings.Repeat(" ", left) + s + strings.Repeat(" ", right)), nil
 }
 
-func matchRegex(pattern string, v reflect.Value) (reflect.Value, error) {
+func matchRegex(pattern string, v String) (String, error) {
 	s, ok := asString(v)
 	if !ok {
-		return reflect.Value{}, fmt.Errorf("matchRegex: expected string as second argument, got %s", v.Type())
+		return null, fmt.Errorf("matchRegex: expected string as second argument, got %s", v.Type())
 	}
 	matched, err := regexp.MatchString(pattern, s)
 	if err != nil {
-		return reflect.Value{}, err
+		return null, err
 	}
 	return reflect.ValueOf(matched), nil
 }
@@ -376,7 +386,7 @@ func b64dec(s string) (string, error) {
 
 // List functions
 
-func list(values ...reflect.Value) (reflect.Value, error) {
+func list(values ...Any) (Slice, error) {
 	if len(values) == 0 {
 		return reflect.ValueOf([]string{}), nil
 	}
@@ -387,39 +397,39 @@ func list(values ...reflect.Value) (reflect.Value, error) {
 	return result, nil
 }
 
-func first(v reflect.Value) (reflect.Value, error) {
+func first(v Slice) (Any, error) {
 	switch v.Kind() {
 	case reflect.Slice, reflect.Array:
 		if v.Len() == 0 {
-			return reflect.Value{}, nil
+			return null, nil
 		}
 		return v.Index(0), nil
 	default:
 		if s, ok := asString(v); ok {
 			if len(s) == 0 {
-				return reflect.Value{}, nil
+				return null, nil
 			}
 			return reflect.ValueOf(s[0]), nil
 		}
-		return reflect.Value{}, fmt.Errorf("first: expected slice, array or string, got %s", v.Type())
+		return null, fmt.Errorf("first: expected slice, array or string, got %s", v.Type())
 	}
 }
 
-func last(v reflect.Value) (reflect.Value, error) {
+func last(v Slice) (Any, error) {
 	switch v.Kind() {
 	case reflect.Slice, reflect.Array:
 		if v.Len() == 0 {
-			return reflect.Value{}, nil
+			return null, nil
 		}
 		return v.Index(v.Len() - 1), nil
 	default:
 		if s, ok := asString(v); ok {
 			if len(s) == 0 {
-				return reflect.Value{}, nil
+				return null, nil
 			}
 			return reflect.ValueOf(s[len(s)-1]), nil
 		}
-		return reflect.Value{}, fmt.Errorf("last: expected slice, array or string, got %s", v.Type())
+		return null, fmt.Errorf("last: expected slice, array or string, got %s", v.Type())
 	}
 }
 
@@ -431,7 +441,7 @@ func reverseString(s string) string {
 	return string(runes)
 }
 
-func reverse(v reflect.Value) (reflect.Value, error) {
+func reverse(v SliceOrString) (SliceOrString, error) {
 	switch v.Kind() {
 	case reflect.Slice, reflect.Array:
 		length := v.Len()
@@ -444,13 +454,13 @@ func reverse(v reflect.Value) (reflect.Value, error) {
 		if s, ok := asString(v); ok {
 			return reflect.ValueOf(reverseString(s)), nil
 		}
-		return reflect.Value{}, fmt.Errorf("reverse: expected slice, array or string, got %s", v.Type())
+		return null, fmt.Errorf("reverse: expected slice, array or string, got %s", v.Type())
 	}
 }
 
-func sortSlice(v reflect.Value) (reflect.Value, error) {
+func sortSlice(v Slice) (Slice, error) {
 	if v.Kind() != reflect.Slice && v.Kind() != reflect.Array {
-		return reflect.Value{}, fmt.Errorf("sort: expected slice or array, got %s", v.Type())
+		return null, fmt.Errorf("sort: expected slice or array, got %s", v.Type())
 	}
 	isInt := true
 	isUint := true
@@ -490,16 +500,16 @@ func sortSlice(v reflect.Value) (reflect.Value, error) {
 		if s, ok := asString(v.Index(i)); ok {
 			sorted = append(sorted, s)
 		} else {
-			return reflect.Value{}, fmt.Errorf("sort: expected slice of numbers or strings, got %s", v.Type())
+			return null, fmt.Errorf("sort: expected slice of numbers or strings, got %s", v.Type())
 		}
 	}
 	slices.Sort(sorted)
 	return reflect.ValueOf(sorted), nil
 }
 
-func uniq(v reflect.Value) (reflect.Value, error) {
+func uniq(v Slice) (Slice, error) {
 	if v.Kind() != reflect.Slice && v.Kind() != reflect.Array {
-		return reflect.Value{}, fmt.Errorf("uniq: expected slice or array, got %s", v.Type())
+		return null, fmt.Errorf("uniq: expected slice or array, got %s", v.Type())
 	}
 
 	length := v.Len()
@@ -517,7 +527,7 @@ func uniq(v reflect.Value) (reflect.Value, error) {
 	return uniqueSlice, nil
 }
 
-func includes(item, collection reflect.Value) (reflect.Value, error) {
+func includes(item Any, collection Slice) (Bool, error) {
 	switch collection.Kind() {
 	case reflect.Slice, reflect.Array:
 		for i := 0; i < collection.Len(); i++ {
@@ -534,31 +544,31 @@ func includes(item, collection reflect.Value) (reflect.Value, error) {
 				return reflect.ValueOf(ContainsWord(s, i)), nil
 			}
 		}
-		return reflect.Value{}, fmt.Errorf("includes: expected slice, array, map or string as second argument, got %s", collection.Type())
+		return null, fmt.Errorf("includes: expected slice, array, map or string as second argument, got %s", collection.Type())
 	}
 }
 
 // Math functions
 
-func add(a, b reflect.Value) (reflect.Value, error) {
+func add(a, b Number) (Number, error) {
 	return numericBinaryOp(a, b, func(x, y *big.Float) *big.Float {
 		return new(big.Float).Add(x, y)
 	})
 }
 
-func sub(a, b reflect.Value) (reflect.Value, error) {
+func sub(a, b Number) (Number, error) {
 	return numericBinaryOp(a, b, func(x, y *big.Float) *big.Float {
 		return new(big.Float).Sub(x, y)
 	})
 }
 
-func mul(a, b reflect.Value) (reflect.Value, error) {
+func mul(a, b Number) (Number, error) {
 	return numericBinaryOp(a, b, func(x, y *big.Float) *big.Float {
 		return new(big.Float).Mul(x, y)
 	})
 }
 
-func quo(a, b reflect.Value) (reflect.Value, error) {
+func quo(a, b Number) (Number, error) {
 	return numericBinaryOp(a, b, func(x, y *big.Float) *big.Float {
 		if y.Sign() == 0 {
 			return nil // Division by zero
@@ -567,7 +577,7 @@ func quo(a, b reflect.Value) (reflect.Value, error) {
 	})
 }
 
-func rem(a, b reflect.Value) (reflect.Value, error) {
+func rem(a, b Number) (Number, error) {
 	return numericBinaryOp(a, b, func(x, y *big.Float) *big.Float {
 		if y.Sign() == 0 {
 			return nil // Division by zero
@@ -576,7 +586,7 @@ func rem(a, b reflect.Value) (reflect.Value, error) {
 	})
 }
 
-func mod(a, b reflect.Value) (reflect.Value, error) {
+func mod(a, b Number) (Number, error) {
 	return numericBinaryOp(a, b, func(x, y *big.Float) *big.Float {
 		if y.Sign() == 0 {
 			return nil // Division by zero
@@ -588,12 +598,12 @@ func mod(a, b reflect.Value) (reflect.Value, error) {
 	})
 }
 
-func minFunc(x reflect.Value, y ...reflect.Value) (reflect.Value, error) {
+func minFunc(x Number, y ...Number) (Number, error) {
 	minVal := x
 	for _, arg := range y {
 		result, err := numericCompare(minVal, arg)
 		if err != nil {
-			return reflect.Value{}, err
+			return null, err
 		}
 		if result > 0 {
 			minVal = arg
@@ -603,12 +613,12 @@ func minFunc(x reflect.Value, y ...reflect.Value) (reflect.Value, error) {
 	return minVal, nil
 }
 
-func maxFunc(x reflect.Value, y ...reflect.Value) (reflect.Value, error) {
+func maxFunc(x Number, y ...Number) (Number, error) {
 	maxVal := x
 	for _, arg := range y {
 		result, err := numericCompare(maxVal, arg)
 		if err != nil {
-			return reflect.Value{}, err
+			return null, err
 		}
 		if result < 0 {
 			maxVal = arg
@@ -618,26 +628,26 @@ func maxFunc(x reflect.Value, y ...reflect.Value) (reflect.Value, error) {
 	return maxVal, nil
 }
 
-func ceil(x reflect.Value) (reflect.Value, error) {
+func ceil(x Number) (Number, error) {
 	f, err := toFloat64(x)
 	if err != nil {
-		return reflect.Value{}, err
+		return null, err
 	}
 	return reflect.ValueOf(math.Ceil(f.Float())), nil
 }
 
-func floor(x reflect.Value) (reflect.Value, error) {
+func floor(x Number) (Number, error) {
 	f, err := toFloat64(x)
 	if err != nil {
-		return reflect.Value{}, err
+		return null, err
 	}
 	return reflect.ValueOf(math.Floor(f.Float())), nil
 }
 
-func round(precision int, x reflect.Value) (reflect.Value, error) {
+func round(precision int, x Number) (Number, error) {
 	f, err := toFloat64(x)
 	if err != nil {
-		return reflect.Value{}, err
+		return null, err
 	}
 	shift := math.Pow10(precision)
 	return reflect.ValueOf(math.Round(f.Float()*shift) / shift), nil
@@ -645,19 +655,19 @@ func round(precision int, x reflect.Value) (reflect.Value, error) {
 
 // Helper functions for numeric operations
 
-func numericBinaryOp(a, b reflect.Value, op func(*big.Float, *big.Float) *big.Float) (reflect.Value, error) {
+func numericBinaryOp(a, b Number, op func(*big.Float, *big.Float) *big.Float) (Number, error) {
 	x, err := toBigFloat(a)
 	if err != nil {
-		return reflect.Value{}, err
+		return null, err
 	}
 	y, err := toBigFloat(b)
 	if err != nil {
-		return reflect.Value{}, err
+		return null, err
 	}
 
 	result := op(x, y)
 	if result == nil {
-		return reflect.Value{}, fmt.Errorf("operation error (possibly division by zero)")
+		return null, fmt.Errorf("operation error (possibly division by zero)")
 	}
 
 	// Try to convert back to original type if possible
@@ -679,7 +689,7 @@ func numericBinaryOp(a, b reflect.Value, op func(*big.Float, *big.Float) *big.Fl
 	return reflect.ValueOf(result), nil
 }
 
-func numericCompare(a, b reflect.Value) (int, error) {
+func numericCompare(a, b Number) (int, error) {
 	x, err := toBigFloat(a)
 	if err != nil {
 		return 0, err
@@ -691,7 +701,7 @@ func numericCompare(a, b reflect.Value) (int, error) {
 	return x.Cmp(y), nil
 }
 
-func toBigFloat(v reflect.Value) (*big.Float, error) {
+func toBigFloat(v Number) (*big.Float, error) {
 	switch v.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		return new(big.Float).SetInt64(v.Int()), nil
@@ -706,7 +716,7 @@ func toBigFloat(v reflect.Value) (*big.Float, error) {
 
 // Type checking functions
 
-func isInt(v reflect.Value) bool {
+func isInt(v Any) bool {
 	switch v.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		return true
@@ -715,7 +725,7 @@ func isInt(v reflect.Value) bool {
 	}
 }
 
-func isUint(v reflect.Value) bool {
+func isUint(v Any) bool {
 	switch v.Kind() {
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		return true
@@ -724,7 +734,7 @@ func isUint(v reflect.Value) bool {
 	}
 }
 
-func isFloat(v reflect.Value) bool {
+func isFloat(v Any) bool {
 	switch v.Kind() {
 	case reflect.Float32, reflect.Float64:
 		return true
@@ -735,7 +745,7 @@ func isFloat(v reflect.Value) bool {
 
 // Type conversion functions
 
-func toInt64(v reflect.Value) (reflect.Value, error) {
+func toInt64(v Any) (Int, error) {
 	if v.Kind() == reflect.Int64 {
 		return v, nil
 	}
@@ -749,7 +759,7 @@ func toInt64(v reflect.Value) (reflect.Value, error) {
 	case reflect.String:
 		i, err := strconv.ParseInt(v.String(), 10, 64)
 		if err != nil {
-			return reflect.Value{}, err
+			return null, err
 		}
 		return reflect.ValueOf(i), nil
 	case reflect.Bool:
@@ -758,11 +768,11 @@ func toInt64(v reflect.Value) (reflect.Value, error) {
 		}
 		return reflect.ValueOf(int64(0)), nil
 	default:
-		return reflect.Value{}, fmt.Errorf("cannot convert %s to int", v.Type())
+		return null, fmt.Errorf("cannot convert %s to int", v.Type())
 	}
 }
 
-func toFloat64(v reflect.Value) (reflect.Value, error) {
+func toFloat64(v Any) (Number, error) {
 	switch v.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		return reflect.ValueOf(float64(v.Int())), nil
@@ -773,7 +783,7 @@ func toFloat64(v reflect.Value) (reflect.Value, error) {
 	case reflect.String:
 		f, err := strconv.ParseFloat(v.String(), 64)
 		if err != nil {
-			return reflect.Value{}, err
+			return null, err
 		}
 		return reflect.ValueOf(f), nil
 	case reflect.Bool:
@@ -782,11 +792,11 @@ func toFloat64(v reflect.Value) (reflect.Value, error) {
 		}
 		return reflect.ValueOf(float64(0)), nil
 	default:
-		return reflect.Value{}, fmt.Errorf("cannot convert %s to float", v.Type())
+		return null, fmt.Errorf("cannot convert %s to float", v.Type())
 	}
 }
 
-func toString(v reflect.Value) (reflect.Value, error) {
+func toString(v Any) (String, error) {
 	switch v.Kind() {
 	case reflect.String:
 		return v, nil
@@ -801,11 +811,11 @@ func toString(v reflect.Value) (reflect.Value, error) {
 	case reflect.Bool:
 		return reflect.ValueOf(strconv.FormatBool(v.Bool())), nil
 	default:
-		return reflect.Value{}, fmt.Errorf("cannot convert %s to string", v.Type())
+		return null, fmt.Errorf("cannot convert %s to string", v.Type())
 	}
 }
 
-func toBool(v reflect.Value) (reflect.Value, error) {
+func toBool(v Any) (Bool, error) {
 	if v.Kind() == reflect.Bool {
 		return v, nil
 	}
@@ -820,32 +830,22 @@ func toBool(v reflect.Value) (reflect.Value, error) {
 	case reflect.String:
 		x, err := strconv.ParseBool(v.String())
 		if err != nil {
-			return reflect.Value{}, err
+			return null, err
 		}
 		return reflect.ValueOf(x), nil
 	default:
-		return reflect.Value{}, fmt.Errorf("cannot convert %s to bool", v.Type())
+		return null, fmt.Errorf("cannot convert %s to bool", v.Type())
 	}
 }
 
-func asString(v reflect.Value) (string, bool) {
+func asString(v Any) (string, bool) {
 	if v.Kind() == reflect.String {
 		return v.String(), true
-	}
-	// If v implements fmt.Stringer, use its String method
-	if v.CanInterface() {
-		if s, ok := v.Interface().(fmt.Stringer); ok {
-			return s.String(), true
-		}
 	}
 	return "", false
 }
 
 // Date functions
-
-func timeFormat(t time.Time, layout string) string {
-	return t.Format(layout)
-}
 
 func parseTime(layout, value string) (time.Time, error) {
 	return time.Parse(layout, value)

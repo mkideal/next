@@ -25,32 +25,23 @@ type Func4[T1, T2, T3 any] func(T1, T2, T3, reflect.Value) (reflect.Value, error
 // If the function accepts 1 argument and the argument is a FuncChain, it returns a new FuncChain
 // that chains the two functions.
 // Otherwise, it returns the result of calling the function with the argument.
-type FuncChain func(zeroOrOneArgument ...reflect.Value) (reflect.Value, error)
-
-// FuncChain2 is a function chain that can be used to convert values.
-type FuncChain2[T any] func(T, ...reflect.Value) (reflect.Value, error)
-
-// FuncChain3 is a function chain that can be used to convert values.
-type FuncChain3[T1, T2 any] func(T1, T2, ...reflect.Value) (reflect.Value, error)
-
-// FuncChain4 is a function chain that can be used to convert values.
-type FuncChain4[T1, T2, T3 any] func(T1, T2, T3, ...reflect.Value) (reflect.Value, error)
+type FuncChain func(...reflect.Value) (reflect.Value, error)
 
 // Chain returns a FuncChain that chains the given function.
 func Chain(f Func) FuncChain {
 	var self FuncChain
 	self = FuncChain(func(values ...reflect.Value) (reflect.Value, error) {
-		return Call(self, f, values...)
+		return call(self, f, values...)
 	})
 	return self
 }
 
 // Chain2 returns a FuncChain that chains the given function.
-func Chain2[T any](f Func2[T]) FuncChain2[T] {
+func Chain2[T any](f Func2[T]) func(T, ...reflect.Value) (reflect.Value, error) {
 	return func(x T, argument ...reflect.Value) (reflect.Value, error) {
 		var self FuncChain
 		self = FuncChain(func(arg ...reflect.Value) (reflect.Value, error) {
-			return Call(self, func(y reflect.Value) (reflect.Value, error) {
+			return call(self, func(y reflect.Value) (reflect.Value, error) {
 				return f(x, y)
 			}, arg...)
 		})
@@ -59,11 +50,11 @@ func Chain2[T any](f Func2[T]) FuncChain2[T] {
 }
 
 // Chain3 returns a FuncChain that chains the given function.
-func Chain3[T1, T2 any](f Func3[T1, T2]) FuncChain3[T1, T2] {
+func Chain3[T1, T2 any](f Func3[T1, T2]) func(T1, T2, ...reflect.Value) (reflect.Value, error) {
 	return func(x T1, y T2, argument ...reflect.Value) (reflect.Value, error) {
 		var self FuncChain
 		self = FuncChain(func(arg ...reflect.Value) (reflect.Value, error) {
-			return Call(self, func(z reflect.Value) (reflect.Value, error) {
+			return call(self, func(z reflect.Value) (reflect.Value, error) {
 				return f(x, y, z)
 			}, arg...)
 		})
@@ -72,11 +63,11 @@ func Chain3[T1, T2 any](f Func3[T1, T2]) FuncChain3[T1, T2] {
 }
 
 // Chain4 returns a FuncChain that chains the given function.
-func Chain4[T1, T2, T3 any](f Func4[T1, T2, T3]) FuncChain4[T1, T2, T3] {
+func Chain4[T1, T2, T3 any](f Func4[T1, T2, T3]) func(T1, T2, T3, ...reflect.Value) (reflect.Value, error) {
 	return func(x T1, y T2, z T3, argument ...reflect.Value) (reflect.Value, error) {
 		var self FuncChain
 		self = FuncChain(func(arg ...reflect.Value) (reflect.Value, error) {
-			return Call(self, func(w reflect.Value) (reflect.Value, error) {
+			return call(self, func(w reflect.Value) (reflect.Value, error) {
 				return f(x, y, z, w)
 			}, arg...)
 		})
@@ -84,12 +75,12 @@ func Chain4[T1, T2, T3 any](f Func4[T1, T2, T3]) FuncChain4[T1, T2, T3] {
 	}
 }
 
-// Call calls the given function with the given arguments in the function chain.
+// call calls the given function with the given arguments in the function chain.
 // If no arguments are given, it returns the function chain itself.
 // If one argument is given and it is a FuncChain, it returns a new FuncChain that
 // chains the two functions.
 // Otherwise, it returns the result of calling the function with the argument.
-func Call(fc FuncChain, f Func, argument ...reflect.Value) (reflect.Value, error) {
+func call(fc FuncChain, f Func, argument ...reflect.Value) (reflect.Value, error) {
 	if len(argument) == 0 {
 		// Return self if no arguments are given.
 		return reflect.ValueOf(fc), nil
@@ -108,16 +99,11 @@ func Call(fc FuncChain, f Func, argument ...reflect.Value) (reflect.Value, error
 	if !ok {
 		return reflect.Value{}, fmt.Errorf("expected function chain, got %s", v.Type())
 	}
-	return reflect.ValueOf(c.Then(f)), nil
+	return reflect.ValueOf(c.then(f)), nil
 }
 
-// Value returns the reflect.Value of the function chain.
-func (f FuncChain) Value() reflect.Value {
-	return reflect.ValueOf(f)
-}
-
-// Then returns a new function chain that chains the given function with the current function chain.
-func (f FuncChain) Then(next Func) FuncChain {
+// then returns a new function chain that chains the given function with the current function chain.
+func (f FuncChain) then(next Func) FuncChain {
 	return Chain(func(v reflect.Value) (reflect.Value, error) {
 		v, err := f(v)
 		if err != nil {
@@ -128,9 +114,9 @@ func (f FuncChain) Then(next Func) FuncChain {
 }
 
 // Map maps the given value to a slice of values using the given function chain.
-func Map(f FuncChain, v reflect.Value) (reflect.Value, error) {
+func Map(f FuncChain, v Slice) (Slice, error) {
 	if v.Kind() != reflect.Slice && v.Kind() != reflect.Array {
-		return reflect.Value{}, fmt.Errorf("map: expected slice or array, got %s", v.Type())
+		return null, fmt.Errorf("map: expected slice or array, got %s", v.Type())
 	}
 	if v.Len() == 0 {
 		return reflect.MakeSlice(reflect.SliceOf(v.Type().Elem()), 0, 0), nil
@@ -139,7 +125,7 @@ func Map(f FuncChain, v reflect.Value) (reflect.Value, error) {
 	for i := 0; i < v.Len(); i++ {
 		r, err := f(v.Index(i))
 		if err != nil {
-			return reflect.Value{}, err
+			return null, err
 		}
 		if i == 0 {
 			result = reflect.MakeSlice(reflect.SliceOf(r.Type()), v.Len(), v.Len())
@@ -149,23 +135,16 @@ func Map(f FuncChain, v reflect.Value) (reflect.Value, error) {
 	return result, nil
 }
 
-// NoError returns a function that calls the given function and returns the result and nil.
-func NoError[T, U any](f func(T) U) func(T) (U, error) {
+// noError returns a function that calls the given function and returns the result and nil.
+func noError[T, U any](f func(T) U) func(T) (U, error) {
 	return func(s T) (U, error) {
 		return f(s), nil
 	}
 }
 
-// NoError2 returns a function that calls the given function and returns the result and nil.
-func NoError2[T1, T2, U any](f func(T1, T2) U) func(T1, T2) (U, error) {
-	return func(t1 T1, t2 T2) (U, error) {
-		return f(t1, t2), nil
-	}
-}
-
-// StringFunc converts a function that takes a string and returns a string to a funtion
+// stringFunc converts a function that takes a string and returns a string to a funtion
 // that takes a reflect.Value and returns a reflect.Value.
-func StringFunc(name string, f func(string) (string, error)) Func {
+func stringFunc(name string, f func(string) (string, error)) Func {
 	return func(v reflect.Value) (reflect.Value, error) {
 		s, ok := asString(v)
 		if !ok {

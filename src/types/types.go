@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/next/next/src/ast"
 	"github.com/next/next/src/token"
 )
 
@@ -44,6 +45,8 @@ func (*InterfaceMethodParam) getType() string     { return "interface.method.par
 func (InterfaceMethodParamName) getType() string  { return "interface.method.param.name" }
 func (*InterfaceMethodParamType) getType() string { return "interface.method.param.type" }
 func (*InterfaceMethodReturn) getType() string    { return "interface.method.return" }
+
+func (*CallStmt) getType() string { return "stmt.call" }
 
 // list types: consts, enums, structs, interfaces
 func (l List[T]) getType() string {
@@ -143,11 +146,12 @@ func (x *DeclType[T]) Kind() token.Kind   { return x.kind }
 type UsedType struct {
 	Type Type
 	File *File
+	Node ast.Type
 }
 
 // Use uses a type in a file.
-func Use(t Type, f *File) *UsedType {
-	return &UsedType{Type: t, File: f}
+func Use(t Type, f *File, node ast.Type) *UsedType {
+	return &UsedType{Type: t, File: f, Node: node}
 }
 
 func (u *UsedType) String() string { return u.Type.String() }
@@ -237,12 +241,15 @@ func joinSymbolName(syms ...string) string {
 
 // Scope represents a symbol scope.
 type Scope interface {
-	ParentScope() Scope
+	// parent returns the parent scope of this scope.
+	parent() Scope
+
+	// LookupLocalSymbol looks up a symbol by name in the scope.
 	LookupLocalSymbol(name string) Symbol
 }
 
-func (f *File) ParentScope() Scope { return &fileParentScope{f} }
-func (e *Enum) ParentScope() Scope { return e.file }
+func (f *File) parent() Scope { return &fileParentScope{f} }
+func (e *Enum) parent() Scope { return e.file }
 
 func (f *File) LookupLocalSymbol(name string) Symbol { return f.symbols[name] }
 func (e *Enum) LookupLocalSymbol(name string) Symbol {
@@ -254,8 +261,9 @@ func (e *Enum) LookupLocalSymbol(name string) Symbol {
 	return nil
 }
 
-func lookupSymbol(scope Scope, name string) Symbol {
-	for s := scope; s != nil; s = s.ParentScope() {
+// LookupSymbol looks up a symbol by name in the given scope and its parent scopes.
+func LookupSymbol(scope Scope, name string) Symbol {
+	for s := scope; s != nil; s = s.parent() {
 		if sym := s.LookupLocalSymbol(name); sym != nil {
 			return sym
 		}
@@ -263,12 +271,14 @@ func lookupSymbol(scope Scope, name string) Symbol {
 	return nil
 }
 
-func lookupType(scope Scope, name string) (Type, error) {
-	return expectTypeSymbol(name, lookupSymbol(scope, name))
+// LookupType looks up a type by name in the given scope and its parent scopes.
+func LookupType(scope Scope, name string) (Type, error) {
+	return expectTypeSymbol(name, LookupSymbol(scope, name))
 }
 
-func lookupValue(scope Scope, name string) (*Value, error) {
-	return expectValueSymbol(name, lookupSymbol(scope, name))
+// LookupValue looks up a value by name in the given scope and its parent scopes.
+func LookupValue(scope Scope, name string) (*Value, error) {
+	return expectValueSymbol(name, LookupSymbol(scope, name))
 }
 
 func expectTypeSymbol(name string, s Symbol) (Type, error) {
@@ -295,7 +305,7 @@ type fileParentScope struct {
 	f *File
 }
 
-func (s *fileParentScope) ParentScope() Scope {
+func (s *fileParentScope) parent() Scope {
 	return nil
 }
 
@@ -303,7 +313,8 @@ func (s *fileParentScope) LookupLocalSymbol(name string) Symbol {
 	var files []*File
 	pkg, name := splitSymbolName(name)
 	for i := range s.f.imports.List {
-		if s.f.imports.List[i].target.pkg.name == pkg {
+		target := s.f.imports.List[i].target
+		if target != nil && target.pkg != nil && target.pkg.name == pkg {
 			files = append(files, s.f.imports.List[i].target)
 		}
 	}

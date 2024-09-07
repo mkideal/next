@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"slices"
@@ -166,25 +167,29 @@ func (c *Context) FileSet() *token.FileSet {
 	return c.fset
 }
 
+// GetFile returns the file by path
+func (c *Context) GetFile(path string) *File {
+	return c.files[path]
+}
+
 // AddFile adds a file to the context
-func (c *Context) AddFile(f *ast.File) error {
+func (c *Context) AddFile(f *ast.File) (*File, error) {
 	filename := c.fset.Position(f.Pos()).Filename
-	if _, ok := c.files[filename]; ok {
+	if file, ok := c.files[filename]; ok {
 		c.addErrorf(f.Pos(), "file %s already exists", filename)
-		return c.errors.Err()
+		return file, c.errors.Err()
 	}
 	path, err := filepath.Abs(filename)
 	if err != nil {
-		return fmt.Errorf("failed to get absolute path of %s: %w", filename, err)
+		return nil, fmt.Errorf("failed to get absolute path of %s: %w", filename, err)
 	}
-	file := newFile(c, f)
-	file.Path = path
+	file := newFile(c, f, path)
 	c.files[path] = file
 	for _, pkg := range c.packages {
 		if pkg.name == f.Name.Name {
 			file.pkg = pkg
 			pkg.files = append(pkg.files, file)
-			return nil
+			return file, nil
 		}
 	}
 	pkg := &Package{
@@ -193,7 +198,7 @@ func (c *Context) AddFile(f *ast.File) error {
 	}
 	file.pkg = pkg
 	c.packages = append(c.packages, pkg)
-	return nil
+	return file, nil
 }
 
 // Output returns the output writer for logging
@@ -329,7 +334,7 @@ func (c *Context) call(pos token.Pos, name string, args ...constant.Value) (cons
 	return constant.Call(c, name, args)
 }
 
-// Resolve resolves all files in the context
+// Resolve resolves all files in the context.
 func (c *Context) Resolve() error {
 	// sort files by package name and position
 	files := make([]*File, 0, len(c.files))
@@ -347,9 +352,6 @@ func (c *Context) Resolve() error {
 	// resolve all imports
 	for _, file := range files {
 		file.imports.resolve(c, file)
-	}
-	if c.errors.Len() > 0 {
-		return c.errors
 	}
 
 	// create all symbols
@@ -371,16 +373,10 @@ func (c *Context) Resolve() error {
 	for _, file := range files {
 		file.resolve(c)
 	}
-	if c.errors.Len() > 0 {
-		return c.errors
-	}
 
 	// resolve all packages
 	for _, pkg := range c.packages {
 		pkg.resolve(c)
-	}
-	if c.errors.Len() > 0 {
-		return c.errors
 	}
 
 	// resolve all statements
@@ -389,6 +385,8 @@ func (c *Context) Resolve() error {
 			stmt.resolve(c, file)
 		}
 	}
+
+	// return if there are errors
 	if c.errors.Len() > 0 {
 		return c.errors
 	}
@@ -503,7 +501,7 @@ func (c *Context) recursiveResolveValue(file *File, scope Scope, refs []*Value, 
 
 	case *ast.SelectorExpr:
 		name := joinSymbolName(c.resolveSelectorExprChain(expr, false)...)
-		v, err := lookupValue(scope, name)
+		v, err := LookupValue(scope, name)
 		if err != nil {
 			c.addErrorf(expr.Pos(), "%s is not defined", name)
 			return constant.MakeUnknown()
@@ -603,7 +601,9 @@ func (c *Context) resolveType(file *File, t ast.Type, ignoreError bool) Type {
 		return nil
 	}
 	if result != nil {
-		result = Use(result, file)
+		result = Use(result, file, t)
+		slog.Warn("FIXME: resolveType", "type", fmt.Sprintf("%p", t))
+		file.addNode(c, t, result)
 	}
 	return result
 }
@@ -656,7 +656,7 @@ func (c *Context) resolveSelectorExprType(file *File, t *ast.SelectorExpr, ignor
 		return nil
 	}
 	fullName := joinSymbolName(names...)
-	typ, err := lookupType(file, fullName)
+	typ, err := LookupType(file, fullName)
 	if err != nil {
 		if !ignoreError {
 			c.addError(t.Pos(), err.Error())

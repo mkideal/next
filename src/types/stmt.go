@@ -29,8 +29,10 @@ type CallStmt struct {
 	CallExpr *ast.CallExpr
 }
 
-func newCallStmt(_ *Context, _ *File, call *ast.CallExpr) *CallStmt {
-	return &CallStmt{pos: call.Pos(), CallExpr: call}
+func newCallStmt(ctx *Context, file *File, call *ast.CallExpr) *CallStmt {
+	s := &CallStmt{pos: call.Pos(), CallExpr: call}
+	file.addNode(ctx, call, s)
+	return s
 }
 
 func (s *CallStmt) resolve(ctx *Context, file *File) {

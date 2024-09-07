@@ -977,13 +977,16 @@ func (p *parser) parseImportDecl() *ast.ImportDecl {
 	if p.trace {
 		defer un(trace(p, "ImportDecl"))
 	}
+	importPos := p.pos
 	p.expect(token.IMPORT)
 
 	pos := p.pos
 	doc := p.leadComment
+	var end token.Pos
 	var path string
 	if p.tok == token.STRING {
 		path = p.lit
+		end = p.pos
 		p.next()
 	} else if p.tok.IsLiteral() {
 		p.error(pos, "import path must be a string")
@@ -996,9 +999,11 @@ func (p *parser) parseImportDecl() *ast.ImportDecl {
 
 	// collect imports
 	spec := &ast.ImportDecl{
-		Doc:     doc,
-		Path:    &ast.BasicLit{ValuePos: pos, Kind: token.STRING, Value: path},
-		Comment: comment,
+		Doc:       doc,
+		ImportPos: importPos,
+		Path:      &ast.BasicLit{ValuePos: pos, Kind: token.STRING, Value: path},
+		Comment:   comment,
+		EndPos:    end,
 	}
 	p.imports = append(p.imports, spec)
 

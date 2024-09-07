@@ -149,11 +149,14 @@ func Walk(v Visitor, node Node) {
 		Walk(v, n.K)
 		Walk(v, n.V)
 
+	case *EnumType:
+		Walk(v, n.Members)
+
 	case *StructType:
 		Walk(v, n.Fields)
 
-	case *EnumType:
-		Walk(v, n.Members)
+	case *InterfaceType:
+		Walk(v, n.Methods)
 
 	// Declarations
 	case *ImportDecl:
@@ -176,6 +179,21 @@ func Walk(v Visitor, node Node) {
 
 	case *InterfaceDecl:
 		walkGenDecl(v, n)
+
+	case *EnumMember:
+		if n.Doc != nil {
+			Walk(v, n.Doc)
+		}
+		if n.Annotations != nil {
+			Walk(v, n.Annotations)
+		}
+		Walk(v, n.Name)
+		if n.Value != nil {
+			Walk(v, n.Value)
+		}
+		if n.Comment != nil {
+			Walk(v, n.Comment)
+		}
 
 	// Statements
 	case *ExprStmt:

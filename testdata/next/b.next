@@ -10,7 +10,7 @@ import "./a.next";
 
 enum TestEnum {
     A = a.A;
-    B = a.A + a.B;
+    B = a.Color.Green + a.B;
     C = B << iota;
     D;
     E;

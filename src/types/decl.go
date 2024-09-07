@@ -2,6 +2,8 @@ package types
 
 import (
 	"cmp"
+	"log/slog"
+	"path/filepath"
 	"slices"
 	"strconv"
 
@@ -67,6 +69,10 @@ type Import struct {
 	// Path is the import path.
 	// @api(object/import/Path)
 	Path string
+
+	// FullPath returns the full path of the imported file.
+	// @api(object/Import/FullPath)
+	FullPath string
 }
 
 func newImport(ctx *Context, file *File, src *ast.ImportDecl) *Import {
@@ -76,11 +82,22 @@ func newImport(ctx *Context, file *File, src *ast.ImportDecl) *Import {
 		path = "!BAD-IMPORT-PATH!"
 	}
 	i := &Import{
-		pos:     src.Pos(),
-		file:    file,
-		Doc:     newDoc(src.Doc),
-		Comment: newComment(src.Comment),
-		Path:    path,
+		pos:      src.Pos(),
+		file:     file,
+		Doc:      newDoc(src.Doc),
+		Comment:  newComment(src.Comment),
+		Path:     path,
+		FullPath: path,
+	}
+	if len(path) > 0 && path[0] != '/' {
+		var err error
+		slog.Info("FIXME: filepath.Abs", "file.Path", file.Path, "path", path)
+		path, err = filepath.Abs(filepath.Join(filepath.Dir(file.Path), path))
+		if err != nil {
+			ctx.addErrorf(token.NoPos, "failed to get absolute path of %s: %v", i.Path, err)
+		} else {
+			i.FullPath = path
+		}
 	}
 	return i
 }
@@ -309,10 +326,13 @@ type Value struct {
 	}
 }
 
-func newValue(_ *Context, _ *File, name string, namePos token.Pos, src ast.Expr) *Value {
+func newValue(ctx *Context, file *File, name string, namePos token.Pos, src ast.Expr) *Value {
 	v := &Value{
 		namePos: namePos,
 		name:    name,
+	}
+	if src != nil {
+		file.addNode(ctx, src, v)
 	}
 	v.unresolved.value = src
 	return v
@@ -376,6 +396,11 @@ func (v *Value) resolveValue(ctx *Context, file *File, scope Scope, refs []*Valu
 	return v.val
 }
 
+// IsEnum returns true if the value is an enum member.
+func (v *Value) IsEnum() bool {
+	return v.enum.typ != nil
+}
+
 // Type returns the type of the constant value.
 // @api(object/decl/Value/Type)
 func (v *Value) Type() *PrimitiveType {
@@ -433,6 +458,7 @@ func newConst(ctx *Context, file *File, src *ast.GenDecl[ast.Expr]) *Const {
 	c := &Const{
 		Comment: newComment(src.Comment),
 	}
+	file.addNode(ctx, src, c)
 	c.decl = newDecl(c, file, src.Pos(), ConstName(src.Name.Name), src.Doc, src.Annotations)
 	c.value = newValue(ctx, file, string(c.name), src.Name.NamePos, src.Spec)
 	return c
@@ -494,6 +520,9 @@ func newDeclType[T Decl](pos token.Pos, name string, kind token.Kind, decl T) *D
 // @api(object/decl/DeclType/String)
 func (d *DeclType[T]) String() string { return d.name }
 
+// Pos returns the position of the declaration type.
+func (d *DeclType[T]) Pos() token.Pos { return d.pos }
+
 // Enum represents an enum declaration.
 // @api(object/decl/Enum)
 type Enum struct {
@@ -514,6 +543,7 @@ type EnumName string
 
 func newEnum(ctx *Context, file *File, src *ast.GenDecl[*ast.EnumType]) *Enum {
 	e := &Enum{}
+	file.addNode(ctx, src, e)
 	e.decl = newDecl(e, file, src.Pos(), EnumName(src.Name.Name), src.Doc, src.Annotations)
 	e.Type = newDeclType(src.Pos(), src.Name.Name, token.Enum, e)
 	e.Members = &Fields[*Enum, *EnumMember]{typename: "enum.members", Decl: e}
@@ -556,6 +586,7 @@ func newEnumMember(ctx *Context, file *File, e *Enum, src *ast.EnumMember, index
 		Comment: newComment(src.Comment),
 		Decl:    e,
 	}
+	file.addNode(ctx, src, m)
 	m.decl = newDecl(m, file, src.Pos(), EnumMemberName(src.Name.Name), src.Doc, src.Annotations)
 	m.value = newValue(ctx, file, string(m.name), src.Name.NamePos, src.Value)
 	m.value.enum.typ = e
@@ -606,6 +637,7 @@ type StructName string
 
 func newStruct(ctx *Context, file *File, src *ast.GenDecl[*ast.StructType]) *Struct {
 	s := &Struct{}
+	file.addNode(ctx, src, s)
 	s.decl = newDecl(s, file, src.Pos(), StructName(src.Name.Name), src.Doc, src.Annotations)
 	s.Type = newDeclType(src.Pos(), src.Name.Name, token.Struct, s)
 	s.fields = &Fields[*Struct, *StructField]{typename: "struct.fields", Decl: s}
@@ -647,6 +679,7 @@ type StructField struct {
 
 func newStructField(ctx *Context, file *File, s *Struct, src *ast.StructField) *StructField {
 	f := &StructField{Decl: s}
+	file.addNode(ctx, src, f)
 	f.decl = newDecl(f, file, src.Pos(), StructFieldName(src.Name.Name), src.Doc, src.Annotations)
 	f.Type = newStructFieldType(ctx, file, f, src.Type)
 	return f
@@ -677,7 +710,7 @@ type StructFieldType struct {
 	Field *StructField
 }
 
-func newStructFieldType(_ *Context, _ *File, f *StructField, src ast.Type) *StructFieldType {
+func newStructFieldType(ctx *Context, file *File, f *StructField, src ast.Type) *StructFieldType {
 	t := &StructFieldType{Field: f}
 	t.unresolved.typ = src
 	return t
@@ -709,6 +742,7 @@ type InterfaceName string
 
 func newInterface(ctx *Context, file *File, src *ast.GenDecl[*ast.InterfaceType]) *Interface {
 	i := &Interface{}
+	file.addNode(ctx, src, i)
 	i.decl = newDecl(i, file, src.Pos(), InterfaceName(src.Name.Name), src.Doc, src.Annotations)
 	i.Type = newDeclType(src.Pos(), src.Name.Name, token.Interface, i)
 	i.methods = &Fields[*Interface, *InterfaceMethod]{typename: "interface.methods", Decl: i}
@@ -758,6 +792,7 @@ func newInterfaceMethod(ctx *Context, file *File, i *Interface, src *ast.Method)
 		Decl:    i,
 		Comment: newComment(src.Comment),
 	}
+	file.addNode(ctx, src, m)
 	m.decl = newDecl(m, file, src.Pos(), InterfaceMethodName(src.Name.Name), src.Doc, src.Annotations)
 	m.Params = &Fields[*InterfaceMethod, *InterfaceMethodParam]{typename: "interface.method.params", Decl: m}
 	for _, p := range src.Params.List {
@@ -811,6 +846,7 @@ func newInterfaceMethodParam(ctx *Context, file *File, m *InterfaceMethod, src *
 		pos:    src.Pos(),
 		Method: m,
 	}
+	file.addNode(ctx, src, p)
 	p.unresolved.annotations = src.Annotations
 	p.Name = InterfaceMethodParamName(src.Name.Name)
 	p.Type = newInterfaceMethodParamType(ctx, file, p, src.Type)
@@ -850,7 +886,7 @@ type InterfaceMethodParamType struct {
 	Type Type
 }
 
-func newInterfaceMethodParamType(_ *Context, _ *File, p *InterfaceMethodParam, src ast.Type) *InterfaceMethodParamType {
+func newInterfaceMethodParamType(ctx *Context, file *File, p *InterfaceMethodParam, src ast.Type) *InterfaceMethodParamType {
 	t := &InterfaceMethodParamType{Param: p}
 	t.unresolved.typ = src
 	return t
@@ -876,7 +912,7 @@ type InterfaceMethodReturn struct {
 	Type Type
 }
 
-func newInterfaceMethodReturn(_ *Context, _ *File, m *InterfaceMethod, src ast.Type) *InterfaceMethodReturn {
+func newInterfaceMethodReturn(ctx *Context, file *File, m *InterfaceMethod, src ast.Type) *InterfaceMethodReturn {
 	t := &InterfaceMethodReturn{Method: m}
 	t.unresolved.typ = src
 	return t

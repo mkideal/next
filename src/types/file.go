@@ -77,11 +77,13 @@ func (p *Package) Types() []Type {
 type File struct {
 	pos token.Pos // position of the file
 	pkg *Package  // package containing the file
+	src *ast.File // the original AST
 
 	imports *Imports          // import declarations
 	decls   *Decls            // top-level declarations: const, enum, struct, interface
 	stmts   []Stmt            // top-level statements
 	symbols map[string]Symbol // symbol table: name -> Symbol(Type|Value)
+	nodes   map[ast.Node]Node // AST node -> Node
 
 	unresolved struct {
 		annotations *ast.AnnotationGroup
@@ -100,12 +102,15 @@ type File struct {
 	Annotations AnnotationGroup
 }
 
-func newFile(ctx *Context, src *ast.File) *File {
+func newFile(ctx *Context, src *ast.File, path string) *File {
 	f := &File{
+		src:     src,
 		pos:     src.Pos(),
+		Path:    path,
 		Doc:     newDoc(src.Doc),
 		decls:   &Decls{},
 		symbols: make(map[string]Symbol),
+		nodes:   make(map[ast.Node]Node),
 	}
 	f.imports = &Imports{File: f}
 	f.unresolved.annotations = src.Annotations
@@ -155,6 +160,9 @@ func (x *File) Package() *Package {
 	return x.pkg
 }
 
+// Node returns the original AST node for the file.
+func (f *File) Node() *ast.File { return f.src }
+
 // Imports returns the file's import declarations.
 // @api(object/File/Imports)
 func (f *File) Imports() *Imports { return f.imports }
@@ -166,6 +174,19 @@ func (f *File) Decls() *Decls {
 		return nil
 	}
 	return f.decls
+}
+
+func (f *File) addNode(ctx *Context, n ast.Node, x Node) {
+	if _, dup := f.nodes[n]; dup {
+		ctx.addErrorf(n.Pos(), "node already added: %T", n)
+		return
+	}
+	f.nodes[n] = x
+}
+
+// GetNode returns the Node for the given AST node.
+func (f *File) GetNode(n ast.Node) Node {
+	return f.nodes[n]
 }
 
 // LookupLocalType looks up a type by name in the file's symbol table.

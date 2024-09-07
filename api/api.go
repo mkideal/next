@@ -88,3 +88,9 @@ func SolveAnnotations(solver func(*AnnotationSolverRequest) (*AnnotationSolverRe
 	}
 	os.Exit(0)
 }
+
+// NextEnv represents the environment of the next compiler.
+type NextEnv struct {
+	NextPath   string   `json:"next_path"`
+	ImportDirs []string `json:"import_dirs"`
+}
