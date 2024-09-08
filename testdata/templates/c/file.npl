@@ -14,7 +14,7 @@ path: {{this.Package.Name}}/{{this.Name}}.next.h
 
 {{- if .Annotations.message.type}}
 {{_}}
-static inline int {{.Name}}_message_type() { return {{.Annotations.message.type}}; }
+static inline int {{next .Type}}_message_type() { return {{.Annotations.message.type}}; }
 {{- end}}
 {{- end -}}
 

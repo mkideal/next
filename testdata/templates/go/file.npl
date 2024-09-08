@@ -8,9 +8,9 @@ time: 2024-08-25T23:39:46Z0800
 {{- /* Overrides "next/go/struct": add method 'MessageType' for each message after struct */ -}}
 {{- define "go/struct"}}
 {{- super .}}
-{{- if .Annotations.message.type}}
+{{- with .Annotations.message.type}}
 
-func ({{.Name}}) MessageType() int { return {{.Annotations.message.type}} }
+func ({{.Name}}) MessageType() int { return {{.}} }
 {{- end}}
 {{- end -}}
 

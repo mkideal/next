@@ -1,13 +1,41 @@
+{{/* next/go/file: Generates the package declaration and content for a Go file */}}
 {{- define "next/go/file" -}}
 package {{.Package.Name}}
 {{super . -}}
 {{- end}}
 
+{{/* next/go/imports: Generates import declarations and unused import statements */}}
 {{- define "next/go/imports" -}}
 {{render "go/imports:decl" . -}}
 {{render "go/imports:unused" . -}}
 {{- end}}
 
+{{/* next/go/imports:decl: Generates import declarations based on the @next(go_imports) annotation.
+
+This function processes the go_imports annotation to determine which packages to import.
+
+Syntax: @next(go_imports="pkg1.Func1, *pkg2.Type2, pkg3.Const3, ...")
+
+Example:
+
+```next
+@next(go_imports="fmt.Sprintf, *net/http.Client, *encoding/json.Decoder, time.Now")
+package demo;
+// ... rest of the file content
+```
+
+This will generate:
+
+```go
+import (
+    "encoding/json"
+    "fmt"
+    "net/http"
+    "strconv"
+    "time"
+)
+```
+*/}}
 {{- define "next/go/imports:decl" -}}
 {{ _ }}
 import "strconv"
@@ -24,13 +52,31 @@ import "{{.}}"
 {{- end}}
 {{- end}}
 
+{{/* next/go/import: Generates an import statement for a specific package */}}
 {{- define "next/go/import" -}}
 import {{.File.Package.Name}} {{.File.Package.Annotations.next.go_package -}}
 {{- end}}
 
+{{/* next/go/imports:unused: Generates unused variable declarations for imports to prevent compiler errors.
+This function creates unused variable declarations for each import specified in the go_imports annotation.
+For types (prefixed with '*'), it generates a nil pointer cast.
+
+Note: When specifying types in go_imports, always prefix with '*' to generate correct unused declarations.
+
+Example:
+For the go_imports annotation: "fmt.Sprintf, *net/http.Client, *encoding/json.Decoder, time.Now"
+This will generate:
+
+```go
+var _ = fmt.Sprintf
+var _ = (*http.Client)(nil)
+var _ = (*json.Decoder)(nil)
+var _ = time.Now
+```
+*/}}
 {{- define "next/go/imports:unused" -}}
 {{ _ }}
-var _ = strconv.Itoa
+var _ = strconv.FormatInt
 {{- if .File.Annotations.next.go_imports}}
 {{- range (.File.Annotations.next.go_imports | split "," | sort | uniq)}}
 {{- $pkg := . | split "." | first}}
@@ -53,10 +99,12 @@ var _ = {{$pkg}}.{{$val}}
     {{- end}}
 {{- end}}
 
+{{/* next/go/import:unused: Generates an unused variable declaration for a specific import */}}
 {{- define "next/go/import:unused" -}}
 var _ = (*{{.File.Package.Name}}.{{next (index (.File.Package.Types) 0)}})(nil)
 {{- end}}
 
+{{/* next/go/used.type: Generates a fully qualified type name, including package name if necessary */}}
 {{- define "next/go/used.type" -}}
 {{if not (.Type.Decl.File.Package.In .File.Package) -}}
 {{.Type.Decl.File.Package.Name -}}.
@@ -64,14 +112,17 @@ var _ = (*{{.File.Package.Name}}.{{next (index (.File.Package.Types) 0)}})(nil)
 {{next .Type}}
 {{- end}}
 
+{{/* next/go/const: Generates a constant declaration */}}
 {{- define "next/go/const" -}}
 {{next .Doc}}const {{.Name}} = {{.Value}}{{next .Comment}}
 {{- end}}
 
+{{/* next/go/enum:value_type: Determines the underlying type for an enum */}}
 {{- define "next/go/enum:value_type" -}}
 {{if .Annotations.next.type}}{{next .Annotations.next.type}}{{else}}int{{end}}
 {{- end}}
 
+{{/* next/go/enum: Generates an enum type declaration, constants, and String method */}}
 {{- define "next/go/enum" -}}
 {{next .Doc}}type {{.Name}} {{render "go/enum:value_type" .}}
 
@@ -87,42 +138,50 @@ func (x {{.Name}}) String() string {
         return "{{.Name}}"
     {{- end}}
     }
-    return "{{$name}}(" + strconv.Itoa(int(x)) + ")"
+    return "{{$name}}(" + strconv.FormatInt(int64(x), 10) + ")"
 }
 {{- end}}
 
+{{/* next/go/enum.member: Generates a constant declaration for an enum member */}}
 {{- define "next/go/enum.member" -}}
 {{next .Doc}}{{.Decl.Name}}_{{.Name}} = {{.Value}}{{next .Comment}}
 {{- end}}
 
+{{/* next/go/struct: Generates a struct type declaration */}}
 {{- define "next/go/struct" -}}
 {{next .Doc}}type {{.Name}} struct {
     {{- next .Fields}}
 }
 {{- end}}
 
-{{- define "next/struct.field" -}}
+{{/* next/go/struct.field: Generates a struct field declaration */}}
+{{- define "next/go/struct.field" -}}
 {{next .Doc}}{{next .Name}} {{next .Type}}{{render "go/struct.field.tag" .}}{{next .Comment}}
 {{- end}}
 
+{{/* next/go/struct.field.tag: Placeholder for generating struct field tags */}}
 {{- define "next/go/struct.field.tag" -}}
 {{/* TODO: write tag */}}
 {{- end}}
 
+{{/* next/go/struct.field.name: Generates the name for a struct field */}}
 {{- define "next/go/struct.field.name" -}}
 {{. | pascalCase }}
 {{- end}}
 
+{{/* next/go/interface: Generates an interface type declaration */}}
 {{- define "next/go/interface" -}}
 {{next .Doc}}type {{.Name}} interface {
     {{- next .Methods}}
 }
 {{- end}}
 
+{{/* next/go/interface.method.param: Generates a parameter declaration for an interface method */}}
 {{- define "next/go/interface.method.param" -}}
 {{next .Name}} {{next .Type}}
 {{- end}}
 
+{{/* next/go/interface.method.return: Generates the return type(s) for an interface method */}}
 {{- define "next/go/interface.method.return" -}}
 {{- if .Method.Annotations.next.error}}
 {{- if .Type}} ({{next .Type}}, error)
@@ -132,6 +191,36 @@ func (x {{.Name}}) String() string {
 {{- end}}
 {{- end}}
 
+{{/* next/go/type:alias: Processes the @next(go_alias) annotation to replace symbolic types with actual Go types.
+
+This function handles the go_alias annotation, which allows defining placeholder types in Next that are replaced
+with actual Go types during code generation. It's particularly useful for interfaces and structs that are defined
+elsewhere but need to be referenced in the Next file.
+
+Syntax: @next(go_alias="package.Type")
+
+Example:
+
+```next
+@next(go_imports="*net/http.Handler") // Note: * is required for importing types
+package demo;
+
+@next(go_alias="net/http.Handler")
+interface HTTPHandler {}
+
+interface HTTPServer {
+    func ServeHTTP(handler HTTPHandler)
+}
+```
+
+This will generate:
+
+```go
+type HTTPServer interface {
+    ServeHTTP(handler http.Handler)
+}
+```
+*/}}
 {{- define "next/go/type:alias" -}}
 {{- $alias := .Decl.Annotations.next.go_alias -}}
 {{- $parts := split "." $alias -}}

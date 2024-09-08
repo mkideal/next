@@ -32,9 +32,8 @@ typedef unsigned char _Bool;
 {{- end}}
 
 {{- define "next/c/comment" -}}
-{{- $c := .String | trim -}}
-{{- if $c -}}
-{{_}} /* {{$c}} */
+{{- with .String | trim -}}
+{{_}} /* {{.}} */
 {{- end}}
 {{- end}}
 

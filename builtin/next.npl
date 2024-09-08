@@ -1,8 +1,10 @@
+{{/* next/file: Generates code for a complete file, including imports and declarations */}}
 {{- define "next/file" -}}
 {{next .Imports -}}
 {{next .Decls -}}
 {{- end}}
 
+{{/* next/decls: Generates code for all declarations in a file, including constants, enums, structs, and interfaces */}}
 {{- define "next/decls" -}}
 {{- if .Consts -}}
 {{next .Consts}}
@@ -18,102 +20,124 @@
 {{end -}}
 {{- end}}
 
+{{/* next/comment: Generates formatted comment text */}}
 {{- define "next/comment" -}}
 {{align .Text}}
 {{- end}}
 
+{{/* next/doc: Generates formatted documentation comment text */}}
 {{- define "next/doc" -}}
 {{align .Text}}
 {{- end}}
 
+{{/* next/imports: Generates code for all import statements in a file */}}
 {{- define "next/imports" -}}
 {{- range .List}}
 {{next . -}}
 {{- end}}
 {{- end}}
 
+{{/* next/import: Generates code for a single import statement */}}
 {{- define "next/import" -}}
 import "{{.Path}}";
 {{- end}}
 
+{{/* next/consts: Generates code for all constant declarations in a file */}}
 {{- define "next/consts" -}}
 {{range .List}}
 {{next . -}}
 {{- end}}
 {{- end}}
 
+{{/* next/const: Generates code for a single constant declaration */}}
 {{- define "next/const" -}}
 {{next .Doc}}const {{next .Name}} = {{.Value}};{{next .Comment}}
 {{- end}}
 
+{{/* next/const.name: Generates the name of a constant */}}
 {{- define "next/const.name" -}}
 {{.}}
 {{- end}}
 
+{{/* next/enums: Generates code for all enum declarations in a file */}}
 {{- define "next/enums" -}}
 {{render "next/decl:types" .}}
 {{- end}}
 
+{{/* next/enum: Generates code for a single enum declaration */}}
 {{- define "next/enum" -}}
 enum {{next .Type}} {
     {{- next .Members}}
 }
 {{- end}}
 
+{{/* next/enum.type: Generates the type name for an enum */}}
 {{- define "next/enum.type" -}}
 {{render "next/type:internal.alias" .}}
 {{- end}}
 
+{{/* next/enum.members: Generates code for all members of an enum */}}
 {{- define "next/enum.members" -}}
 {{- range .List}}
     {{next . -}}
 {{- end}}
 {{- end}}
 
+{{/* next/enum.member: Generates code for a single enum member */}}
 {{- define "next/enum.member" -}}
 {{next .Doc}}{{next .Name}} = {{.Value}},{{next .Comment}}
 {{- end}}
 
+{{/* next/enum.member.name: Generates the name of an enum member */}}
 {{- define "next/enum.member.name" -}}
 {{.}}
 {{- end}}
 
+{{/* next/structs: Generates code for all struct declarations in a file */}}
 {{- define "next/structs" -}}
 {{render "next/decl:types" .}}
 {{- end}}
 
+{{/* next/struct: Generates code for a single struct declaration */}}
 {{- define "next/struct" -}}
 {{next .Doc}}struct {{next .Type}} {
     {{- next .Fields}}
 }
 {{- end}}
 
+{{/* next/struct.type: Generates the type name for a struct */}}
 {{- define "next/struct.type" -}}
 {{render "next/type:internal.alias" .}}
 {{- end}}
 
+{{/* next/struct.fields: Generates code for all fields of a struct */}}
 {{- define "next/struct.fields" -}}
 {{- range .List}}
     {{next . -}}
 {{- end}}
 {{- end}}
 
+{{/* next/struct.field: Generates code for a single struct field */}}
 {{- define "next/struct.field" -}}
 {{next .Doc}}{{next .Type}} {{next .Name}};{{next .Comment}}
 {{- end}}
 
+{{/* next/struct.field.type: Generates the type of a struct field */}}
 {{- define "next/struct.field.type" -}}
 {{next .Type}}
 {{- end}}
 
+{{/* next/struct.field.name: Generates the name of a struct field */}}
 {{- define "next/struct.field.name" -}}
 {{.}}
 {{- end}}
 
+{{/* next/interfaces: Generates code for all interface declarations in a file */}}
 {{- define "next/interfaces" -}}
 {{render "next/decl:types" .}}
 {{- end}}
 
+{{/* next/decl:types: Generates code for type declarations, handling potential aliases */}}
 {{- define "next/decl:types" -}}
 {{- $n := 0 -}}
 {{range .List}}
@@ -126,53 +150,64 @@ enum {{next .Type}} {
 {{- end}}
 {{- end}}
 
+{{/* next/interface: Generates code for a single interface declaration */}}
 {{- define "next/interface" -}}
 {{next .Doc}}interface {{next .Type}} {
     {{- next .Methods}}
 }
 {{- end}}
 
+{{/* next/interface.type: Generates the type name for an interface */}}
 {{- define "next/interface.type" -}}
 {{render "next/type:internal.alias" .}}
 {{- end}}
 
+{{/* next/interface.methods: Generates code for all methods of an interface */}}
 {{- define "next/interface.methods" -}}
 {{- range .List}}
     {{next . -}}
 {{- end}}
 {{- end}}
 
+{{/* next/interface.method: Generates code for a single interface method */}}
 {{- define "next/interface.method" -}}
 {{next .Doc}}{{next .Name}}({{next .Params}}){{next .Return}}{{next .Comment}}
 {{- end}}
 
+{{/* next/interface.method.name: Generates the name of an interface method */}}
 {{- define "next/interface.method.name" -}}
 {{.}}
 {{- end}}
 
+{{/* next/interface.method.params: Generates code for all parameters of an interface method */}}
 {{- define "next/interface.method.params" -}}
 {{- range $i, $p := .List -}}
     {{if $i}}, {{end}}{{next . -}}
 {{- end}}
 {{- end}}
 
+{{/* next/interface.method.param: Generates code for a single interface method parameter */}}
 {{- define "next/interface.method.param" -}}
 {{next .Type}} {{next .Name}}
 {{- end}}
 
+{{/* next/interface.method.param.type: Generates the type of an interface method parameter */}}
 {{- define "next/interface.method.param.type" -}}
 {{next .Type}}
 {{- end}}
 
+{{/* next/interface.method.param.name: Generates the name of an interface method parameter */}}
 {{- define "next/interface.method.param.name" -}}
 {{.}}
 {{- end}}
 
+{{/* next/interface.method.return: Generates the return type of an interface method */}}
 {{- define "next/interface.method.return" -}}
 {{- if .Type}} {{next .Type}}
 {{- end}}
 {{- end}}
 
+{{/* next/type:internal.alias: Handles internal type aliases */}}
 {{- define "next/type:internal.alias" -}}
 {{- if or (not .Decl.Annotations.next) (not (index .Decl.Annotations.next (printf "%s_alias" lang))) }}
 {{- render "type" . -}}
@@ -181,14 +216,17 @@ enum {{next .Type}} {
 {{- end}}
 {{- end}}
 
+{{/* next/type: Generates a type */}}
 {{- define "next/type" -}}
 {{- type . -}}
 {{- end}}
 
+{{/* next/type:alias: Generates a type alias */}}
 {{- define "next/type:alias" -}}
 {{- index .Decl.Annotations.next (printf "%s_alias" lang) -}}
 {{- end}}
 
+{{/* next/used.type: Generates a used type */}}
 {{- define "next/used.type" -}}
 {{- next .Type -}}
 {{- end}}
