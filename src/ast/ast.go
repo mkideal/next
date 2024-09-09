@@ -295,9 +295,11 @@ type MethodList = List[*Method]
 
 // MethodParam represents a method parameter declaration.
 type MethodParam struct {
+	Doc         *CommentGroup    // associated documentation; or nil
 	Annotations *AnnotationGroup // associated annotations; or nil
 	Type        Type             // parameter type
 	Name        *Ident           // parameter name
+	Comment     *CommentGroup    // line comments; or nil
 }
 
 // Pos returns the position of the first character in the method parameter.

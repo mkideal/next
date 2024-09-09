@@ -102,8 +102,14 @@ func Walk(v Visitor, node Node) {
 		if n.Return != nil {
 			Walk(v, n.Return)
 		}
+		if n.Comment != nil {
+			Walk(v, n.Comment)
+		}
 
 	case *MethodParam:
+		if n.Doc != nil {
+			Walk(v, n.Doc)
+		}
 		if n.Annotations != nil {
 			Walk(v, n.Annotations)
 		}
@@ -111,6 +117,9 @@ func Walk(v Visitor, node Node) {
 			Walk(v, n.Name)
 		}
 		Walk(v, n.Type)
+		if n.Comment != nil {
+			Walk(v, n.Comment)
+		}
 
 	case *MethodParamList:
 		walkList(v, n.List)

@@ -201,8 +201,8 @@ enum {{next .Type}} {
 {{.}}
 {{- end}}
 
-{{/* next/interface.method.return: Generates the return type of an interface method */}}
-{{- define "next/interface.method.return" -}}
+{{/* next/interface.method.result: Generates the return type of an interface method */}}
+{{- define "next/interface.method.result" -}}
 {{- if .Type}} {{next .Type}}
 {{- end}}
 {{- end}}

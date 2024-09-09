@@ -114,7 +114,7 @@ var _ = (*{{.File.Package.Name}}.{{next (index (.File.Package.Types) 0)}})(nil)
 
 {{/* next/go/const: Generates a constant declaration */}}
 {{- define "next/go/const" -}}
-{{next .Doc}}const {{.Name}} = {{.Value}}{{next .Comment}}
+{{next .Doc}}const {{next .Name}} = {{.Value}}{{next .Comment}}
 {{- end}}
 
 {{/* next/go/enum:value_type: Determines the underlying type for an enum */}}
@@ -124,17 +124,17 @@ var _ = (*{{.File.Package.Name}}.{{next (index (.File.Package.Types) 0)}})(nil)
 
 {{/* next/go/enum: Generates an enum type declaration, constants, and String method */}}
 {{- define "next/go/enum" -}}
-{{next .Doc}}type {{.Name}} {{render "go/enum:value_type" .}}
+{{next .Doc}}type {{next .Type}} {{render "go/enum:value_type" .}}
 
 const (
 {{- next .Members}}
 )
 
-func (x {{.Name}}) String() string {
-    {{- $name := .Name}}
+func (x {{next .Type}}) String() string {
+    {{- $name := next .Type}}
     switch x {
     {{- range .Members.List}}
-    case {{$name}}_{{.Name}}:
+    case {{next .Name}}:
         return "{{.Name}}"
     {{- end}}
     }
@@ -144,12 +144,16 @@ func (x {{.Name}}) String() string {
 
 {{/* next/go/enum.member: Generates a constant declaration for an enum member */}}
 {{- define "next/go/enum.member" -}}
-{{next .Doc}}{{.Decl.Name}}_{{.Name}} = {{.Value}}{{next .Comment}}
+{{next .Doc}}{{next .Name}} = {{.Value}}{{next .Comment}}
+{{- end}}
+
+{{- define "next/go/enum.member.name" -}}
+{{next .Field.Decl.Type}}{{.String | pascalCase}}
 {{- end}}
 
 {{/* next/go/struct: Generates a struct type declaration */}}
 {{- define "next/go/struct" -}}
-{{next .Doc}}type {{.Name}} struct {
+{{next .Doc}}type {{next .Type}} struct {
     {{- next .Fields}}
 }
 {{- end}}
@@ -166,12 +170,12 @@ func (x {{.Name}}) String() string {
 
 {{/* next/go/struct.field.name: Generates the name for a struct field */}}
 {{- define "next/go/struct.field.name" -}}
-{{. | pascalCase }}
+{{.String | pascalCase }}
 {{- end}}
 
 {{/* next/go/interface: Generates an interface type declaration */}}
 {{- define "next/go/interface" -}}
-{{next .Doc}}type {{.Name}} interface {
+{{next .Doc}}type {{next .Type}} interface {
     {{- next .Methods}}
 }
 {{- end}}
@@ -181,8 +185,8 @@ func (x {{.Name}}) String() string {
 {{next .Name}} {{next .Type}}
 {{- end}}
 
-{{/* next/go/interface.method.return: Generates the return type(s) for an interface method */}}
-{{- define "next/go/interface.method.return" -}}
+{{/* next/go/interface.method.result: Generates the return type(s) for an interface method */}}
+{{- define "next/go/interface.method.result" -}}
 {{- if .Method.Annotations.next.error}}
 {{- if .Type}} ({{next .Type}}, error)
 {{- else}} error

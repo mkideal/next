@@ -79,11 +79,11 @@ type File struct {
 	pkg *Package  // package containing the file
 	src *ast.File // the original AST
 
-	imports *Imports          // import declarations
-	decls   *Decls            // top-level declarations: const, enum, struct, interface
-	stmts   []Stmt            // top-level statements
-	symbols map[string]Symbol // symbol table: name -> Symbol(Type|Value)
-	nodes   map[ast.Node]Node // AST node -> Node
+	imports *Imports            // import declarations
+	decls   *Decls              // top-level declarations: const, enum, struct, interface
+	stmts   []Stmt              // top-level statements
+	symbols map[string]Symbol   // symbol table: name -> Symbol(Type|Value)
+	nodes   map[ast.Node]Object // AST node -> Node
 
 	unresolved struct {
 		annotations *ast.AnnotationGroup
@@ -110,7 +110,7 @@ func newFile(ctx *Context, src *ast.File, path string) *File {
 		Doc:     newDoc(src.Doc),
 		decls:   &Decls{},
 		symbols: make(map[string]Symbol),
-		nodes:   make(map[ast.Node]Node),
+		nodes:   make(map[ast.Node]Object),
 	}
 	f.imports = &Imports{File: f}
 	f.unresolved.annotations = src.Annotations
@@ -147,19 +147,6 @@ func newFile(ctx *Context, src *ast.File, path string) *File {
 // @api(object/File/Name)
 func (x *File) Name() string { return strings.TrimSuffix(filepath.Base(x.Path), ".next") }
 
-// File returns the file itself. It is used to implement the Decl interface.
-// @api(object/File/File)
-func (x *File) File() *File { return x }
-
-// Package returns the package containing the file.
-// @api(object/File/Package)
-func (x *File) Package() *Package {
-	if x == nil {
-		return nil
-	}
-	return x.pkg
-}
-
 // Node returns the original AST node for the file.
 func (f *File) Node() *ast.File { return f.src }
 
@@ -176,7 +163,7 @@ func (f *File) Decls() *Decls {
 	return f.decls
 }
 
-func (f *File) addNode(ctx *Context, n ast.Node, x Node) {
+func (f *File) addNode(ctx *Context, n ast.Node, x Object) {
 	if _, dup := f.nodes[n]; dup {
 		ctx.addErrorf(n.Pos(), "node already added: %T", n)
 		return
@@ -185,7 +172,7 @@ func (f *File) addNode(ctx *Context, n ast.Node, x Node) {
 }
 
 // GetNode returns the Node for the given AST node.
-func (f *File) GetNode(n ast.Node) Node {
+func (f *File) GetNode(n ast.Node) Object {
 	return f.nodes[n]
 }
 
@@ -221,22 +208,22 @@ func (f *File) createSymbols() (token.Pos, error) {
 		}
 	}
 	for _, d := range f.decls.enums {
-		if err := f.addSymbol(string(d.name), d.Type); err != nil {
+		if err := f.addSymbol(d.name.name, d.Type); err != nil {
 			return d.pos, err
 		}
 		for _, m := range d.Members.List {
-			if err := f.addSymbol(joinSymbolName(string(d.name), string(m.name)), m.value); err != nil {
+			if err := f.addSymbol(joinSymbolName(d.name.name, m.name.name), m.value); err != nil {
 				return m.pos, err
 			}
 		}
 	}
 	for _, d := range f.decls.structs {
-		if err := f.addSymbol(string(d.name), d.Type); err != nil {
+		if err := f.addSymbol(d.name.name, d.Type); err != nil {
 			return d.pos, err
 		}
 	}
 	for _, d := range f.decls.interfaces {
-		if err := f.addSymbol(string(d.name), d.Type); err != nil {
+		if err := f.addSymbol(d.name.name, d.Type); err != nil {
 			return d.pos, err
 		}
 	}

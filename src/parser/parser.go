@@ -605,10 +605,12 @@ func parseMethodParam(p *parser) *ast.MethodParam {
 	if p.trace {
 		defer un(trace(p, "MethodParam"))
 	}
+	doc := p.leadComment
 	annotations := p.parseAnnotationGroup()
 	typ := p.parseType()
 	name := p.parseIdent()
 	return &ast.MethodParam{
+		Doc:         doc,
 		Annotations: annotations,
 		Type:        typ,
 		Name:        name,

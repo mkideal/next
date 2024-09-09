@@ -93,7 +93,7 @@ struct {{next .Type}} {
 {{- end}}
 
 {{- define "next/c/interface.method.name" -}}
-{{snakeCase .}}
+{{snakeCase .String}}
 {{- end}}
 
 {{- define "next/c/interface.method.param" -}}
@@ -104,7 +104,7 @@ struct {{next .Type}} {
 {{.}}
 {{- end}}
 
-{{- define "next/c/interface.method.return" -}}
+{{- define "next/c/interface.method.result" -}}
 {{- if .Type}}{{next .Type}}{{else}}void{{end -}}
 {{- end}}
 

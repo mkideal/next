@@ -358,7 +358,7 @@ func (c *Context) Resolve() error {
 		for name, symbol := range file.symbols {
 			symbolName := joinSymbolName(file.pkg.name, name)
 			if prev, ok := c.symbols[symbolName]; ok {
-				c.addErrorf(symbol.symbolPos(), "symbol %s redeclared: previous declaration at %s", symbolName, c.fset.Position(prev.symbolPos()))
+				c.addErrorf(symbol.getPos(), "symbol %s redeclared: previous declaration at %s", symbolName, c.fset.Position(prev.getPos()))
 			} else {
 				c.symbols[symbolName] = symbol
 			}
@@ -399,7 +399,7 @@ func (c *Context) Resolve() error {
 }
 
 // resolveAnnotationGroup resolves an annotation group
-func (c *Context) resolveAnnotationGroup(file *File, decl Decl, annotations *ast.AnnotationGroup) AnnotationGroup {
+func (c *Context) resolveAnnotationGroup(file *File, obj Node, annotations *ast.AnnotationGroup) AnnotationGroup {
 	if annotations == nil {
 		return nil
 	}
@@ -412,7 +412,7 @@ func (c *Context) resolveAnnotationGroup(file *File, decl Decl, annotations *ast
 		annotation := make(Annotation)
 		c.annotations[a.Pos()] = &linkedAnnotation{
 			name:       a.Name.Name,
-			decl:       decl,
+			obj:        obj,
 			annotation: annotation,
 		}
 		for _, p := range a.Params {
@@ -456,9 +456,9 @@ func (c *Context) resolveSymbolValue(file *File, scope Scope, refs []*Value, v *
 	if index := slices.Index(refs, v); index >= 0 {
 		var sb strings.Builder
 		for i := index; i < len(refs); i++ {
-			fmt.Fprintf(&sb, "\n%s: %s ↓", c.fset.Position(refs[i].symbolPos()), refs[i].name)
+			fmt.Fprintf(&sb, "\n%s: %s ↓", c.fset.Position(refs[i].getPos()), refs[i].name)
 		}
-		c.addErrorf(v.namePos, "cyclic references: %s\n%s: %s", sb.String(), c.fset.Position(v.symbolPos()), v.name)
+		c.addErrorf(v.namePos, "cyclic references: %s\n%s: %s", sb.String(), c.fset.Position(v.getPos()), v.name)
 		return constant.MakeUnknown()
 	}
 	v.resolveValue(c, file, scope, refs)
@@ -505,9 +505,9 @@ func (c *Context) recursiveResolveValue(file *File, scope Scope, refs []*Value, 
 			c.addErrorf(expr.Pos(), "%s is not defined", name)
 			return constant.MakeUnknown()
 		}
-		file = c.getFileByPos(v.symbolPos())
+		file = c.getFileByPos(v.getPos())
 		if file == nil {
-			c.addErrorf(expr.Pos(), "%s is not defined (file %q not found)", name, c.fset.Position(v.symbolPos()).Filename)
+			c.addErrorf(expr.Pos(), "%s is not defined (file %q not found)", name, c.fset.Position(v.getPos()).Filename)
 			return constant.MakeUnknown()
 		}
 		return c.resolveSymbolValue(file, scope, refs, v)

@@ -49,9 +49,9 @@ type linkedAnnotation struct {
 	name       string
 	annotation Annotation
 
-	// decl is the declaration of the annotation.
-	// It's declared as type `Object` to avoid circular dependency.
-	decl Object
+	// obj is declared as type `Node` to avoid circular dependency.
+	// Actually, it's a `Object`.
+	obj Object
 }
 
 func (c *Context) solveAnnotations() error {
@@ -140,7 +140,7 @@ func (c *Context) createAnnotationSolverRequest(name string) *api.AnnotationSolv
 		Objects:     make(map[api.ID]*api.Object),
 		Annotations: make(map[api.ID]*api.Annotation),
 	}
-	var decls = make(map[token.Pos]Decl)
+	var objects = make(map[token.Pos]Node)
 	for pos, a := range c.annotations {
 		if a.name != name {
 			continue
@@ -152,16 +152,17 @@ func (c *Context) createAnnotationSolverRequest(name string) *api.AnnotationSolv
 				Value: param,
 			}
 		}
+		// a.obj is declared as type `Node` to avoid circular dependency.
+		// Actually, it's a `Decl`.
+		obj := a.obj.(Node)
 		req.Annotations[api.ID(pos)] = &api.Annotation{
 			ID:     api.ID(pos),
-			Object: api.ID(a.decl.getPos()),
+			Object: api.ID(obj.getPos()),
 			Params: params,
 		}
-		// a.decl is declared as type `Object` to avoid circular dependency.
-		// Actually, it's a `Decl`.
-		decls[a.decl.getPos()] = a.decl.(Decl)
+		objects[obj.getPos()] = obj
 	}
-	for pos, obj := range decls {
+	for pos, obj := range objects {
 		req.Objects[api.ID(pos)] = &api.Object{
 			ID:   api.ID(pos),
 			Type: obj.getType(),

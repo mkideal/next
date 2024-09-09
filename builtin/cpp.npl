@@ -56,24 +56,24 @@ namespace {{$ns}} {
 {{- if .Decls.Enums.List}}
 // Enums forward declarations
 {{- range .Decls.Enums.List}}
-enum class {{.Name}};
+enum class {{next .Type}};
 {{- end}}
 {{end -}}
 
 {{- if .Decls.Structs.List}}
 // Classes forward declarations
 {{- range .Decls.Structs.List}}
-class {{.Name}};
+class {{next .Type}};
 {{- end}}
 {{end -}}
 {{- end}}
 
 {{- define "next/cpp/const" -}}
-{{next .Doc}}static constexpr auto {{.Name}} = {{.Value}};{{next .Comment}}
+{{next .Doc}}static constexpr auto {{next .Name}} = {{.Value}};{{next .Comment}}
 {{- end}}
 
 {{- define "next/cpp/enum" -}}
-{{next .Doc}}enum class {{.Name}} : {{render "cpp/enum:value_type" .}} {
+{{next .Doc}}enum class {{next .Type}} : {{render "cpp/enum:value_type" .}} {
 {{- next .Members}}
 };
 {{- end}}
@@ -83,26 +83,26 @@ class {{.Name}};
 {{- end}}
 
 {{- define "next/cpp/enum.member" -}}
-{{next .Doc}}{{.Name}} = {{.Value}},{{next .Comment}}
+{{next .Doc}}{{next .Name}} = {{.Value}},{{next .Comment}}
 {{- end}}
 
 {{- define "next/cpp/struct" -}}
-{{next .Doc}}class {{.Name}} {
+{{next .Doc}}class {{next .Type}} {
 public:
-    {{.Name}}() = default;
-    ~{{.Name}}() = default;
+    {{next .Type}}() = default;
+    ~{{next .Type}}() = default;
     {{next .Fields}}
 };
 {{- end}}
 
 {{- define "next/cpp/struct.field" -}}
-{{next .Doc}}{{next .Type}} {{.Name | camelCase}};{{next .Comment}}
+{{next .Doc}}{{next .Type}} {{next .Name | camelCase}};{{next .Comment}}
 {{- end}}
 
 {{- define "next/cpp/interface" -}}
-{{next .Doc}}class {{.Name}} {
+{{next .Doc}}class {{next .Type}} {
 public:
-    virtual ~{{.Name}}() = default;
+    virtual ~{{next .Type}}() = default;
     {{next .Methods}}
 };
 {{- end}}
@@ -112,14 +112,14 @@ public:
 {{- end}}
 
 {{- define "next/cpp/interface.method.name" -}}
-{{snakeCase .}}
+{{snakeCase .String}}
 {{- end}}
 
 {{- define "next/cpp/interface.method.param.type" -}}
 {{if not .Param.Annotations.next.mut}}const {{end}}{{next .Type}}&
 {{- end}}
 
-{{- define "next/cpp/interface.method.return" -}}
+{{- define "next/cpp/interface.method.result" -}}
 {{if .Type -}}
 {{next .Type}}
 {{- else -}}

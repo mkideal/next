@@ -10,7 +10,7 @@ time: 2024-08-25T23:39:46Z0800
 {{- super .}}
 {{- with .Annotations.message.type}}
 
-func ({{.Name}}) MessageType() int { return {{.}} }
+func ({{next $.Type}}) MessageType() int { return {{.}} }
 {{- end}}
 {{- end -}}
 

@@ -8,141 +8,266 @@ import (
 	"github.com/next/next/src/token"
 )
 
-// Node represents a Next AST node.
-// @api(object/Node)
-type Node interface {
+// -------------------------------------------------------------------------
+
+// Object represents an object in Next which can be rendered in a template like this: {{next Object}}
+// @api(object/Object)
+type Object interface {
+	// getType returns the type of the object.
 	getType() string
 }
 
-func (*File) getType() string            { return "file" }
-func (*Doc) getType() string             { return "doc" }
-func (*Comment) getType() string         { return "comment" }
-func (*Imports) getType() string         { return "imports" }
-func (*Import) getType() string          { return "import" }
-func (*UsedType) getType() string        { return "used.type" }
-func (*ArrayType) getType() string       { return "array.type" }
-func (*VectorType) getType() string      { return "vector.type" }
-func (*MapType) getType() string         { return "map.type" }
-func (x *PrimitiveType) getType() string { return x.name + ".type" }
+// All objects listed here implement the Object interface.
+var _ Object = (List[Object])(nil)
+var _ Object = (*Fields[Node, Object])(nil)
+var _ Object = (*FieldName[Node])(nil)
+var _ Object = (*File)(nil)
+var _ Object = (*Doc)(nil)
+var _ Object = (*Comment)(nil)
+var _ Object = (*Imports)(nil)
+var _ Object = (*Import)(nil)
+var _ Object = (*Decls)(nil)
+var _ Object = (*Value)(nil)
+var _ Object = (*UsedType)(nil)
+var _ Object = (*PrimitiveType)(nil)
+var _ Object = (*ArrayType)(nil)
+var _ Object = (*VectorType)(nil)
+var _ Object = (*MapType)(nil)
+var _ Object = (*DeclType[Decl])(nil)
+var _ Object = (*Const)(nil)
+var _ Object = (*Enum)(nil)
+var _ Object = (*EnumMember)(nil)
+var _ Object = (*Struct)(nil)
+var _ Object = (*StructField)(nil)
+var _ Object = (*StructFieldType)(nil)
+var _ Object = (*Interface)(nil)
+var _ Object = (*InterfaceMethod)(nil)
+var _ Object = (*InterfaceMethodParam)(nil)
+var _ Object = (*InterfaceMethodParamType)(nil)
+var _ Object = (*InterfaceMethodResult)(nil)
+var _ Object = (*CallStmt)(nil)
 
-func (*Decls) getType() string                    { return "decls" }
-func (*Const) getType() string                    { return "const" }
-func (ConstName) getType() string                 { return "const.name" }
-func (*Enum) getType() string                     { return "enum" }
-func (*EnumMember) getType() string               { return "enum.member" }
-func (EnumMemberName) getType() string            { return "enum.member.name" }
-func (*Struct) getType() string                   { return "struct" }
-func (*StructField) getType() string              { return "struct.field" }
-func (*StructFieldType) getType() string          { return "struct.field.type" }
-func (StructFieldName) getType() string           { return "struct.field.name" }
-func (*Interface) getType() string                { return "interface" }
-func (*InterfaceMethod) getType() string          { return "interface.method" }
-func (InterfaceMethodName) getType() string       { return "interface.method.name" }
-func (*InterfaceMethodParam) getType() string     { return "interface.method.param" }
-func (InterfaceMethodParamName) getType() string  { return "interface.method.param.name" }
-func (*InterfaceMethodParamType) getType() string { return "interface.method.param.type" }
-func (*InterfaceMethodReturn) getType() string    { return "interface.method.return" }
+// Generic objects
 
-func (*CallStmt) getType() string { return "stmt.call" }
-
-// list types: consts, enums, structs, interfaces
-func (l List[T]) getType() string {
+// list objects: consts, enums, structs, interfaces
+func (x List[T]) getType() string {
 	var zero T
 	return zero.getType() + "s"
 }
 
-func (v *Value) getType() string {
-	if v.enum.typ == nil {
+// Fields objects: enum.members, struct.fields, interface.methods
+func (x *Fields[Parent, Field]) getType() string {
+	var zero Field
+	return zero.getType() + "s"
+}
+
+// Name objects: const.name, enum.member.name, struct.field.name, interface.method.name, interface.method.param.name
+func (x *FieldName[T]) getType() string {
+	return x.field.getType() + ".name"
+}
+
+func (*File) getType() string    { return "file" }
+func (*Doc) getType() string     { return "doc" }
+func (*Comment) getType() string { return "comment" }
+func (*Imports) getType() string { return "imports" }
+func (*Import) getType() string  { return "import" }
+func (*Decls) getType() string   { return "decls" }
+func (x *Value) getType() string {
+	if x.enum.typ == nil {
 		return "const.value"
 	}
 	return "enum.member.value"
 }
 
-// fields types: enum.members, struct.fields, interface.methods
-func (l *Fields[Parent, Field]) getType() string {
-	return l.typename
-}
+// Type objects
 
-// decl types: type.enum, type.struct, type.interface
-func (t *DeclType[T]) getType() string {
-	return t.decl.getType() + ".type"
-}
+func (*UsedType) getType() string        { return "used.type" }
+func (x *PrimitiveType) getType() string { return x.name + ".type" }
+func (*ArrayType) getType() string       { return "array.type" }
+func (*VectorType) getType() string      { return "vector.type" }
+func (*MapType) getType() string         { return "map.type" }
+func (x *DeclType[T]) getType() string   { return x.decl.getType() + ".type" }
 
-// Object represents a Next AST node which may be a file, const, enum, struct, interface to be generated.
-type Object interface {
-	Node
+// Decl objects
 
-	getName() string
+func (*Const) getType() string                    { return "const" }
+func (*Enum) getType() string                     { return "enum" }
+func (*EnumMember) getType() string               { return "enum.member" }
+func (*Struct) getType() string                   { return "struct" }
+func (*StructField) getType() string              { return "struct.field" }
+func (*StructFieldType) getType() string          { return "struct.field.type" }
+func (*Interface) getType() string                { return "interface" }
+func (*InterfaceMethod) getType() string          { return "interface.method" }
+func (*InterfaceMethodParam) getType() string     { return "interface.method.param" }
+func (*InterfaceMethodParamType) getType() string { return "interface.method.param.type" }
+func (*InterfaceMethodResult) getType() string    { return "interface.method.result" }
+
+// Stmt objects
+
+func (*CallStmt) getType() string { return "stmt.call" }
+
+// -------------------------------------------------------------------------
+
+// LocatedObject represents an object with a position.
+type LocatedObject interface {
+	Object
+
+	// getPos returns the position of the object.
 	getPos() token.Pos
 }
 
-var _ Object = (*File)(nil)
-var _ Object = (*Value)(nil)
-var _ Object = (*Const)(nil)
-var _ Object = (*Enum)(nil)
-var _ Object = (*Struct)(nil)
-var _ Object = (*Interface)(nil)
-var _ Object = (*EnumMember)(nil)
-var _ Object = (*StructField)(nil)
-var _ Object = (*InterfaceMethod)(nil)
+func (x *File) getPos() token.Pos             { return x.pos }
+func (x *commonNode[Self]) getPos() token.Pos { return x.pos }
+func (x *Value) getPos() token.Pos            { return x.namePos }
+func (x *DeclType[T]) getPos() token.Pos      { return x.pos }
 
-func (x *File) getName() string                 { return x.Name() }
-func (x *Value) getName() string                { return x.name }
-func (x *PrimitiveType) getName() string        { return x.name }
-func (x *ArrayType) getName() string            { return x.String() }
-func (x *VectorType) getName() string           { return x.String() }
-func (x *MapType) getName() string              { return x.String() }
-func (x *InterfaceMethodParam) getName() string { return string(x.Name) }
-func (x *decl[Self, Name]) getName() string     { return string(x.name) }
+// -------------------------------------------------------------------------
 
-func (x *File) getPos() token.Pos                 { return x.pos }
-func (x *Value) getPos() token.Pos                { return x.namePos }
-func (x *PrimitiveType) getPos() token.Pos        { return x.pos }
-func (x *ArrayType) getPos() token.Pos            { return x.pos }
-func (x *VectorType) getPos() token.Pos           { return x.pos }
-func (x *MapType) getPos() token.Pos              { return x.pos }
-func (x *InterfaceMethodParam) getPos() token.Pos { return x.pos }
-func (x *decl[Self, Name]) getPos() token.Pos     { return x.pos }
+// Node represents a Next node.
+type Node interface {
+	LocatedObject
+
+	// getName returns the name of the node.
+	getName() string
+
+	// getAnnotations returns the annotations for the node.
+	getAnnotations() AnnotationGroup
+
+	// File returns the file containing the node.
+	File() *File
+
+	// Package returns the package containing the node.
+	// It's a shortcut for Node.File().Package().
+	Package() *Package
+}
+
+// All nodes listed here implement the Node interface.
+var _ Node = (*File)(nil)
+var _ Node = (*Const)(nil)
+var _ Node = (*Enum)(nil)
+var _ Node = (*Struct)(nil)
+var _ Node = (*Interface)(nil)
+var _ Node = (*EnumMember)(nil)
+var _ Node = (*StructField)(nil)
+var _ Node = (*InterfaceMethod)(nil)
+var _ Node = (*InterfaceMethodParam)(nil)
+
+func (x *File) getName() string             { return x.Name() }
+func (x *commonNode[Self]) getName() string { return x.name.name }
+
+func (x *File) getAnnotations() AnnotationGroup             { return x.Annotations }
+func (x *commonNode[Self]) getAnnotations() AnnotationGroup { return x.Annotations }
+
+func (x *File) File() *File { return x }
+func (d *commonNode[Self]) File() *File {
+	if d == nil {
+		return nil
+	}
+	return d.file
+}
+
+func (x *File) Package() *Package {
+	if x == nil {
+		return nil
+	}
+	return x.pkg
+}
+
+func (x *commonNode[Self]) Package() *Package {
+	if x == nil || x.file == nil {
+		return nil
+	}
+	return x.file.pkg
+}
+
+// -------------------------------------------------------------------------
+// Decl represents an top-level declaration in a file.
+// @api(object/decl/Decl)
+type Decl interface {
+	Node
+
+	declNode()
+}
+
+// All decls listed here implement the Decl interface.
+var _ Decl = (*File)(nil)
+var _ Decl = (*Const)(nil)
+var _ Decl = (*Enum)(nil)
+var _ Decl = (*Struct)(nil)
+var _ Decl = (*Interface)(nil)
+
+func (x *File) declNode()      {}
+func (x *Const) declNode()     {}
+func (x *Enum) declNode()      {}
+func (x *Struct) declNode()    {}
+func (x *Interface) declNode() {}
+
+// builtinDecl represents a special declaration for built-in types.
+type builtinDecl struct{}
+
+var _ Decl = builtinDecl{}
+
+func (builtinDecl) File() *File                     { return nil }
+func (builtinDecl) Package() *Package               { return nil }
+func (builtinDecl) getType() string                 { return "<builtin.decl>" }
+func (builtinDecl) getPos() token.Pos               { return token.NoPos }
+func (builtinDecl) getName() string                 { return "<builtin>" }
+func (builtinDecl) getAnnotations() AnnotationGroup { return nil }
+func (builtinDecl) declNode()                       {}
 
 // -------------------------------------------------------------------------
 // Types
 
 // Type represents a Next type.
 type Type interface {
-	Node
+	Object
+
+	// Kind returns the kind of the type.
+	// @api(object/Type/Kind)
 	Kind() token.Kind
+
+	// String returns the string representation of the type.
+	// @api(object/Type/String)
 	String() string
+
+	// Decl returns the declaration of the type.
 	Decl() Decl
 }
 
+// All types listed here implement the Type interface.
 var _ Type = (*UsedType)(nil)
 var _ Type = (*PrimitiveType)(nil)
 var _ Type = (*ArrayType)(nil)
 var _ Type = (*VectorType)(nil)
 var _ Type = (*MapType)(nil)
-var _ Type = (*DeclType[*Enum])(nil)
-var _ Type = (*DeclType[*Struct])(nil)
-var _ Type = (*DeclType[*Interface])(nil)
+var _ Type = (*DeclType[Decl])(nil)
 
 func (x *UsedType) Decl() Decl      { return x.Type.Decl() }
-func (x *PrimitiveType) Decl() Decl { return x }
-func (x *ArrayType) Decl() Decl     { return x }
-func (x *VectorType) Decl() Decl    { return x }
-func (x *MapType) Decl() Decl       { return x }
+func (x *PrimitiveType) Decl() Decl { return builtinDecl{} }
+func (x *ArrayType) Decl() Decl     { return builtinDecl{} }
+func (x *VectorType) Decl() Decl    { return builtinDecl{} }
+func (x *MapType) Decl() Decl       { return builtinDecl{} }
 func (x *DeclType[T]) Decl() Decl   { return x.decl }
 
 func (x *UsedType) Kind() token.Kind      { return x.Type.Kind() }
 func (x *PrimitiveType) Kind() token.Kind { return x.kind }
-func (*ArrayType) Kind() token.Kind       { return token.Array }
-func (*VectorType) Kind() token.Kind      { return token.Vector }
-func (*MapType) Kind() token.Kind         { return token.Map }
+func (*ArrayType) Kind() token.Kind       { return token.KindArray }
+func (*VectorType) Kind() token.Kind      { return token.KindVector }
+func (*MapType) Kind() token.Kind         { return token.KindMap }
 func (x *DeclType[T]) Kind() token.Kind   { return x.kind }
 
 // UsedType represents a used type in a file.
 // @api(object/Type/UsedType)
 type UsedType struct {
-	Type Type
+	// File is the file containing the used type.
+	// @api(object/Type/UsedType/File)
 	File *File
+
+	// Type is the underlying type.
+	// @api(object/Type/UsedType/Type)
+	Type Type
+
+	// Node is the AST node of the used type.
 	Node ast.Type
 }
 
@@ -151,11 +276,11 @@ func Use(t Type, f *File, node ast.Type) *UsedType {
 	return &UsedType{Type: t, File: f, Node: node}
 }
 
+// String returns the string representation of the used type.
 func (u *UsedType) String() string { return u.Type.String() }
 
 // PrimitiveType represents a primitive type.
 type PrimitiveType struct {
-	pos  token.Pos
 	name string
 	kind token.Kind
 }
@@ -206,119 +331,19 @@ func (m *MapType) String() string {
 	return "map<" + m.KeyType.String() + "," + m.ElemType.String() + ">"
 }
 
-// -------------------------------------------------------------------------
-// Symbol represents a Next symbol: value(const, enum member), type(enum, struct, interface).
-type Symbol interface {
-	Node
-	symbolPos() token.Pos
-	symbolType() string
+// DeclType represents a declaration type which is a type of a declaration: enum, struct, interface.
+// @api(object/decl/DeclType)
+type DeclType[T Decl] struct {
+	pos  token.Pos
+	kind token.Kind
+	name string
+	decl T
 }
 
-const (
-	ValueSymbol = "value"
-	TypeSymbol  = "type"
-)
-
-func (x *Value) symbolPos() token.Pos       { return x.namePos }
-func (t *DeclType[T]) symbolPos() token.Pos { return t.pos }
-
-func (*Value) symbolType() string         { return ValueSymbol }
-func (t *DeclType[T]) symbolType() string { return TypeSymbol }
-
-func splitSymbolName(name string) (ns, sym string) {
-	if i := strings.Index(name, "."); i >= 0 {
-		return name[:i], name[i+1:]
-	}
-	return "", name
+func newDeclType[T Decl](pos token.Pos, kind token.Kind, name string, decl T) *DeclType[T] {
+	return &DeclType[T]{pos: pos, kind: kind, name: name, decl: decl}
 }
 
-func joinSymbolName(syms ...string) string {
-	return strings.Join(syms, ".")
-}
-
-// Scope represents a symbol scope.
-type Scope interface {
-	// parent returns the parent scope of this scope.
-	parent() Scope
-
-	// LookupLocalSymbol looks up a symbol by name in the scope.
-	LookupLocalSymbol(name string) Symbol
-}
-
-func (f *File) parent() Scope { return &fileParentScope{f} }
-func (e *Enum) parent() Scope { return e.file }
-
-func (f *File) LookupLocalSymbol(name string) Symbol { return f.symbols[name] }
-func (e *Enum) LookupLocalSymbol(name string) Symbol {
-	for _, m := range e.Members.List {
-		if string(m.name) == name {
-			return m.value
-		}
-	}
-	return nil
-}
-
-// LookupSymbol looks up a symbol by name in the given scope and its parent scopes.
-func LookupSymbol(scope Scope, name string) Symbol {
-	for s := scope; s != nil; s = s.parent() {
-		if sym := s.LookupLocalSymbol(name); sym != nil {
-			return sym
-		}
-	}
-	return nil
-}
-
-// LookupType looks up a type by name in the given scope and its parent scopes.
-func LookupType(scope Scope, name string) (Type, error) {
-	return expectTypeSymbol(name, LookupSymbol(scope, name))
-}
-
-// LookupValue looks up a value by name in the given scope and its parent scopes.
-func LookupValue(scope Scope, name string) (*Value, error) {
-	return expectValueSymbol(name, LookupSymbol(scope, name))
-}
-
-func expectTypeSymbol(name string, s Symbol) (Type, error) {
-	if s == nil {
-		return nil, &SymbolNotFoundError{Name: name}
-	}
-	if t, ok := s.(Type); ok {
-		return t, nil
-	}
-	return nil, &UnexpectedSymbolTypeError{Name: name, Want: "type", Got: s.symbolType()}
-}
-
-func expectValueSymbol(name string, s Symbol) (*Value, error) {
-	if s == nil {
-		return nil, &SymbolNotFoundError{Name: name}
-	}
-	if v, ok := s.(*Value); ok {
-		return v, nil
-	}
-	return nil, &UnexpectedSymbolTypeError{Name: name, Want: "value", Got: s.symbolType()}
-}
-
-type fileParentScope struct {
-	f *File
-}
-
-func (s *fileParentScope) parent() Scope {
-	return nil
-}
-
-func (s *fileParentScope) LookupLocalSymbol(name string) Symbol {
-	var files []*File
-	pkg, name := splitSymbolName(name)
-	for i := range s.f.imports.List {
-		target := s.f.imports.List[i].target
-		if target != nil && target.pkg != nil && target.pkg.name == pkg {
-			files = append(files, s.f.imports.List[i].target)
-		}
-	}
-	for _, file := range files {
-		if s := file.symbols[name]; s != nil {
-			return s
-		}
-	}
-	return nil
-}
+// String returns the string representation of the declaration type.
+// @api(object/decl/DeclType/String)
+func (d *DeclType[T]) String() string { return d.name }

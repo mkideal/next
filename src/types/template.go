@@ -630,7 +630,7 @@ func (tc *templateContext[T]) lookupTemplate(names []string) (*template.Template
 // {{next .}}
 // {{end}}
 // ```
-func (tc *templateContext[T]) next(obj Node, langs ...string) (string, error) {
+func (tc *templateContext[T]) next(obj Object, langs ...string) (string, error) {
 	if len(langs) > 1 {
 		return "", fmt.Errorf("too many arguments")
 	}
@@ -642,7 +642,7 @@ func (tc *templateContext[T]) next(obj Node, langs ...string) (string, error) {
 	return tc.nextWithNames(names, obj)
 }
 
-func (tc *templateContext[T]) nextWithNames(names []string, obj Node) (string, error) {
+func (tc *templateContext[T]) nextWithNames(names []string, obj Object) (string, error) {
 	result, err := tc.renderWithNames(names, obj)
 	if err != nil && IsTemplateNotFoundError(err) {
 		if t, ok := obj.(Type); ok {
@@ -654,7 +654,7 @@ func (tc *templateContext[T]) nextWithNames(names []string, obj Node) (string, e
 }
 
 // @api(template/context): super (object)
-func (tc *templateContext[T]) super(obj Node, langs ...string) (string, error) {
+func (tc *templateContext[T]) super(obj Object, langs ...string) (string, error) {
 	if len(langs) > 1 {
 		return "", fmt.Errorf("too many arguments")
 	}

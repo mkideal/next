@@ -26,22 +26,22 @@ using {{render "csharp/package:namespace" .File.Package}};
 {{- end}}
 
 {{- define "next/csharp/const" -}}
-{{next .Doc}}public const {{next .Type}} {{.Name}} = {{.Value}};{{next .Comment}}
+{{next .Doc}}public const {{next .Type}} {{next .Name}} = {{.Value}};{{next .Comment}}
 {{- end}}
 
 {{- define "next/csharp/enum" -}}
-{{next .Doc}}public enum {{.Name}}
+{{next .Doc}}public enum {{next .Type}}
 {
     {{- next .Members}}
 }
 {{- end}}
 
 {{- define "next/csharp/enum.member" -}}
-{{next .Doc}}{{.Name}} = {{.Value}},{{next .Comment}}
+{{next .Doc}}{{next .Name}} = {{.Value}},{{next .Comment}}
 {{- end}}
 
 {{- define "next/csharp/struct" -}}
-{{next .Doc}}public class {{.Name}}
+{{next .Doc}}public class {{next .Type}}
 {
     {{- next .Fields}}
 }
@@ -52,11 +52,11 @@ using {{render "csharp/package:namespace" .File.Package}};
 {{- end}}
 
 {{- define "next/csharp/struct.field.name" -}}
-{{. | pascalCase}}
+{{.String | pascalCase}}
 {{- end}}
 
 {{- define "next/csharp/interface" -}}
-{{next .Doc}}public interface {{.Name}}
+{{next .Doc}}public interface {{next .Type}}
 {
     {{- next .Methods}}
 }
@@ -66,7 +66,7 @@ using {{render "csharp/package:namespace" .File.Package}};
 {{next .Doc}}{{next .Return}} {{next .Name}}({{next .Params}});{{next .Comment}}
 {{- end}}
 
-{{- define "next/csharp/interface.method.return" -}}
+{{- define "next/csharp/interface.method.result" -}}
 {{if .Type}}{{next .Type}}{{else}}void{{end}}
 {{- end}}
 
@@ -75,5 +75,5 @@ using {{render "csharp/package:namespace" .File.Package}};
 {{- end}}
 
 {{- define "next/csharp/interface.method.param.name" -}}
-{{. | camelCase}}
+{{.String | camelCase}}
 {{- end}}

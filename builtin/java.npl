@@ -37,7 +37,7 @@ public class Constants {
 {{- end}}
 
 {{- define "next/java/const" -}}
-{{next .Doc}}public static final {{next .Type}} {{.Name | upper}} = {{.Value}}{{if eq "long" ((next .Type))}}l{{end}};{{next .Comment}}
+{{next .Doc}}public static final {{next .Type}} {{next .Name | upper}} = {{.Value}}{{if eq "long" ((next .Type))}}l{{end}};{{next .Comment}}
 {{- end}}
 
 {{- define "next/java/enums" -}}
@@ -48,12 +48,12 @@ public class Constants {
 {{- end}}
 
 {{- define "next/java/enum" -}}
-{{next .Doc}}public enum {{.Name}} {
+{{next .Doc}}public enum {{next .Type}} {
     {{- next .Members}}
 
     private final {{render "java/enum:value_type" .}} value;
 
-    {{.Name}}({{render "java/enum:value_type" .}} value) {
+    {{next .Type}}({{render "java/enum:value_type" .}} value) {
         this.value = value;
     }
 
@@ -68,14 +68,14 @@ public class Constants {
 {{- end}}
 
 {{- define "next/java/enum.member" -}}
-{{next .Doc}}{{.Name}}(({{render "java/enum:value_type" .Decl}}) {{.Value}}){{if not .IsLast}},{{else}};{{end}}{{next .Comment}}
+{{next .Doc}}{{next .Name}}(({{render "java/enum:value_type" .Decl}}) {{.Value}}){{if not .IsLast}},{{else}};{{end}}{{next .Comment}}
 {{- end}}
 
 {{- define "next/java/struct" -}}
-{{next .Doc}}public class {{.Name}} {
+{{next .Doc}}public class {{next .Type}} {
     {{- next .Fields}}
 
-    public {{.Name}}() {}
+    public {{next .Type}}() {}
 }
 {{- end}}
 
@@ -101,7 +101,7 @@ public class Constants {
 {{next .Doc}}{{next .Return}} {{next .Name}}({{next .Params}}){{if .Annotations.next.error}} throws Exception{{end}};{{next .Comment}}
 {{- end}}
 
-{{- define "next/java/interface.method.return" -}}
+{{- define "next/java/interface.method.result" -}}
 {{if .Type}}{{next .Type}}{{else}}void{{end}}
 {{- end}}
 

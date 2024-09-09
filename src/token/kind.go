@@ -1,41 +1,41 @@
 package token
 
-//go:generate stringer -type=Kind
+//go:generate stringer -type=Kind -linecomment
 type Kind int
 
 const (
-	Invalid Kind = iota
-	Bool
-	Int
-	Int8
-	Int16
-	Int32
-	Int64
-	Float32
-	Float64
-	Byte
-	Bytes
-	String
-	Any
-	Map
-	Vector
-	Array
-	Enum
-	Struct
-	Interface
+	KindInvalid   Kind = iota // invalid
+	KindBool                  // bool
+	KindInt                   // int
+	KindInt8                  // int8
+	KindInt16                 // int16
+	KindInt32                 // int32
+	KindInt64                 // int64
+	KindFloat32               // float32
+	KindFloat64               // float64
+	KindByte                  // byte
+	KindBytes                 // bytes
+	KindString                // string
+	KindAny                   // any
+	KindMap                   // map
+	KindVector                // vector
+	KindArray                 // array
+	KindEnum                  // enum
+	KindStruct                // struct
+	KindInterface             // interface
 )
 
 var PrimitiveKinds = []Kind{
-	Bool,
-	Int,
-	Int8,
-	Int16,
-	Int32,
-	Int64,
-	Float32,
-	Float64,
-	Byte,
-	Bytes,
-	String,
-	Any,
+	KindBool,
+	KindInt,
+	KindInt8,
+	KindInt16,
+	KindInt32,
+	KindInt64,
+	KindFloat32,
+	KindFloat64,
+	KindByte,
+	KindBytes,
+	KindString,
+	KindAny,
 }
