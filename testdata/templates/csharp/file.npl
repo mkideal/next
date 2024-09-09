@@ -1,7 +1,5 @@
-{{/*
-this: file
-path: {{this.Package.Name}}/{{this.Name}}.cs
-*/}}
+{{- define "meta/this"}}file{{end -}}
+{{- define "meta/path"}}{{this.Package.Name}}/{{this.Name}}.next.cs{{end -}}
 
 {{- /* Overrides "next/csharp/struct.fields": add method 'MessageType' for each message after fields */ -}}
 {{- define "csharp/struct.fields" -}}

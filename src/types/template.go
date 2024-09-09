@@ -8,12 +8,14 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strconv"
 	"strings"
 	"sync"
 	"text/template"
 
 	"github.com/gopherd/core/builder"
+	"github.com/gopherd/core/container/pair"
 	"github.com/gopherd/core/flags"
 	"github.com/gopherd/core/op"
 
@@ -21,176 +23,56 @@ import (
 	"github.com/next/next/src/templateutil"
 )
 
-// metaValue represents a metadata value with the line number where it was defined.
-type metaValue[T any] struct {
-	content T
-	line    int
-}
-
-func (m *metaValue[T]) value() T {
-	var zero T
-	if m == nil {
-		return zero
-	}
-	return m.content
-}
-
 // templateMeta represents the meta data of a template.
 // It is used to generate the header of the generated file.
-type templateMeta[T any] map[string]*metaValue[T]
+type templateMeta map[string]string
 
 // Get returns the value of the given key.
-func (m templateMeta[T]) Get(key string) *metaValue[T] {
+func (m templateMeta) Get(key string) pair.Pair[string, bool] {
 	if m == nil {
-		return nil
+		return pair.Pair[string, bool]{}
 	}
-	return m[key]
+	v, ok := m[key]
+	return pair.New(v, ok)
 }
 
-// resolveMeta resolves the metadata values by executing the metadata templates with the given data.
-func resolveMeta[T Decl](metaTemplates templateMeta[*template.Template], data *templateContext[T]) (templateMeta[string], error) {
-	if metaTemplates == nil {
-		return nil, nil
+// resolveMeta resolves the metadata of the given template for the given keys.
+// If no key is given, it resolves all metadata except "this".
+func resolveMeta(tc *templateContext, t *template.Template, keys ...string) (templateMeta, error) {
+	meta := make(templateMeta)
+	if tc.meta == nil {
+		tc.meta = make(templateMeta)
 	}
-	meta := make(templateMeta[string])
-	for k, t := range metaTemplates {
-		v, err := executeTemplate(t.content, data)
-		if err != nil {
-			return nil, err
-		}
-		switch k {
-		case "overwrite":
-			if v != "true" && v != "false" {
-				return nil, fmt.Errorf("invalid value %q for meta key %q, expected true or false", v, k)
+	if len(keys) == 0 {
+		for _, tt := range t.Templates() {
+			key := tt.Name()
+			if strings.HasPrefix(key, "meta/") && key != "meta/this" {
+				key = strings.TrimPrefix(key, "meta/")
+				var buf bytes.Buffer
+				if err := tt.Execute(&buf, tc); err != nil {
+					return meta, err
+				}
+				value := buf.String()
+				meta[key] = value
+				tc.meta[key] = value
 			}
 		}
-		meta[k] = &metaValue[string]{
-			content: v,
-			line:    t.line,
-		}
+		return meta, nil
 	}
-	return meta, nil
-}
-
-// parseMeta extracts metadata from the content and returns the parsed metadata
-// along with the modified content (with a simple metadata placeholder).
-//
-// The metadata is expected to be in the following format:
-//
-// {{/*
-// # 'this' represents the type of the object to be generated,
-// # default is 'file'
-// this: [file|const|enum|struct|interface]
-//
-// # 'path' represents the output path of the generated file,
-// # default is the object name with the current extension
-// path: [relative/path/to/generated/file|/absolute/path/to/generated/file]
-//
-// # 'skip' represents whether to skip generating the file,
-// # default is false
-// skip: [true|false]
-//
-// # 'overwrite' represents whether to overwrite the existing file,
-// # default is true
-// overwrite: [true|false]
-//
-// # and other custom metadata key-value pairs
-// # ...
-// */}}
-//
-// Example:
-// {{/*
-// this: file
-// path: {{this.Package.Name}}/{{this.Name}}.next.go
-// skip: {{eq "Test" this.Name}}
-// */}}
-// parseMeta extracts metadata from the content and returns the parsed metadata
-// along with the modified content (with metadata replaced by placeholder and empty lines).
-func parseMeta(content string) (templateMeta[string], string, error) {
-	const beginDelim = "{{/*"
-	const endDelim = "*/}}"
-	beginIndex := strings.Index(content, beginDelim)
-	endIndex := strings.Index(content, endDelim)
-
-	if beginIndex == -1 || endIndex == -1 || endIndex < beginIndex {
-		return nil, content, nil
-	}
-	if strings.Index(content[:beginIndex], "\r") != -1 || strings.Index(content[:beginIndex], "\n") != -1 {
-		return nil, content, nil
-	}
-
-	metaContent := content[beginIndex+len(beginDelim) : endIndex]
-	meta := make(templateMeta[string])
-
-	// Parse metadata
-	lines := strings.Split(metaContent, "\n")
-	for i, line := range lines {
-		line = strings.TrimSpace(line)
-		if line == "" || line[0] == '#' {
+	for _, key := range keys {
+		tt := t.Lookup("meta/" + key)
+		if tt == nil {
 			continue
 		}
-		key, value, err := parseMetaLine(line)
-		if err != nil {
-			return nil, content, err
+		var buf bytes.Buffer
+		if err := tt.Execute(&buf, tc); err != nil {
+			return meta, err
 		}
-		if key != "" {
-			if _, exists := meta[key]; exists {
-				return nil, content, fmt.Errorf("duplicate meta key %q", key)
-			}
-			meta[key] = &metaValue[string]{
-				content: value,
-				line:    i + 1,
-			}
-		}
+		value := buf.String()
+		meta[key] = value
+		tc.meta[key] = value
 	}
-
-	// Replace metadata block with placeholder
-	replacement := "{{- /* meta */ -}}" + strings.Repeat("\n", strings.Count(metaContent, "\n"))
-	modifiedContent := content[:beginIndex] + replacement + content[endIndex+len(endDelim):]
-
-	return meta, modifiedContent, nil
-}
-
-// parseMetaLine parses a single metadata line into a key-value pair.
-func parseMetaLine(line string) (string, string, error) {
-	if line == "" {
-		return "", "", nil
-	}
-	var key, value string
-	index := strings.Index(line, ":")
-	if index > 0 {
-		key, value = strings.TrimSpace(line[:index]), strings.TrimSpace(line[index+1:])
-	}
-	if key == "" || value == "" {
-		return "", "", fmt.Errorf("invalid meta line %q, expected key: value", line)
-	}
-	if len(value) >= 2 && value[0] == '"' {
-		var err error
-		value, err = strconv.Unquote(value)
-		if err != nil {
-			return "", "", fmt.Errorf("invalid meta value %q: %v", value, err)
-		}
-	}
-	return key, value, nil
-}
-
-func createTemplates(file, content string, meta templateMeta[string], funcs template.FuncMap) (*template.Template, templateMeta[*template.Template], error) {
-	t, err := createTemplate(file, content, funcs)
-	if err != nil {
-		return nil, nil, err
-	}
-	mt := make(templateMeta[*template.Template])
-	for k, v := range meta {
-		tt, err := createTemplate(k, v.content, funcs)
-		if err != nil {
-			return nil, nil, err
-		}
-		mt[k] = &metaValue[*template.Template]{
-			content: tt,
-			line:    v.line,
-		}
-	}
-	return t, mt, nil
+	return meta, nil
 }
 
 // createTemplate creates a new template from the given content.
@@ -216,13 +98,13 @@ type templateContextInfo struct {
 }
 
 // templateContext represents the context of a template.
-type templateContext[T Decl] struct {
+type templateContext struct {
 	templateContextInfo
 
 	// buf is used to buffer the generated content.
 	buf bytes.Buffer
 	// current decl object to be rendered: File, Const, Enum, Struct, Interface
-	decl T
+	decl reflect.Value
 
 	// current entrypoint template
 	entrypoint *template.Template
@@ -237,17 +119,19 @@ type templateContext[T Decl] struct {
 	initiated     bool
 	funcs         template.FuncMap
 	stack         []string
+	meta          templateMeta
 }
 
-func newTemplateContext[T Decl](ctx templateContextInfo) *templateContext[T] {
-	tc := &templateContext[T]{
+func newTemplateContext(ctx templateContextInfo) *templateContext {
+	tc := &templateContext{
 		templateContextInfo: ctx,
 		dontOverrides:       make(map[string]bool),
 	}
 	tc.funcs = template.FuncMap{
 		"ENV":    tc.env,
 		"this":   tc.this,
-		"lang":   tc.getLang,
+		"lang":   func() string { return tc.lang },
+		"meta":   func() templateMeta { return tc.meta },
 		"error":  tc.error,
 		"errorf": tc.errorf,
 		"head":   tc.head,
@@ -260,7 +144,15 @@ func newTemplateContext[T Decl](ctx templateContextInfo) *templateContext[T] {
 	return tc
 }
 
-func (tc *templateContext[T]) init() error {
+func (tc *templateContext) reset(t *template.Template, d reflect.Value) error {
+	tc.entrypoint = t
+	tc.decl = d
+	tc.meta = make(templateMeta)
+	tc.buf.Reset()
+	return tc.lazyInit()
+}
+
+func (tc *templateContext) lazyInit() error {
 	if tc.initiated {
 		return nil
 	}
@@ -309,11 +201,6 @@ func (tc *templateContext[T]) init() error {
 	return nil
 }
 
-func (tc *templateContext[T]) reset(obj T) {
-	tc.decl = obj
-	tc.buf.Reset()
-}
-
 // @api(template/context): this
 // `this` returns the current [object](#Object) to be rendered.
 //
@@ -322,23 +209,19 @@ func (tc *templateContext[T]) reset(obj T) {
 // > {{this.Package.Name}}
 // > {{this.Name}}
 // > ```
-func (tc *templateContext[T]) this() T {
+func (tc *templateContext) this() reflect.Value {
 	return tc.decl
 }
 
-func (tc *templateContext[T]) env() flags.Map {
+func (tc *templateContext) env() flags.Map {
 	return tc.context.flags.envs
 }
 
-func (tc *templateContext[T]) getLang() string {
-	return tc.lang
-}
-
-func (tc *templateContext[T]) error(msg string) (string, error) {
+func (tc *templateContext) error(msg string) (string, error) {
 	return "", errors.New(msg)
 }
 
-func (tc *templateContext[T]) errorf(format string, args ...any) (string, error) {
+func (tc *templateContext) errorf(format string, args ...any) (string, error) {
 	return "", fmt.Errorf(format, args...)
 }
 
@@ -364,7 +247,7 @@ func (tc *templateContext[T]) errorf(format string, args ...any) (string, error)
 // std::string
 // std::map<std::string,int>
 // ```
-func (tc *templateContext[T]) type_(t any, langs ...string) (string, error) {
+func (tc *templateContext) type_(t any, langs ...string) (string, error) {
 	if len(langs) > 1 {
 		return "", fmt.Errorf("too many arguments")
 	}
@@ -383,7 +266,7 @@ func (tc *templateContext[T]) type_(t any, langs ...string) (string, error) {
 	return v, nil
 }
 
-func (tc *templateContext[T]) resolveLangType(lang string, t any) (result string, err error) {
+func (tc *templateContext) resolveLangType(lang string, t any) (result string, err error) {
 	mappings := tc.context.flags.mappings
 	defer func() {
 		if err == nil && strings.Contains(result, "box(") {
@@ -504,7 +387,7 @@ func (tc *templateContext[T]) resolveLangType(lang string, t any) (result string
 // ```
 // /* Code generated by "next v0.0.1"; DO NOT EDIT. */
 // ```
-func (tc *templateContext[T]) head() string {
+func (tc *templateContext) head() string {
 	p, ok := tc.context.flags.mappings[tc.lang+".comment(%S%)"]
 	if !ok {
 		return ""
@@ -513,7 +396,7 @@ func (tc *templateContext[T]) head() string {
 	return strings.ReplaceAll(p, "%S%", `Code generated by "next `+builder.Info().Version+`"; DO NOT EDIT.`)
 }
 
-func (tc *templateContext[T]) loadTemplate(fs fs.FS, filename string) (*template.Template, error) {
+func (tc *templateContext) loadTemplate(fs fs.FS, filename string) (*template.Template, error) {
 	if v, ok := tc.cache.templates.Load(filename); ok {
 		return v.(*template.Template), nil
 	}
@@ -557,7 +440,7 @@ func (tc *templateContext[T]) loadTemplate(fs fs.FS, filename string) (*template
 
 const sep = "/"
 
-func (tc *templateContext[T]) parseTemplateNames(lang string, name string) []string {
+func (tc *templateContext) parseTemplateNames(lang string, name string) []string {
 	op.Assert(lang != "next")
 	priority := 1
 	parts := strings.Split(name, sep)
@@ -605,7 +488,7 @@ func (tc *templateContext[T]) parseTemplateNames(lang string, name string) []str
 // 1. <lang>/<name>
 // 2. next/<lang>/<name>
 // 3. next/<name>
-func (tc *templateContext[T]) lookupTemplate(names []string) (*template.Template, error) {
+func (tc *templateContext) lookupTemplate(names []string) (*template.Template, error) {
 	for i := range names {
 		if tt := tc.entrypoint.Lookup(names[i]); tt != nil {
 			return tt, nil
@@ -630,7 +513,7 @@ func (tc *templateContext[T]) lookupTemplate(names []string) (*template.Template
 // {{next .}}
 // {{end}}
 // ```
-func (tc *templateContext[T]) next(obj Object, langs ...string) (string, error) {
+func (tc *templateContext) next(obj Object, langs ...string) (string, error) {
 	if len(langs) > 1 {
 		return "", fmt.Errorf("too many arguments")
 	}
@@ -642,7 +525,7 @@ func (tc *templateContext[T]) next(obj Object, langs ...string) (string, error) 
 	return tc.nextWithNames(names, obj)
 }
 
-func (tc *templateContext[T]) nextWithNames(names []string, obj Object) (string, error) {
+func (tc *templateContext) nextWithNames(names []string, obj Object) (string, error) {
 	result, err := tc.renderWithNames(names, obj)
 	if err != nil && IsTemplateNotFoundError(err) {
 		if t, ok := obj.(Type); ok {
@@ -654,7 +537,7 @@ func (tc *templateContext[T]) nextWithNames(names []string, obj Object) (string,
 }
 
 // @api(template/context): super (object)
-func (tc *templateContext[T]) super(obj Object, langs ...string) (string, error) {
+func (tc *templateContext) super(obj Object, langs ...string) (string, error) {
 	if len(langs) > 1 {
 		return "", fmt.Errorf("too many arguments")
 	}
@@ -676,7 +559,7 @@ func (tc *templateContext[T]) super(obj Object, langs ...string) (string, error)
 
 // @api(template/context): render (name, data)
 // render executes the template with the given name and data.
-func (tc *templateContext[T]) render(name string, data any, langs ...string) (result string, err error) {
+func (tc *templateContext) render(name string, data any, langs ...string) (result string, err error) {
 	if len(langs) > 1 {
 		return "", fmt.Errorf("too many arguments")
 	}
@@ -691,7 +574,7 @@ func (tc *templateContext[T]) render(name string, data any, langs ...string) (re
 	return tc.renderWithNames(names, data)
 }
 
-func (tc *templateContext[T]) renderWithNames(names []string, data any) (result string, err error) {
+func (tc *templateContext) renderWithNames(names []string, data any) (result string, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			if e, ok := r.(error); ok {
@@ -719,7 +602,7 @@ func (tc *templateContext[T]) renderWithNames(names []string, data any) (result 
 	return result, nil
 }
 
-func (tc *templateContext[T]) lastLine() string {
+func (tc *templateContext) lastLine() string {
 	content := tc.buf.Bytes()
 	if len(content) == 0 {
 		return ""
@@ -736,7 +619,7 @@ func (tc *templateContext[T]) lastLine() string {
 	return string(content[lastLineEnd:])
 }
 
-func (tc *templateContext[T]) lastIndent() string {
+func (tc *templateContext) lastIndent() string {
 	content := tc.buf.Bytes()
 	if len(content) == 0 {
 		return ""
@@ -758,11 +641,11 @@ func (tc *templateContext[T]) lastIndent() string {
 	return string(content[lastLineBegin:indentEnd])
 }
 
-func (tc *templateContext[T]) align(s string) string {
+func (tc *templateContext) align(s string) string {
 	return tc.alignWith(s, "")
 }
 
-func (tc *templateContext[T]) alignWith(text, prefix string) string {
+func (tc *templateContext) alignWith(text, prefix string) string {
 	indent := strings.Map(func(r rune) rune {
 		if r != ' ' && r != '\t' {
 			return ' '

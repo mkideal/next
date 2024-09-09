@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -150,7 +151,7 @@ func try(err any) {
 			}
 			fmt.Fprint(os.Stderr, sb.String())
 		} else {
-			fmt.Fprintln(os.Stderr, tryExtractTemplateTrace(err))
+			formatError(err)
 		}
 		os.Exit(2)
 	case string:
@@ -164,29 +165,73 @@ func try(err any) {
 	}
 }
 
-func tryExtractTemplateTrace(err error) error {
+func formatError(err error) {
 	if err == nil {
-		return nil
+		return
 	}
-	var errs []error
+	var errs []string
 	for err != nil {
 		if e, ok := err.(template.ExecError); ok {
-			errs = append(errs, err)
+			errs = append(errs, err.Error())
 			err = e.Err
 		} else if e := errors.Unwrap(err); e != nil {
 			err = e
 		} else {
-			errs = append(errs, err)
+			errs = append(errs, err.Error())
 			break
 		}
 	}
 	for i := 0; i+1 < len(errs); i++ {
-		indent := strings.Repeat(" ", len(errs)-i-1)
-		errs[i] = errors.New(indent + strings.TrimSuffix(strings.TrimPrefix(strings.TrimSuffix(
-			strings.TrimSpace(errs[i].Error()),
-			strings.TrimSpace(errs[i+1].Error()),
-		), "template: "), ": "))
+		errs[i] = strings.TrimSuffix(strings.TrimSpace(errs[i]), strings.TrimSpace(errs[i+1]))
 	}
 	slices.Reverse(errs)
-	return errors.Join(errs...)
+	for i := len(errs) - 1; i >= 0; i-- {
+		s := strings.TrimSpace(errs[i])
+		s = strings.TrimPrefix(s, "template: ")
+		s = strings.TrimSuffix(s, ":")
+		if s == "" {
+			errs = append(errs[:i], errs[i+1:]...)
+		} else {
+			errs[i] = s
+		}
+	}
+	if len(errs) == 0 {
+		formatTemplateError(err.Error())
+		return
+	}
+	formatTemplateError(errs[0])
+	for i := 1; i < len(errs); i++ {
+		fmt.Fprint(os.Stderr, strings.Repeat(" ", i))
+		formatTemplateError(errs[i])
+	}
+}
+
+const fileColor = term.Gray
+const lineColor = term.BrightBlue
+const columnColor = term.BrightGreen
+const errorColor = term.Red
+
+// template error format: "<template name>:<line>:<column>: <error message>"
+func formatTemplateError(err string) {
+	if err == "" {
+		return
+	}
+	parts := strings.SplitN(err, ":", 4)
+	if len(parts) < 4 {
+		fmt.Fprintln(os.Stderr, err)
+		return
+	}
+	line := parts[1]
+	column := parts[2]
+	if i, err := strconv.Atoi(column); err == nil {
+		column = strconv.Itoa(i + 1)
+	}
+	message := parts[3]
+	fmt.Fprintf(
+		os.Stderr, "%s:%s:%s:%s\n",
+		fileColor.Colorize(parts[0]),
+		lineColor.Colorize(line),
+		columnColor.Colorize(column),
+		errorColor.Colorize(message),
+	)
 }

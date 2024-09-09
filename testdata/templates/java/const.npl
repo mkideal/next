@@ -1,8 +1,6 @@
-{{/*
-this: file
-path: {{render "java/package.name" this.Package | replace "." "/"}}/Constants.java
-skip: {{eq 0 (len this.Decls.Consts.List)}}
-*/}}
+{{- define "meta/this"}}file{{end -}}
+{{- define "meta/path"}}{{render "java/package.name" this.Package | replace "." "/"}}/Constants.java{{end -}}
+{{- define "meta/skip"}}{{eq 0 (len this.Decls.Consts.List)}}{{end -}}
 
 {{- define "java/file" -}}
 package {{render "java/package.name" .Package}};

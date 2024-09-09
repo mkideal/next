@@ -1,7 +1,5 @@
-{{/*
-this: file
-path: {{this.Package.Name}}/{{this.Name}}.next.h
-*/}}
+{{- define "meta/this"}}file{{end -}}
+{{- define "meta/path"}}{{this.Package.Name}}/{{this.Name}}.next.h{{end -}}
 
 {{- /* Overrides "next/cpp/import" */ -}}
 {{- define "cpp/import" -}}

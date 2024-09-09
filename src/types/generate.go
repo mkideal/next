@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"runtime"
 	"slices"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -181,77 +183,65 @@ func (c *Context) generateForTemplatePath(lang, ext, dir, tmplPath string) error
 }
 
 func (c *Context) generateForTemplateFile(lang, ext, dir, tmplFile string) error {
-	tmplContent, err := os.ReadFile(tmplFile)
+	content, err := os.ReadFile(tmplFile)
 	if err != nil {
 		return fmt.Errorf("failed to read file %q: %w", tmplFile, err)
 	}
-	meta, content, err := parseMeta(string(tmplContent))
-	if err != nil {
-		return err
-	}
 
-	objType := "file"
-	this := meta.Get("this")
-	if this != nil {
-		objType = this.content
-	}
-	delete(meta, "this")
-
-	info := templateContextInfo{
+	tc := newTemplateContext(templateContextInfo{
 		context: c,
 		lang:    lang,
 		dir:     dir,
 		ext:     ext,
-	}
-
-	switch strings.ToLower(objType) {
-	case "file":
-		return generateForFile(newTemplateContext[*File](info), tmplFile, string(content), meta)
-
-	case "const":
-		return generateForConst(newTemplateContext[*Const](info), tmplFile, string(content), meta)
-
-	case "enum":
-		return generateForEnum(newTemplateContext[*Enum](info), tmplFile, string(content), meta)
-
-	case "struct":
-		return generateForStruct(newTemplateContext[*Struct](info), tmplFile, string(content), meta)
-
-	case "interface":
-		return generateForInterface(newTemplateContext[*Interface](info), tmplFile, string(content), meta)
-
-	default:
-		return fmt.Errorf(`unknown value for 'this': %q, expected "file", "const", "enum", "struct" or "interface"`, objType)
-	}
-}
-
-func generateForFile(tc *templateContext[*File], file, content string, meta templateMeta[string]) error {
-	t, mt, err := createTemplates(file, content, meta, tc.funcs)
+	})
+	t, err := createTemplate(tmplFile, string(content), tc.funcs)
 	if err != nil {
 		return err
 	}
+	this := "file"
+	if values, err := resolveMeta(tc, t, "this"); err != nil {
+		return err
+	} else if m := values.Get("this"); m.Second {
+		this = m.First
+	}
+
+	switch strings.ToLower(this) {
+	case "file":
+		return generateForFile(tc, t)
+
+	case "const":
+		return generateForConst(tc, t)
+
+	case "enum":
+		return generateForEnum(tc, t)
+
+	case "struct":
+		return generateForStruct(tc, t)
+
+	case "interface":
+		return generateForInterface(tc, t)
+
+	default:
+		return fmt.Errorf(`unknown value for 'this': %q, expected "file", "const", "enum", "struct" or "interface"`, this)
+	}
+}
+
+func generateForFile(tc *templateContext, t *template.Template) error {
 	for _, f := range tc.context.files {
-		tc.reset(f)
-		if err := gen(tc, t, mt); err != nil {
+		if err := gen(tc, t, f); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func generateForConst(tc *templateContext[*Const], file, content string, meta templateMeta[string]) error {
-	t, mt, err := createTemplates(file, content, meta, tc.funcs)
-	if err != nil {
-		return err
-	}
-
+func generateForConst(tc *templateContext, t *template.Template) error {
 	for _, file := range tc.context.files {
 		if file.decls == nil {
 			continue
 		}
 		for _, d := range file.decls.consts {
-			tc.reset(d)
-			if err := gen(tc, t, mt); err != nil {
+			if err := gen(tc, t, d); err != nil {
 				return err
 			}
 		}
@@ -259,19 +249,13 @@ func generateForConst(tc *templateContext[*Const], file, content string, meta te
 	return nil
 }
 
-func generateForEnum(tc *templateContext[*Enum], file, content string, meta templateMeta[string]) error {
-	t, mt, err := createTemplates(file, content, meta, tc.funcs)
-	if err != nil {
-		return err
-	}
-
+func generateForEnum(tc *templateContext, t *template.Template) error {
 	for _, file := range tc.context.files {
 		if file.decls == nil {
 			continue
 		}
 		for _, d := range file.decls.enums {
-			tc.reset(d)
-			if err := gen(tc, t, mt); err != nil {
+			if err := gen(tc, t, d); err != nil {
 				return err
 			}
 		}
@@ -279,19 +263,13 @@ func generateForEnum(tc *templateContext[*Enum], file, content string, meta temp
 	return nil
 }
 
-func generateForStruct(tc *templateContext[*Struct], file, content string, meta templateMeta[string]) error {
-	t, mt, err := createTemplates(file, content, meta, tc.funcs)
-	if err != nil {
-		return err
-	}
-
+func generateForStruct(tc *templateContext, t *template.Template) error {
 	for _, file := range tc.context.files {
 		if file.decls == nil {
 			continue
 		}
 		for _, d := range file.decls.structs {
-			tc.reset(d)
-			if err := gen(tc, t, mt); err != nil {
+			if err := gen(tc, t, d); err != nil {
 				return err
 			}
 		}
@@ -299,19 +277,13 @@ func generateForStruct(tc *templateContext[*Struct], file, content string, meta 
 	return nil
 }
 
-func generateForInterface(tc *templateContext[*Interface], file, content string, meta templateMeta[string]) error {
-	t, mt, err := createTemplates(file, content, meta, tc.funcs)
-	if err != nil {
-		return err
-	}
-
+func generateForInterface(tc *templateContext, t *template.Template) error {
 	for _, file := range tc.context.files {
 		if file.decls == nil {
 			continue
 		}
 		for _, d := range file.decls.interfaces {
-			tc.reset(d)
-			if err := gen(tc, t, mt); err != nil {
+			if err := gen(tc, t, d); err != nil {
 				return err
 			}
 		}
@@ -321,42 +293,49 @@ func generateForInterface(tc *templateContext[*Interface], file, content string,
 
 // gen generates a file using the given template, meta data, and object which may be a
 // file, const, enum or struct.
-func gen[T Decl](tc *templateContext[T], t *template.Template, mt templateMeta[*template.Template]) error {
-	if tc.decl.getAnnotations().get("next").get(tc.lang+"_alias") != nil {
+func gen[T Decl](tc *templateContext, t *template.Template, decl T) error {
+	// skip if the declaration is an alias
+	if decl.getAnnotations().get("next").get(tc.lang+"_alias") != nil {
 		return nil
 	}
-	var ok bool
-	tc.decl, ok = available(tc.decl, tc.lang)
+
+	// skip if the declaration is not available in the target language
+	decl, ok := available(decl, tc.lang)
 	if !ok {
 		return nil
 	}
-	tc.entrypoint = t
-	if err := tc.init(); err != nil {
+
+	// reset the template context with the template and the declaration
+	if err := tc.reset(t, reflect.ValueOf(decl)); err != nil {
 		return err
 	}
 
-	meta, err := resolveMeta(mt, tc)
+	// resolve meta data
+	meta, err := resolveMeta(tc, t)
 	if err != nil {
 		return err
 	}
-	if meta.Get("skip").value() == "true" {
-		return nil
+
+	// skip if the meta data contains 'skip' and its value is true
+	if m := meta.Get("skip").First; m != "" {
+		skip, err := strconv.ParseBool(m)
+		if err != nil {
+			return fmt.Errorf("failed to parse 'skip' meta data: %v", err)
+		}
+		if skip {
+			return nil
+		}
 	}
-	tc.buf.Reset()
+
+	// execute the template with the template context
 	if err := t.Execute(&tc.buf, tc); err != nil {
 		return err
 	}
 
 	// write the generated content to the output file
-	path := op.Or(meta.Get("path").value(), tc.decl.getName()+tc.ext)
+	path := op.Or(meta.Get("path").First, decl.getName()+tc.ext)
 	if !filepath.IsAbs(path) {
 		path = filepath.Join(tc.dir, path)
-	}
-	if op.Or(meta.Get("overwrite").value(), "true") != "true" {
-		if _, err := os.Stat(path); err == nil {
-			tc.context.Printf("file %q already exists, and will not be overwritten", path)
-			return nil
-		}
 	}
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 		return fmt.Errorf("failed to create directory %q: %v", tc.dir, err)
