@@ -29,7 +29,7 @@
 
 {{- define "next/cpp/used.type" -}}
 {{if not (.Type.Decl.File.Package.In .File.Package) -}}
-{{$ns := .Type.Decl.File.Package.Annotations.next.cpp_namespace -}}
+{{$ns := .Type.Decl.File.Package.Annotations.next.cpp_package -}}
 {{if $ns -}}
 {{$ns}}::
 {{- end -}}
@@ -38,7 +38,7 @@
 {{- end}}
 
 {{- define "next/cpp/file:namespace.begin" -}}
-{{- $ns := .Annotations.next.cpp_namespace -}}
+{{- $ns := .Annotations.next.cpp_package -}}
 {{- if $ns}}
 
 namespace {{$ns}} {
@@ -46,7 +46,7 @@ namespace {{$ns}} {
 {{- end}}
 
 {{- define "next/cpp/file:namespace.end" -}}
-{{- $ns := .Annotations.next.cpp_namespace -}}
+{{- $ns := .Annotations.next.cpp_package -}}
 {{- if $ns}}
 } // namespace {{$ns}}
 {{- end}}

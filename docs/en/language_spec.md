@@ -176,7 +176,7 @@ Example:
 ```next
 @next(
     go_package = "github.com/username/repo/a",
-    cpp_namespace = "repo::a", // trailing comma is optional
+    cpp_package = "repo::a", // trailing comma is optional
 )
 package demo;
 

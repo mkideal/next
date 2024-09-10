@@ -216,7 +216,7 @@ NamedParam     = identifier "=" Expression .
 ```next
 @next(
     go_package = "github.com/username/repo/a",
-    cpp_namespace = "repo::a", // 最后一个参数后面的逗号可有可无
+    cpp_package = "repo::a", // 最后一个参数后面的逗号可有可无
 )
 package demo;
 

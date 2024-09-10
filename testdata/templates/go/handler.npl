@@ -1,0 +1,30 @@
+{{- define "meta/this"}}struct{{end -}}
+{{- define "meta/path"}}{{this.Package.Name}}/handle_{{this.Type.String | snakeCase}}.go{{end -}}
+{{/* Skip if file exists or message type is not set */}}
+{{- define "meta/skip"}}{{or (exist meta.path) (not this.Annotations.message.type) (not this.Annotations.message.req)}}{{end -}}
+
+{{- define "go/struct" -}}
+package {{this.Package.Name}}
+
+import (
+    "encoding/json"
+    "net/http"
+)
+
+{{- with .Annotations.message.type}}
+
+func handle{{next $.Type}}(w http.ResponseWriter, r *http.Request) error {
+    var req {{next $.Type}}
+    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+        return err
+    }
+    // TODO: handle request
+    _ = req
+    return nil
+}
+{{- end}}
+{{- end -}}
+
+{{head}}
+
+{{next this}}

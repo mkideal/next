@@ -2,8 +2,8 @@
 
 @next(
     go_package="github.com/next/next/testdata/gen/go/a",
-    cpp_namespace="demo::a",
-    c_prefix="DEMO_A_",
+    cpp_package="demo::a",
+    c_package="DEMO_A_",
     java_package="com.demo.a",
 )
 package a;
@@ -90,19 +90,19 @@ enum FilePermission {
     Execute = 1 << iota;
     Write;
     Read;
-    
+
     UserRead = Read << (3 * iota);
     UserWrite;
     UserExecute;
-    
+
     GroupRead;
     GroupWrite;
     GroupExecute;
-    
+
     OthersRead;
     OthersWrite;
     OthersExecute;
-    
+
     // 4|32|256|2048|16384|131072|1048576|8388608|67108864
     // 4 + 32 + 256 + 2048 + 16384 + 131072 + 1048576 + 8388608 + 67108864
     All = UserRead | UserWrite | UserExecute | 
@@ -134,7 +134,7 @@ enum Day {
     Friday;
     Saturday;
     Sunday;
-    
+
     Weekday = Monday | Tuesday | Wednesday | Thursday | Friday;
     Weekend = Saturday | Sunday;
 }
@@ -152,7 +152,7 @@ enum Month {
     October;
     November;
     December;
-    
+
     Q1 = January | February | March;
     Q2 = April | May | June;
     Q3 = July | August | September;

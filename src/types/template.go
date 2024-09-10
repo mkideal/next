@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -44,7 +45,11 @@ func resolveMeta(tc *templateContext, t *template.Template, keys ...string) (tem
 		tc.meta = make(templateMeta)
 	}
 	if len(keys) == 0 {
-		for _, tt := range t.Templates() {
+		templates := t.Templates()
+		sort.Slice(templates, func(i, j int) bool {
+			return templates[i].Root.Pos < templates[j].Root.Pos
+		})
+		for _, tt := range templates {
 			key := tt.Name()
 			if strings.HasPrefix(key, "meta/") && key != "meta/this" {
 				key = strings.TrimPrefix(key, "meta/")
@@ -122,9 +127,9 @@ type templateContext struct {
 	meta          templateMeta
 }
 
-func newTemplateContext(ctx templateContextInfo) *templateContext {
+func newTemplateContext(info templateContextInfo) *templateContext {
 	tc := &templateContext{
-		templateContextInfo: ctx,
+		templateContextInfo: info,
 		dontOverrides:       make(map[string]bool),
 	}
 	tc.funcs = template.FuncMap{
@@ -134,6 +139,8 @@ func newTemplateContext(ctx templateContextInfo) *templateContext {
 		"meta":   func() templateMeta { return tc.meta },
 		"error":  tc.error,
 		"errorf": tc.errorf,
+		"exist":  tc.exist,
+
 		"head":   tc.head,
 		"align":  tc.align,
 		"type":   tc.type_,
@@ -223,6 +230,19 @@ func (tc *templateContext) error(msg string) (string, error) {
 
 func (tc *templateContext) errorf(format string, args ...any) (string, error) {
 	return "", fmt.Errorf(format, args...)
+}
+
+func (tc *templateContext) exist(name string) (bool, error) {
+	if name != "" && name[0] != '/' {
+		name = filepath.Join(tc.dir, name)
+	}
+	if _, err := os.Stat(name); err != nil {
+		if os.IsNotExist(err) {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
 }
 
 // @api(template/context): type (Type)

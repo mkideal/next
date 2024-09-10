@@ -315,6 +315,9 @@ func gen[T Decl](tc *templateContext, t *template.Template, decl T) error {
 	if err != nil {
 		return err
 	}
+	for k, v := range meta {
+		tc.context.Printf("%s: meta[%q] = %q", t.Name(), k, v)
+	}
 
 	// skip if the meta data contains 'skip' and its value is true
 	if m := meta.Get("skip").First; m != "" {

@@ -8,8 +8,8 @@
     //
     // Please don't duplicate the import path, like: "net/http.HandlerFunc", "*net/http.Server"
     go_imports="net/http.HandlerFunc,*fmt.Stringer",
-    cpp_namespace="demo",
-    c_prefix="DEMO_",
+    cpp_package="demo",
+    c_package="DEMO_",
     java_package="com.demo",
 )
 package demo;
@@ -50,14 +50,14 @@ struct User {
 }
 
 // LoginRequest is a message which type is 101
-@message(type=101)
+@message(type=101, req)
 struct LoginRequest {
     string username;
     string password;
 }
 
 // LoginResponse is a message which type is 102
-@message(type=102)
+@message(type=102, res)
 struct LoginResponse {
     string token;
     User user;

@@ -20,7 +20,7 @@ typedef unsigned char _Bool;
 {{- end}}
 
 {{- define "next/c/decl:name" -}}
-{{this.File.Annotations.next.c_prefix | upper}}{{.}}
+{{this.File.Annotations.next.c_package | upper}}{{.}}
 {{- end}}
 
 {{- define "next/c/this:file.header.macro" -}}

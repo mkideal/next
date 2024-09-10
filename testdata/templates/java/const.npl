@@ -1,9 +1,9 @@
 {{- define "meta/this"}}file{{end -}}
-{{- define "meta/path"}}{{render "java/package.name" this.Package | replace "." "/"}}/Constants.java{{end -}}
+{{- define "meta/path"}}{{render "java/package:name" this.Package | replace "." "/"}}/Constants.java{{end -}}
 {{- define "meta/skip"}}{{eq 0 (len this.Decls.Consts.List)}}{{end -}}
 
 {{- define "java/file" -}}
-package {{render "java/package.name" .Package}};
+package {{render "java/package:name" .Package}};
 
 {{next .Decls.Consts -}}
 {{- end -}}

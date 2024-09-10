@@ -1,5 +1,5 @@
 {{- define "next/java/file" -}}
-package {{render "java/package.name" .Package}};
+package {{render "java/package:name" .Package}};
 
 {{next .Imports -}}
 {{next .Decls -}}
@@ -20,12 +20,12 @@ import java.util.Arrays;
 {{.Format "" " * " "/**\n" " */" | align}}
 {{- end}}
 
-{{- define "next/java/package.name" -}}
+{{- define "next/java/package:name" -}}
 {{.Annotations.next.java_package}}
 {{- end}}
 
 {{- define "next/java/import" -}}
-import {{render "java/package.name" .File.Package}}.*;
+import {{render "java/package:name" .File.Package}}.*;
 {{- end}}
 
 {{- define "next/java/consts" -}}
