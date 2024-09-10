@@ -23,7 +23,7 @@ type Package struct {
 
 	// Annotations is the [annotations](#Object.Annotations) for the package.
 	// @api(object/Package/Annotations)
-	Annotations AnnotationGroup
+	Annotations Annotations
 }
 
 // Name returns the package name.
@@ -55,7 +55,7 @@ func (p *Package) resolve(c *Context) error {
 			break
 		}
 	}
-	p.Annotations = make(AnnotationGroup)
+	p.Annotations = make(Annotations)
 	for _, file := range p.files {
 		if file.Annotations != nil {
 			for name, group := range file.Annotations {
@@ -99,7 +99,7 @@ type File struct {
 
 	// Annotations is the [annotations](#Object.Annotations) for the file.
 	// @api(object/File/Annotations)
-	Annotations AnnotationGroup
+	Annotations Annotations
 }
 
 func newFile(ctx *Context, src *ast.File, path string) *File {

@@ -73,12 +73,12 @@ class {{next .Type}};
 {{- end}}
 
 {{- define "next/cpp/enum" -}}
-{{next .Doc}}enum class {{next .Type}} : {{render "cpp/enum:value_type" .}} {
+{{next .Doc}}enum class {{next .Type}} : {{render "cpp/enum:member.type" .}} {
 {{- next .Members}}
 };
 {{- end}}
 
-{{- define "next/cpp/enum:value_type" -}}
+{{- define "next/cpp/enum:member.type" -}}
 {{if .Annotations.next.type}}{{next .Annotations.next.type}}{{else}}int{{end}}
 {{- end}}
 

@@ -61,7 +61,7 @@ import "{{.Path}}";
 
 {{/* next/enums: Generates code for all enum declarations in a file */}}
 {{- define "next/enums" -}}
-{{render "next/decl:types" .}}
+{{render "next/decl:internal.types" .}}
 {{- end}}
 
 {{/* next/enum: Generates code for a single enum declaration */}}
@@ -95,7 +95,7 @@ enum {{next .Type}} {
 
 {{/* next/structs: Generates code for all struct declarations in a file */}}
 {{- define "next/structs" -}}
-{{render "next/decl:types" .}}
+{{render "next/decl:internal.types" .}}
 {{- end}}
 
 {{/* next/struct: Generates code for a single struct declaration */}}
@@ -134,11 +134,11 @@ enum {{next .Type}} {
 
 {{/* next/interfaces: Generates code for all interface declarations in a file */}}
 {{- define "next/interfaces" -}}
-{{render "next/decl:types" .}}
+{{render "next/decl:internal.types" .}}
 {{- end}}
 
-{{/* next/decl:types: Generates code for type declarations, handling potential aliases */}}
-{{- define "next/decl:types" -}}
+{{/* next/decl:internal.types: Generates code for type declarations, handling potential aliases */}}
+{{- define "next/decl:internal.types" -}}
 {{- $n := 0 -}}
 {{range .List}}
     {{- if or (not .Annotations.next) (not (index .Annotations.next (printf "%s_alias" lang))) }}

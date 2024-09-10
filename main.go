@@ -196,23 +196,24 @@ func formatError(err error) {
 		}
 	}
 	if len(errs) == 0 {
-		formatTemplateError(err.Error())
+		tryPrintTemplateError(err.Error())
 		return
 	}
-	formatTemplateError(errs[0])
+	tryPrintTemplateError(errs[0])
 	for i := 1; i < len(errs); i++ {
 		fmt.Fprint(os.Stderr, strings.Repeat(" ", i))
-		formatTemplateError(errs[i])
+		tryPrintTemplateError(errs[i])
 	}
 }
 
-const fileColor = term.Gray
-const lineColor = term.BrightBlue
-const columnColor = term.BrightGreen
-const errorColor = term.Red
-
+// tryPrintTemplateError tries to print template error in a more readable format.
 // template error format: "<template name>:<line>:<column>: <error message>"
-func formatTemplateError(err string) {
+func tryPrintTemplateError(err string) {
+	const fileColor = term.Color("")
+	const lineColor = term.BrightBlue
+	const columnColor = term.BrightGreen
+	const errorColor = term.BrightRed
+
 	if err == "" {
 		return
 	}

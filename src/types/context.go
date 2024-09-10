@@ -399,11 +399,11 @@ func (c *Context) Resolve() error {
 }
 
 // resolveAnnotationGroup resolves an annotation group
-func (c *Context) resolveAnnotationGroup(file *File, obj Node, annotations *ast.AnnotationGroup) AnnotationGroup {
+func (c *Context) resolveAnnotationGroup(file *File, obj Node, annotations *ast.AnnotationGroup) Annotations {
 	if annotations == nil {
 		return nil
 	}
-	result := make(AnnotationGroup)
+	result := make(Annotations)
 	for _, a := range annotations.List {
 		if _, dup := result[a.Name.Name]; dup {
 			c.addErrorf(a.Pos(), "annotation %s redeclared", a.Name.Name)

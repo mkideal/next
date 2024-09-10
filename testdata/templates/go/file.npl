@@ -11,7 +11,5 @@ func ({{next $.Type}}) MessageType() int { return {{.}} }
 {{- end -}}
 
 {{head}}
-// project: {{ENV.PROJECT_NAME}}
-// filepath: {{meta.path}}
 
 {{next this}}

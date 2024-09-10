@@ -10,7 +10,8 @@ package {{.Package.Name}}
 {{render "go/imports:unused" . -}}
 {{- end}}
 
-{{/* next/go/imports:decl: Generates import declarations based on the @next(go_imports) annotation.
+{{/*
+next/go/imports:decl: Generates import declarations based on the @next(go_imports) annotation.
 
 This function processes the go_imports annotation to determine which packages to import.
 
@@ -27,13 +28,10 @@ package demo;
 This will generate:
 
 ```go
-import (
-    "encoding/json"
-    "fmt"
-    "net/http"
-    "strconv"
-    "time"
-)
+import "encoding/json"
+import "fmt"
+import "net/http"
+import "time"
 ```
 */}}
 {{- define "next/go/imports:decl" -}}
@@ -57,7 +55,8 @@ import "{{.}}"
 import {{.File.Package.Name}} {{.File.Package.Annotations.next.go_package -}}
 {{- end}}
 
-{{/* next/go/imports:unused: Generates unused variable declarations for imports to prevent compiler errors.
+{{/*
+next/go/imports:unused: Generates unused variable declarations for imports to prevent compiler errors.
 This function creates unused variable declarations for each import specified in the go_imports annotation.
 For types (prefixed with '*'), it generates a nil pointer cast.
 
@@ -117,14 +116,14 @@ var _ = (*{{.File.Package.Name}}.{{next (index (.File.Package.Types) 0)}})(nil)
 {{next .Doc}}const {{next .Name}} = {{.Value}}{{next .Comment}}
 {{- end}}
 
-{{/* next/go/enum:value_type: Determines the underlying type for an enum */}}
-{{- define "next/go/enum:value_type" -}}
+{{/* next/go/enum:member.type: Determines the underlying type for an enum */}}
+{{- define "next/go/enum:member.type" -}}
 {{if .Annotations.next.type}}{{next .Annotations.next.type}}{{else}}int{{end}}
 {{- end}}
 
 {{/* next/go/enum: Generates an enum type declaration, constants, and String method */}}
 {{- define "next/go/enum" -}}
-{{next .Doc}}type {{next .Type}} {{render "go/enum:value_type" .}}
+{{next .Doc}}type {{next .Type}} {{render "go/enum:member.type" .}}
 
 const (
 {{- next .Members}}
@@ -195,7 +194,8 @@ func (x {{next .Type}}) String() string {
 {{- end}}
 {{- end}}
 
-{{/* next/go/type:alias: Processes the @next(go_alias) annotation to replace symbolic types with actual Go types.
+{{/*
+next/go/type:alias: Processes the @next(go_alias) annotation to replace symbolic types with actual Go types.
 
 This function handles the go_alias annotation, which allows defining placeholder types in Next that are replaced
 with actual Go types during code generation. It's particularly useful for interfaces and structs that are defined

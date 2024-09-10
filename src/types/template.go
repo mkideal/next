@@ -19,9 +19,9 @@ import (
 	"github.com/gopherd/core/container/pair"
 	"github.com/gopherd/core/flags"
 	"github.com/gopherd/core/op"
+	"github.com/gopherd/core/text/templates"
 
 	"github.com/next/next/src/fsutil"
-	"github.com/next/next/src/templateutil"
 )
 
 // templateMeta represents the meta data of a template.
@@ -82,7 +82,7 @@ func resolveMeta(tc *templateContext, t *template.Template, keys ...string) (tem
 
 // createTemplate creates a new template from the given content.
 func createTemplate(name, content string, funcs template.FuncMap) (*template.Template, error) {
-	return template.New(name).Funcs(templateutil.Funcs).Funcs(funcs).Parse(content)
+	return template.New(name).Funcs(templates.Funcs).Funcs(funcs).Parse(content)
 }
 
 // executeTemplate executes a template content with the given data.

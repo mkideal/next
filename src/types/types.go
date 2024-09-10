@@ -131,7 +131,7 @@ type Node interface {
 	getName() string
 
 	// getAnnotations returns the annotations for the node.
-	getAnnotations() AnnotationGroup
+	getAnnotations() Annotations
 
 	// File returns the file containing the node.
 	File() *File
@@ -155,8 +155,8 @@ var _ Node = (*InterfaceMethodParam)(nil)
 func (x *File) getName() string             { return x.Name() }
 func (x *commonNode[Self]) getName() string { return x.name.name }
 
-func (x *File) getAnnotations() AnnotationGroup             { return x.Annotations }
-func (x *commonNode[Self]) getAnnotations() AnnotationGroup { return x.Annotations }
+func (x *File) getAnnotations() Annotations             { return x.Annotations }
+func (x *commonNode[Self]) getAnnotations() Annotations { return x.Annotations }
 
 func (x *File) File() *File { return x }
 func (d *commonNode[Self]) File() *File {
@@ -207,13 +207,13 @@ type builtinDecl struct{}
 
 var _ Decl = builtinDecl{}
 
-func (builtinDecl) File() *File                     { return nil }
-func (builtinDecl) Package() *Package               { return nil }
-func (builtinDecl) getType() string                 { return "<builtin.decl>" }
-func (builtinDecl) getPos() token.Pos               { return token.NoPos }
-func (builtinDecl) getName() string                 { return "<builtin>" }
-func (builtinDecl) getAnnotations() AnnotationGroup { return nil }
-func (builtinDecl) declNode()                       {}
+func (builtinDecl) File() *File                 { return nil }
+func (builtinDecl) Package() *Package           { return nil }
+func (builtinDecl) getType() string             { return "<builtin.decl>" }
+func (builtinDecl) getPos() token.Pos           { return token.NoPos }
+func (builtinDecl) getName() string             { return "<builtin>" }
+func (builtinDecl) getAnnotations() Annotations { return nil }
+func (builtinDecl) declNode()                   {}
 
 // -------------------------------------------------------------------------
 // Types

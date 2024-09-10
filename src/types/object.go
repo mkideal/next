@@ -7,9 +7,9 @@ import (
 	"strconv"
 
 	"github.com/gopherd/core/op"
+	"github.com/gopherd/core/text"
 	"github.com/next/next/src/ast"
 	"github.com/next/next/src/constant"
-	"github.com/next/next/src/templateutil"
 	"github.com/next/next/src/token"
 )
 
@@ -226,7 +226,7 @@ type commonNode[Self Node] struct {
 
 	// Annotations is the [annotations](#Object.Annotations) for the declaration.
 	// @api(object/decl/Annotations)
-	Annotations AnnotationGroup
+	Annotations Annotations
 }
 
 func newObject[Self Node](
@@ -825,7 +825,7 @@ func (t *InterfaceMethodResult) resolve(ctx *Context, file *File, scope Scope) {
 // isAvailable reports whether the declaration is available in the current language.
 func isAvailable(decl Node, lang string) bool {
 	s, ok := decl.getAnnotations().get("next").get("available").(string)
-	return !ok || templateutil.ContainsWord(s, lang)
+	return !ok || text.ContainsWord(s, lang)
 }
 
 // available returns the declaration if it is available in the current language.

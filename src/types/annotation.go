@@ -14,11 +14,11 @@ import (
 	"github.com/next/next/src/token"
 )
 
-// AnnotationGroup represents a group of annotations.
-// @api(template/annotation) AnnotationGroup
-type AnnotationGroup map[string]Annotation
+// Annotations represents a group of annotations.
+// @api(template/annotation) Annotations
+type Annotations map[string]Annotation
 
-func (a AnnotationGroup) get(name string) Annotation {
+func (a Annotations) get(name string) Annotation {
 	if a == nil {
 		return nil
 	}
@@ -49,8 +49,8 @@ type linkedAnnotation struct {
 	name       string
 	annotation Annotation
 
-	// obj is declared as type `Node` to avoid circular dependency.
-	// Actually, it's a `Object`.
+	// obj is declared as type `Object` to avoid circular dependency.
+	// Actually, it's a `Node`.
 	obj Object
 }
 
@@ -152,8 +152,8 @@ func (c *Context) createAnnotationSolverRequest(name string) *api.AnnotationSolv
 				Value: param,
 			}
 		}
-		// a.obj is declared as type `Node` to avoid circular dependency.
-		// Actually, it's a `Decl`.
+		// a.obj is declared as type `Object` to avoid circular dependency.
+		// Actually, it's a `Node`.
 		obj := a.obj.(Node)
 		req.Annotations[api.ID(pos)] = &api.Annotation{
 			ID:     api.ID(pos),
