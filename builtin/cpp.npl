@@ -108,7 +108,7 @@ public:
 {{- end}}
 
 {{- define "next/cpp/interface.method" -}}
-{{next .Doc}}virtual {{next .Return}} {{next .Name}}({{next .Params}}) {{if not .Annotations.next.mut}}const {{end}}= 0;{{next .Comment}}
+{{next .Doc}}virtual {{next .Result}} {{next .Name}}({{next .Params}}) {{if not .Annotations.next.mut}}const {{end}}= 0;{{next .Comment}}
 {{- end}}
 
 {{- define "next/cpp/interface.method.name" -}}

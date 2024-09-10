@@ -10,28 +10,40 @@ import (
 	"github.com/next/next/src/token"
 )
 
+// @template(object/Package)
 // Package represents a Next package.
-// @api(template/object) Package
 type Package struct {
 	name  string
 	files []*File
 	types []Type
 
-	// Doc is the [documentation](#Object.Doc) for the package.
-	// @api(object/Package/Doc)
+	// @template(object/Package.Doc)
+	// Doc represents the package [documentation](#object/Doc).
 	Doc *Doc
 
-	// Annotations is the [annotations](#Object.Annotations) for the package.
-	// @api(object/Package/Annotations)
+	// @template(object/Package.Annotations)
+	// Annotations represents the package [annotations](#object/Annotations).
 	Annotations Annotations
 }
 
-// Name returns the package name.
-// @api(object/Package/Name)
+// @template(object/Package.Name)
+// Name represents the package name string.
 func (p *Package) Name() string { return p.name }
 
+// @template(object/Package.In)
 // In reports whether the package is the same as the given package.
-// @api(object/Package/In)
+// If the current package is nil, it always returns true.
+//
+// Example:
+//
+// ```npl
+// {{- define "next/go/used.type" -}}
+// {{if not (.Type.Decl.File.Package.In .File.Package) -}}
+// {{.Type.Decl.File.Package.Name -}}.
+// {{- end -}}
+// {{next .Type}}
+// {{- end}}
+// ```
 func (p *Package) In(pkg *Package) bool { return p == nil || p == pkg }
 
 func (p *Package) resolve(c *Context) error {
@@ -50,15 +62,15 @@ func (p *Package) resolve(c *Context) error {
 		}
 	}
 	for _, file := range p.files {
-		if file.Doc != nil {
-			p.Doc = file.Doc
+		if file.doc != nil {
+			p.Doc = file.doc
 			break
 		}
 	}
 	p.Annotations = make(Annotations)
 	for _, file := range p.files {
-		if file.Annotations != nil {
-			for name, group := range file.Annotations {
+		if file.annotations != nil {
+			for name, group := range file.annotations {
 				p.Annotations[name] = group
 			}
 		}
@@ -66,14 +78,20 @@ func (p *Package) resolve(c *Context) error {
 	return nil
 }
 
-// Types returns the all declared types in the package.
-// @api(object/Package/Types)
+// @template(object/Package.Files)
+// Files represents the all declared files in the package.
+func (p *Package) Files() []*File {
+	return p.files
+}
+
+// @template(object/Package.Types)
+// Types represents the all declared types in the package.
 func (p *Package) Types() []Type {
 	return p.types
 }
 
+// @template(object/File)
 // File represents a Next source file.
-// @api(object/File)
 type File struct {
 	pos token.Pos // position of the file
 	pkg *Package  // package containing the file
@@ -83,23 +101,18 @@ type File struct {
 	decls   *Decls              // top-level declarations: const, enum, struct, interface
 	stmts   []Stmt              // top-level statements
 	symbols map[string]Symbol   // symbol table: name -> Symbol(Type|Value)
-	nodes   map[ast.Node]Object // AST node -> Node
+	objects map[ast.Node]Object // AST node -> Node
 
 	unresolved struct {
 		annotations *ast.AnnotationGroup
 	}
 
-	// Path is the file full path.
-	// @api(object/File/Path)
+	doc         *Doc
+	annotations Annotations
+
+	// @template(object/File.Path)
+	// Path represents the file full path.
 	Path string
-
-	// Doc is the [documentation](#Object.Doc) for the file.
-	// @api(object/File/Doc)
-	Doc *Doc
-
-	// Annotations is the [annotations](#Object.Annotations) for the file.
-	// @api(object/File/Annotations)
-	Annotations Annotations
 }
 
 func newFile(ctx *Context, src *ast.File, path string) *File {
@@ -107,10 +120,10 @@ func newFile(ctx *Context, src *ast.File, path string) *File {
 		src:     src,
 		pos:     src.Pos(),
 		Path:    path,
-		Doc:     newDoc(src.Doc),
+		doc:     newDoc(src.Doc),
 		decls:   &Decls{},
 		symbols: make(map[string]Symbol),
-		nodes:   make(map[ast.Node]Object),
+		objects: make(map[ast.Node]Object),
 	}
 	f.imports = &Imports{File: f}
 	f.unresolved.annotations = src.Annotations
@@ -143,19 +156,16 @@ func newFile(ctx *Context, src *ast.File, path string) *File {
 	return f
 }
 
-// Name returns the file name without the ".next" extension.
-// @api(object/File/Name)
+// @template(object/File.Name)
+// Name represents the file name without the ".next" extension.
 func (x *File) Name() string { return strings.TrimSuffix(filepath.Base(x.Path), ".next") }
 
-// Node returns the original AST node for the file.
-func (f *File) Node() *ast.File { return f.src }
-
-// Imports returns the file's import declarations.
-// @api(object/File/Imports)
+// @template(object/File.Package)
+// Imports represents the file's import declarations.
 func (f *File) Imports() *Imports { return f.imports }
 
-// Decls returns the file's top-level declarations.
-// @api(object/File/Decls)
+// @template(object/File.Decls)
+// Decls returns the file's all top-level declarations.
 func (f *File) Decls() *Decls {
 	if f == nil {
 		return nil
@@ -163,19 +173,30 @@ func (f *File) Decls() *Decls {
 	return f.decls
 }
 
-func (f *File) addNode(ctx *Context, n ast.Node, x Object) {
-	if _, dup := f.nodes[n]; dup {
+func (f *File) Doc() *Doc { return f.doc }
+
+func (f *File) Annotations() Annotations { return f.annotations }
+
+func (f *File) addObject(ctx *Context, n ast.Node, x Object) {
+	if _, dup := f.objects[n]; dup {
 		ctx.addErrorf(n.Pos(), "node already added: %T", n)
 		return
 	}
-	f.nodes[n] = x
+	f.objects[n] = x
 }
 
-// GetNode returns the Node for the given AST node.
-func (f *File) GetNode(n ast.Node) Object {
-	return f.nodes[n]
+// FileNode represents the original AST node of the file.
+func FileNode(f *File) *ast.File { return f.src }
+
+// LookupFileObject looks up an object by its AST node in the file's symbol table.
+func LookupFileObject(f *File, n ast.Node) Object {
+	if f == nil {
+		return nil
+	}
+	return f.objects[n]
 }
 
+// @template(object/File.LookupLocalType)
 // LookupLocalType looks up a type by name in the file's symbol table.
 // If the type is not found, it returns an error. If the symbol
 // is found but it is not a type, it returns an error.
@@ -183,6 +204,7 @@ func (f *File) LookupLocalType(name string) (Type, error) {
 	return expectTypeSymbol(name, f.symbols[name])
 }
 
+// @template(object/File.LookupLocalValue)
 // LookupLocalValue looks up a value by name in the file's symbol table.
 // If the value is not found, it returns an error. If the symbol
 // is found but it is not a value, it returns an error.
@@ -231,6 +253,6 @@ func (f *File) createSymbols() (token.Pos, error) {
 }
 
 func (f *File) resolve(ctx *Context) {
-	f.Annotations = ctx.resolveAnnotationGroup(f, f, f.unresolved.annotations)
+	f.annotations = ctx.resolveAnnotationGroup(f, f, f.unresolved.annotations)
 	f.decls.resolve(ctx, f)
 }

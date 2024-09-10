@@ -241,7 +241,7 @@ struct UserProfile {
 }
 
 // API types
-@api(req)
+@template(req)
 struct LoginRequest {
     @key
     string username;
@@ -252,7 +252,7 @@ struct LoginRequest {
     string twoFactorToken;
 }
 
-@api(res)
+@template(res)
 struct LoginResponse {
     bool success;
     @json(omitempty)

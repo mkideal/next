@@ -637,7 +637,7 @@ func (p *parser) parseMethod() *ast.Method {
 		Annotations: annotations,
 		Name:        name,
 		Params:      &ast.MethodParamList{Opening: openging, List: params, Closing: closing},
-		Return:      returnType,
+		Result:      returnType,
 		Comment:     comment,
 	}
 	return method

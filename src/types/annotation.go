@@ -14,8 +14,8 @@ import (
 	"github.com/next/next/src/token"
 )
 
-// Annotations represents a group of annotations.
-// @api(template/annotation) Annotations
+// @template(object/Annotations)
+// Annotations represents a group of annotations by [name] => [#Annotation].
 type Annotations map[string]Annotation
 
 func (a Annotations) get(name string) Annotation {
@@ -25,16 +25,31 @@ func (a Annotations) get(name string) Annotation {
 	return a[name]
 }
 
-// Annotation represents an annotation.
+// @template(object/Annotation)
+// Annotation represents an annotation by [name] => [value].
 //
 // Example:
 //
-// ```
+// Next code:
+// ```next
 // @json(omitempty)
 // @event(name="Login")
 // @message(name="Login", type=100)
 // ```
-// @api(template/annotation) Annotation
+//
+// Will be represented as:
+// ```npl
+// {{.json.omitempty}}
+// {{.event.name}}
+// {{.message.name}}
+// {{.message.type}}
+// ```
+//
+// Output:
+// true
+// Login
+// Login
+// 100
 type Annotation map[string]any
 
 func (a Annotation) get(name string) any {

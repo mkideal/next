@@ -11,7 +11,7 @@ import (
 // -------------------------------------------------------------------------
 
 // Object represents an object in Next which can be rendered in a template like this: {{next Object}}
-// @api(object/Object)
+// @template(object/Object)
 type Object interface {
 	// getType returns the type of the object.
 	getType() string
@@ -20,7 +20,7 @@ type Object interface {
 // All objects listed here implement the Object interface.
 var _ Object = (List[Object])(nil)
 var _ Object = (*Fields[Node, Object])(nil)
-var _ Object = (*FieldName[Node])(nil)
+var _ Object = (*NodeName[Node])(nil)
 var _ Object = (*File)(nil)
 var _ Object = (*Doc)(nil)
 var _ Object = (*Comment)(nil)
@@ -62,7 +62,7 @@ func (x *Fields[Parent, Field]) getType() string {
 }
 
 // Name objects: const.name, enum.member.name, struct.field.name, interface.method.name, interface.method.param.name
-func (x *FieldName[T]) getType() string {
+func (x *NodeName[T]) getType() string {
 	return x.field.getType() + ".name"
 }
 
@@ -130,15 +130,20 @@ type Node interface {
 	// getName returns the name of the node.
 	getName() string
 
-	// getAnnotations returns the annotations for the node.
-	getAnnotations() Annotations
-
 	// File returns the file containing the node.
 	File() *File
 
 	// Package returns the package containing the node.
 	// It's a shortcut for Node.File().Package().
 	Package() *Package
+
+	// @template(object/Node.Doc)
+	// Doc represents the documentation comment for the node.
+	Doc() *Doc
+
+	// @template(object/Node.Annotations)
+	// Annotations represents the annotations for the node.
+	Annotations() Annotations
 }
 
 // All nodes listed here implement the Node interface.
@@ -154,9 +159,6 @@ var _ Node = (*InterfaceMethodParam)(nil)
 
 func (x *File) getName() string             { return x.Name() }
 func (x *commonNode[Self]) getName() string { return x.name.name }
-
-func (x *File) getAnnotations() Annotations             { return x.Annotations }
-func (x *commonNode[Self]) getAnnotations() Annotations { return x.Annotations }
 
 func (x *File) File() *File { return x }
 func (d *commonNode[Self]) File() *File {
@@ -182,7 +184,7 @@ func (x *commonNode[Self]) Package() *Package {
 
 // -------------------------------------------------------------------------
 // Decl represents an top-level declaration in a file.
-// @api(object/decl/Decl)
+// @template(object/decl/Decl)
 type Decl interface {
 	Node
 
@@ -207,13 +209,14 @@ type builtinDecl struct{}
 
 var _ Decl = builtinDecl{}
 
-func (builtinDecl) File() *File                 { return nil }
-func (builtinDecl) Package() *Package           { return nil }
-func (builtinDecl) getType() string             { return "<builtin.decl>" }
-func (builtinDecl) getPos() token.Pos           { return token.NoPos }
-func (builtinDecl) getName() string             { return "<builtin>" }
-func (builtinDecl) getAnnotations() Annotations { return nil }
-func (builtinDecl) declNode()                   {}
+func (builtinDecl) getType() string          { return "<builtin.decl>" }
+func (builtinDecl) getName() string          { return "<builtin>" }
+func (builtinDecl) getPos() token.Pos        { return token.NoPos }
+func (builtinDecl) File() *File              { return nil }
+func (builtinDecl) Package() *Package        { return nil }
+func (builtinDecl) Doc() *Doc                { return nil }
+func (builtinDecl) Annotations() Annotations { return nil }
+func (builtinDecl) declNode()                {}
 
 // -------------------------------------------------------------------------
 // Types
@@ -223,11 +226,11 @@ type Type interface {
 	Object
 
 	// Kind returns the kind of the type.
-	// @api(object/Type/Kind)
+	// @template(object/Type/Kind)
 	Kind() token.Kind
 
 	// String returns the string representation of the type.
-	// @api(object/Type/String)
+	// @template(object/Type/String)
 	String() string
 
 	// Decl returns the declaration of the type.
@@ -257,14 +260,14 @@ func (*MapType) Kind() token.Kind         { return token.KindMap }
 func (x *DeclType[T]) Kind() token.Kind   { return x.kind }
 
 // UsedType represents a used type in a file.
-// @api(object/Type/UsedType)
+// @template(object/Type/UsedType)
 type UsedType struct {
 	// File is the file containing the used type.
-	// @api(object/Type/UsedType/File)
+	// @template(object/Type/UsedType/File)
 	File *File
 
 	// Type is the underlying type.
-	// @api(object/Type/UsedType/Type)
+	// @template(object/Type/UsedType/Type)
 	Type Type
 
 	// Node is the AST node of the used type.
@@ -332,7 +335,7 @@ func (m *MapType) String() string {
 }
 
 // DeclType represents a declaration type which is a type of a declaration: enum, struct, interface.
-// @api(object/decl/DeclType)
+// @template(object/decl/DeclType)
 type DeclType[T Decl] struct {
 	pos  token.Pos
 	kind token.Kind
@@ -345,5 +348,5 @@ func newDeclType[T Decl](pos token.Pos, kind token.Kind, name string, decl T) *D
 }
 
 // String returns the string representation of the declaration type.
-// @api(object/decl/DeclType/String)
+// @template(object/decl/DeclType/String)
 func (d *DeclType[T]) String() string { return d.name }

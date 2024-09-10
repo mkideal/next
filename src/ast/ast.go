@@ -273,7 +273,7 @@ type Method struct {
 	Annotations *AnnotationGroup // associated annotations; or nil
 	Name        *Ident           // method name
 	Params      *MethodParamList // method parameters
-	Return      Type             // method return type; or nil
+	Result      Type             // method result type; or nil
 	Comment     *CommentGroup    // line comments; or nil
 }
 
@@ -284,8 +284,8 @@ func (m *Method) Pos() token.Pos {
 
 // End returns the position of the character immediately after the method declaration.
 func (m *Method) End() token.Pos {
-	if m.Return != nil {
-		return m.Return.End()
+	if m.Result != nil {
+		return m.Result.End()
 	}
 	return m.Params.End()
 }

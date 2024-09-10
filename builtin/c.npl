@@ -81,12 +81,12 @@ typedef unsigned char _Bool;
 struct {{next .Type}} {
     void* context;
 {{- range .Methods.List}}
-    {{next .Return}} (*{{next .Name}})({{next $.Type}}* self{{if .Params.List}}, {{next .Params}}{{end}});
+    {{next .Result}} (*{{next .Name}})({{next $.Type}}* self{{if .Params.List}}, {{next .Params}}{{end}});
 {{- end}}
 };
 {{- range .Methods.List}}
 
-{{next .Doc}}static inline {{next .Return}} {{next $.Type}}_{{next .Name}}({{next $.Type}}* self{{if .Params.List}}, {{next .Params}}{{end}}) {
+{{next .Doc}}static inline {{next .Result}} {{next $.Type}}_{{next .Name}}({{next $.Type}}* self{{if .Params.List}}, {{next .Params}}{{end}}) {
     return self->{{next .Name}}(self{{if .Params.List}}, {{render "c/interface.method.params:names" .Params}}{{end}});
 }
 {{- end}}

@@ -7,7 +7,8 @@ import (
 	"github.com/next/next/src/token"
 )
 
-// Comment represents a comment group.
+// @template(object/Comment)
+// Comment represents a line comment.
 type Comment struct {
 	pos  token.Pos
 	list []string
@@ -23,22 +24,42 @@ func newComment(cg *ast.CommentGroup) *Comment {
 	}
 }
 
-// Text returns the text of the comment.
+// @template(object/Comment.Text)
+// Text returns the content of the comment in Next source code.
+// The content is trimmed by the comment characters.
+// For example, the comment "// hello comment" will return "hello comment".
 func (c *Comment) Text() string {
-	if c == nil || len(c.list) == 0 {
-		return ""
-	}
-	return formatComments(c.list, false, "", " ")
-}
-
-func (c *Comment) String() string {
 	if c == nil || len(c.list) == 0 {
 		return ""
 	}
 	return strings.Join(ast.TrimComments(c.list), "\n")
 }
 
-// Doc represents a documentation comment.
+// @template(object/Comment.String)
+// String returns the origin content of the comment in Next source code.
+func (c *Comment) String() string {
+	if c == nil || len(c.list) == 0 {
+		return ""
+	}
+	return formatComments(c.list, false, "", " ")
+}
+
+// @template(object/Doc)
+// Doc represents a documentation comment for a declaration.
+//
+// Example:
+//
+// ```next
+//
+//	// This is a documentation comment.
+//	// It can be multiple lines.
+//	struct User {
+//		// This is a field documentation comment.
+//		// It can be multiple lines.
+//		name string
+//	}
+//
+// ```
 type Doc struct {
 	pos  token.Pos
 	list []string
@@ -54,20 +75,66 @@ func newDoc(cg *ast.CommentGroup) *Doc {
 	}
 }
 
+// @template(object/Doc.Text)
+// Text returns the content of the documentation comment in Next source code.
+// The content is trimmed by the comment characters.
+// For example, the comment "// hello comment" will return "hello comment".
 func (d *Doc) Text() string {
-	if d == nil || len(d.list) == 0 {
-		return ""
-	}
-	return formatComments(d.list, true, "", "")
-}
-
-func (d *Doc) String() string {
 	if d == nil || len(d.list) == 0 {
 		return ""
 	}
 	return strings.Join(ast.TrimComments(d.list), "\n")
 }
 
+// @template(object/Doc.String)
+// String returns the origin content of the documentation comment in Next source code.
+func (d *Doc) String() string {
+	if d == nil || len(d.list) == 0 {
+		return ""
+	}
+	return formatComments(d.list, true, "", "")
+}
+
+// @template(object/Doc.Format)
+// Format formats the documentation comment with the given prefix, ident, and begin and end strings.
+//
+// Example:
+//
+// ```next
+//
+//	// This is a documentation comment.
+//	// It can be multiple lines.
+//	struct User {
+//		// This is a field documentation comment.
+//		// It can be multiple lines.
+//		name string
+//	}
+//
+// ```
+//
+// ```npl
+// {{- define "next/c/doc" -}}
+// {{.Format "" " * " "/**\n" " */" | align}}
+// {{- end}}
+// ```
+//
+// Output:
+//
+// ```c
+//
+//	/**
+//	 * This is a documentation comment.
+//	 * It can be multiple lines.
+//	 */
+//	typedef struct {
+//		/**
+//		 * This is a field documentation comment.
+//		 * It can be multiple lines.
+//		 */
+//		char *name;
+//	} User;
+//
+// ```
 func (d *Doc) Format(prefix, indent string, beginAndEnd ...string) string {
 	if d == nil || len(d.list) == 0 {
 		return ""
@@ -88,32 +155,6 @@ func makeCommentList(cg *ast.CommentGroup) []string {
 }
 
 // formatComments formats the comment group with the given prefix, ident, and begin and end strings.
-//
-// Example:
-//
-//	formatComments(list, "", "")
-//
-//	// comment1
-//	// comment2
-//
-//	formatComments(list, "", " *", "/*", "*/")
-//
-//	/* comment1
-//	 * comment2
-//	 */
-//
-//	formatComments("  ", " *", "/*", "*/")
-//
-//	  /* comment1
-//	   * comment2
-//	   */
-//
-//	formatComments("", "", "<!--\n", "-->")
-//
-//	<!--
-//	 comment1
-//	 comment2
-//	 -->
 func formatComments(list []string, appendNewline bool, prefix, indent string, beginAndEnd ...string) string {
 	if len(list) == 0 {
 		return ""

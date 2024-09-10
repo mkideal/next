@@ -601,7 +601,7 @@ func (c *Context) resolveType(file *File, t ast.Type, ignoreError bool) Type {
 	}
 	if result != nil {
 		result = Use(result, file, t)
-		file.addNode(c, t, result)
+		file.addObject(c, t, result)
 	}
 	return result
 }

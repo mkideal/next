@@ -1140,7 +1140,7 @@ func abs(x int64) int64 {
 }
 
 // Value returns the value of the annotation parameter.
-// @api(template/annotation) Value
+// @template(template/annotation) Value
 func Underlying(value Value) any {
 	if value == nil {
 		return nil

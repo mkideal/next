@@ -31,7 +31,7 @@ type CallStmt struct {
 
 func newCallStmt(ctx *Context, file *File, call *ast.CallExpr) *CallStmt {
 	s := &CallStmt{pos: call.Pos(), CallExpr: call}
-	file.addNode(ctx, call, s)
+	file.addObject(ctx, call, s)
 	return s
 }
 

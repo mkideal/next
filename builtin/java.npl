@@ -98,7 +98,7 @@ public class Constants {
 {{- end}}
 
 {{- define "next/java/interface.method" -}}
-{{next .Doc}}{{next .Return}} {{next .Name}}({{next .Params}}){{if .Annotations.next.error}} throws Exception{{end}};{{next .Comment}}
+{{next .Doc}}{{next .Result}} {{next .Name}}({{next .Params}}){{if .Annotations.next.error}} throws Exception{{end}};{{next .Comment}}
 {{- end}}
 
 {{- define "next/java/interface.method.result" -}}

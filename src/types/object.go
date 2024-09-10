@@ -13,13 +13,15 @@ import (
 	"github.com/next/next/src/token"
 )
 
+// @template(object/Imports)
 // Imports holds a list of imports.
-// @api(object/Imports)
 type Imports struct {
-	// File is the file containing the imports.
+	// @template(object/Imports.File)
+	// File represents the file containing the imports.
 	File *File
-	// List is the list of imports.
-	// @api(object/Imports/List)
+
+	// @template(object/Imports.List)
+	// List represents the list of [imports](#object/Import).
 	List []*Import
 }
 
@@ -32,8 +34,8 @@ func (i *Imports) resolve(ctx *Context, file *File) {
 	}
 }
 
-// TrimmedList returns a list of unique imports sorted by package name.
-// @api(object/Imports/TrimmedList)
+// @template(object/Imports.TrimmedList)
+// TrimmedList represents a list of unique imports sorted by package name.
 func (i *Imports) TrimmedList() []*Import {
 	var seen = make(map[string]bool)
 	var pkgs []*Import
@@ -50,27 +52,27 @@ func (i *Imports) TrimmedList() []*Import {
 	return pkgs
 }
 
+// @template(object/Import)
 // Import represents a file import.
-// @api(object/Import)
 type Import struct {
 	pos    token.Pos // position of the import declaration
 	target *File     // imported file
 	file   *File     // file containing the import
 
-	// Doc is the [documentation](#Object.Doc) for the import declaration.
-	// @api(object/Import/Doc)
+	// @template(object/Import.Doc)
+	// Doc represents the import declaration [documentation](#Object.Doc).
 	Doc *Doc
 
-	// Comment is the [line comment](#Object.Comment) of the import declaration.
-	// @api(object/import/Comment)
+	// @template(object/import.Comment)
+	// Comment represents the import declaration line [comment](#Object.Comment).
 	Comment *Comment
 
-	// Path is the import path.
-	// @api(object/import/Path)
+	// @template(object/import.Path)
+	// Path represents the import path.
 	Path string
 
-	// FullPath returns the full path of the imported file.
-	// @api(object/Import/FullPath)
+	// @template(object/Import.FullPath)
+	// FullPath represents the full path of the import.
 	FullPath string
 }
 
@@ -100,28 +102,28 @@ func newImport(ctx *Context, file *File, src *ast.ImportDecl) *Import {
 	return i
 }
 
-// Target returns the imported file.
-// @api(object/Import/Target
+// @template(object/Import.Target)
+// Target represents the imported file.
 func (i *Import) Target() *File { return i.target }
 
-// File returns the file containing the import.
-// @api(object/Import/File)
+// @template(object/Import.File)
+// File represents the file containing the import declaration.
 func (i *Import) File() *File { return i.file }
 
 func (i *Import) resolve(ctx *Context, file *File, _ Scope) {}
 
+// @template(object/List)
 // List represents a list of objects.
-// @api(object/decl/List)
 type List[T Object] []T
 
-// List returns the list of objects. It is used to provide a uniform way to access.
-// @api(object/decl/List/List)
+// @template(object/List.List)
+// List represents the list of objects. It is used to provide a uniform way to access.
 func (l List[T]) List() []T {
 	return l
 }
 
+// @template(object/Decls)
 // Decls holds all declarations in a file.
-// @api(object/decl/Decls)
 type Decls struct {
 	consts     List[*Const]
 	enums      List[*Enum]
@@ -149,8 +151,8 @@ func (d *Decls) resolve(ctx *Context, file *File) {
 	}
 }
 
-// Consts returns the list of constant declarations.
-// @api(object/decl/Consts)
+// @template(object/Decls.Consts)
+// Consts represents the list of const declarations.
 func (d *Decls) Consts() List[*Const] {
 	if d == nil {
 		return nil
@@ -158,8 +160,8 @@ func (d *Decls) Consts() List[*Const] {
 	return availableList(d.consts, d.lang)
 }
 
-// Enums returns the list of enum declarations.
-// @api(object/decl/Enums)
+// @template(object/Decls.Enums)
+// Enums represents the list of enum declarations.
 func (d *Decls) Enums() List[*Enum] {
 	if d == nil {
 		return nil
@@ -167,8 +169,8 @@ func (d *Decls) Enums() List[*Enum] {
 	return availableList(d.enums, d.lang)
 }
 
-// Structs returns the list of struct declarations.
-// @api(object/decl/Structs)
+// @template(object/Decls.Structs)
+// Structs represents the list of struct declarations.
 func (d *Decls) Structs() List[*Struct] {
 	if d == nil {
 		return nil
@@ -176,8 +178,8 @@ func (d *Decls) Structs() List[*Struct] {
 	return availableList(d.structs, d.lang)
 }
 
-// Interfaces returns the list of interface declarations.
-// @api(object/decl/Interfaces)
+// @template(object/Decls.Interfaces)
+// Interfaces represents the list of interface declarations.
 func (d *Decls) Interfaces() List[*Interface] {
 	if d == nil {
 		return nil
@@ -185,34 +187,36 @@ func (d *Decls) Interfaces() List[*Interface] {
 	return availableList(d.interfaces, d.lang)
 }
 
-// FieldName represents an name of a field in a declaration:
+// @template(object/NodeName)
+// NodeName represents a name of a field in a declaration:
 // - Enum member name
 // - Struct field name
 // - Interface method name
 // - Interface method parameter name
-type FieldName[T Node] struct {
+type NodeName[T Node] struct {
 	pos   token.Pos
 	name  string
 	field T
 }
 
-func newFieldName[T Node](pos token.Pos, name string, field T) *FieldName[T] {
-	return &FieldName[T]{pos: pos, name: name, field: field}
+func newNodeName[T Node](pos token.Pos, name string, field T) *NodeName[T] {
+	return &NodeName[T]{pos: pos, name: name, field: field}
 }
 
-// Field returns the field node.
-func (n *FieldName[T]) Field() T { return n.field }
+// @template(object/NodeName.Field)
+// Field represents the field object that contains the name.
+func (n *NodeName[T]) Field() T { return n.field }
 
-// String returns the string representation of the object name.
-// @api(object/decl/ObjectName/String)
-func (n *FieldName[T]) String() string { return n.name }
+// @template(object/NodeName.String)
+// String represents the string representation of the field name.
+func (n *NodeName[T]) String() string { return n.name }
 
 // commonNode represents a common node.
 type commonNode[Self Node] struct {
-	self Self             // self represents the declaration object itself
-	pos  token.Pos        // position of the declaration
-	name *FieldName[Self] // name of the declaration
-	file *File            // file containing the declaration
+	self Self            // self represents the declaration object itself
+	pos  token.Pos       // position of the declaration
+	name *NodeName[Self] // name of the declaration
+	file *File           // file containing the declaration
 
 	// unresolved is the unresolved declaration data. It is resolved in the
 	// resolve method.
@@ -220,13 +224,8 @@ type commonNode[Self Node] struct {
 		annotations *ast.AnnotationGroup
 	}
 
-	// Doc is the [documentation](#Object.Doc) for the declaration.
-	// @api(object/decl/Doc)
-	Doc *Doc
-
-	// Annotations is the [annotations](#Object.Annotations) for the declaration.
-	// @api(object/decl/Annotations)
-	Annotations Annotations
+	doc         *Doc
+	annotations Annotations
 }
 
 func newObject[Self Node](
@@ -237,16 +236,24 @@ func newObject[Self Node](
 	d := &commonNode[Self]{
 		self: self,
 		pos:  pos,
-		name: newFieldName(pos, name, self),
+		name: newNodeName(pos, name, self),
 		file: file,
-		Doc:  newDoc(doc),
+		doc:  newDoc(doc),
 	}
 	d.unresolved.annotations = annotations
 	return d
 }
 
 func (d *commonNode[Self]) resolve(ctx *Context, file *File, scope Scope) {
-	d.Annotations = ctx.resolveAnnotationGroup(file, d.self, d.unresolved.annotations)
+	d.annotations = ctx.resolveAnnotationGroup(file, d.self, d.unresolved.annotations)
+}
+
+func (d *commonNode[Self]) Doc() *Doc {
+	return d.doc
+}
+
+func (d *commonNode[Self]) Annotations() Annotations {
+	return d.annotations
 }
 
 // iotaValue represents the iota value of an enum member.
@@ -255,8 +262,8 @@ type iotaValue struct {
 	found bool
 }
 
-// Value represents a constant value.
-// @api(object/decl/Value)
+// @template(object/Value)
+// Value represents a constant value for a const declaration or an enum member.
 type Value struct {
 	namePos    token.Pos
 	name       string
@@ -278,7 +285,7 @@ func newValue(ctx *Context, file *File, name string, namePos token.Pos, src ast.
 		name:    name,
 	}
 	if src != nil {
-		file.addNode(ctx, src, v)
+		file.addObject(ctx, src, v)
 	}
 	v.unresolved.value = src
 	return v
@@ -342,25 +349,26 @@ func (v *Value) resolveValue(ctx *Context, file *File, scope Scope, refs []*Valu
 	return v.val
 }
 
+// @template(object/Value.IsEnum)
 // IsEnum returns true if the value is an enum member.
 func (v *Value) IsEnum() bool {
 	return v.enum.typ != nil
 }
 
-// Type returns the type of the constant value.
-// @api(object/decl/Value/Type)
+// @template(object/Value.Type)
+// Type represents the type of the value.
 func (v *Value) Type() *PrimitiveType {
 	return v.typ
 }
 
-// String returns the string representation of the constant value.
-// @api(object/decl/Value/String)
+// @template(object/Value.String)
+// String represents the string representation of the value.
 func (v *Value) String() string {
 	return v.val.String()
 }
 
-// Any returns the underlying value of the constant or enum member.
-// @api(object/decl/Value/Any)
+// @template(object/Value.Any)
+// Any represents the underlying value of the constant.
 func (v *Value) Any() any {
 	if v.val == nil {
 		return nil
@@ -384,16 +392,16 @@ func (v *Value) Any() any {
 	return nil
 }
 
-// Const represents a constant declaration.
-// @api(object/decl/Const)
+// @template(object/Const)
+// Const represents a const declaration.
 type Const struct {
 	*commonNode[*Const]
 
 	// value is the constant value.
 	value *Value
 
-	// Comment is the [line comment](#Object.Comment) of the constant declaration.
-	// @api(object/decl/Const/Comment)
+	// @template(object/Const.Comment)
+	// Comment is the line [comment](#object/Comment) of the constant declaration.
 	Comment *Comment
 }
 
@@ -401,7 +409,7 @@ func newConst(ctx *Context, file *File, src *ast.GenDecl[ast.Expr]) *Const {
 	c := &Const{
 		Comment: newComment(src.Comment),
 	}
-	file.addNode(ctx, src, c)
+	file.addObject(ctx, src, c)
 	c.commonNode = newObject(c, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	c.value = newValue(ctx, file, src.Name.Name, src.Name.NamePos, src.Spec)
 	return c
@@ -412,54 +420,54 @@ func (c *Const) resolve(ctx *Context, file *File, scope Scope) {
 	c.value.resolve(ctx, file, scope)
 }
 
-// Name returns the name object of the const declaration.
-// @api(object/decl/Const/Name)
-func (c *Const) Name() *FieldName[*Const] {
+// @template(object/Const.Name)
+// Name represents the [name object](#object.NodeName) of the constant.
+func (c *Const) Name() *NodeName[*Const] {
 	return c.name
 }
 
-// Type returns the type of the constant value.
-// @api(object/decl/Const/Type)
+// @template(object/Const.Type)
+// Type represents the type of the constant.
 func (c *Const) Type() *PrimitiveType {
 	return c.value.Type()
 }
 
-// Value returns the constant value.
-// @api(object/decl/Const/Value)
+// @template(object/Const.Value)
+// Value represents the [value object](#object/Value) of the constant.
 func (c *Const) Value() *Value {
 	return c.value
 }
 
-// Fields represents a list of fields.
-// @api(object/decl/Fields)
+// @template(object/Fields)
+// Fields represents a list of fields in a declaration.
 type Fields[D Node, F Object] struct {
+	// @template(object/Fields.Decl)
 	// Decl is the declaration object that contains the fields.
 	// Decl may be an enum, struct, or interface.
-	// @api(object/decl/Fields/Decl)
 	Decl D
 
+	// @template(object/Fields.List)
 	// List is the list of fields in the declaration.
-	// @api(object/decl/Fields/List)
 	List []F
 }
 
+// @template(object/Enum)
 // Enum represents an enum declaration.
-// @api(object/decl/Enum)
 type Enum struct {
 	*commonNode[*Enum]
 
+	// @template(object/Enum.Type)
 	// Type is the enum type.
-	// @api(object/decl/Enum/Type)
 	Type *DeclType[*Enum]
 
+	// @template(object/Enum.Members)
 	// Members is the list of enum members.
-	// @api(object/decl/Enum/Members)
 	Members *Fields[*Enum, *EnumMember]
 }
 
 func newEnum(ctx *Context, file *File, src *ast.GenDecl[*ast.EnumType]) *Enum {
 	e := &Enum{}
-	file.addNode(ctx, src, e)
+	file.addObject(ctx, src, e)
 	e.commonNode = newObject(e, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	e.Type = newDeclType(src.Pos(), token.KindEnum, src.Name.Name, e)
 	e.Members = &Fields[*Enum, *EnumMember]{Decl: e}
@@ -476,20 +484,20 @@ func (e *Enum) resolve(ctx *Context, file *File, scope Scope) {
 	}
 }
 
-// EnumMember represents an enum member object.
-// @api(object/decl/Enum/EnumMember)
+// @template(object/EnumMember)
+// EnumMember represents an enum member object in an [enum](#object/Enum) declaration.
 type EnumMember struct {
 	*commonNode[*EnumMember]
 
 	// value is the enum member value.
 	value *Value
 
-	// Decl is the enum that contains the member.
-	// @api(object/decl/Enum/EnumMember/Decl)
+	// @template(object/EnumMember.Decl)
+	// Decl represents the [enum](#object/Enum) that contains the member.
 	Decl *Enum
 
-	// Comment is the [line comment](#Object.Comment) of the enum member declaration.
-	// @api(object/decl/Enum/EnumMember/Comment)
+	// @template(object/EnumMember.Comment)
+	// Comment represents the line [comment](#object/Comment) of the enum member declaration.
 	Comment *Comment
 }
 
@@ -498,7 +506,7 @@ func newEnumMember(ctx *Context, file *File, e *Enum, src *ast.EnumMember, index
 		Comment: newComment(src.Comment),
 		Decl:    e,
 	}
-	file.addNode(ctx, src, m)
+	file.addObject(ctx, src, m)
 	m.commonNode = newObject(m, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	m.value = newValue(ctx, file, src.Name.Name, src.Name.NamePos, src.Value)
 	m.value.enum.typ = e
@@ -511,32 +519,32 @@ func (m *EnumMember) resolve(ctx *Context, file *File, scope Scope) {
 	m.value.resolve(ctx, file, scope)
 }
 
-// Name returns the name object of the enum member.
-// @api(object/decl/Enum/EnumMember/Name)
-func (m *EnumMember) Name() *FieldName[*EnumMember] {
+// @template(object/EnumMember.Name)
+// Name represents the [name object](#object/NodeName) of the enum member.
+func (m *EnumMember) Name() *NodeName[*EnumMember] {
 	return m.name
 }
 
-// Value returns the value object of the enum member.
-// @api(object/decl/Enum/EnumMember/Value)
+// @template(object/EnumMember.Value)
+// Value represents the [value object](#object/Value) of the enum member.
 func (m *EnumMember) Value() *Value {
 	return m.value
 }
 
-// IsFirst returns true if the value is the first member of the enum type.
-// @api(object/decl/Value/IsFirst)
+// @template(object/Value.IsFirst)
+// IsFirst reports whether the value is the first member of the enum type.
 func (m *EnumMember) IsFirst() bool {
 	return m.value.enum.typ != nil && m.value.enum.index == 0
 }
 
-// IsLast returns true if the value is the last member of the enum type.
-// @api(object/decl/Value/IsLast)
+// @template(object/Value.IsLast)
+// IsLast reports whether the value is the last member of the enum type.
 func (m *EnumMember) IsLast() bool {
 	return m.value.enum.typ != nil && m.value.enum.index == len(m.value.enum.typ.Members.List)-1
 }
 
+// @template(object/Struct)
 // Struct represents a struct declaration.
-// @api(object/decl/Struct)
 type Struct struct {
 	*commonNode[*Struct]
 
@@ -546,14 +554,14 @@ type Struct struct {
 	// fields is the list of struct fields.
 	fields *Fields[*Struct, *StructField]
 
-	// Type is the struct type.
-	// @api(object/decl/Struct/Type)
+	// @template(object/Struct.Type)
+	// Type represents the struct type.
 	Type *DeclType[*Struct]
 }
 
 func newStruct(ctx *Context, file *File, src *ast.GenDecl[*ast.StructType]) *Struct {
 	s := &Struct{}
-	file.addNode(ctx, src, s)
+	file.addObject(ctx, src, s)
 	s.commonNode = newObject(s, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	s.Type = newDeclType(src.Pos(), token.KindStruct, src.Name.Name, s)
 	s.fields = &Fields[*Struct, *StructField]{Decl: s}
@@ -570,32 +578,33 @@ func (s *Struct) resolve(ctx *Context, file *File, scope Scope) {
 	}
 }
 
-// Fields returns the list of struct fields.
+// @template(object/Struct.Fields)
+// Fields represents the list of struct fields.
 func (s *Struct) Fields() *Fields[*Struct, *StructField] {
 	return availableFields(s.fields, s.lang)
 }
 
-// Field represents a struct field declaration.
-// @api(object/decl/StructField)
+// @template(object/StructField)
+// StructField represents a struct field declaration.
 type StructField struct {
 	*commonNode[*StructField]
 
-	// Decl is the struct that contains the field.
-	// @api(object/decl/StructField/Decl)
+	// @template(object/StructField.Decl)
+	// Decl represents the struct that contains the field.
 	Decl *Struct
 
-	// Type is the field type.
-	// @api(object/decl/StructField/Type)
+	// @template(object/StructField.Type)
+	// Type represents the [struct field type](#StructFieldType).
 	Type *StructFieldType
 
-	// Comment is the [line comment](#Object.Comment) of the struct field declaration.
-	// @api(object/decl/StructField/Comment)
+	// @template(object/StructField.Comment)
+	// Comment represents the line [comment](#object/Comment) of the struct field declaration.
 	Comment *Comment
 }
 
 func newStructField(ctx *Context, file *File, s *Struct, src *ast.StructField) *StructField {
 	f := &StructField{Decl: s}
-	file.addNode(ctx, src, f)
+	file.addObject(ctx, src, f)
 	f.commonNode = newObject(f, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	f.Type = newStructFieldType(ctx, file, f, src.Type)
 	return f
@@ -606,25 +615,25 @@ func (f *StructField) resolve(ctx *Context, file *File, scope Scope) {
 	f.Type.resolve(ctx, file, scope)
 }
 
-// Name returns the name object of the struct field.
-// @api(object/decl/StructField/Name)
-func (f *StructField) Name() *FieldName[*StructField] {
+// @template(object/StructField.Name)
+// Name represents the [name object](#object/NodeName) of the struct field.
+func (f *StructField) Name() *NodeName[*StructField] {
 	return f.name
 }
 
+// @template(object/decl/StructFieldType)
 // StructFieldType represents a struct field type.
-// @api(object/decl/StructFieldType)
 type StructFieldType struct {
 	unresolved struct {
 		typ ast.Type
 	}
 
-	// Type is the field type.
-	// @api(object/decl/StructFieldType/Type)
+	// @template(object/StructFieldType.Type)
+	// Type represents the underlying type of the struct field.
 	Type Type
 
-	// Field is the struct field that contains the type.
-	// @api(object/decl/StructFieldType/Field)
+	// @template(object/StructFieldType.Field)
+	// Field represents the struct field that contains the type.
 	Field *StructField
 }
 
@@ -638,8 +647,8 @@ func (t *StructFieldType) resolve(ctx *Context, file *File, scope Scope) {
 	t.Type = ctx.resolveType(file, t.unresolved.typ, false)
 }
 
+// @template(object/Interface)
 // Interface represents an interface declaration.
-// @api(object/decl/Interface)
 type Interface struct {
 	*commonNode[*Interface]
 
@@ -649,14 +658,14 @@ type Interface struct {
 	// methods is the list of interface methods.
 	methods *Fields[*Interface, *InterfaceMethod]
 
-	// Type is the interface type.
-	// @api(object/decl/Interface/Type)
+	// @template(object/Interface.Type)
+	// Type represents the interface type.
 	Type *DeclType[*Interface]
 }
 
 func newInterface(ctx *Context, file *File, src *ast.GenDecl[*ast.InterfaceType]) *Interface {
 	i := &Interface{}
-	file.addNode(ctx, src, i)
+	file.addObject(ctx, src, i)
 	i.commonNode = newObject(i, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	i.Type = newDeclType(src.Pos(), token.KindInterface, src.Name.Name, i)
 	i.methods = &Fields[*Interface, *InterfaceMethod]{Decl: i}
@@ -673,31 +682,31 @@ func (i *Interface) resolve(ctx *Context, file *File, scope Scope) {
 	}
 }
 
-// Methods returns the list of interface methods.
-// @api(object/decl/Interface/Methods)
+// @template(object/Interface.Methods)
+// Methods represents the list of interface methods.
 func (i *Interface) Methods() *Fields[*Interface, *InterfaceMethod] {
 	return availableFields(i.methods, i.lang)
 }
 
+// @template(object/InterfaceMethod)
 // InterfaceMethod represents an interface method declaration.
-// @api(object/decl/InterfaceMethod)
 type InterfaceMethod struct {
 	*commonNode[*InterfaceMethod]
 
-	// Decl is the interface that contains the method.
-	// @api(object/decl/InterfaceMethod/Decl)
+	// @template(object/InterfaceMethod.Decl)
+	// Decl represents the interface that contains the method.
 	Decl *Interface
 
-	// Params is the list of method parameters.
-	// @api(object/decl/InterfaceMethod/Params)
+	// @template(object/InterfaceMethod.Params)
+	// Params represents the list of method parameters.
 	Params *Fields[*InterfaceMethod, *InterfaceMethodParam]
 
-	// Return is the method return type.
-	// @api(object/decl/InterfaceMethod/Return)
-	Return *InterfaceMethodResult
+	// @template(object/InterfaceMethod.Result)
+	// Result represents the return type of the method.
+	Result *InterfaceMethodResult
 
-	// Comment is the [line comment](#Object.Comment) of the interface method declaration.
-	// @api(object/decl/InterfaceMethod/Comment)
+	// @template(object/InterfaceMethod.Comment)
+	// Comment represents the line [comment](#object/Comment) of the interface method declaration.
 	Comment *Comment
 }
 
@@ -706,13 +715,13 @@ func newInterfaceMethod(ctx *Context, file *File, i *Interface, src *ast.Method)
 		Decl:    i,
 		Comment: newComment(src.Comment),
 	}
-	file.addNode(ctx, src, m)
+	file.addObject(ctx, src, m)
 	m.commonNode = newObject(m, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	m.Params = &Fields[*InterfaceMethod, *InterfaceMethodParam]{Decl: m}
 	for _, p := range src.Params.List {
 		m.Params.List = append(m.Params.List, newInterfaceMethodParam(ctx, file, m, p))
 	}
-	m.Return = newInterfaceMethodReturn(ctx, file, m, src.Return)
+	m.Result = newInterfaceMethodResult(ctx, file, m, src.Result)
 	return m
 }
 
@@ -721,28 +730,28 @@ func (m *InterfaceMethod) resolve(ctx *Context, file *File, scope Scope) {
 	for _, p := range m.Params.List {
 		p.resolve(ctx, file, scope)
 	}
-	if m.Return != nil {
-		m.Return.resolve(ctx, file, scope)
+	if m.Result != nil {
+		m.Result.resolve(ctx, file, scope)
 	}
 }
 
-// Name returns the name object of the interface method.
-// @api(object/decl/InterfaceMethod/Name)
-func (m *InterfaceMethod) Name() *FieldName[*InterfaceMethod] {
+// @template(object/InterfaceMethod.Name)
+// Name represents the [name object](#object/NodeName) of the interface method.
+func (m *InterfaceMethod) Name() *NodeName[*InterfaceMethod] {
 	return m.name
 }
 
+// @template(object/InterfaceMethodParam)
 // InterfaceMethodParam represents an interface method parameter declaration.
-// @api(object/decl/InterfaceMethodParam)
 type InterfaceMethodParam struct {
 	*commonNode[*InterfaceMethodParam]
 
-	// Method is the interface method that contains the parameter.
-	// @api(object/decl/InterfaceMethodParam/Method)
+	// @template(object/InterfaceMethodParam.Method)
+	// Method represents the interface method that contains the parameter.
 	Method *InterfaceMethod
 
-	// Type is the parameter type.
-	// @api(object/decl/InterfaceMethodParam/Type)
+	// @template(object/InterfaceMethodParam.Type)
+	// Type represents the parameter type.
 	Type *InterfaceMethodParamType
 }
 
@@ -750,7 +759,7 @@ func newInterfaceMethodParam(ctx *Context, file *File, m *InterfaceMethod, src *
 	p := &InterfaceMethodParam{
 		Method: m,
 	}
-	file.addNode(ctx, src, p)
+	file.addObject(ctx, src, p)
 	p.commonNode = newObject(p, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	p.unresolved.annotations = src.Annotations
 	p.Type = newInterfaceMethodParamType(ctx, file, p, src.Type)
@@ -758,28 +767,29 @@ func newInterfaceMethodParam(ctx *Context, file *File, m *InterfaceMethod, src *
 }
 
 func (p *InterfaceMethodParam) resolve(ctx *Context, file *File, scope Scope) {
-	p.Annotations = ctx.resolveAnnotationGroup(file, p, p.unresolved.annotations)
+	p.annotations = ctx.resolveAnnotationGroup(file, p, p.unresolved.annotations)
 	p.Type.resolve(ctx, file, scope)
 }
 
-// Name returns the name object of the interface method parameter.
-func (p *InterfaceMethodParam) Name() *FieldName[*InterfaceMethodParam] {
+// @template(object/InterfaceMethodParam.Name)
+// Name represents the [name object](#object/NodeName) of the interface method parameter.
+func (p *InterfaceMethodParam) Name() *NodeName[*InterfaceMethodParam] {
 	return p.name
 }
 
+// @template(object/InterfaceMethodParamType)
 // InterfaceMethodParamType represents an interface method parameter type.
-// @api(object/decl/InterfaceMethodParamType)
 type InterfaceMethodParamType struct {
 	unresolved struct {
 		typ ast.Type
 	}
 
-	// Param is the interface method parameter that contains the type.
-	// @api(object/decl/InterfaceMethodParamType/Param)
+	// @template(object/InterfaceMethodParamType.Param)
+	// Param represents the interface method parameter that contains the type.
 	Param *InterfaceMethodParam
 
-	// Type is the parameter type.
-	// @api(object/decl/InterfaceMethodParamType/Type)
+	// @template(object/InterfaceMethodParamType.Type)
+	// Type represnts the underlying type of the parameter.
 	Type Type
 }
 
@@ -793,23 +803,23 @@ func (t *InterfaceMethodParamType) resolve(ctx *Context, file *File, scope Scope
 	t.Type = ctx.resolveType(file, t.unresolved.typ, false)
 }
 
-// InterfaceMethodResult represents an interface method return type.
-// @api(object/decl/InterfaceMethodResult)
+// @template(object/InterfaceMethodResult)
+// InterfaceMethodResult represents an interface method result.
 type InterfaceMethodResult struct {
 	unresolved struct {
 		typ ast.Type
 	}
 
-	// Method is the interface method that contains the return type.
-	// @api(object/decl/InterfaceMethodReturn/Method)
+	// @template(object/InterfaceMethodResult.Method)
+	// Method represents the interface method that contains the result.
 	Method *InterfaceMethod
 
-	// Type is the return type.
-	// @api(object/decl/InterfaceMethodReturn/Type)
+	// @template(object/InterfaceMethodResult.Type)
+	// Type represents the underlying type of the result.
 	Type Type
 }
 
-func newInterfaceMethodReturn(_ *Context, _ *File, m *InterfaceMethod, src ast.Type) *InterfaceMethodResult {
+func newInterfaceMethodResult(_ *Context, _ *File, m *InterfaceMethod, src ast.Type) *InterfaceMethodResult {
 	t := &InterfaceMethodResult{Method: m}
 	t.unresolved.typ = src
 	return t
@@ -824,7 +834,7 @@ func (t *InterfaceMethodResult) resolve(ctx *Context, file *File, scope Scope) {
 
 // isAvailable reports whether the declaration is available in the current language.
 func isAvailable(decl Node, lang string) bool {
-	s, ok := decl.getAnnotations().get("next").get("available").(string)
+	s, ok := decl.Annotations().get("next").get("available").(string)
 	return !ok || text.ContainsWord(s, lang)
 }
 

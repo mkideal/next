@@ -171,7 +171,7 @@ enum {{next .Type}} {
 
 {{/* next/interface.method: Generates code for a single interface method */}}
 {{- define "next/interface.method" -}}
-{{next .Doc}}{{next .Name}}({{next .Params}}){{next .Return}}{{next .Comment}}
+{{next .Doc}}{{next .Name}}({{next .Params}}){{next .Result}}{{next .Comment}}
 {{- end}}
 
 {{/* next/interface.method.name: Generates the name of an interface method */}}

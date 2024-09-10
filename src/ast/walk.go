@@ -99,8 +99,8 @@ func Walk(v Visitor, node Node) {
 		}
 		Walk(v, n.Name)
 		Walk(v, n.Params)
-		if n.Return != nil {
-			Walk(v, n.Return)
+		if n.Result != nil {
+			Walk(v, n.Result)
 		}
 		if n.Comment != nil {
 			Walk(v, n.Comment)

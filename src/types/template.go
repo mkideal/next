@@ -208,7 +208,7 @@ func (tc *templateContext) lazyInit() error {
 	return nil
 }
 
-// @api(template/context): this
+// @template(template/context): this
 // `this` returns the current [object](#Object) to be rendered.
 //
 // Example:
@@ -245,7 +245,7 @@ func (tc *templateContext) exist(name string) (bool, error) {
 	return true, nil
 }
 
-// @api(template/context): type (Type)
+// @template(template/context): type (Type)
 // `type` outputs the string representation of the given [type](#Type) for the current language.
 //
 // Example:
@@ -389,7 +389,7 @@ func (tc *templateContext) resolveLangType(lang string, t any) (result string, e
 	}
 }
 
-// @api(template/context): head
+// @template(template/context): head
 // `head` outputs the header of the generated file.
 //
 // Example:
@@ -517,7 +517,7 @@ func (tc *templateContext) lookupTemplate(names []string) (*template.Template, e
 	return nil, &TemplateNotFoundError{Name: names[0]}
 }
 
-// @api(template/context): next (object)
+// @template(template/context): next (object)
 // next executes the next template with the given (object)[#Object].
 //
 // Example:
@@ -556,7 +556,7 @@ func (tc *templateContext) nextWithNames(names []string, obj Object) (string, er
 	return result, err
 }
 
-// @api(template/context): super (object)
+// @template(template/context): super (object)
 func (tc *templateContext) super(obj Object, langs ...string) (string, error) {
 	if len(langs) > 1 {
 		return "", fmt.Errorf("too many arguments")
@@ -577,7 +577,7 @@ func (tc *templateContext) super(obj Object, langs ...string) (string, error) {
 	return tc.nextWithNames(names[1:], obj)
 }
 
-// @api(template/context): render (name, data)
+// @template(template/context): render (name, data)
 // render executes the template with the given name and data.
 func (tc *templateContext) render(name string, data any, langs ...string) (result string, err error) {
 	if len(langs) > 1 {

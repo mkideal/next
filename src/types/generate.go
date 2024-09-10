@@ -295,7 +295,7 @@ func generateForInterface(tc *templateContext, t *template.Template) error {
 // file, const, enum or struct.
 func gen[T Decl](tc *templateContext, t *template.Template, decl T) error {
 	// skip if the declaration is an alias
-	if decl.getAnnotations().get("next").get(tc.lang+"_alias") != nil {
+	if decl.Annotations().get("next").get(tc.lang+"_alias") != nil {
 		return nil
 	}
 
