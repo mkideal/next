@@ -199,9 +199,9 @@ func (c *Context) generateForTemplateFile(lang, ext, dir, tmplFile string) error
 		return err
 	}
 	this := "file"
-	if values, err := resolveMeta(tc, t, "this"); err != nil {
+	if values, err := ResolveMeta(tc, t, "this"); err != nil {
 		return err
-	} else if m := values.Get("this"); m.Second {
+	} else if m := values.lookup("this"); m.Second {
 		this = m.First
 	}
 
@@ -311,7 +311,7 @@ func gen[T Decl](tc *templateContext, t *template.Template, decl T) error {
 	}
 
 	// resolve meta data
-	meta, err := resolveMeta(tc, t)
+	meta, err := ResolveMeta(tc, t)
 	if err != nil {
 		return err
 	}
@@ -320,7 +320,7 @@ func gen[T Decl](tc *templateContext, t *template.Template, decl T) error {
 	}
 
 	// skip if the meta data contains 'skip' and its value is true
-	if m := meta.Get("skip").First; m != "" {
+	if m := meta.lookup("skip").First; m != "" {
 		skip, err := strconv.ParseBool(m)
 		if err != nil {
 			return fmt.Errorf("failed to parse 'skip' meta data: %v", err)
@@ -336,7 +336,7 @@ func gen[T Decl](tc *templateContext, t *template.Template, decl T) error {
 	}
 
 	// write the generated content to the output file
-	path := op.Or(meta.Get("path").First, decl.getName()+tc.ext)
+	path := op.Or(meta.lookup("path").First, decl.getName()+tc.ext)
 	if !filepath.IsAbs(path) {
 		path = filepath.Join(tc.dir, path)
 	}

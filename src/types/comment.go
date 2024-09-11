@@ -7,7 +7,7 @@ import (
 	"github.com/next/next/src/token"
 )
 
-// @template(object/Comment)
+// @template(Objects/Comment)
 // Comment represents a line comment.
 type Comment struct {
 	pos  token.Pos
@@ -24,7 +24,7 @@ func newComment(cg *ast.CommentGroup) *Comment {
 	}
 }
 
-// @template(object/Comment.Text)
+// @template(Objects/Comment.Text)
 // Text returns the content of the comment in Next source code.
 // The content is trimmed by the comment characters.
 // For example, the comment "// hello comment" will return "hello comment".
@@ -35,7 +35,7 @@ func (c *Comment) Text() string {
 	return strings.Join(ast.TrimComments(c.list), "\n")
 }
 
-// @template(object/Comment.String)
+// @template(Objects/Comment.String)
 // String returns the origin content of the comment in Next source code.
 func (c *Comment) String() string {
 	if c == nil || len(c.list) == 0 {
@@ -44,7 +44,7 @@ func (c *Comment) String() string {
 	return formatComments(c.list, false, "", " ")
 }
 
-// @template(object/Doc)
+// @template(Objects/Doc)
 // Doc represents a documentation comment for a declaration.
 //
 // Example:
@@ -75,7 +75,7 @@ func newDoc(cg *ast.CommentGroup) *Doc {
 	}
 }
 
-// @template(object/Doc.Text)
+// @template(Objects/Doc.Text)
 // Text returns the content of the documentation comment in Next source code.
 // The content is trimmed by the comment characters.
 // For example, the comment "// hello comment" will return "hello comment".
@@ -86,7 +86,7 @@ func (d *Doc) Text() string {
 	return strings.Join(ast.TrimComments(d.list), "\n")
 }
 
-// @template(object/Doc.String)
+// @template(Objects/Doc.String)
 // String returns the origin content of the documentation comment in Next source code.
 func (d *Doc) String() string {
 	if d == nil || len(d.list) == 0 {
@@ -95,7 +95,7 @@ func (d *Doc) String() string {
 	return formatComments(d.list, true, "", "")
 }
 
-// @template(object/Doc.Format)
+// @template(Objects/Doc.Format)
 // Format formats the documentation comment with the given prefix, ident, and begin and end strings.
 //
 // Example:

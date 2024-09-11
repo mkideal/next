@@ -7,7 +7,7 @@ import (
 
 // -------------------------------------------------------------------------
 
-// @template(object/Symbol)
+// @template(Objects/Symbol)
 // Symbol represents a Next symbol: value(const, enum member), type(enum, struct, interface).
 type Symbol interface {
 	LocatedObject
