@@ -14,8 +14,7 @@ import (
 	"github.com/next/next/src/token"
 )
 
-// @template(Objects/Annotations)
-// Annotations represents a group of annotations by `name` => [Annotation](#Objects/Annotation).
+// @template(Object/Annotations) represents a group of annotations by `name` => [Annotation](#Object/Annotation).
 type Annotations map[string]Annotation
 
 func (a Annotations) get(name string) Annotation {
@@ -25,8 +24,7 @@ func (a Annotations) get(name string) Annotation {
 	return a[name]
 }
 
-// @template(Objects/Annotation)
-// Annotation represents an annotation by `name` => value.
+// @template(Object/Annotation) represents an annotation by `name` => value.
 //
 // Example:
 //

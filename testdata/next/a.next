@@ -240,8 +240,8 @@ struct UserProfile {
     vector<string> interests;
 }
 
-// API types
-@template(req)
+// message types
+@message(req)
 struct LoginRequest {
     @key
     string username;
@@ -252,7 +252,7 @@ struct LoginRequest {
     string twoFactorToken;
 }
 
-@template(res)
+@message(res)
 struct LoginResponse {
     bool success;
     @json(omitempty)

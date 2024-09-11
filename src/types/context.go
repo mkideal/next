@@ -94,43 +94,20 @@ func (c *Context) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 		return s
 	}
 
-	// @template(Flags)
-	// Flags represents the command line flags for the Next compiler command.
-
-	// @template(Flags-v)
-	// `-v` Control verbosity of compiler output and debugging information.
-	// VERBOSE levels: 0=error, 1=info, 2=debug, 3=trace
-	// Levels 2 (debug) and above enable execution of print and printf in Next source files.
 	flagSet.IntVar(&c.flags.verbose, "v", 0, u(""+
 		"Control verbosity of compiler output and debugging information.\n"+
 		"`VERBOSE` levels: "+b("0")+"=error, "+b("1")+"=info, "+b("2")+"=debug, "+b("3")+"=trace\n"+
 		"Levels "+b("2")+" (debug) and above enable execution of "+b("print")+" and "+b("printf")+" in Next source files.\n",
 	))
 
-	// @template(Flags-D)
-	// `-D` Define custom environment variables for use in code generation templates.
-	//
-	// Example:
-	//
-	// ```sh
-	// next -D VERSION=2.1 -D DEBUG -D NAME=myapp
-	// ```
 	flagSet.Var(&c.flags.envs, "D", u(""+
 		"Define custom environment variables for use in code generation templates.\n"+
 		"`NAME"+grey("[=VALUE]")+"` represents the variable name and its optional value.\n"+
 		"Example:\n"+
 		"  -D VERSION=2.1 -D DEBUG -D NAME=myapp\n"+
-		"And then, use the variables in templates like this: {{ENV.NAME}}, {{ENV.VERSION}}\n",
+		"And then, use the variables in templates like this: {{env.NAME}}, {{env.VERSION}}\n",
 	))
 
-	// @template(Flags-O)
-	// `-O` Set output directories for generated code, organized by target language.
-	//
-	// Example:
-	//
-	// ```sh
-	// next -O go=./output/go -O ts=./output/ts
-	// ```
 	flagSet.Var(&c.flags.outputs, "O", u(""+
 		"Set output directories for generated code, organized by target language.\n"+
 		"`LANG=DIR` specifies the target language and its output directory.\n"+
@@ -138,15 +115,6 @@ func (c *Context) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 		"  -O go=./output/go -O ts=./output/ts\n",
 	))
 
-	// @template(Flags-T)
-	// `-T` Specify custom template directories or files for each target language.
-	// Multiple templates can be specified for a single language.
-	//
-	// Example:
-	//
-	// ```sh
-	// next -T go=./templates/go -T go=./templates/go_extra.npl -T python=./templates/python.npl
-	// ```
 	flagSet.Var(&c.flags.templates, "T", u(""+
 		"Specify custom template directories or files for each target language.\n"+
 		"`LANG=PATH` defines the target language and its template directory or file.\n"+
@@ -157,22 +125,6 @@ func (c *Context) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 		"  -T python=./templates/python.npl\n",
 	))
 
-	// @template(Flags-M)
-	// `-M` Configure language-specific type mappings and features.
-	// Type mappings: Map Next types to language-specific types.
-	//   [Primitive types](#Objects/Type/PrimitiveType) and Container types: [vector<%T%>](#Object/Type/VectorType), [array<%T%,%N%>](#Object/Type/ArrayType), [map<%K%,%V%>](#Object/Type/MapType)
-	//     %T%, %N%, %K%, %V% are placeholders replaced with actual types or values.
-	// Feature mappings: Set language-specific properties like file extensions or comment styles.
-	//
-	// Example:
-	//
-	// ```sh
-	// next -M "cpp.vector<%T%"="std::vector<%T%>" \
-	//		-M "java.array<%T%,%N%"="ArrayList<%T%>" \
-	//		-M "go.map<%K%,%V%"="map[%K%]%V%" \
-	//		-M python.ext=.py \
-	//		-M "ruby.comment(%S%)"="# %S%"
-	// ```
 	flagSet.Var(&c.flags.mappings, "M", u(""+
 		"Configure language-specific type mappings and features.\n"+
 		"`LANG.KEY=VALUE` specifies the mappings for a given language and type/feature.\n"+
@@ -189,17 +141,6 @@ func (c *Context) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 		"  -M \"ruby.comment(%S%)\"=\"# %S%\"\n",
 	))
 
-	// @template(Flags-X)
-	// `-X` Specify custom annotation solver programs for code generation.
-	// [Annotation](#Objects/Annotation) solvers are executed in a separate process to solve annotations.
-	// All annotations are passed to the solver program via stdin and stdout.
-	// NOTE: built-in annotation 'next' is reserved for the Next compiler.
-	//
-	// Example:
-	//
-	// ```sh
-	// next -X message="message-type-allocator -f message-types.json"
-	// ```
 	flagSet.Var(&c.flags.solvers, "X", u(""+
 		"Specify custom annotation solver programs for code generation.\n"+
 		"`ANNOTATION=PROGRAM` defines the target annotation and its solver program.\n"+

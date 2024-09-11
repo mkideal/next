@@ -7,8 +7,7 @@ import (
 	"github.com/next/next/src/token"
 )
 
-// @template(Objects/Comment)
-// Comment represents a line comment.
+// @template(Object/Comment) represents a line comment.
 type Comment struct {
 	pos  token.Pos
 	list []string
@@ -24,8 +23,7 @@ func newComment(cg *ast.CommentGroup) *Comment {
 	}
 }
 
-// @template(Objects/Comment.Text)
-// Text returns the content of the comment in Next source code.
+// @template(Object/Comment.Text) returns the content of the comment in Next source code.
 // The content is trimmed by the comment characters.
 // For example, the comment "// hello comment" will return "hello comment".
 func (c *Comment) Text() string {
@@ -35,8 +33,7 @@ func (c *Comment) Text() string {
 	return strings.Join(ast.TrimComments(c.list), "\n")
 }
 
-// @template(Objects/Comment.String)
-// String returns the origin content of the comment in Next source code.
+// @template(Object/Comment.String) returns the origin content of the comment in Next source code.
 func (c *Comment) String() string {
 	if c == nil || len(c.list) == 0 {
 		return ""
@@ -44,8 +41,7 @@ func (c *Comment) String() string {
 	return formatComments(c.list, false, "", " ")
 }
 
-// @template(Objects/Doc)
-// Doc represents a documentation comment for a declaration.
+// @template(Object/Doc) represents a documentation comment for a declaration.
 //
 // Example:
 //
@@ -75,8 +71,7 @@ func newDoc(cg *ast.CommentGroup) *Doc {
 	}
 }
 
-// @template(Objects/Doc.Text)
-// Text returns the content of the documentation comment in Next source code.
+// @template(Object/Doc.Text) returns the content of the documentation comment in Next source code.
 // The content is trimmed by the comment characters.
 // For example, the comment "// hello comment" will return "hello comment".
 func (d *Doc) Text() string {
@@ -86,8 +81,7 @@ func (d *Doc) Text() string {
 	return strings.Join(ast.TrimComments(d.list), "\n")
 }
 
-// @template(Objects/Doc.String)
-// String returns the origin content of the documentation comment in Next source code.
+// @template(Object/Doc.String) returns the origin content of the documentation comment in Next source code.
 func (d *Doc) String() string {
 	if d == nil || len(d.list) == 0 {
 		return ""
@@ -95,8 +89,7 @@ func (d *Doc) String() string {
 	return formatComments(d.list, true, "", "")
 }
 
-// @template(Objects/Doc.Format)
-// Format formats the documentation comment with the given prefix, ident, and begin and end strings.
+// @template(Object/Doc.Format) formats the documentation comment with the given prefix, ident, and begin and end strings.
 //
 // Example:
 //

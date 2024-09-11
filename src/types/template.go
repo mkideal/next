@@ -131,8 +131,7 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		dontOverrides:       make(map[string]bool),
 	}
 	tc.funcs = template.FuncMap{
-		// @template(Functions/ENV)
-		// ENV represents the environment variables defined in the command line with the flag `-D`.
+		// @template(Function/env) represents the environment variables defined in the command line with the flag `-D`.
 		//
 		// Example:
 		//
@@ -141,29 +140,26 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		// ```
 		//
 		// ```npl
-		// {{ENV.PROJECT_NAME}}
+		// {{env.PROJECT_NAME}}
 		// ```
-		"ENV": tc.env,
+		"env": tc.env,
 
-		// @template(Functions/this)
-		// this represents the current [declaration](#Objects/Decl) object to be rendered.
-		// `this` defined in the template [meta](#Meta) `meta/this`. Supported types are:
+		// @template(Function/this) represents the current [declaration](#Object/Decl) object to be rendered.
+		// this defined in the template [meta](#meta) `meta/this`. Supported types are:
 		//
-		// - [file](#Objects/File)
-		// - [const](#Objects/Const)
-		// - [enum](#Objects/Enum)
-		// - [struct](#Objects/Struct)
-		// - [interface](#Objects/Interface)
+		// - [file](#Object/File)
+		// - [const](#Object/Const)
+		// - [enum](#Object/Enum)
+		// - [struct](#Object/Struct)
+		// - [interface](#Object/Interface)
 		//
-		// It's a [file](#Objects/File) by default.
+		// It's a [file](#Object/File) by default.
 		"this": tc.this,
 
-		// @template(Functions/lang)
-		// lang represents the current language to be generated.
+		// @template(Function/lang) represents the current language to be generated.
 		"lang": func() string { return tc.lang },
 
-		// @template(Functions/meta)
-		// Meta represents the metadata of a entrypoint template.
+		// @template(Function/meta) represents the metadata of a entrypoint template.
 		// To define a meta, you should define a template with the name "meta/<key>".
 		// Currently, the following meta keys are supported:
 		//
@@ -187,8 +183,7 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		// before rendering the entrypoint template.
 		"meta": func() Meta { return tc.meta },
 
-		// @template(Functions/error)
-		// error used to return an error message in the template.
+		// @template(Function/error) used to return an error message in the template.
 		//
 		// Example:
 		//
@@ -197,8 +192,7 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		// ```
 		"error": tc.error,
 
-		// @template(Functions/errorf)
-		// errorf used to return a formatted error message in the template.
+		// @template(Function/errorf) used to return a formatted error message in the template.
 		//
 		// Example:
 		//
@@ -207,14 +201,12 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		// ```
 		"errorf": tc.errorf,
 
-		// @template(Functions/exist)
-		// exist checks whether the given path exists.
+		// @template(Function/exist) checks whether the given path exists.
 		// If the path is not absolute, it will be resolved relative to the current output directory
 		// for the current language by command line flag `-O`.
 		"exist": tc.exist,
 
-		// @template(Functions/head)
-		// `head` outputs the header of the generated file.
+		// @template(Function/head) outputs the header of the generated file.
 		//
 		// Example:
 		//
@@ -233,24 +225,19 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		// ```
 		"head": tc.head,
 
-		// @template(Functions/algin)
-		// `align` aligns the given text with the last line indent of the generated content.
+		// @template(Function/align) aligns the given text with the last line indent of the generated content.
 		"align": tc.align,
 
-		// @template(Functions/type)
-		// `type` outputs the string representation of the given [type](#Objects/Type) for the current language.
+		// @template(Function/type) outputs the string representation of the given [type](#Object/Type) for the current language.
 		"type": tc.type_,
 
-		// @template(Functions/next)
-		// `next` executes the next template with the given [object](#Objects).
+		// @template(Function/next) executes the next template with the given [object](#Object).
 		"next": tc.next,
 
-		// @template(Functions/super)
-		// `super` executes the super template with the given [object](#Objects).
+		// @template(Function/super) executes the super template with the given [object](#Object).
 		"super": tc.super,
 
-		// @template(Functions/render)
-		// `render` executes the template with the given name and data.
+		// @template(Function/render) executes the template with the given name and data.
 		"render": tc.render,
 	}
 	return tc

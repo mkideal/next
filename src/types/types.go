@@ -10,8 +10,7 @@ import (
 
 // -------------------------------------------------------------------------
 
-// @template(Objects/Object)
-// `Object` represents an object in Next which can be rendered in a template like this: {{next Object}}
+// @template(Object/Object) represents an object in Next which can be rendered in a template like this: {{next Object}}
 type Object interface {
 	// getType returns the type of the object.
 	getType() string
@@ -135,29 +134,24 @@ func (x *DeclType[T]) getPos() token.Pos      { return x.pos }
 
 // -------------------------------------------------------------------------
 
-// @template(Objects/Node)
-// Node represents a Node in the AST. It's a special object that can be annotated with a documentation comment.
+// @template(Object/Node) represents a Node in the AST. It's a special object that can be annotated with a documentation comment.
 type Node interface {
 	LocatedObject
 
 	// getName returns the name of the node.
 	getName() string
 
-	// @template(Objects/Node.File)
-	// File represents the file containing the node.
+	// @template(Object/Node.File) represents the file containing the node.
 	File() *File
 
-	// @template(Objects/Node.Package)
-	// Package represents the package containing the node.
+	// @template(Object/Node.Package) represents the package containing the node.
 	// It's a shortcut for Node.File().Package().
 	Package() *Package
 
-	// @template(Objects/Node.Doc)
-	// Doc represents the documentation comment for the node.
+	// @template(Object/Node.Doc) represents the documentation comment for the node.
 	Doc() *Doc
 
-	// @template(Objects/Node.Annotations)
-	// Annotations represents the annotations for the node.
+	// @template(Object/Node.Annotations) represents the annotations for the node.
 	Annotations() Annotations
 }
 
@@ -199,8 +193,7 @@ func (x *commonNode[Self]) Package() *Package {
 
 // -------------------------------------------------------------------------
 
-// @template(Objects/Decl)
-// Decl represents an top-level declaration in a file.
+// @template(Object/Decl) represents an top-level declaration in a file.
 type Decl interface {
 	Node
 
@@ -237,21 +230,17 @@ func (builtinDecl) declNode()                {}
 // -------------------------------------------------------------------------
 // Types
 
-// @template(Objects/Type)
-// Type represents a Next type.
+// @template(Object/Type) represents a Next type.
 type Type interface {
 	Object
 
-	// @template(Objects/Type.Kind)
-	// Kind returns the kind of the type.
+	// @template(Object/Type.Kind) returns the kind of the type.
 	Kind() token.Kind
 
-	// @template(Objects/Type.String)
-	// String represents the string representation of the type.
+	// @template(Object/Type.String) represents the string representation of the type.
 	String() string
 
-	// @template(Objects/Type.Decl)
-	// Decl represents the [declaration](#Decl) of the type.
+	// @template(Object/Type.Decl) represents the [declaration](#Decl) of the type.
 	Decl() Decl
 }
 
@@ -277,15 +266,12 @@ func (*VectorType) Kind() token.Kind      { return token.KindVector }
 func (*MapType) Kind() token.Kind         { return token.KindMap }
 func (x *DeclType[T]) Kind() token.Kind   { return x.kind }
 
-// @template(Objects/Type/UsedType)
-// UsedType represents a used type in a file.
+// @template(Object/Type/UsedType) represents a used type in a file.
 type UsedType struct {
-	// @template(Objects/UsedType.File)
-	// `File` represents the file containing the used type.
+	// @template(Object/UsedType.File) represents the file containing the used type.
 	File *File
 
-	// @template(Objects/UsedType.Type)
-	// `Type` represents the used type.
+	// @template(Object/UsedType.Type) represents the used type.
 	Type Type
 
 	// node represents the AST node of the used type.
@@ -303,8 +289,7 @@ func (u *UsedType) String() string { return u.Type.String() }
 // UsedTypeNode returns the AST node of the used type.
 func UsedTypeNode(u *UsedType) ast.Type { return u.node }
 
-// @template(Objects/Type/PrimitiveType)
-// PrimitiveType represents a primitive type.
+// @template(Object/Type/PrimitiveType) represents a primitive type.
 type PrimitiveType struct {
 	name string
 	kind token.Kind
@@ -321,8 +306,7 @@ var primitiveTypes = func() map[string]*PrimitiveType {
 	return m
 }()
 
-// @template(Objects/Type/ArrayType)
-// ArrayType represents an array type.
+// @template(Object/Type/ArrayType) represents an array type.
 type ArrayType struct {
 	pos token.Pos
 
@@ -334,8 +318,7 @@ func (a *ArrayType) String() string {
 	return "array<" + a.ElemType.String() + "," + strconv.FormatInt(a.N, 10) + ">"
 }
 
-// @template(Objects/Type/VectorType)
-// VectorType represents a vector type.
+// @template(Object/Type/VectorType) represents a vector type.
 type VectorType struct {
 	pos token.Pos
 
@@ -346,8 +329,7 @@ func (v *VectorType) String() string {
 	return "vector<" + v.ElemType.String() + ">"
 }
 
-// @template(Objects/Type/MapType)
-// MapType represents a map type.
+// @template(Object/Type/MapType) represents a map type.
 type MapType struct {
 	pos token.Pos
 
@@ -367,16 +349,13 @@ type DeclType[T Decl] struct {
 	decl T
 }
 
-// @template(Objects/Type/EnumType)
-// `EnumType` represents the type of an [enum](#Objects/Enum) declaration.
+// @template(Object/Type/EnumType) represents the type of an [enum](#Object/Enum) declaration.
 type EnumType = DeclType[*Enum]
 
-// @template(Objects/Type/StructType)
-// `StructType` represents the type of a [struct](#Objects/Struct) declaration.
+// @template(Object/Type/StructType) represents the type of a [struct](#Object/Struct) declaration.
 type StructType = DeclType[*Struct]
 
-// @template(Objects/Type/InterfaceType)
-// `InterfaceType` represents the type of an [interface](#Objects/Interface) declaration.
+// @template(Object/Type/InterfaceType) represents the type of an [interface](#Object/Interface) declaration.
 type InterfaceType = DeclType[*Interface]
 
 func newDeclType[T Decl](pos token.Pos, kind token.Kind, name string, decl T) *DeclType[T] {

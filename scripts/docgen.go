@@ -96,12 +96,14 @@ func processCommentGroup(group *ast.CommentGroup, root *TemplateItem) {
 	}
 
 	path := strings.TrimPrefix(firstComment, "// @template(")
-	path = strings.TrimSuffix(path, ")")
+	end := strings.Index(path, ")")
+	group.List[0].Text = "// _" + entityName(path[:end]) + "_ " + strings.TrimSpace(path[end+1:])
+	path = path[:end]
 	currentItem := addToTree(root, path)
 
 	var content bytes.Buffer
 	var coding = false
-	for _, comment := range group.List[1:] { // Start from the second comment
+	for _, comment := range group.List { // Start from the second comment
 		text := strings.TrimPrefix(comment.Text, "//")
 		text = trimSpace(text)
 		if strings.HasPrefix(text, "```") {
@@ -165,22 +167,30 @@ func linkName(path string) string {
 	return "user-content-" + strings.ReplaceAll(strings.ReplaceAll(path, ".", "-"), "/", "_")
 }
 
+func entityName(path string) string {
+	if i := strings.LastIndex(path, "/"); i != -1 {
+		path = path[i+1:]
+	}
+	if i := strings.Index(path, "."); i != -1 {
+		return path[i:]
+	}
+	if i := strings.Index(path, "-"); i != -1 {
+		return path[i:]
+	}
+	return path
+}
+
 func writeMarkdownTree(toc, content io.Writer, item *TemplateItem, depth int, parentPath string) {
 	if item.Path != "" {
-		title := item.Path
-		fullPath := parentPath + item.Path
+		name := entityName(item.Path)
 		level := depth + 1
-		propertyIndex := strings.Index(item.Path, ".")
-		if propertyIndex == -1 {
-			propertyIndex = strings.Index(item.Path, "-")
+		fullPath := parentPath + item.Path
+		if name != item.Path {
+			level = 6
 		}
-		if propertyIndex != -1 {
-			title = item.Path[propertyIndex:]
-			level = 5
-		}
-		fmt.Fprintf(content, "<h%d><a id=\"%s\" target=\"_self\">%s</a></h%d>\n", level, linkName(fullPath), title, level)
-		if propertyIndex == -1 {
-			fmt.Fprintf(toc, "%s<li><a href=\"#%s\">%s</a></li>\n", strings.Repeat("  ", depth), linkName(fullPath), title)
+		fmt.Fprintf(content, "<h%d><a id=\"%s\" target=\"_self\">%s</a></h%d>\n", level, linkName(fullPath), name, level)
+		if name == item.Path {
+			fmt.Fprintf(toc, "%s<li><a href=\"#%s\">%s</a></li>\n", strings.Repeat("  ", depth), linkName(fullPath), name)
 		}
 
 		if item.Content != "" {

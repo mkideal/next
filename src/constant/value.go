@@ -1139,8 +1139,7 @@ func abs(x int64) int64 {
 	return x
 }
 
-// Value returns the value of the annotation parameter.
-// @template(template/annotation) Value
+// Underlying returns the underlying value of a Value, if it is a simple type.:w
 func Underlying(value Value) any {
 	if value == nil {
 		return nil
