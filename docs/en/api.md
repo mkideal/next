@@ -221,14 +221,18 @@ The key is the annotation name (string), and the value is the corresponding [Ann
 _Comment_ represents a line comment or a comment group in Next source code.
 Use this in templates to access and format comments.
 
-<h5 style="display:inline";><a id="user-content-Object_Comment-String" target="_self">.String</a></h5> <span>returns the full original comment text, including delimiters.</span><br>
+<h5><a id="user-content-Object_Comment-String" target="_self">.String</a></h5>
+
+_.String_ returns the full original comment text, including delimiters.
 
 Usage in templates:
 ```npl
 {{.Comment.String}}
 ```
 
-<h5 style="display:inline";><a id="user-content-Object_Comment-Text" target="_self">.Text</a></h5> <span>returns the content of the comment without comment delimiters.</span><br>
+<h5><a id="user-content-Object_Comment-Text" target="_self">.Text</a></h5>
+
+_.Text_ returns the content of the comment without comment delimiters.
 
 Usage in templates:
 ```npl
@@ -239,10 +243,22 @@ Usage in templates:
 
 _Const_ represents a const declaration.
 
-<h5 style="display:inline";><a id="user-content-Object_Const-Comment" target="_self">.Comment</a></h5> <span>is the line [comment](#Object/Comment) of the constant declaration.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_Const-Name" target="_self">.Name</a></h5> <span>represents the [name object](#Object.NodeName) of the constant.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_Const-Type" target="_self">.Type</a></h5> <span>represents the type of the constant.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_Const-Value" target="_self">.Value</a></h5> <span>represents the [value object](#Object/Value) of the constant.</span><br>
+<h5><a id="user-content-Object_Const-Comment" target="_self">.Comment</a></h5>
+
+_.Comment_ is the line [comment](#user-content-Object_Comment) of the constant declaration.
+
+<h5><a id="user-content-Object_Const-Name" target="_self">.Name</a></h5>
+
+_.Name_ represents the [name object](#user-content-Object-NodeName) of the constant.
+
+<h5><a id="user-content-Object_Const-Type" target="_self">.Type</a></h5>
+
+_.Type_ represents the type of the constant.
+
+<h5><a id="user-content-Object_Const-Value" target="_self">.Value</a></h5>
+
+_.Value_ represents the [value object](#user-content-Object_Value) of the constant.
+
 <h3><a id="user-content-Object_ConstName" target="_self">ConstName</a></h3>
 
 _ConstName_ represents the [name object](#user-content-Object_NodeName) of a [const](#user-content-Object_Const) declaration.
@@ -259,16 +275,30 @@ _Decl_ represents an top-level declaration in a file.
 
 _Decls_ holds all declarations in a file.
 
-<h5 style="display:inline";><a id="user-content-Object_Decls-Consts" target="_self">.Consts</a></h5> <span>represents the [list](#Object/List) of [const](#Object/Const) declarations.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_Decls-Enums" target="_self">.Enums</a></h5> <span>represents the [list](#Object/List) of [enum](#Object/Enum) declarations.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_Decls-Interfaces" target="_self">.Interfaces</a></h5> <span>represents the [list](#Object/List) of [interface](#Object/Interface) declarations.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_Decls-Structs" target="_self">.Structs</a></h5> <span>represents the [list](#Object/List) of [struct](#Object/Struct) declarations.</span><br>
+<h5><a id="user-content-Object_Decls-Consts" target="_self">.Consts</a></h5>
+
+_.Consts_ represents the [list](#user-content-Object_List) of [const](#user-content-Object_Const) declarations.
+
+<h5><a id="user-content-Object_Decls-Enums" target="_self">.Enums</a></h5>
+
+_.Enums_ represents the [list](#user-content-Object_List) of [enum](#user-content-Object_Enum) declarations.
+
+<h5><a id="user-content-Object_Decls-Interfaces" target="_self">.Interfaces</a></h5>
+
+_.Interfaces_ represents the [list](#user-content-Object_List) of [interface](#user-content-Object_Interface) declarations.
+
+<h5><a id="user-content-Object_Decls-Structs" target="_self">.Structs</a></h5>
+
+_.Structs_ represents the [list](#user-content-Object_List) of [struct](#user-content-Object_Struct) declarations.
+
 <h3><a id="user-content-Object_Doc" target="_self">Doc</a></h3>
 
 _Doc_ represents a documentation comment for a declaration in Next source code.
 Use this in templates to access and format documentation comments.
 
-<h5 style="display:inline";><a id="user-content-Object_Doc-Format" target="_self">.Format</a></h5> <span>formats the documentation comment for various output styles.</span><br>
+<h5><a id="user-content-Object_Doc-Format" target="_self">.Format</a></h5>
+
+_.Format_ formats the documentation comment for various output styles.
 
 Usage in templates:
 
@@ -286,14 +316,18 @@ Example output:
  */
 ```
 
-<h5 style="display:inline";><a id="user-content-Object_Doc-String" target="_self">.String</a></h5> <span>returns the full original documentation comment, including delimiters.</span><br>
+<h5><a id="user-content-Object_Doc-String" target="_self">.String</a></h5>
+
+_.String_ returns the full original documentation comment, including delimiters.
 
 Usage in templates:
 ```npl
 {{.Doc.String}}
 ```
 
-<h5 style="display:inline";><a id="user-content-Object_Doc-Text" target="_self">.Text</a></h5> <span>returns the content of the documentation comment without comment delimiters.</span><br>
+<h5><a id="user-content-Object_Doc-Text" target="_self">.Text</a></h5>
+
+_.Text_ returns the content of the documentation comment without comment delimiters.
 
 Usage in templates:
 ```npl
@@ -308,8 +342,14 @@ _Enum_ represents an enum declaration.
 
 _EnumMember_ represents an enum member object in an [enum](#user-content-Object_Enum) declaration.
 
-<h5 style="display:inline";><a id="user-content-Object_EnumMember-Name" target="_self">.Name</a></h5> <span>represents the [name object](#Object/NodeName) of the enum member.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_EnumMember-Value" target="_self">.Value</a></h5> <span>represents the [value object](#Object/Value) of the enum member.</span><br>
+<h5><a id="user-content-Object_EnumMember-Name" target="_self">.Name</a></h5>
+
+_.Name_ represents the [name object](#user-content-Object_NodeName) of the enum member.
+
+<h5><a id="user-content-Object_EnumMember-Value" target="_self">.Value</a></h5>
+
+_.Value_ represents the [value object](#user-content-Object_Value) of the enum member.
+
 <h3><a id="user-content-Object_EnumMemberName" target="_self">EnumMemberName</a></h3>
 
 _EnumMemberName_ represents the [name object](#user-content-Object_NodeName) of an [enum member](#user-content-Object_EnumMember).
@@ -326,59 +366,119 @@ _Enums_ represents a [list](#user-content-Object_List) of enum declarations.
 
 _Fields_ represents a list of fields in a declaration.
 
-<h5 style="display:inline";><a id="user-content-Object_Fields-Decl" target="_self">.Decl</a></h5> <span>is the declaration object that contains the fields.</span><br>
+<h5><a id="user-content-Object_Fields-Decl" target="_self">.Decl</a></h5>
 
+_.Decl_ is the declaration object that contains the fields.
 Decl may be an enum, struct, or interface.
 
-<h5 style="display:inline";><a id="user-content-Object_Fields-List" target="_self">.List</a></h5> <span>is the list of fields in the declaration.</span><br>
+<h5><a id="user-content-Object_Fields-List" target="_self">.List</a></h5>
+
+_.List_ is the list of fields in the declaration.
+
 <h3><a id="user-content-Object_File" target="_self">File</a></h3>
 
 _File_ represents a Next source file.
 
-<h5 style="display:inline";><a id="user-content-Object_File-Decls" target="_self">.Decls</a></h5> <span>returns the file's all top-level declarations.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_File-LookupLocalType" target="_self">.LookupLocalType</a></h5> <span>looks up a type by name in the file's symbol table.</span><br>
+<h5><a id="user-content-Object_File-Decls" target="_self">.Decls</a></h5>
 
+_.Decls_ returns the file's all top-level declarations.
+
+<h5><a id="user-content-Object_File-LookupLocalType" target="_self">.LookupLocalType</a></h5>
+
+_.LookupLocalType_ looks up a type by name in the file's symbol table.
 If the type is not found, it returns an error. If the symbol
 is found but it is not a type, it returns an error.
 
-<h5 style="display:inline";><a id="user-content-Object_File-LookupLocalValue" target="_self">.LookupLocalValue</a></h5> <span>looks up a value by name in the file's symbol table.</span><br>
+<h5><a id="user-content-Object_File-LookupLocalValue" target="_self">.LookupLocalValue</a></h5>
 
+_.LookupLocalValue_ looks up a value by name in the file's symbol table.
 If the value is not found, it returns an error. If the symbol
 is found but it is not a value, it returns an error.
 
-<h5 style="display:inline";><a id="user-content-Object_File-Name" target="_self">.Name</a></h5> <span>represents the file name without the ".next" extension.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_File-Package" target="_self">.Package</a></h5> <span>represents the file's import declarations.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_File-Path" target="_self">.Path</a></h5> <span>represents the file full path.</span><br>
+<h5><a id="user-content-Object_File-Name" target="_self">.Name</a></h5>
+
+_.Name_ represents the file name without the ".next" extension.
+
+<h5><a id="user-content-Object_File-Package" target="_self">.Package</a></h5>
+
+_.Package_ represents the file's import declarations.
+
+<h5><a id="user-content-Object_File-Path" target="_self">.Path</a></h5>
+
+_.Path_ represents the file full path.
+
 <h3><a id="user-content-Object_Import" target="_self">Import</a></h3>
 
 _Import_ represents a file import.
 
-<h5 style="display:inline";><a id="user-content-Object_Import-Doc" target="_self">.Doc</a></h5> <span>represents the import declaration [documentation](#Object/Doc).</span><br>
-<h5 style="display:inline";><a id="user-content-Object_Import-File" target="_self">.File</a></h5> <span>represents the file containing the import declaration.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_Import-FullPath" target="_self">.FullPath</a></h5> <span>represents the full path of the import.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_Import-Target" target="_self">.Target</a></h5> <span>represents the imported file.</span><br>
+<h5><a id="user-content-Object_Import-Doc" target="_self">.Doc</a></h5>
+
+_.Doc_ represents the import declaration [documentation](#user-content-Object_Doc).
+
+<h5><a id="user-content-Object_Import-File" target="_self">.File</a></h5>
+
+_.File_ represents the file containing the import declaration.
+
+<h5><a id="user-content-Object_Import-FullPath" target="_self">.FullPath</a></h5>
+
+_.FullPath_ represents the full path of the import.
+
+<h5><a id="user-content-Object_Import-Target" target="_self">.Target</a></h5>
+
+_.Target_ represents the imported file.
+
 <h3><a id="user-content-Object_Imports" target="_self">Imports</a></h3>
 
 _Imports_ holds a list of imports.
 
-<h5 style="display:inline";><a id="user-content-Object_Imports-File" target="_self">.File</a></h5> <span>represents the file containing the imports.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_Imports-List" target="_self">.List</a></h5> <span>represents the list of [imports](#Object/Import).</span><br>
-<h5 style="display:inline";><a id="user-content-Object_Imports-TrimmedList" target="_self">.TrimmedList</a></h5> <span>represents a list of unique imports sorted by package name.</span><br>
+<h5><a id="user-content-Object_Imports-File" target="_self">.File</a></h5>
+
+_.File_ represents the file containing the imports.
+
+<h5><a id="user-content-Object_Imports-List" target="_self">.List</a></h5>
+
+_.List_ represents the list of [imports](#user-content-Object_Import).
+
+<h5><a id="user-content-Object_Imports-TrimmedList" target="_self">.TrimmedList</a></h5>
+
+_.TrimmedList_ represents a list of unique imports sorted by package name.
+
 <h3><a id="user-content-Object_Interface" target="_self">Interface</a></h3>
 
 _Interface_ represents an interface declaration.
 
-<h5 style="display:inline";><a id="user-content-Object_Interface-Methods" target="_self">.Methods</a></h5> <span>represents the list of interface methods.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_Interface-Type" target="_self">.Type</a></h5> <span>represents the interface type.</span><br>
+<h5><a id="user-content-Object_Interface-Methods" target="_self">.Methods</a></h5>
+
+_.Methods_ represents the list of interface methods.
+
+<h5><a id="user-content-Object_Interface-Type" target="_self">.Type</a></h5>
+
+_.Type_ represents the interface type.
+
 <h3><a id="user-content-Object_InterfaceMethod" target="_self">InterfaceMethod</a></h3>
 
 _InterfaceMethod_ represents an interface method declaration.
 
-<h5 style="display:inline";><a id="user-content-Object_InterfaceMethod-Comment" target="_self">.Comment</a></h5> <span>represents the line [comment](#Object/Comment) of the interface method declaration.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_InterfaceMethod-Decl" target="_self">.Decl</a></h5> <span>represents the interface that contains the method.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_InterfaceMethod-Name" target="_self">.Name</a></h5> <span>represents the [name object](#Object/NodeName) of the interface method.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_InterfaceMethod-Params" target="_self">.Params</a></h5> <span>represents the list of method parameters.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_InterfaceMethod-Result" target="_self">.Result</a></h5> <span>represents the return type of the method.</span><br>
+<h5><a id="user-content-Object_InterfaceMethod-Comment" target="_self">.Comment</a></h5>
+
+_.Comment_ represents the line [comment](#user-content-Object_Comment) of the interface method declaration.
+
+<h5><a id="user-content-Object_InterfaceMethod-Decl" target="_self">.Decl</a></h5>
+
+_.Decl_ represents the interface that contains the method.
+
+<h5><a id="user-content-Object_InterfaceMethod-Name" target="_self">.Name</a></h5>
+
+_.Name_ represents the [name object](#user-content-Object_NodeName) of the interface method.
+
+<h5><a id="user-content-Object_InterfaceMethod-Params" target="_self">.Params</a></h5>
+
+_.Params_ represents the list of method parameters.
+
+<h5><a id="user-content-Object_InterfaceMethod-Result" target="_self">.Result</a></h5>
+
+_.Result_ represents the return type of the method.
+
 <h3><a id="user-content-Object_InterfaceMethodName" target="_self">InterfaceMethodName</a></h3>
 
 _InterfaceMethodName_ represents the [name object](#user-content-Object_NodeName) of an [interface method](#user-content-Object_InterfaceMethod).
@@ -387,9 +487,18 @@ _InterfaceMethodName_ represents the [name object](#user-content-Object_NodeName
 
 _InterfaceMethodParam_ represents an interface method parameter declaration.
 
-<h5 style="display:inline";><a id="user-content-Object_InterfaceMethodParam-Method" target="_self">.Method</a></h5> <span>represents the interface method that contains the parameter.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_InterfaceMethodParam-Name" target="_self">.Name</a></h5> <span>represents the [name object](#Object/NodeName) of the interface method parameter.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_InterfaceMethodParam-Type" target="_self">.Type</a></h5> <span>represents the parameter type.</span><br>
+<h5><a id="user-content-Object_InterfaceMethodParam-Method" target="_self">.Method</a></h5>
+
+_.Method_ represents the interface method that contains the parameter.
+
+<h5><a id="user-content-Object_InterfaceMethodParam-Name" target="_self">.Name</a></h5>
+
+_.Name_ represents the [name object](#user-content-Object_NodeName) of the interface method parameter.
+
+<h5><a id="user-content-Object_InterfaceMethodParam-Type" target="_self">.Type</a></h5>
+
+_.Type_ represents the parameter type.
+
 <h3><a id="user-content-Object_InterfaceMethodParamName" target="_self">InterfaceMethodParamName</a></h3>
 
 _InterfaceMethodParamName_ represents the [name object](#user-content-Object_NodeName) of an [interface method parameter](#user-content-Object_InterfaceMethodParam).
@@ -398,8 +507,14 @@ _InterfaceMethodParamName_ represents the [name object](#user-content-Object_Nod
 
 _InterfaceMethodParamType_ represents an interface method parameter type.
 
-<h5 style="display:inline";><a id="user-content-Object_InterfaceMethodParamType-Param" target="_self">.Param</a></h5> <span>represents the interface method parameter that contains the type.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_InterfaceMethodParamType-Type" target="_self">.Type</a></h5> <span>represnts the underlying type of the parameter.</span><br>
+<h5><a id="user-content-Object_InterfaceMethodParamType-Param" target="_self">.Param</a></h5>
+
+_.Param_ represents the interface method parameter that contains the type.
+
+<h5><a id="user-content-Object_InterfaceMethodParamType-Type" target="_self">.Type</a></h5>
+
+_.Type_ represnts the underlying type of the parameter.
+
 <h3><a id="user-content-Object_InterfaceMethodParams" target="_self">InterfaceMethodParams</a></h3>
 
 _InterfaceMethodParams_ represents the [list](#user-content-Object_Fields) of [interface method parameters](#user-content-Object_InterfaceMethodParam).
@@ -408,8 +523,14 @@ _InterfaceMethodParams_ represents the [list](#user-content-Object_Fields) of [i
 
 _InterfaceMethodResult_ represents an interface method result.
 
-<h5 style="display:inline";><a id="user-content-Object_InterfaceMethodResult-Method" target="_self">.Method</a></h5> <span>represents the interface method that contains the result.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_InterfaceMethodResult-Type" target="_self">.Type</a></h5> <span>represents the underlying type of the result.</span><br>
+<h5><a id="user-content-Object_InterfaceMethodResult-Method" target="_self">.Method</a></h5>
+
+_.Method_ represents the interface method that contains the result.
+
+<h5><a id="user-content-Object_InterfaceMethodResult-Type" target="_self">.Type</a></h5>
+
+_.Type_ represents the underlying type of the result.
+
 <h3><a id="user-content-Object_InterfaceMethods" target="_self">InterfaceMethods</a></h3>
 
 _InterfaceMethods_ represents the [list](#user-content-Object_Fields) of [interface methods](#user-content-Object_InterfaceMethod).
@@ -422,16 +543,29 @@ _Interfaces_ represents a [list](#user-content-Object_List) of interface declara
 
 _List_ represents a list of objects.
 
-<h5 style="display:inline";><a id="user-content-Object_List-List" target="_self">.List</a></h5> <span>represents the list of objects. It is used to provide a uniform way to access.</span><br>
+<h5><a id="user-content-Object_List-List" target="_self">.List</a></h5>
+
+_.List_ represents the list of objects. It is used to provide a uniform way to access.
+
 <h3><a id="user-content-Object_Node" target="_self">Node</a></h3>
 
 _Node_ represents a Node in the AST. It's a special object that can be annotated with a documentation comment.
 
-<h5 style="display:inline";><a id="user-content-Object_Node-Annotations" target="_self">.Annotations</a></h5> <span>represents the annotations for the node.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_Node-Doc" target="_self">.Doc</a></h5> <span>represents the documentation comment for the node.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_Node-File" target="_self">.File</a></h5> <span>represents the file containing the node.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_Node-Package" target="_self">.Package</a></h5> <span>represents the package containing the node.</span><br>
+<h5><a id="user-content-Object_Node-Annotations" target="_self">.Annotations</a></h5>
 
+_.Annotations_ represents the annotations for the node.
+
+<h5><a id="user-content-Object_Node-Doc" target="_self">.Doc</a></h5>
+
+_.Doc_ represents the documentation comment for the node.
+
+<h5><a id="user-content-Object_Node-File" target="_self">.File</a></h5>
+
+_.File_ represents the file containing the node.
+
+<h5><a id="user-content-Object_Node-Package" target="_self">.Package</a></h5>
+
+_.Package_ represents the package containing the node.
 It's a shortcut for Node.File().Package().
 
 <h3><a id="user-content-Object_NodeName" target="_self">NodeName</a></h3>
@@ -443,8 +577,14 @@ _NodeName_ represents a name of a node in a declaration:
 - Interface method name
 - Interface method parameter name
 
-<h5 style="display:inline";><a id="user-content-Object_NodeName-Node" target="_self">.Node</a></h5> <span>represents the [node](#Object/Node) that contains the name.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_NodeName-String" target="_self">.String</a></h5> <span>represents the string representation of the node name.</span><br>
+<h5><a id="user-content-Object_NodeName-Node" target="_self">.Node</a></h5>
+
+_.Node_ represents the [node](#user-content-Object_Node) that contains the name.
+
+<h5><a id="user-content-Object_NodeName-String" target="_self">.String</a></h5>
+
+_.String_ represents the string representation of the node name.
+
 <h3><a id="user-content-Object_Object" target="_self">Object</a></h3>
 
 _Object_ represents an object in Next which can be rendered in a template like this: {{next Object}}
@@ -453,11 +593,21 @@ _Object_ represents an object in Next which can be rendered in a template like t
 
 _Package_ represents a Next package.
 
-<h5 style="display:inline";><a id="user-content-Object_Package-Annotations" target="_self">.Annotations</a></h5> <span>represents the package [annotations](#Object/Annotations).</span><br>
-<h5 style="display:inline";><a id="user-content-Object_Package-Doc" target="_self">.Doc</a></h5> <span>represents the package [documentation](#Object/Doc).</span><br>
-<h5 style="display:inline";><a id="user-content-Object_Package-Files" target="_self">.Files</a></h5> <span>represents the all declared files in the package.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_Package-In" target="_self">.In</a></h5> <span>reports whether the package is the same as the given package.</span><br>
+<h5><a id="user-content-Object_Package-Annotations" target="_self">.Annotations</a></h5>
 
+_.Annotations_ represents the package [annotations](#user-content-Object_Annotations).
+
+<h5><a id="user-content-Object_Package-Doc" target="_self">.Doc</a></h5>
+
+_.Doc_ represents the package [documentation](#user-content-Object_Doc).
+
+<h5><a id="user-content-Object_Package-Files" target="_self">.Files</a></h5>
+
+_.Files_ represents the all declared files in the package.
+
+<h5><a id="user-content-Object_Package-In" target="_self">.In</a></h5>
+
+_.In_ reports whether the package is the same as the given package.
 If the current package is nil, it always returns true.
 
 Example:
@@ -471,18 +621,30 @@ Example:
 {{- end}}
 ```
 
-<h5 style="display:inline";><a id="user-content-Object_Package-Name" target="_self">.Name</a></h5> <span>represents the package name string.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_Package-Types" target="_self">.Types</a></h5> <span>represents the all declared types in the package.</span><br>
+<h5><a id="user-content-Object_Package-Name" target="_self">.Name</a></h5>
+
+_.Name_ represents the package name string.
+
+<h5><a id="user-content-Object_Package-Types" target="_self">.Types</a></h5>
+
+_.Types_ represents the all declared types in the package.
+
 <h3><a id="user-content-Object_Struct" target="_self">Struct</a></h3>
 
 _Struct_ represents a struct declaration.
 
-<h5 style="display:inline";><a id="user-content-Object_Struct-Fields" target="_self">.Fields</a></h5> <span>represents the list of struct fields.</span><br>
+<h5><a id="user-content-Object_Struct-Fields" target="_self">.Fields</a></h5>
+
+_.Fields_ represents the list of struct fields.
+
 <h3><a id="user-content-Object_StructField" target="_self">StructField</a></h3>
 
 _StructField_ represents a struct field declaration.
 
-<h5 style="display:inline";><a id="user-content-Object_StructField-Name" target="_self">.Name</a></h5> <span>represents the [name object](#Object/NodeName) of the struct field.</span><br>
+<h5><a id="user-content-Object_StructField-Name" target="_self">.Name</a></h5>
+
+_.Name_ represents the [name object](#user-content-Object_NodeName) of the struct field.
+
 <h3><a id="user-content-Object_StructFieldName" target="_self">StructFieldName</a></h3>
 
 _StructFieldName_ represents the [name object](#user-content-Object_NodeName) of a [struct field](#user-content-Object_StructField).
@@ -539,20 +701,59 @@ _UsedType_ represents a used type in a file.
 
 _VectorType_ represents a vector type.
 
-<h5 style="display:inline";><a id="user-content-Object_Type-Decl" target="_self">.Decl</a></h5> <span>represents the [declaration](#Decl) of the type.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_Type-Kind" target="_self">.Kind</a></h5> <span>returns the kind of the type.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_Type-String" target="_self">.String</a></h5> <span>represents the string representation of the type.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_UsedType-File" target="_self">.File</a></h5> <span>represents the file containing the used type.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_UsedType-Type" target="_self">.Type</a></h5> <span>represents the used type.</span><br>
+<h5><a id="user-content-Object_Type-Decl" target="_self">.Decl</a></h5>
+
+_.Decl_ represents the [declaration](#user-content-Decl) of the type.
+
+<h5><a id="user-content-Object_Type-Kind" target="_self">.Kind</a></h5>
+
+_.Kind_ returns the kind of the type.
+
+<h5><a id="user-content-Object_Type-String" target="_self">.String</a></h5>
+
+_.String_ represents the string representation of the type.
+
+<h5><a id="user-content-Object_UsedType-File" target="_self">.File</a></h5>
+
+_.File_ represents the file containing the used type.
+
+<h5><a id="user-content-Object_UsedType-Type" target="_self">.Type</a></h5>
+
+_.Type_ represents the used type.
+
 <h3><a id="user-content-Object_Value" target="_self">Value</a></h3>
 
 _Value_ represents a constant value for a const declaration or an enum member.
 
-<h5 style="display:inline";><a id="user-content-Object_Value-Any" target="_self">.Any</a></h5> <span>represents the underlying value of the constant.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_Value-IsEnum" target="_self">.IsEnum</a></h5> <span>returns true if the value is an enum member.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_Value-IsFirst" target="_self">.IsFirst</a></h5> <span>reports whether the value is the first member of the enum type.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_Value-IsLast" target="_self">.IsLast</a></h5> <span>reports whether the value is the last member of the enum type.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_Value-String" target="_self">.String</a></h5> <span>represents the string representation of the value.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_Value-Type" target="_self">.Type</a></h5> <span>represents the [primitive type](#Object/Type/PrimitiveType) of the value.</span><br>
-<h5 style="display:inline";><a id="user-content-Object_import-Comment" target="_self">.Comment</a></h5> <span>represents the import declaration line [comment](#Object/Comment).</span><br>
-<h5 style="display:inline";><a id="user-content-Object_import-Path" target="_self">.Path</a></h5> <span>represents the import path.</span><br>
+<h5><a id="user-content-Object_Value-Any" target="_self">.Any</a></h5>
+
+_.Any_ represents the underlying value of the constant.
+
+<h5><a id="user-content-Object_Value-IsEnum" target="_self">.IsEnum</a></h5>
+
+_.IsEnum_ returns true if the value is an enum member.
+
+<h5><a id="user-content-Object_Value-IsFirst" target="_self">.IsFirst</a></h5>
+
+_.IsFirst_ reports whether the value is the first member of the enum type.
+
+<h5><a id="user-content-Object_Value-IsLast" target="_self">.IsLast</a></h5>
+
+_.IsLast_ reports whether the value is the last member of the enum type.
+
+<h5><a id="user-content-Object_Value-String" target="_self">.String</a></h5>
+
+_.String_ represents the string representation of the value.
+
+<h5><a id="user-content-Object_Value-Type" target="_self">.Type</a></h5>
+
+_.Type_ represents the [primitive type](#user-content-Object_Type_PrimitiveType) of the value.
+
+<h5><a id="user-content-Object_import-Comment" target="_self">.Comment</a></h5>
+
+_.Comment_ represents the import declaration line [comment](#user-content-Object_Comment).
+
+<h5><a id="user-content-Object_import-Path" target="_self">.Path</a></h5>
+
+_.Path_ represents the import path.
+

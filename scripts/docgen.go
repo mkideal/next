@@ -15,10 +15,10 @@ import (
 )
 
 type TemplateItem struct {
-	Path, Span string
-	Content    string
-	Children   map[string]*TemplateItem
-	Links      []string
+	Path     string
+	Content  string
+	Children map[string]*TemplateItem
+	Links    []string
 }
 
 func trimSpace(s string) string {
@@ -97,20 +97,13 @@ func processCommentGroup(group *ast.CommentGroup, root *TemplateItem) {
 
 	path := strings.TrimPrefix(firstComment, "// @api(")
 	end := strings.Index(path, ")")
-	var span string
-	var offset int
-	if name := entityName(path[:end]); strings.HasPrefix(name, ".") {
-		span = strings.TrimSpace(path[end+1:])
-		offset = 1
-	} else {
-		group.List[0].Text = "// _" + entityName(path[:end]) + "_ " + strings.TrimSpace(path[end+1:])
-	}
+	group.List[0].Text = "// _" + entityName(path[:end]) + "_ " + strings.TrimSpace(path[end+1:])
 	path = path[:end]
-	currentItem := addToTree(root, path, span)
+	currentItem := addToTree(root, path)
 
 	var content bytes.Buffer
 	var coding = false
-	for _, comment := range group.List[offset:] { // Start from the second comment
+	for _, comment := range group.List { // Start from the second comment
 		text := strings.TrimPrefix(comment.Text, "//")
 		text = trimSpace(text)
 		if strings.HasPrefix(text, "```") {
@@ -127,7 +120,7 @@ func processCommentGroup(group *ast.CommentGroup, root *TemplateItem) {
 	currentItem.Links = extractLinks(currentItem.Content)
 }
 
-func addToTree(root *TemplateItem, path, span string) *TemplateItem {
+func addToTree(root *TemplateItem, path string) *TemplateItem {
 	parts := strings.Split(path, "/")
 	current := root
 
@@ -136,7 +129,7 @@ func addToTree(root *TemplateItem, path, span string) *TemplateItem {
 			current.Children = make(map[string]*TemplateItem)
 		}
 		if _, exists := current.Children[part]; !exists {
-			current.Children[part] = &TemplateItem{Path: part, Span: span}
+			current.Children[part] = &TemplateItem{Path: part}
 		}
 		current = current.Children[part]
 	}
@@ -192,14 +185,10 @@ func writeMarkdownTree(toc, content io.Writer, item *TemplateItem, depth int, pa
 		name := entityName(item.Path)
 		level := depth + 1
 		fullPath := parentPath + item.Path
-		style := ""
-		span := ""
 		if name != item.Path {
 			level = 5 // <h5>
-			style = " style=\"display:inline\";"
-			span = " <span>" + item.Span + "</span><br>"
 		}
-		fmt.Fprintf(content, "<h%d%s><a id=\"%s\" target=\"_self\">%s</a></h%d>%s\n", level, style, linkName(fullPath), name, level, span)
+		fmt.Fprintf(content, "<h%d><a id=\"%s\" target=\"_self\">%s</a></h%d>\n", level, linkName(fullPath), name, level)
 		if name == item.Path {
 			fmt.Fprintf(toc, "%s<li><a href=\"#%s\">%s</a></li>\n", strings.Repeat("  ", depth), linkName(fullPath), name)
 		}
