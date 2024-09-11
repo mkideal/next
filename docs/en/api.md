@@ -146,7 +146,7 @@ lang represents the current language to be generated.
 
 <h3><a id="user-content-Functions_meta" target="_self">meta</a></h3>
 
-meta represents the [meta](#user-content-meta) data of the current template.
+meta represents the [meta](#user-content-Meta) data of the current template.
 
 <h3><a id="user-content-Functions_next" target="_self">next</a></h3>
 
@@ -163,7 +163,7 @@ meta represents the [meta](#user-content-meta) data of the current template.
 <h3><a id="user-content-Functions_this" target="_self">this</a></h3>
 
 this represents the current [declaration](#user-content-Objects_Decl) object to be rendered.
-`this` defined in the template [meta](#user-content-meta) `meta/this`. Supported types are:
+`this` defined in the template [meta](#user-content-Meta) `meta/this`. Supported types are:
 
 - [file](#user-content-Objects_File)
 - [const](#user-content-Objects_Const)
@@ -710,7 +710,7 @@ Name represents the [name object](#user-content-Objects_NodeName) of the struct 
 
 <h5><a id="user-content-Objects_StructField-Type" target="_self">.Type</a></h5>
 
-Type represents the [struct field type](#user-content-StructFieldType).
+Type represents the [struct field type](#user-content-Objects_StructFieldType).
 
 <h3><a id="user-content-Objects_StructFieldName" target="_self">StructFieldName</a></h3>
 

@@ -649,7 +649,7 @@ type StructField struct {
 	Decl *Struct
 
 	// @template(Objects/StructField.Type)
-	// Type represents the [struct field type](#StructFieldType).
+	// Type represents the [struct field type](#Objects/StructFieldType).
 	Type *StructFieldType
 
 	// @template(Objects/StructField.Comment)

@@ -169,7 +169,7 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 
 		// @template(Functions/this)
 		// this represents the current [declaration](#Objects/Decl) object to be rendered.
-		// `this` defined in the template [meta](#meta) `meta/this`. Supported types are:
+		// `this` defined in the template [meta](#Meta) `meta/this`. Supported types are:
 		//
 		// - [file](#Objects/File)
 		// - [const](#Objects/Const)
@@ -185,7 +185,7 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		"lang": func() string { return tc.lang },
 
 		// @template(Functions/meta)
-		// meta represents the [meta](#meta) data of the current template.
+		// meta represents the [meta](#Meta) data of the current template.
 		"meta": func() Meta { return tc.meta },
 
 		// @template(Functions/error)
