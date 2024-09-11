@@ -171,6 +171,9 @@ func writeMarkdownTree(toc, content io.Writer, item *TemplateItem, depth int, pa
 		fullPath := parentPath + item.Path
 		level := depth + 1
 		propertyIndex := strings.Index(item.Path, ".")
+		if propertyIndex == -1 {
+			propertyIndex = strings.Index(item.Path, "-")
+		}
 		if propertyIndex != -1 {
 			title = item.Path[propertyIndex:]
 			level = 5

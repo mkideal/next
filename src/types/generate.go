@@ -67,7 +67,6 @@ func (c *Context) Generate() error {
 	if len(c.flags.outputs) == 0 {
 		return nil
 	}
-	c.Print("flags.importDirs: ", c.flags.importDirs)
 	c.Print("flags.envs: ", c.flags.envs)
 	c.Print("flags.outputs: ", c.flags.outputs)
 	c.Print("flags.templates: ", c.flags.templates)

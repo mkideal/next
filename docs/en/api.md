@@ -1,6 +1,7 @@
 # API Reference
 
 <ul>
+  <li><a href="#user-content-Flags">Flags</a></li>
   <li><a href="#user-content-Functions">Functions</a></li>
 <ul>
     <li><a href="#user-content-Functions_ENV">ENV</a></li>
@@ -17,7 +18,6 @@
     <li><a href="#user-content-Functions_this">this</a></li>
     <li><a href="#user-content-Functions_type">type</a></li>
 </ul>
-  <li><a href="#user-content-Meta">Meta</a></li>
   <li><a href="#user-content-Objects">Objects</a></li>
 <ul>
     <li><a href="#user-content-Objects_Annotation">Annotation</a></li>
@@ -74,6 +74,78 @@
     <li><a href="#user-content-Objects_Value">Value</a></li>
 </ul>
 </ul>
+
+<h2><a id="user-content-Flags" target="_self">Flags</a></h2>
+
+Flags represents the command line flags for the Next compiler command.
+
+<h5><a id="user-content-Flags-D" target="_self">-D</a></h5>
+
+`-D` Define custom environment variables for use in code generation templates.
+
+Example:
+
+```sh
+next -D VERSION=2.1 -D DEBUG -D NAME=myapp
+```
+
+<h5><a id="user-content-Flags-M" target="_self">-M</a></h5>
+
+`-M` Configure language-specific type mappings and features.
+Type mappings: Map Next types to language-specific types.
+[Primitive types](#user-content-Objects_Type_PrimitiveType) and Container types: [vector<%T%>](#user-content-Object_Type_VectorType), [array<%T%,%N%>](#user-content-Object_Type_ArrayType), [map<%K%,%V%>](#user-content-Object_Type_MapType)
+%T%, %N%, %K%, %V% are placeholders replaced with actual types or values.
+Feature mappings: Set language-specific properties like file extensions or comment styles.
+
+Example:
+
+```sh
+next -M "cpp.vector<%T%"="std::vector<%T%>" \
+	-M "java.array<%T%,%N%"="ArrayList<%T%>" \
+	-M "go.map<%K%,%V%"="map[%K%]%V%" \
+	-M python.ext=.py \
+	-M "ruby.comment(%S%)"="# %S%"
+```
+
+<h5><a id="user-content-Flags-O" target="_self">-O</a></h5>
+
+`-O` Set output directories for generated code, organized by target language.
+
+Example:
+
+```sh
+next -O go=./output/go -O ts=./output/ts
+```
+
+<h5><a id="user-content-Flags-T" target="_self">-T</a></h5>
+
+`-T` Specify custom template directories or files for each target language.
+Multiple templates can be specified for a single language.
+
+Example:
+
+```sh
+next -T go=./templates/go -T go=./templates/go_extra.npl -T python=./templates/python.npl
+```
+
+<h5><a id="user-content-Flags-X" target="_self">-X</a></h5>
+
+`-X` Specify custom annotation solver programs for code generation.
+[Annotation](#user-content-Objects_Annotation) solvers are executed in a separate process to solve annotations.
+All annotations are passed to the solver program via stdin and stdout.
+NOTE: built-in annotation 'next' is reserved for the Next compiler.
+
+Example:
+
+```sh
+next -X message="message-type-allocator -f message-types.json"
+```
+
+<h5><a id="user-content-Flags-v" target="_self">-v</a></h5>
+
+`-v` Control verbosity of compiler output and debugging information.
+VERBOSE levels: 0=error, 1=info, 2=debug, 3=trace
+Levels 2 (debug) and above enable execution of print and printf in Next source files.
 
 <h2><a id="user-content-Functions" target="_self">Functions</a></h2>
 <h3><a id="user-content-Functions_ENV" target="_self">ENV</a></h3>
@@ -146,7 +218,28 @@ lang represents the current language to be generated.
 
 <h3><a id="user-content-Functions_meta" target="_self">meta</a></h3>
 
-meta represents the [meta](#user-content-Meta) data of the current template.
+Meta represents the metadata of a entrypoint template.
+To define a meta, you should define a template with the name "meta/<key>".
+Currently, the following meta keys are supported:
+
+- "meta/this": the current object to be rendered.
+- "meta/path": the output path for the current object.
+- "meta/skip": whether to skip the current object.
+
+Any other meta keys are user-defined. You can use them in the templates like `{{meta.<key>}}`.
+
+Example:
+
+```npl
+{{- define "meta/this" -}}file{{- end -}}
+{{- define "meta/path" -}}/path/to/file{{- end -}}
+{{- define "meta/skip" -}}{{exist meta.path}}{{- end -}}
+{{- define "meta/custom" -}}custom value{{- end -}}
+```
+
+All meta templates should be defined in the entrypoint template.
+The meta will be resolved in the order of the template definition
+before rendering the entrypoint template.
 
 <h3><a id="user-content-Functions_next" target="_self">next</a></h3>
 
@@ -176,31 +269,6 @@ It's a [file](#user-content-Objects_File) by default.
 <h3><a id="user-content-Functions_type" target="_self">type</a></h3>
 
 `type` outputs the string representation of the given [type](#user-content-Objects_Type) for the current language.
-
-<h2><a id="user-content-Meta" target="_self">Meta</a></h2>
-
-Meta represents the metadata of a entrypoint template.
-To define a meta, you should define a template with the name "meta/<key>".
-Currently, the following meta keys are supported:
-
-- "meta/this": the current object to be rendered.
-- "meta/path": the output path for the current object.
-- "meta/skip": whether to skip the current object.
-
-Any other meta keys are user-defined. You can use them in the templates like `{{meta.<key>}}`.
-
-Example:
-
-```npl
-{{- define "meta/this" -}}file{{- end -}}
-{{- define "meta/path" -}}/path/to/file{{- end -}}
-{{- define "meta/skip" -}}{{exist meta.path}}{{- end -}}
-{{- define "meta/custom" -}}custom value{{- end -}}
-```
-
-All meta templates should be defined in the entrypoint template.
-The meta will be resolved in the order of the template definition
-before rendering the entrypoint template.
 
 <h2><a id="user-content-Objects" target="_self">Objects</a></h2>
 <h3><a id="user-content-Objects_Annotation" target="_self">Annotation</a></h3>

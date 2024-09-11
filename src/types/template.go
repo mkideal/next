@@ -24,29 +24,7 @@ import (
 	"github.com/next/next/src/fsutil"
 )
 
-// @template(Meta)
-// Meta represents the metadata of a entrypoint template.
-// To define a meta, you should define a template with the name "meta/<key>".
-// Currently, the following meta keys are supported:
-//
-// - "meta/this": the current object to be rendered.
-// - "meta/path": the output path for the current object.
-// - "meta/skip": whether to skip the current object.
-//
-// Any other meta keys are user-defined. You can use them in the templates like `{{meta.<key>}}`.
-//
-// Example:
-//
-// ```npl
-// {{- define "meta/this" -}}file{{- end -}}
-// {{- define "meta/path" -}}/path/to/file{{- end -}}
-// {{- define "meta/skip" -}}{{exist meta.path}}{{- end -}}
-// {{- define "meta/custom" -}}custom value{{- end -}}
-// ```
-//
-// All meta templates should be defined in the entrypoint template.
-// The meta will be resolved in the order of the template definition
-// before rendering the entrypoint template.
+// Meta represents the metadata of a template.
 type Meta map[string]string
 
 func (m Meta) lookup(key string) pair.Pair[string, bool] {
@@ -185,7 +163,28 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		"lang": func() string { return tc.lang },
 
 		// @template(Functions/meta)
-		// meta represents the [meta](#Meta) data of the current template.
+		// Meta represents the metadata of a entrypoint template.
+		// To define a meta, you should define a template with the name "meta/<key>".
+		// Currently, the following meta keys are supported:
+		//
+		// - "meta/this": the current object to be rendered.
+		// - "meta/path": the output path for the current object.
+		// - "meta/skip": whether to skip the current object.
+		//
+		// Any other meta keys are user-defined. You can use them in the templates like `{{meta.<key>}}`.
+		//
+		// Example:
+		//
+		// ```npl
+		// {{- define "meta/this" -}}file{{- end -}}
+		// {{- define "meta/path" -}}/path/to/file{{- end -}}
+		// {{- define "meta/skip" -}}{{exist meta.path}}{{- end -}}
+		// {{- define "meta/custom" -}}custom value{{- end -}}
+		// ```
+		//
+		// All meta templates should be defined in the entrypoint template.
+		// The meta will be resolved in the order of the template definition
+		// before rendering the entrypoint template.
 		"meta": func() Meta { return tc.meta },
 
 		// @template(Functions/error)
