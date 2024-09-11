@@ -100,8 +100,9 @@ type templateContextInfo struct {
 	ext     string // file extension for current language
 }
 
-// @api(Context)
-// Context-related methods and properties are used to retrieve information, perform operations, and generate code within the current code generator's context. These methods or properties are called directly by name, for example:
+// @api(Context) related methods and properties are used to retrieve information, perform operations,
+// and generate code within the current code generator's context. These methods or properties are
+// called directly by name, for example:
 //
 // ```npl
 // {{head}}
@@ -168,12 +169,12 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		"lang": func() string { return tc.lang },
 
 		// @api(Context/meta) represents the metadata of a entrypoint template.
-		// To define a meta, you should define a template with the name "meta/<key>".
+		// To define a meta, you should define a template with the name `meta/<key>`.
 		// Currently, the following meta keys are supported:
 		//
-		// - "meta/this": the current object to be rendered.
-		// - "meta/path": the output path for the current object.
-		// - "meta/skip": whether to skip the current object.
+		// - `meta/this`: the current object to be rendered.
+		// - `meta/path`: the output path for the current object.
+		// - `meta/skip`: whether to skip the current object.
 		//
 		// Any other meta keys are user-defined. You can use them in the templates like `{{meta.<key>}}`.
 		//

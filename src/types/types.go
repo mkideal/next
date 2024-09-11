@@ -8,8 +8,7 @@ import (
 	"github.com/next/next/src/token"
 )
 
-// @api(Object/Common)
-// Common contains some general types, including a generic type. Unless specifically stated,
+// @api(Object/Common) contains some general types, including a generic type. Unless specifically stated,
 // these objects cannot be directly called using the [next](#Context/next) function.
 // The [Value](#Object/Common/Value) object represents a value, which can be either a constant
 // value or an enum member's value. The object type for the former is `const.value`, and for
@@ -17,8 +16,7 @@ import (
 
 // -------------------------------------------------------------------------
 
-// @api(Object)
-// Object is a generic object type. These objects can be used as parameters for the [next](#Context/next)
+// @api(Object) is a generic object type. These objects can be used as parameters for the [next](#Context/next)
 // function, like `{{next .}}`. Except for objects under [Common](#Object/Common), the type names
 // of other objects are lowercase names separated by dots. For example, the type name of a `Const`
 // object is `const`, and the type name of a `ConstName` object is `const.name`. These objects can
@@ -231,7 +229,7 @@ func (x *commonNode[Self]) Package() *Package {
 
 // -------------------------------------------------------------------------
 
-// @api(Object/Common/Decl) represents an top-level declaration in a file.
+// @api(Object/Common/Decl) represents a top-level declaration in a file.
 //
 // All declarations are [nodes](#Object/Common/Node). Currently, the following declarations are supported:
 //
