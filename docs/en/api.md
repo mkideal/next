@@ -85,7 +85,7 @@ _env_ represents the environment variables defined in the command line with the 
 
 Example:
 
-```shell
+```sh
 next -D PROJECT_NAME=demo
 ```
 
@@ -202,48 +202,42 @@ _type_ outputs the string representation of the given [type](#user-content-Objec
 
 _Annotation_ represents an annotation by `name` => value.
 
+Annotation is a map that stores the parameters of a single annotation.
+It allows for flexible parameter types, including strings, numbers, booleans and [types](#user-content-Object_Type).
+
 Example:
 
 Next code:
-```next
-@json(omitempty)
-@event(name="Login")
-@message(name="Login", type=100)
-```
-
-Will be represented as:
-```npl
-{{.json.omitempty}}
-{{.event.name}}
-{{.message.name}}
-{{.message.type}}
-```
-
-Output:
-```
-true
-Login
-Login
-100
-```
 
 <h3><a id="user-content-Object_Annotations" target="_self">Annotations</a></h3>
 
 _Annotations_ represents a group of annotations by `name` => [Annotation](#user-content-Object_Annotation).
 
+Annotations is a map that stores multiple annotations for a given entity.
+The key is the annotation name (string), and the value is the corresponding [Annotation](#user-content-Object_Annotation) object.
+
 <h3><a id="user-content-Object_Comment" target="_self">Comment</a></h3>
 
-_Comment_ represents a line comment.
+_Comment_ represents a line comment or a comment group in Next source code.
+Use this in templates to access and format comments.
 
 <h6><a id="user-content-Object_Comment-String" target="_self">.String</a></h6>
 
-_.String_ returns the origin content of the comment in Next source code.
+_.String_ returns the full original comment text, including delimiters.
+
+Usage in templates:
+```npl
+{{.Comment.String}}
+```
 
 <h6><a id="user-content-Object_Comment-Text" target="_self">.Text</a></h6>
 
-_.Text_ returns the content of the comment in Next source code.
-The content is trimmed by the comment characters.
-For example, the comment "// hello comment" will return "hello comment".
+_.Text_ returns the content of the comment without comment delimiters.
+
+Usage in templates:
+```npl
+{{.Comment.Text}}
+```
 
 <h3><a id="user-content-Object_Const" target="_self">Const</a></h3>
 
@@ -299,45 +293,20 @@ _.Structs_ represents the [list](#user-content-Object_List) of [struct](#user-co
 
 <h3><a id="user-content-Object_Doc" target="_self">Doc</a></h3>
 
-_Doc_ represents a documentation comment for a declaration.
-
-Example:
-
-```next
-
-// This is a documentation comment.
-// It can be multiple lines.
-struct User {
-	// This is a field documentation comment.
-	// It can be multiple lines.
-	name string
-}
-```
+_Doc_ represents a documentation comment for a declaration in Next source code.
+Use this in templates to access and format documentation comments.
 
 <h6><a id="user-content-Object_Doc-Format" target="_self">.Format</a></h6>
 
-_.Format_ formats the documentation comment with the given prefix, ident, and begin and end strings.
+_.Format_ formats the documentation comment for various output styles.
 
-Example:
-
-```next
-
-// This is a documentation comment.
-// It can be multiple lines.
-struct User {
-	// This is a field documentation comment.
-	// It can be multiple lines.
-	name string
-}
-```
+Usage in templates:
 
 ```npl
-{{- define "next/c/doc" -}}
-{{.Format "" " * " "/**\n" " */" | align}}
-{{- end}}
+{{.Doc.Format "" " * " "/**\n" " */"}}
 ```
 
-Output:
+Example output:
 
 ```c
 
@@ -345,24 +314,25 @@ Output:
  * This is a documentation comment.
  * It can be multiple lines.
  */
-typedef struct {
-	/**
-	 * This is a field documentation comment.
-	 * It can be multiple lines.
-	 */
-	char *name;
-} User;
 ```
 
 <h6><a id="user-content-Object_Doc-String" target="_self">.String</a></h6>
 
-_.String_ returns the origin content of the documentation comment in Next source code.
+_.String_ returns the full original documentation comment, including delimiters.
+
+Usage in templates:
+```npl
+{{.Doc.String}}
+```
 
 <h6><a id="user-content-Object_Doc-Text" target="_self">.Text</a></h6>
 
-_.Text_ returns the content of the documentation comment in Next source code.
-The content is trimmed by the comment characters.
-For example, the comment "// hello comment" will return "hello comment".
+_.Text_ returns the content of the documentation comment without comment delimiters.
+
+Usage in templates:
+```npl
+{{.Doc.Text}}
+```
 
 <h3><a id="user-content-Object_Enum" target="_self">Enum</a></h3>
 

@@ -91,11 +91,11 @@ func processCommentGroup(group *ast.CommentGroup, root *TemplateItem) {
 	}
 
 	firstComment := group.List[0].Text
-	if !strings.HasPrefix(firstComment, "// @template(") {
+	if !strings.HasPrefix(firstComment, "// @api(") {
 		return
 	}
 
-	path := strings.TrimPrefix(firstComment, "// @template(")
+	path := strings.TrimPrefix(firstComment, "// @api(")
 	end := strings.Index(path, ")")
 	group.List[0].Text = "// _" + entityName(path[:end]) + "_ " + strings.TrimSpace(path[end+1:])
 	path = path[:end]

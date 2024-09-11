@@ -14,7 +14,10 @@ import (
 	"github.com/next/next/src/token"
 )
 
-// @template(Object/Annotations) represents a group of annotations by `name` => [Annotation](#Object/Annotation).
+// @api(Object/Annotations) represents a group of annotations by `name` => [Annotation](#Object/Annotation).
+//
+// Annotations is a map that stores multiple annotations for a given entity.
+// The key is the annotation name (string), and the value is the corresponding [Annotation](#Object/Annotation) object.
 type Annotations map[string]Annotation
 
 func (a Annotations) get(name string) Annotation {
@@ -24,23 +27,44 @@ func (a Annotations) get(name string) Annotation {
 	return a[name]
 }
 
-// @template(Object/Annotation) represents an annotation by `name` => value.
+// @api(Object/Annotation) represents an annotation by `name` => value.
+//
+// Annotation is a map that stores the parameters of a single annotation.
+// It allows for flexible parameter types, including strings, numbers, booleans and [types](#Object/Type).
 //
 // Example:
 //
 // Next code:
+
 // ```next
-// @json(omitempty)
-// @event(name="Login")
-// @message(name="Login", type=100)
+//
+//	@json(omitempty)
+//	@event(name="Login")
+//	@message(name="Login", type=100)
+//	struct Login {}
+//
+//	@next(type=int8)
+//	enum Color {
+//	    Red = 1;
+//	    Green = 2;
+//	    Blue = 3;
+//	}
+//
 // ```
 //
 // Will be represented as:
+//
 // ```npl
-// {{.json.omitempty}}
-// {{.event.name}}
-// {{.message.name}}
-// {{.message.type}}
+// {{- define "go/struct" -}}
+// {{.Annotations.json.omitempty}}
+// {{.Annotations.event.name}}
+// {{.Annotations.message.name}}
+// {{.Annotations.message.type}}
+// {{- end}}
+//
+// {{- define "go/enum" -}}
+// {{.Annotations.next.type}}
+// {{- end}}
 // ```
 //
 // Output:

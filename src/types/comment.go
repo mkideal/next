@@ -7,7 +7,8 @@ import (
 	"github.com/next/next/src/token"
 )
 
-// @template(Object/Comment) represents a line comment.
+// @api(Object/Comment) represents a line comment or a comment group in Next source code.
+// Use this in templates to access and format comments.
 type Comment struct {
 	pos  token.Pos
 	list []string
@@ -23,9 +24,12 @@ func newComment(cg *ast.CommentGroup) *Comment {
 	}
 }
 
-// @template(Object/Comment.Text) returns the content of the comment in Next source code.
-// The content is trimmed by the comment characters.
-// For example, the comment "// hello comment" will return "hello comment".
+// @api(Object/Comment.Text) returns the content of the comment without comment delimiters.
+//
+// Usage in templates:
+// ```npl
+// {{.Comment.Text}}
+// ```
 func (c *Comment) Text() string {
 	if c == nil || len(c.list) == 0 {
 		return ""
@@ -33,7 +37,12 @@ func (c *Comment) Text() string {
 	return strings.Join(ast.TrimComments(c.list), "\n")
 }
 
-// @template(Object/Comment.String) returns the origin content of the comment in Next source code.
+// @api(Object/Comment.String) returns the full original comment text, including delimiters.
+//
+// Usage in templates:
+// ```npl
+// {{.Comment.String}}
+// ```
 func (c *Comment) String() string {
 	if c == nil || len(c.list) == 0 {
 		return ""
@@ -41,21 +50,8 @@ func (c *Comment) String() string {
 	return formatComments(c.list, false, "", " ")
 }
 
-// @template(Object/Doc) represents a documentation comment for a declaration.
-//
-// Example:
-//
-// ```next
-//
-//	// This is a documentation comment.
-//	// It can be multiple lines.
-//	struct User {
-//		// This is a field documentation comment.
-//		// It can be multiple lines.
-//		name string
-//	}
-//
-// ```
+// @api(Object/Doc) represents a documentation comment for a declaration in Next source code.
+// Use this in templates to access and format documentation comments.
 type Doc struct {
 	pos  token.Pos
 	list []string
@@ -71,9 +67,12 @@ func newDoc(cg *ast.CommentGroup) *Doc {
 	}
 }
 
-// @template(Object/Doc.Text) returns the content of the documentation comment in Next source code.
-// The content is trimmed by the comment characters.
-// For example, the comment "// hello comment" will return "hello comment".
+// @api(Object/Doc.Text) returns the content of the documentation comment without comment delimiters.
+//
+// Usage in templates:
+// ```npl
+// {{.Doc.Text}}
+// ```
 func (d *Doc) Text() string {
 	if d == nil || len(d.list) == 0 {
 		return ""
@@ -81,7 +80,12 @@ func (d *Doc) Text() string {
 	return strings.Join(ast.TrimComments(d.list), "\n")
 }
 
-// @template(Object/Doc.String) returns the origin content of the documentation comment in Next source code.
+// @api(Object/Doc.String) returns the full original documentation comment, including delimiters.
+//
+// Usage in templates:
+// ```npl
+// {{.Doc.String}}
+// ```
 func (d *Doc) String() string {
 	if d == nil || len(d.list) == 0 {
 		return ""
@@ -89,29 +93,15 @@ func (d *Doc) String() string {
 	return formatComments(d.list, true, "", "")
 }
 
-// @template(Object/Doc.Format) formats the documentation comment with the given prefix, ident, and begin and end strings.
+// @api(Object/Doc.Format) formats the documentation comment for various output styles.
 //
-// Example:
-//
-// ```next
-//
-//	// This is a documentation comment.
-//	// It can be multiple lines.
-//	struct User {
-//		// This is a field documentation comment.
-//		// It can be multiple lines.
-//		name string
-//	}
-//
-// ```
+// Usage in templates:
 //
 // ```npl
-// {{- define "next/c/doc" -}}
-// {{.Format "" " * " "/**\n" " */" | align}}
-// {{- end}}
+// {{.Doc.Format "" " * " "/**\n" " */"}}
 // ```
 //
-// Output:
+// Example output:
 //
 // ```c
 //
@@ -119,13 +109,6 @@ func (d *Doc) String() string {
 //	 * This is a documentation comment.
 //	 * It can be multiple lines.
 //	 */
-//	typedef struct {
-//		/**
-//		 * This is a field documentation comment.
-//		 * It can be multiple lines.
-//		 */
-//		char *name;
-//	} User;
 //
 // ```
 func (d *Doc) Format(prefix, indent string, beginAndEnd ...string) string {

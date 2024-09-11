@@ -13,12 +13,12 @@ import (
 	"github.com/next/next/src/token"
 )
 
-// @template(Object/Imports) holds a list of imports.
+// @api(Object/Imports) holds a list of imports.
 type Imports struct {
-	// @template(Object/Imports.File) represents the file containing the imports.
+	// @api(Object/Imports.File) represents the file containing the imports.
 	File *File
 
-	// @template(Object/Imports.List) represents the list of [imports](#Object/Import).
+	// @api(Object/Imports.List) represents the list of [imports](#Object/Import).
 	List []*Import
 }
 
@@ -31,7 +31,7 @@ func (i *Imports) resolve(ctx *Context, file *File) {
 	}
 }
 
-// @template(Object/Imports.TrimmedList) represents a list of unique imports sorted by package name.
+// @api(Object/Imports.TrimmedList) represents a list of unique imports sorted by package name.
 func (i *Imports) TrimmedList() []*Import {
 	var seen = make(map[string]bool)
 	var pkgs []*Import
@@ -48,22 +48,22 @@ func (i *Imports) TrimmedList() []*Import {
 	return pkgs
 }
 
-// @template(Object/Import) represents a file import.
+// @api(Object/Import) represents a file import.
 type Import struct {
 	pos    token.Pos // position of the import declaration
 	target *File     // imported file
 	file   *File     // file containing the import
 
-	// @template(Object/Import.Doc) represents the import declaration [documentation](#Object/Doc).
+	// @api(Object/Import.Doc) represents the import declaration [documentation](#Object/Doc).
 	Doc *Doc
 
-	// @template(Object/import.Comment) represents the import declaration line [comment](#Object/Comment).
+	// @api(Object/import.Comment) represents the import declaration line [comment](#Object/Comment).
 	Comment *Comment
 
-	// @template(Object/import.Path) represents the import path.
+	// @api(Object/import.Path) represents the import path.
 	Path string
 
-	// @template(Object/Import.FullPath) represents the full path of the import.
+	// @api(Object/Import.FullPath) represents the full path of the import.
 	FullPath string
 }
 
@@ -93,35 +93,35 @@ func newImport(ctx *Context, file *File, src *ast.ImportDecl) *Import {
 	return i
 }
 
-// @template(Object/Import.Target) represents the imported file.
+// @api(Object/Import.Target) represents the imported file.
 func (i *Import) Target() *File { return i.target }
 
-// @template(Object/Import.File) represents the file containing the import declaration.
+// @api(Object/Import.File) represents the file containing the import declaration.
 func (i *Import) File() *File { return i.file }
 
 func (i *Import) resolve(ctx *Context, file *File, _ Scope) {}
 
-// @template(Object/List) represents a list of objects.
+// @api(Object/List) represents a list of objects.
 type List[T Object] []T
 
-// @template(Object/List.List) represents the list of objects. It is used to provide a uniform way to access.
+// @api(Object/List.List) represents the list of objects. It is used to provide a uniform way to access.
 func (l List[T]) List() []T {
 	return l
 }
 
-// @template(Object/Consts) represents a [list](#Object/List) of const declarations.
+// @api(Object/Consts) represents a [list](#Object/List) of const declarations.
 type Consts = List[*Const]
 
-// @template(Object/Enums) represents a [list](#Object/List) of enum declarations.
+// @api(Object/Enums) represents a [list](#Object/List) of enum declarations.
 type Enums = List[*Enum]
 
-// @template(Object/Structs) represents a [list](#Object/List) of struct declarations.
+// @api(Object/Structs) represents a [list](#Object/List) of struct declarations.
 type Structs = List[*Struct]
 
-// @template(Object/Interfaces) represents a [list](#Object/List) of interface declarations.
+// @api(Object/Interfaces) represents a [list](#Object/List) of interface declarations.
 type Interfaces = List[*Interface]
 
-// @template(Object/Decls) holds all declarations in a file.
+// @api(Object/Decls) holds all declarations in a file.
 type Decls struct {
 	consts     Consts
 	enums      Enums
@@ -149,7 +149,7 @@ func (d *Decls) resolve(ctx *Context, file *File) {
 	}
 }
 
-// @template(Object/Decls.Consts) represents the [list](#Object/List) of [const](#Object/Const) declarations.
+// @api(Object/Decls.Consts) represents the [list](#Object/List) of [const](#Object/Const) declarations.
 func (d *Decls) Consts() Consts {
 	if d == nil {
 		return nil
@@ -157,7 +157,7 @@ func (d *Decls) Consts() Consts {
 	return availableList(d.consts, d.lang)
 }
 
-// @template(Object/Decls.Enums) represents the [list](#Object/List) of [enum](#Object/Enum) declarations.
+// @api(Object/Decls.Enums) represents the [list](#Object/List) of [enum](#Object/Enum) declarations.
 func (d *Decls) Enums() Enums {
 	if d == nil {
 		return nil
@@ -165,7 +165,7 @@ func (d *Decls) Enums() Enums {
 	return availableList(d.enums, d.lang)
 }
 
-// @template(Object/Decls.Structs) represents the [list](#Object/List) of [struct](#Object/Struct) declarations.
+// @api(Object/Decls.Structs) represents the [list](#Object/List) of [struct](#Object/Struct) declarations.
 func (d *Decls) Structs() Structs {
 	if d == nil {
 		return nil
@@ -173,7 +173,7 @@ func (d *Decls) Structs() Structs {
 	return availableList(d.structs, d.lang)
 }
 
-// @template(Object/Decls.Interfaces) represents the [list](#Object/List) of [interface](#Object/Interface) declarations.
+// @api(Object/Decls.Interfaces) represents the [list](#Object/List) of [interface](#Object/Interface) declarations.
 func (d *Decls) Interfaces() Interfaces {
 	if d == nil {
 		return nil
@@ -181,7 +181,7 @@ func (d *Decls) Interfaces() Interfaces {
 	return availableList(d.interfaces, d.lang)
 }
 
-// @template(Object/NodeName) represents a name of a node in a declaration:
+// @api(Object/NodeName) represents a name of a node in a declaration:
 // - Const name
 // - Enum member name
 // - Struct field name
@@ -193,29 +193,29 @@ type NodeName[T Node] struct {
 	node T
 }
 
-// @template(Object/ConstName) represents the [name object](#Object/NodeName) of a [const](#Object/Const) declaration.
+// @api(Object/ConstName) represents the [name object](#Object/NodeName) of a [const](#Object/Const) declaration.
 type ConstName = NodeName[*Const]
 
-// @template(Object/EnumMemberName) represents the [name object](#Object/NodeName) of an [enum member](#Object/EnumMember).
+// @api(Object/EnumMemberName) represents the [name object](#Object/NodeName) of an [enum member](#Object/EnumMember).
 type EnumMemberName = NodeName[*EnumMember]
 
-// @template(Object/StructFieldName) represents the [name object](#Object/NodeName) of a [struct field](#Object/StructField).
+// @api(Object/StructFieldName) represents the [name object](#Object/NodeName) of a [struct field](#Object/StructField).
 type StructFieldName = NodeName[*StructField]
 
-// @template(Object/InterfaceMethodName) represents the [name object](#Object/NodeName) of an [interface method](#Object/InterfaceMethod).
+// @api(Object/InterfaceMethodName) represents the [name object](#Object/NodeName) of an [interface method](#Object/InterfaceMethod).
 type InterfaceMethodName = NodeName[*InterfaceMethod]
 
-// @template(Object/InterfaceMethodParamName) represents the [name object](#Object/NodeName) of an [interface method parameter](#Object/InterfaceMethodParam).
+// @api(Object/InterfaceMethodParamName) represents the [name object](#Object/NodeName) of an [interface method parameter](#Object/InterfaceMethodParam).
 type InterfaceMethodParamName = NodeName[*InterfaceMethodParam]
 
 func newNodeName[T Node](pos token.Pos, name string, field T) *NodeName[T] {
 	return &NodeName[T]{pos: pos, name: name, node: field}
 }
 
-// @template(Object/NodeName.Node) represents the [node](#Object/Node) that contains the name.
+// @api(Object/NodeName.Node) represents the [node](#Object/Node) that contains the name.
 func (n *NodeName[T]) Node() T { return n.node }
 
-// @template(Object/NodeName.String) represents the string representation of the node name.
+// @api(Object/NodeName.String) represents the string representation of the node name.
 func (n *NodeName[T]) String() string { return n.name }
 
 // commonNode represents a common node.
@@ -271,7 +271,7 @@ type iotaValue struct {
 	found bool
 }
 
-// @template(Object/Value) represents a constant value for a const declaration or an enum member.
+// @api(Object/Value) represents a constant value for a const declaration or an enum member.
 type Value struct {
 	namePos    token.Pos
 	name       string
@@ -357,22 +357,22 @@ func (v *Value) resolveValue(ctx *Context, file *File, scope Scope, refs []*Valu
 	return v.val
 }
 
-// @template(Object/Value.IsEnum) returns true if the value is an enum member.
+// @api(Object/Value.IsEnum) returns true if the value is an enum member.
 func (v *Value) IsEnum() bool {
 	return v.enum.typ != nil
 }
 
-// @template(Object/Value.Type) represents the [primitive type](#Object/Type/PrimitiveType) of the value.
+// @api(Object/Value.Type) represents the [primitive type](#Object/Type/PrimitiveType) of the value.
 func (v *Value) Type() *PrimitiveType {
 	return v.typ
 }
 
-// @template(Object/Value.String) represents the string representation of the value.
+// @api(Object/Value.String) represents the string representation of the value.
 func (v *Value) String() string {
 	return v.val.String()
 }
 
-// @template(Object/Value.Any) represents the underlying value of the constant.
+// @api(Object/Value.Any) represents the underlying value of the constant.
 func (v *Value) Any() any {
 	if v.val == nil {
 		return nil
@@ -396,14 +396,14 @@ func (v *Value) Any() any {
 	return nil
 }
 
-// @template(Object/Const) represents a const declaration.
+// @api(Object/Const) represents a const declaration.
 type Const struct {
 	*commonNode[*Const]
 
 	// value is the constant value.
 	value *Value
 
-	// @template(Object/Const.Comment) is the line [comment](#Object/Comment) of the constant declaration.
+	// @api(Object/Const.Comment) is the line [comment](#Object/Comment) of the constant declaration.
 	Comment *Comment
 }
 
@@ -422,51 +422,51 @@ func (c *Const) resolve(ctx *Context, file *File, scope Scope) {
 	c.value.resolve(ctx, file, scope)
 }
 
-// @template(Object/Const.Name) represents the [name object](#Object.NodeName) of the constant.
+// @api(Object/Const.Name) represents the [name object](#Object.NodeName) of the constant.
 func (c *Const) Name() *NodeName[*Const] {
 	return c.name
 }
 
-// @template(Object/Const.Type) represents the type of the constant.
+// @api(Object/Const.Type) represents the type of the constant.
 func (c *Const) Type() *PrimitiveType {
 	return c.value.Type()
 }
 
-// @template(Object/Const.Value) represents the [value object](#Object/Value) of the constant.
+// @api(Object/Const.Value) represents the [value object](#Object/Value) of the constant.
 func (c *Const) Value() *Value {
 	return c.value
 }
 
-// @template(Object/Fields) represents a list of fields in a declaration.
+// @api(Object/Fields) represents a list of fields in a declaration.
 type Fields[D Node, F Object] struct {
-	// @template(Object/Fields.Decl) is the declaration object that contains the fields.
+	// @api(Object/Fields.Decl) is the declaration object that contains the fields.
 	// Decl may be an enum, struct, or interface.
 	Decl D
 
-	// @template(Object/Fields.List) is the list of fields in the declaration.
+	// @api(Object/Fields.List) is the list of fields in the declaration.
 	List []F
 }
 
-// @template(Object/EnumMembers) represents the [list](#Object/Fields) of [enum members](#Object/EnumMember).
+// @api(Object/EnumMembers) represents the [list](#Object/Fields) of [enum members](#Object/EnumMember).
 type EnumMembers = Fields[*Enum, *EnumMember]
 
-// @template(Object/StructFields) represents the [list](#Object/Fields) of [struct fields](#Object/StructField).
+// @api(Object/StructFields) represents the [list](#Object/Fields) of [struct fields](#Object/StructField).
 type StructFields = Fields[*Struct, *StructField]
 
-// @template(Object/InterfaceMethods) represents the [list](#Object/Fields) of [interface methods](#Object/InterfaceMethod).
+// @api(Object/InterfaceMethods) represents the [list](#Object/Fields) of [interface methods](#Object/InterfaceMethod).
 type InterfaceMethods = Fields[*Interface, *InterfaceMethod]
 
-// @template(Object/InterfaceMethodParams) represents the [list](#Object/Fields) of [interface method parameters](#Object/InterfaceMethodParam).
+// @api(Object/InterfaceMethodParams) represents the [list](#Object/Fields) of [interface method parameters](#Object/InterfaceMethodParam).
 type InterfaceMethodParams = Fields[*InterfaceMethod, *InterfaceMethodParam]
 
-// @template(Object/Enum) represents an enum declaration.
+// @api(Object/Enum) represents an enum declaration.
 type Enum struct {
 	*commonNode[*Enum]
 
-	//  @template(Object/Enum.Type) is the enum type.
+	//  @api(Object/Enum.Type) is the enum type.
 	Type *DeclType[*Enum]
 
-	//  @template(Object/Enum.Members) is the list of enum members.
+	//  @api(Object/Enum.Members) is the list of enum members.
 	Members *EnumMembers
 }
 
@@ -489,17 +489,17 @@ func (e *Enum) resolve(ctx *Context, file *File, scope Scope) {
 	}
 }
 
-// @template(Object/EnumMember) represents an enum member object in an [enum](#Object/Enum) declaration.
+// @api(Object/EnumMember) represents an enum member object in an [enum](#Object/Enum) declaration.
 type EnumMember struct {
 	*commonNode[*EnumMember]
 
 	// value is the enum member value.
 	value *Value
 
-	//  @template(Object/EnumMember.Decl) represents the [enum](#Object/Enum) that contains the member.
+	//  @api(Object/EnumMember.Decl) represents the [enum](#Object/Enum) that contains the member.
 	Decl *Enum
 
-	//  @template(Object/EnumMember.Comment) represents the line [comment](#Object/Comment) of the enum member declaration.
+	//  @api(Object/EnumMember.Comment) represents the line [comment](#Object/Comment) of the enum member declaration.
 	Comment *Comment
 }
 
@@ -521,27 +521,27 @@ func (m *EnumMember) resolve(ctx *Context, file *File, scope Scope) {
 	m.value.resolve(ctx, file, scope)
 }
 
-// @template(Object/EnumMember.Name) represents the [name object](#Object/NodeName) of the enum member.
+// @api(Object/EnumMember.Name) represents the [name object](#Object/NodeName) of the enum member.
 func (m *EnumMember) Name() *NodeName[*EnumMember] {
 	return m.name
 }
 
-// @template(Object/EnumMember.Value) represents the [value object](#Object/Value) of the enum member.
+// @api(Object/EnumMember.Value) represents the [value object](#Object/Value) of the enum member.
 func (m *EnumMember) Value() *Value {
 	return m.value
 }
 
-// @template(Object/Value.IsFirst) reports whether the value is the first member of the enum type.
+// @api(Object/Value.IsFirst) reports whether the value is the first member of the enum type.
 func (m *EnumMember) IsFirst() bool {
 	return m.value.enum.typ != nil && m.value.enum.index == 0
 }
 
-// @template(Object/Value.IsLast) reports whether the value is the last member of the enum type.
+// @api(Object/Value.IsLast) reports whether the value is the last member of the enum type.
 func (m *EnumMember) IsLast() bool {
 	return m.value.enum.typ != nil && m.value.enum.index == len(m.value.enum.typ.Members.List)-1
 }
 
-// @template(Object/Struct) represents a struct declaration.
+// @api(Object/Struct) represents a struct declaration.
 type Struct struct {
 	*commonNode[*Struct]
 
@@ -551,7 +551,7 @@ type Struct struct {
 	// fields is the list of struct fields.
 	fields *StructFields
 
-	//  @template(Object/Struct.Type) represents the struct type.
+	//  @api(Object/Struct.Type) represents the struct type.
 	Type *DeclType[*Struct]
 }
 
@@ -574,22 +574,22 @@ func (s *Struct) resolve(ctx *Context, file *File, scope Scope) {
 	}
 }
 
-// @template(Object/Struct.Fields) represents the list of struct fields.
+// @api(Object/Struct.Fields) represents the list of struct fields.
 func (s *Struct) Fields() *StructFields {
 	return availableFields(s.fields, s.lang)
 }
 
-// @template(Object/StructField) represents a struct field declaration.
+// @api(Object/StructField) represents a struct field declaration.
 type StructField struct {
 	*commonNode[*StructField]
 
-	//  @template(Object/StructField.Decl) represents the struct that contains the field.
+	//  @api(Object/StructField.Decl) represents the struct that contains the field.
 	Decl *Struct
 
-	//  @template(Object/StructField.Type) represents the [struct field type](#Object/StructFieldType).
+	//  @api(Object/StructField.Type) represents the [struct field type](#Object/StructFieldType).
 	Type *StructFieldType
 
-	//  @template(Object/StructField.Comment) represents the line [comment](#Object/Comment) of the struct field declaration.
+	//  @api(Object/StructField.Comment) represents the line [comment](#Object/Comment) of the struct field declaration.
 	Comment *Comment
 }
 
@@ -606,21 +606,21 @@ func (f *StructField) resolve(ctx *Context, file *File, scope Scope) {
 	f.Type.resolve(ctx, file, scope)
 }
 
-// @template(Object/StructField.Name) represents the [name object](#Object/NodeName) of the struct field.
+// @api(Object/StructField.Name) represents the [name object](#Object/NodeName) of the struct field.
 func (f *StructField) Name() *NodeName[*StructField] {
 	return f.name
 }
 
-// @template(Object/StructFieldType) represents a struct field type.
+// @api(Object/StructFieldType) represents a struct field type.
 type StructFieldType struct {
 	unresolved struct {
 		typ ast.Type
 	}
 
-	//  @template(Object/StructFieldType.Type) represents the underlying type of the struct field.
+	//  @api(Object/StructFieldType.Type) represents the underlying type of the struct field.
 	Type Type
 
-	//  @template(Object/StructFieldType.Field) represents the struct field that contains the type.
+	//  @api(Object/StructFieldType.Field) represents the struct field that contains the type.
 	Field *StructField
 }
 
@@ -634,7 +634,7 @@ func (t *StructFieldType) resolve(ctx *Context, file *File, scope Scope) {
 	t.Type = ctx.resolveType(file, t.unresolved.typ, false)
 }
 
-// @template(Object/Interface) represents an interface declaration.
+// @api(Object/Interface) represents an interface declaration.
 type Interface struct {
 	*commonNode[*Interface]
 
@@ -644,7 +644,7 @@ type Interface struct {
 	// methods is the list of interface methods.
 	methods *InterfaceMethods
 
-	// @template(Object/Interface.Type) represents the interface type.
+	// @api(Object/Interface.Type) represents the interface type.
 	Type *DeclType[*Interface]
 }
 
@@ -667,25 +667,25 @@ func (i *Interface) resolve(ctx *Context, file *File, scope Scope) {
 	}
 }
 
-// @template(Object/Interface.Methods) represents the list of interface methods.
+// @api(Object/Interface.Methods) represents the list of interface methods.
 func (i *Interface) Methods() *InterfaceMethods {
 	return availableFields(i.methods, i.lang)
 }
 
-// @template(Object/InterfaceMethod) represents an interface method declaration.
+// @api(Object/InterfaceMethod) represents an interface method declaration.
 type InterfaceMethod struct {
 	*commonNode[*InterfaceMethod]
 
-	// @template(Object/InterfaceMethod.Decl) represents the interface that contains the method.
+	// @api(Object/InterfaceMethod.Decl) represents the interface that contains the method.
 	Decl *Interface
 
-	// @template(Object/InterfaceMethod.Params) represents the list of method parameters.
+	// @api(Object/InterfaceMethod.Params) represents the list of method parameters.
 	Params *InterfaceMethodParams
 
-	// @template(Object/InterfaceMethod.Result) represents the return type of the method.
+	// @api(Object/InterfaceMethod.Result) represents the return type of the method.
 	Result *InterfaceMethodResult
 
-	// @template(Object/InterfaceMethod.Comment) represents the line [comment](#Object/Comment) of the interface method declaration.
+	// @api(Object/InterfaceMethod.Comment) represents the line [comment](#Object/Comment) of the interface method declaration.
 	Comment *Comment
 }
 
@@ -714,19 +714,19 @@ func (m *InterfaceMethod) resolve(ctx *Context, file *File, scope Scope) {
 	}
 }
 
-// @template(Object/InterfaceMethod.Name) represents the [name object](#Object/NodeName) of the interface method.
+// @api(Object/InterfaceMethod.Name) represents the [name object](#Object/NodeName) of the interface method.
 func (m *InterfaceMethod) Name() *NodeName[*InterfaceMethod] {
 	return m.name
 }
 
-// @template(Object/InterfaceMethodParam) represents an interface method parameter declaration.
+// @api(Object/InterfaceMethodParam) represents an interface method parameter declaration.
 type InterfaceMethodParam struct {
 	*commonNode[*InterfaceMethodParam]
 
-	// @template(Object/InterfaceMethodParam.Method) represents the interface method that contains the parameter.
+	// @api(Object/InterfaceMethodParam.Method) represents the interface method that contains the parameter.
 	Method *InterfaceMethod
 
-	// @template(Object/InterfaceMethodParam.Type) represents the parameter type.
+	// @api(Object/InterfaceMethodParam.Type) represents the parameter type.
 	Type *InterfaceMethodParamType
 }
 
@@ -746,21 +746,21 @@ func (p *InterfaceMethodParam) resolve(ctx *Context, file *File, scope Scope) {
 	p.Type.resolve(ctx, file, scope)
 }
 
-// @template(Object/InterfaceMethodParam.Name) represents the [name object](#Object/NodeName) of the interface method parameter.
+// @api(Object/InterfaceMethodParam.Name) represents the [name object](#Object/NodeName) of the interface method parameter.
 func (p *InterfaceMethodParam) Name() *NodeName[*InterfaceMethodParam] {
 	return p.name
 }
 
-// @template(Object/InterfaceMethodParamType) represents an interface method parameter type.
+// @api(Object/InterfaceMethodParamType) represents an interface method parameter type.
 type InterfaceMethodParamType struct {
 	unresolved struct {
 		typ ast.Type
 	}
 
-	// @template(Object/InterfaceMethodParamType.Param) represents the interface method parameter that contains the type.
+	// @api(Object/InterfaceMethodParamType.Param) represents the interface method parameter that contains the type.
 	Param *InterfaceMethodParam
 
-	// @template(Object/InterfaceMethodParamType.Type) represnts the underlying type of the parameter.
+	// @api(Object/InterfaceMethodParamType.Type) represnts the underlying type of the parameter.
 	Type Type
 }
 
@@ -774,16 +774,16 @@ func (t *InterfaceMethodParamType) resolve(ctx *Context, file *File, scope Scope
 	t.Type = ctx.resolveType(file, t.unresolved.typ, false)
 }
 
-// @template(Object/InterfaceMethodResult) represents an interface method result.
+// @api(Object/InterfaceMethodResult) represents an interface method result.
 type InterfaceMethodResult struct {
 	unresolved struct {
 		typ ast.Type
 	}
 
-	// @template(Object/InterfaceMethodResult.Method) represents the interface method that contains the result.
+	// @api(Object/InterfaceMethodResult.Method) represents the interface method that contains the result.
 	Method *InterfaceMethod
 
-	// @template(Object/InterfaceMethodResult.Type) represents the underlying type of the result.
+	// @api(Object/InterfaceMethodResult.Type) represents the underlying type of the result.
 	Type Type
 }
 
