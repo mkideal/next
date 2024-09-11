@@ -29,7 +29,7 @@ func _() {
 	_ = x[KindInterface-18]
 }
 
-const _Kind_name = "invalidboolintint8int16int32int64float32float64bytebytesstringanymapvectorarrayenumstructinterface"
+const _Kind_name = "InvalidBoolIntInt8Int16Int32Int64Float32Float64ByteBytesStringAnyMapVectorArrayEnumStructInterface"
 
 var _Kind_index = [...]uint8{0, 7, 11, 14, 18, 23, 28, 33, 40, 47, 51, 56, 62, 65, 68, 74, 79, 83, 89, 98}
 

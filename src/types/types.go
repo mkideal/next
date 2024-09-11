@@ -8,9 +8,35 @@ import (
 	"github.com/next/next/src/token"
 )
 
+// @api(Object/Common)
+// Common contains some general types, including a generic type. Unless specifically stated,
+// these objects cannot be directly called using the [next](#Context/next) function.
+// The [Value](#Object/Common/Value) object represents a value, which can be either a constant
+// value or an enum member's value. The object type for the former is `const.value`, and for
+// the latter is `enum.member.value`.
+
 // -------------------------------------------------------------------------
 
-// @api(Object/Object) represents an object in Next which can be rendered in a template like this: {{next Object}}
+// @api(Object)
+// Object is a generic object type. These objects can be used as parameters for the [next](#Context/next)
+// function, like `{{next .}}`. Except for objects under [Common](#Object/Common), the type names
+// of other objects are lowercase names separated by dots. For example, the type name of a `Const`
+// object is `const`, and the type name of a `ConstName` object is `const.name`. These objects can
+// be customized for code generation by defining templates. For example:
+//
+// ```npl
+// {{- define "go/const" -}}
+// const {{next .Name}} = {{.Value}};
+// {{- end}}
+//
+// {{- define "go/const.name" -}}
+// {{.Node.Name}}_{{.String}}
+// {{- end}}
+// ```
+//
+// So when generating Go code, the output content for a `Const` object would be `const {{.Name}} = {{.Value}};`,
+// and the output content for a `ConstName` object would be `{{.Node.Name}}_{{.String}}`. These two
+// definitions will override the built-in template functions `next/go/const` and `next/go/const.name`.
 type Object interface {
 	// getType returns the type of the object.
 	getType() string
@@ -93,7 +119,7 @@ func (x *Value) getType() string {
 // Type objects
 
 func (*UsedType) getType() string        { return "used.type" }
-func (x *PrimitiveType) getType() string { return x.name + ".type" }
+func (x *PrimitiveType) getType() string { return "primitive.type" }
 func (*ArrayType) getType() string       { return "array.type" }
 func (*VectorType) getType() string      { return "vector.type" }
 func (*MapType) getType() string         { return "map.type" }
@@ -134,24 +160,36 @@ func (x *DeclType[T]) getPos() token.Pos      { return x.pos }
 
 // -------------------------------------------------------------------------
 
-// @api(Object/Node) represents a Node in the AST. It's a special object that can be annotated with a documentation comment.
+// @api(Object/Common/Node) represents a Node in the Next AST.
+//
+// Currently, the following nodes are supported:
+//
+// - [File](#Object/File)
+// - [Const](#Object/Const)
+// - [Enum](#Object/Enum)
+// - [Struct](#Object/Struct)
+// - [Interface](#Object/Interface)
+// - [EnumMember](#Object/EnumMember)
+// - [StructField](#Object/StructField)
+// - [InterfaceMethod](#Object/InterfaceMethod)
+// - [InterfaceMethodParam](#Object/InterfaceMethodParam)
 type Node interface {
 	LocatedObject
 
 	// getName returns the name of the node.
 	getName() string
 
-	// @api(Object/Node.File) represents the file containing the node.
+	// @api(Object/Common/Node.File) represents the file containing the node.
 	File() *File
 
-	// @api(Object/Node.Package) represents the package containing the node.
+	// @api(Object/Common/Node.Package) represents the package containing the node.
 	// It's a shortcut for Node.File().Package().
 	Package() *Package
 
-	// @api(Object/Node.Doc) represents the documentation comment for the node.
+	// @api(Object/Common/Node.Doc) represents the documentation comment for the node.
 	Doc() *Doc
 
-	// @api(Object/Node.Annotations) represents the annotations for the node.
+	// @api(Object/Common/Node.Annotations) represents the [annotations](#Annotation/Annotations) for the node.
 	Annotations() Annotations
 }
 
@@ -170,11 +208,11 @@ func (x *File) getName() string             { return x.Name() }
 func (x *commonNode[Self]) getName() string { return x.name.name }
 
 func (x *File) File() *File { return x }
-func (d *commonNode[Self]) File() *File {
-	if d == nil {
+func (x *commonNode[Self]) File() *File {
+	if x == nil {
 		return nil
 	}
-	return d.file
+	return x.file
 }
 
 func (x *File) Package() *Package {
@@ -193,7 +231,15 @@ func (x *commonNode[Self]) Package() *Package {
 
 // -------------------------------------------------------------------------
 
-// @api(Object/Decl) represents an top-level declaration in a file.
+// @api(Object/Common/Decl) represents an top-level declaration in a file.
+//
+// All declarations are [nodes](#Object/Common/Node). Currently, the following declarations are supported:
+//
+// - [File](#Object/File)
+// - [Const](#Object/Const)
+// - [Enum](#Object/Enum)
+// - [Struct](#Object/Struct)
+// - [Interface](#Object/Interface)
 type Decl interface {
 	Node
 
@@ -230,17 +276,28 @@ func (builtinDecl) declNode()                {}
 // -------------------------------------------------------------------------
 // Types
 
-// @api(Object/Type) represents a Next type.
+// @api(Object/Common/Type) represents a Next type.
+//
+// Currently, the following types are supported:
+//
+// - [UsedType](#Object/UsedType)
+// - [PrimitiveType](#Object/PrimitiveType)
+// - [ArrayType](#Object/ArrayType)
+// - [VectorType](#Object/VectorType)
+// - [MapType](#Object/MapType)
+// - [EnumType](#Object/EnumType)
+// - [StructType](#Object/StructType)
+// - [InterfaceType](#Object/InterfaceType)
 type Type interface {
 	Object
 
-	// @api(Object/Type.Kind) returns the kind of the type.
+	// @api(Object/Common/Type.Kind) returns the kind of the type.
 	Kind() token.Kind
 
-	// @api(Object/Type.String) represents the string representation of the type.
+	// @api(Object/Common/Type.String) represents the string representation of the type.
 	String() string
 
-	// @api(Object/Type.Decl) represents the [declaration](#Decl) of the type.
+	// @api(Object/Common/Type.Decl) represents the [declaration](#Decl) of the type.
 	Decl() Decl
 }
 
@@ -266,7 +323,7 @@ func (*VectorType) Kind() token.Kind      { return token.KindVector }
 func (*MapType) Kind() token.Kind         { return token.KindMap }
 func (x *DeclType[T]) Kind() token.Kind   { return x.kind }
 
-// @api(Object/Type/UsedType) represents a used type in a file.
+// @api(Object/UsedType) represents a used type in a file.
 type UsedType struct {
 	// @api(Object/UsedType.File) represents the file containing the used type.
 	File *File
@@ -289,7 +346,7 @@ func (u *UsedType) String() string { return u.Type.String() }
 // UsedTypeNode returns the AST node of the used type.
 func UsedTypeNode(u *UsedType) ast.Type { return u.node }
 
-// @api(Object/Type/PrimitiveType) represents a primitive type.
+// @api(Object/PrimitiveType) represents a primitive type.
 type PrimitiveType struct {
 	name string
 	kind token.Kind
@@ -306,7 +363,7 @@ var primitiveTypes = func() map[string]*PrimitiveType {
 	return m
 }()
 
-// @api(Object/Type/ArrayType) represents an array type.
+// @api(Object/ArrayType) represents an array type.
 type ArrayType struct {
 	pos token.Pos
 
@@ -318,7 +375,7 @@ func (a *ArrayType) String() string {
 	return "array<" + a.ElemType.String() + "," + strconv.FormatInt(a.N, 10) + ">"
 }
 
-// @api(Object/Type/VectorType) represents a vector type.
+// @api(Object/VectorType) represents a vector type.
 type VectorType struct {
 	pos token.Pos
 
@@ -329,7 +386,7 @@ func (v *VectorType) String() string {
 	return "vector<" + v.ElemType.String() + ">"
 }
 
-// @api(Object/Type/MapType) represents a map type.
+// @api(Object/MapType) represents a map type.
 type MapType struct {
 	pos token.Pos
 
@@ -349,13 +406,13 @@ type DeclType[T Decl] struct {
 	decl T
 }
 
-// @api(Object/Type/EnumType) represents the type of an [enum](#Object/Enum) declaration.
+// @api(Object/EnumType) represents the type of an [enum](#Object/Enum) declaration.
 type EnumType = DeclType[*Enum]
 
-// @api(Object/Type/StructType) represents the type of a [struct](#Object/Struct) declaration.
+// @api(Object/StructType) represents the type of a [struct](#Object/Struct) declaration.
 type StructType = DeclType[*Struct]
 
-// @api(Object/Type/InterfaceType) represents the type of an [interface](#Object/Interface) declaration.
+// @api(Object/InterfaceType) represents the type of an [interface](#Object/Interface) declaration.
 type InterfaceType = DeclType[*Interface]
 
 func newDeclType[T Decl](pos token.Pos, kind token.Kind, name string, decl T) *DeclType[T] {

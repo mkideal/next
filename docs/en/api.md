@@ -1,39 +1,49 @@
 # API Reference
 
 <ul>
-  <li><a href="#user-content-Function">Function</a></li>
+  <li><a href="#user-content-Context">Context</a></li>
 <ul>
-    <li><a href="#user-content-Function_align">align</a></li>
-    <li><a href="#user-content-Function_env">env</a></li>
-    <li><a href="#user-content-Function_error">error</a></li>
-    <li><a href="#user-content-Function_errorf">errorf</a></li>
-    <li><a href="#user-content-Function_exist">exist</a></li>
-    <li><a href="#user-content-Function_head">head</a></li>
-    <li><a href="#user-content-Function_lang">lang</a></li>
-    <li><a href="#user-content-Function_meta">meta</a></li>
-    <li><a href="#user-content-Function_next">next</a></li>
-    <li><a href="#user-content-Function_render">render</a></li>
-    <li><a href="#user-content-Function_super">super</a></li>
-    <li><a href="#user-content-Function_this">this</a></li>
-    <li><a href="#user-content-Function_type">type</a></li>
+    <li><a href="#user-content-Context_align">align</a></li>
+    <li><a href="#user-content-Context_env">env</a></li>
+    <li><a href="#user-content-Context_error">error</a></li>
+    <li><a href="#user-content-Context_errorf">errorf</a></li>
+    <li><a href="#user-content-Context_exist">exist</a></li>
+    <li><a href="#user-content-Context_head">head</a></li>
+    <li><a href="#user-content-Context_lang">lang</a></li>
+    <li><a href="#user-content-Context_meta">meta</a></li>
+    <li><a href="#user-content-Context_next">next</a></li>
+    <li><a href="#user-content-Context_render">render</a></li>
+    <li><a href="#user-content-Context_super">super</a></li>
+    <li><a href="#user-content-Context_this">this</a></li>
+    <li><a href="#user-content-Context_type">type</a></li>
 </ul>
   <li><a href="#user-content-Object">Object</a></li>
 <ul>
-    <li><a href="#user-content-Object_Annotation">Annotation</a></li>
-    <li><a href="#user-content-Object_Annotations">Annotations</a></li>
+    <li><a href="#user-content-Object_ArrayType">ArrayType</a></li>
     <li><a href="#user-content-Object_Comment">Comment</a></li>
+    <li><a href="#user-content-Object_Common">Common</a></li>
+<ul>
+      <li><a href="#user-content-Object_Common_Annotation">Annotation</a></li>
+      <li><a href="#user-content-Object_Common_Annotations">Annotations</a></li>
+      <li><a href="#user-content-Object_Common_Decl">Decl</a></li>
+      <li><a href="#user-content-Object_Common_Fields">Fields</a></li>
+      <li><a href="#user-content-Object_Common_List">List</a></li>
+      <li><a href="#user-content-Object_Common_Node">Node</a></li>
+      <li><a href="#user-content-Object_Common_NodeName">NodeName</a></li>
+      <li><a href="#user-content-Object_Common_Symbol">Symbol</a></li>
+      <li><a href="#user-content-Object_Common_Type">Type</a></li>
+</ul>
     <li><a href="#user-content-Object_Const">Const</a></li>
     <li><a href="#user-content-Object_ConstName">ConstName</a></li>
     <li><a href="#user-content-Object_Consts">Consts</a></li>
-    <li><a href="#user-content-Object_Decl">Decl</a></li>
     <li><a href="#user-content-Object_Decls">Decls</a></li>
     <li><a href="#user-content-Object_Doc">Doc</a></li>
     <li><a href="#user-content-Object_Enum">Enum</a></li>
     <li><a href="#user-content-Object_EnumMember">EnumMember</a></li>
     <li><a href="#user-content-Object_EnumMemberName">EnumMemberName</a></li>
     <li><a href="#user-content-Object_EnumMembers">EnumMembers</a></li>
+    <li><a href="#user-content-Object_EnumType">EnumType</a></li>
     <li><a href="#user-content-Object_Enums">Enums</a></li>
-    <li><a href="#user-content-Object_Fields">Fields</a></li>
     <li><a href="#user-content-Object_File">File</a></li>
     <li><a href="#user-content-Object_Import">Import</a></li>
     <li><a href="#user-content-Object_Imports">Imports</a></li>
@@ -46,40 +56,41 @@
     <li><a href="#user-content-Object_InterfaceMethodParams">InterfaceMethodParams</a></li>
     <li><a href="#user-content-Object_InterfaceMethodResult">InterfaceMethodResult</a></li>
     <li><a href="#user-content-Object_InterfaceMethods">InterfaceMethods</a></li>
+    <li><a href="#user-content-Object_InterfaceType">InterfaceType</a></li>
     <li><a href="#user-content-Object_Interfaces">Interfaces</a></li>
-    <li><a href="#user-content-Object_List">List</a></li>
-    <li><a href="#user-content-Object_Node">Node</a></li>
-    <li><a href="#user-content-Object_NodeName">NodeName</a></li>
-    <li><a href="#user-content-Object_Object">Object</a></li>
+    <li><a href="#user-content-Object_MapType">MapType</a></li>
     <li><a href="#user-content-Object_Package">Package</a></li>
+    <li><a href="#user-content-Object_PrimitiveType">PrimitiveType</a></li>
     <li><a href="#user-content-Object_Struct">Struct</a></li>
     <li><a href="#user-content-Object_StructField">StructField</a></li>
     <li><a href="#user-content-Object_StructFieldName">StructFieldName</a></li>
     <li><a href="#user-content-Object_StructFieldType">StructFieldType</a></li>
     <li><a href="#user-content-Object_StructFields">StructFields</a></li>
+    <li><a href="#user-content-Object_StructType">StructType</a></li>
     <li><a href="#user-content-Object_Structs">Structs</a></li>
-    <li><a href="#user-content-Object_Symbol">Symbol</a></li>
-    <li><a href="#user-content-Object_Type">Type</a></li>
-<ul>
-      <li><a href="#user-content-Object_Type_ArrayType">ArrayType</a></li>
-      <li><a href="#user-content-Object_Type_EnumType">EnumType</a></li>
-      <li><a href="#user-content-Object_Type_InterfaceType">InterfaceType</a></li>
-      <li><a href="#user-content-Object_Type_MapType">MapType</a></li>
-      <li><a href="#user-content-Object_Type_PrimitiveType">PrimitiveType</a></li>
-      <li><a href="#user-content-Object_Type_StructType">StructType</a></li>
-      <li><a href="#user-content-Object_Type_UsedType">UsedType</a></li>
-      <li><a href="#user-content-Object_Type_VectorType">VectorType</a></li>
-</ul>
+    <li><a href="#user-content-Object_UsedType">UsedType</a></li>
     <li><a href="#user-content-Object_Value">Value</a></li>
+    <li><a href="#user-content-Object_VectorType">VectorType</a></li>
 </ul>
 </ul>
 
-<h2><a id="user-content-Function" target="_self">Function</a></h2>
-<h3><a id="user-content-Function_align" target="_self">align</a></h3>
+<h2><a id="user-content-Context" target="_self">Context</a></h2>
+
+_Context_
+Context-related methods and properties are used to retrieve information, perform operations, and generate code within the current code generator's context. These methods or properties are called directly by name, for example:
+
+```npl
+{{head}}
+{{next this)}}
+{{lang}}
+{{exist meta.path}}
+```
+
+<h3><a id="user-content-Context_align" target="_self">align</a></h3>
 
 _align_ aligns the given text with the last line indent of the generated content.
 
-<h3><a id="user-content-Function_env" target="_self">env</a></h3>
+<h3><a id="user-content-Context_env" target="_self">env</a></h3>
 
 _env_ represents the environment variables defined in the command line with the flag `-D`.
 
@@ -93,7 +104,7 @@ next -D PROJECT_NAME=demo
 {{env.PROJECT_NAME}}
 ```
 
-<h3><a id="user-content-Function_error" target="_self">error</a></h3>
+<h3><a id="user-content-Context_error" target="_self">error</a></h3>
 
 _error_ used to return an error message in the template.
 
@@ -103,7 +114,7 @@ Example:
 {{error "Something went wrong"}}
 ```
 
-<h3><a id="user-content-Function_errorf" target="_self">errorf</a></h3>
+<h3><a id="user-content-Context_errorf" target="_self">errorf</a></h3>
 
 _errorf_ used to return a formatted error message in the template.
 
@@ -113,13 +124,13 @@ Example:
 {{errorf "%s went wrong" "Something"}}
 ```
 
-<h3><a id="user-content-Function_exist" target="_self">exist</a></h3>
+<h3><a id="user-content-Context_exist" target="_self">exist</a></h3>
 
 _exist_ checks whether the given path exists.
 If the path is not absolute, it will be resolved relative to the current output directory
 for the current language by command line flag `-O`.
 
-<h3><a id="user-content-Function_head" target="_self">head</a></h3>
+<h3><a id="user-content-Context_head" target="_self">head</a></h3>
 
 _head_ outputs the header of the generated file.
 
@@ -139,11 +150,11 @@ Output (for c):
 /* Code generated by "next v0.0.1"; DO NOT EDIT. */
 ```
 
-<h3><a id="user-content-Function_lang" target="_self">lang</a></h3>
+<h3><a id="user-content-Context_lang" target="_self">lang</a></h3>
 
 _lang_ represents the current language to be generated.
 
-<h3><a id="user-content-Function_meta" target="_self">meta</a></h3>
+<h3><a id="user-content-Context_meta" target="_self">meta</a></h3>
 
 _meta_ represents the metadata of a entrypoint template.
 To define a meta, you should define a template with the name "meta/<key>".
@@ -168,21 +179,21 @@ All meta templates should be defined in the entrypoint template.
 The meta will be resolved in the order of the template definition
 before rendering the entrypoint template.
 
-<h3><a id="user-content-Function_next" target="_self">next</a></h3>
+<h3><a id="user-content-Context_next" target="_self">next</a></h3>
 
 _next_ executes the next template with the given [object](#user-content-Object).
 
-<h3><a id="user-content-Function_render" target="_self">render</a></h3>
+<h3><a id="user-content-Context_render" target="_self">render</a></h3>
 
 _render_ executes the template with the given name and data.
 
-<h3><a id="user-content-Function_super" target="_self">super</a></h3>
+<h3><a id="user-content-Context_super" target="_self">super</a></h3>
 
 _super_ executes the super template with the given [object](#user-content-Object).
 
-<h3><a id="user-content-Function_this" target="_self">this</a></h3>
+<h3><a id="user-content-Context_this" target="_self">this</a></h3>
 
-_this_ represents the current [declaration](#user-content-Object_Decl) object to be rendered.
+_this_ represents the current [declaration](#user-content-Object_Common_Decl) object to be rendered.
 this defined in the template [meta](#user-content-meta) `meta/this`. Supported types are:
 
 - [file](#user-content-Object_File)
@@ -193,28 +204,36 @@ this defined in the template [meta](#user-content-meta) `meta/this`. Supported t
 
 It's a [file](#user-content-Object_File) by default.
 
-<h3><a id="user-content-Function_type" target="_self">type</a></h3>
+<h3><a id="user-content-Context_type" target="_self">type</a></h3>
 
-_type_ outputs the string representation of the given [type](#user-content-Object_Type) for the current language.
+_type_ outputs the string representation of the given [type](#user-content-Object_Common_Type) for the current language.
 
 <h2><a id="user-content-Object" target="_self">Object</a></h2>
-<h3><a id="user-content-Object_Annotation" target="_self">Annotation</a></h3>
 
-_Annotation_ represents an annotation by `name` => value.
+_Object_
+Object is a generic object type. These objects can be used as parameters for the [next](#user-content-Context_next)
+function, like `{{next .}}`. Except for objects under [Common](#user-content-Object_Common), the type names
+of other objects are lowercase names separated by dots. For example, the type name of a `Const`
+object is `const`, and the type name of a `ConstName` object is `const.name`. These objects can
+be customized for code generation by defining templates. For example:
 
-Annotation is a map that stores the parameters of a single annotation.
-It allows for flexible parameter types, including strings, numbers, booleans and [types](#user-content-Object_Type).
+```npl
+{{- define "go/const" -}}
+const {{next .Name}} = {{.Value}};
+{{- end}}
 
-Example:
+{{- define "go/const.name" -}}
+{{.Node.Name}}_{{.String}}
+{{- end}}
+```
 
-Next code:
+So when generating Go code, the output content for a `Const` object would be `const {{.Name}} = {{.Value}};`,
+and the output content for a `ConstName` object would be `{{.Node.Name}}_{{.String}}`. These two
+definitions will override the built-in template functions `next/go/const` and `next/go/const.name`.
 
-<h3><a id="user-content-Object_Annotations" target="_self">Annotations</a></h3>
+<h3><a id="user-content-Object_ArrayType" target="_self">ArrayType</a></h3>
 
-_Annotations_ represents a group of annotations by `name` => [Annotation](#user-content-Object_Annotation).
-
-Annotations is a map that stores multiple annotations for a given entity.
-The key is the annotation name (string), and the value is the corresponding [Annotation](#user-content-Object_Annotation) object.
+_ArrayType_ represents an array type.
 
 <h3><a id="user-content-Object_Comment" target="_self">Comment</a></h3>
 
@@ -239,9 +258,201 @@ Usage in templates:
 {{.Comment.Text}}
 ```
 
+<h3><a id="user-content-Object_Common" target="_self">Common</a></h3>
+
+_Common_
+Common contains some general types, including a generic type. Unless specifically stated,
+these objects cannot be directly called using the [next](#user-content-Context_next) function.
+The [Value](#user-content-Object_Common_Value) object represents a value, which can be either a constant
+value or an enum member's value. The object type for the former is `const.value`, and for
+the latter is `enum.member.value`.
+
+<h4><a id="user-content-Object_Common_Annotation" target="_self">Annotation</a></h4>
+
+_Annotation_ represents an annotation by `name` => value.
+
+Annotation is a map that stores the parameters of a single annotation.
+It allows for flexible parameter types, including strings, numbers, booleans and [types](#user-content-Object_Common_Type).
+
+Example:
+
+Next code:
+
+```next
+
+@json(omitempty)
+@event(name="Login")
+@message(name="Login", type=100)
+struct Login {}
+
+@next(type=int8)
+enum Color {
+    Red = 1;
+    Green = 2;
+    Blue = 3;
+}
+```
+
+Will be represented as:
+
+```npl
+{{- define "go/struct" -}}
+{{.Annotations.json.omitempty}}
+{{.Annotations.event.name}}
+{{.Annotations.message.name}}
+{{.Annotations.message.type}}
+{{- end}}
+
+{{- define "go/enum" -}}
+{{.Annotations.next.type}}
+{{- end}}
+```
+
+Output:
+```
+true
+Login
+Login
+100
+```
+
+<h4><a id="user-content-Object_Common_Annotations" target="_self">Annotations</a></h4>
+
+_Annotations_ represents a group of annotations by `name` => [Annotation](#user-content-Object_Common_Annotation).
+
+Annotations is a map that stores multiple annotations for a given entity.
+The key is the annotation name (string), and the value is the corresponding [Annotation](#user-content-Object_Common_Annotation) object.
+
+<h4><a id="user-content-Object_Common_Decl" target="_self">Decl</a></h4>
+
+_Decl_ represents an top-level declaration in a file.
+
+All declarations are [nodes](#user-content-Object_Common_Node). Currently, the following declarations are supported:
+
+- [File](#user-content-Object_File)
+- [Const](#user-content-Object_Const)
+- [Enum](#user-content-Object_Enum)
+- [Struct](#user-content-Object_Struct)
+- [Interface](#user-content-Object_Interface)
+
+<h4><a id="user-content-Object_Common_Fields" target="_self">Fields</a></h4>
+
+_Fields_ represents a list of fields in a declaration.
+
+<h5><a id="user-content-Object_Common_Fields-Decl" target="_self">.Decl</a></h5>
+
+_.Decl_ is the declaration object that contains the fields.
+
+Currently, it is one of following types:
+- [Enum](#user-content-Object_Enum)
+- [Struct](#user-content-Object_Struct)
+- [Interface](#user-content-Object_Interface)
+- [InterfaceMethod](#user-content-Object_InterfaceMethod).
+
+<h5><a id="user-content-Object_Common_Fields-List" target="_self">.List</a></h5>
+
+_.List_ is the list of fields in the declaration.
+
+Currently, the field object is one of following types:
+- [EnumMember](#user-content-Object_EnumMember)
+- [StructField](#user-content-Object_StructField)
+- [InterfaceMethod](#user-content-Object_InterfaceMethod).
+- [InterfaceMethodParam](#user-content-Object_InterfaceMethodParam).
+
+<h4><a id="user-content-Object_Common_List" target="_self">List</a></h4>
+
+_List_ represents a list of objects.
+
+<h5><a id="user-content-Object_Common_List-List" target="_self">.List</a></h5>
+
+_.List_ represents the list of objects. It is used to provide a uniform way to access.
+
+<h4><a id="user-content-Object_Common_Node" target="_self">Node</a></h4>
+
+_Node_ represents a Node in the Next AST.
+
+Currently, the following nodes are supported:
+
+- [File](#user-content-Object_File)
+- [Const](#user-content-Object_Const)
+- [Enum](#user-content-Object_Enum)
+- [Struct](#user-content-Object_Struct)
+- [Interface](#user-content-Object_Interface)
+- [EnumMember](#user-content-Object_EnumMember)
+- [StructField](#user-content-Object_StructField)
+- [InterfaceMethod](#user-content-Object_InterfaceMethod)
+- [InterfaceMethodParam](#user-content-Object_InterfaceMethodParam)
+
+<h5><a id="user-content-Object_Common_Node-Annotations" target="_self">.Annotations</a></h5>
+
+_.Annotations_ represents the [annotations](#user-content-Annotation_Annotations) for the node.
+
+<h5><a id="user-content-Object_Common_Node-Doc" target="_self">.Doc</a></h5>
+
+_.Doc_ represents the documentation comment for the node.
+
+<h5><a id="user-content-Object_Common_Node-File" target="_self">.File</a></h5>
+
+_.File_ represents the file containing the node.
+
+<h5><a id="user-content-Object_Common_Node-Package" target="_self">.Package</a></h5>
+
+_.Package_ represents the package containing the node.
+It's a shortcut for Node.File().Package().
+
+<h4><a id="user-content-Object_Common_NodeName" target="_self">NodeName</a></h4>
+
+_NodeName_ represents a name of a node in a declaration.
+
+Currently, the following types are supported:
+- [ConstName](#user-content-Object_ConstName)
+- [EnumMemberName](#user-content-Object_EnumMemberName)
+- [StructFieldName](#user-content-Object_StructFieldName)
+- [InterfaceMethodName](#user-content-Object_InterfaceMethodName)
+- [InterfaceMethodParamName](#user-content-Object_InterfaceMethodParamName)
+
+<h5><a id="user-content-Object_Common_NodeName-Node" target="_self">.Node</a></h5>
+
+_.Node_ represents the [node](#user-content-Object_Common_Node) that contains the name.
+
+<h5><a id="user-content-Object_Common_NodeName-String" target="_self">.String</a></h5>
+
+_.String_ represents the string representation of the node name.
+
+<h4><a id="user-content-Object_Common_Symbol" target="_self">Symbol</a></h4>
+
+_Symbol_ represents a Next symbol: value(const, enum member), type(enum, struct, interface).
+
+<h4><a id="user-content-Object_Common_Type" target="_self">Type</a></h4>
+
+_Type_ represents a Next type.
+
+Currently, the following types are supported:
+
+- [UsedType](#user-content-Object_UsedType)
+- [PrimitiveType](#user-content-Object_PrimitiveType)
+- [ArrayType](#user-content-Object_ArrayType)
+- [VectorType](#user-content-Object_VectorType)
+- [MapType](#user-content-Object_MapType)
+- [EnumType](#user-content-Object_EnumType)
+- [StructType](#user-content-Object_StructType)
+- [InterfaceType](#user-content-Object_InterfaceType)
+
+<h5><a id="user-content-Object_Common_Type-Decl" target="_self">.Decl</a></h5>
+
+_.Decl_ represents the [declaration](#user-content-Decl) of the type.
+
+<h5><a id="user-content-Object_Common_Type-Kind" target="_self">.Kind</a></h5>
+
+_.Kind_ returns the kind of the type.
+
+<h5><a id="user-content-Object_Common_Type-String" target="_self">.String</a></h5>
+
+_.String_ represents the string representation of the type.
+
 <h3><a id="user-content-Object_Const" target="_self">Const</a></h3>
 
-_Const_ represents a const declaration.
+_Const_ (extends [Decl](#user-content-Object_Common_Decl)) represents a const declaration.
 
 <h5><a id="user-content-Object_Const-Comment" target="_self">.Comment</a></h5>
 
@@ -261,15 +472,11 @@ _.Value_ represents the [value object](#user-content-Object_Value) of the consta
 
 <h3><a id="user-content-Object_ConstName" target="_self">ConstName</a></h3>
 
-_ConstName_ represents the [name object](#user-content-Object_NodeName) of a [const](#user-content-Object_Const) declaration.
+_ConstName_ represents the [name object](#user-content-Object_Common_NodeName) of a [const](#user-content-Object_Const) declaration.
 
 <h3><a id="user-content-Object_Consts" target="_self">Consts</a></h3>
 
-_Consts_ represents a [list](#user-content-Object_List) of const declarations.
-
-<h3><a id="user-content-Object_Decl" target="_self">Decl</a></h3>
-
-_Decl_ represents an top-level declaration in a file.
+_Consts_ represents a [list](#user-content-Object_Common_List) of const declarations.
 
 <h3><a id="user-content-Object_Decls" target="_self">Decls</a></h3>
 
@@ -277,19 +484,19 @@ _Decls_ holds all declarations in a file.
 
 <h5><a id="user-content-Object_Decls-Consts" target="_self">.Consts</a></h5>
 
-_.Consts_ represents the [list](#user-content-Object_List) of [const](#user-content-Object_Const) declarations.
+_.Consts_ represents the [list](#user-content-Object_Common_List) of [const](#user-content-Object_Const) declarations.
 
 <h5><a id="user-content-Object_Decls-Enums" target="_self">.Enums</a></h5>
 
-_.Enums_ represents the [list](#user-content-Object_List) of [enum](#user-content-Object_Enum) declarations.
+_.Enums_ represents the [list](#user-content-Object_Common_List) of [enum](#user-content-Object_Enum) declarations.
 
 <h5><a id="user-content-Object_Decls-Interfaces" target="_self">.Interfaces</a></h5>
 
-_.Interfaces_ represents the [list](#user-content-Object_List) of [interface](#user-content-Object_Interface) declarations.
+_.Interfaces_ represents the [list](#user-content-Object_Common_List) of [interface](#user-content-Object_Interface) declarations.
 
 <h5><a id="user-content-Object_Decls-Structs" target="_self">.Structs</a></h5>
 
-_.Structs_ represents the [list](#user-content-Object_List) of [struct](#user-content-Object_Struct) declarations.
+_.Structs_ represents the [list](#user-content-Object_Common_List) of [struct](#user-content-Object_Struct) declarations.
 
 <h3><a id="user-content-Object_Doc" target="_self">Doc</a></h3>
 
@@ -336,15 +543,15 @@ Usage in templates:
 
 <h3><a id="user-content-Object_Enum" target="_self">Enum</a></h3>
 
-_Enum_ represents an enum declaration.
+_Enum_ (extends [Decl](#user-content-Object_Common_Decl)) represents an enum declaration.
 
 <h3><a id="user-content-Object_EnumMember" target="_self">EnumMember</a></h3>
 
-_EnumMember_ represents an enum member object in an [enum](#user-content-Object_Enum) declaration.
+_EnumMember_ (extends [Decl](#user-content-Object_Common_Decl)) represents an enum member object in an [enum](#user-content-Object_Enum) declaration.
 
 <h5><a id="user-content-Object_EnumMember-Name" target="_self">.Name</a></h5>
 
-_.Name_ represents the [name object](#user-content-Object_NodeName) of the enum member.
+_.Name_ represents the [name object](#user-content-Object_Common_NodeName) of the enum member.
 
 <h5><a id="user-content-Object_EnumMember-Value" target="_self">.Value</a></h5>
 
@@ -352,32 +559,23 @@ _.Value_ represents the [value object](#user-content-Object_Value) of the enum m
 
 <h3><a id="user-content-Object_EnumMemberName" target="_self">EnumMemberName</a></h3>
 
-_EnumMemberName_ represents the [name object](#user-content-Object_NodeName) of an [enum member](#user-content-Object_EnumMember).
+_EnumMemberName_ represents the [name object](#user-content-Object_Common_NodeName) of an [enum member](#user-content-Object_EnumMember).
 
 <h3><a id="user-content-Object_EnumMembers" target="_self">EnumMembers</a></h3>
 
-_EnumMembers_ represents the [list](#user-content-Object_Fields) of [enum members](#user-content-Object_EnumMember).
+_EnumMembers_ represents the [list](#user-content-Object_Common_Fields) of [enum members](#user-content-Object_EnumMember).
+
+<h3><a id="user-content-Object_EnumType" target="_self">EnumType</a></h3>
+
+_EnumType_ represents the type of an [enum](#user-content-Object_Enum) declaration.
 
 <h3><a id="user-content-Object_Enums" target="_self">Enums</a></h3>
 
-_Enums_ represents a [list](#user-content-Object_List) of enum declarations.
-
-<h3><a id="user-content-Object_Fields" target="_self">Fields</a></h3>
-
-_Fields_ represents a list of fields in a declaration.
-
-<h5><a id="user-content-Object_Fields-Decl" target="_self">.Decl</a></h5>
-
-_.Decl_ is the declaration object that contains the fields.
-Decl may be an enum, struct, or interface.
-
-<h5><a id="user-content-Object_Fields-List" target="_self">.List</a></h5>
-
-_.List_ is the list of fields in the declaration.
+_Enums_ represents a [list](#user-content-Object_Common_List) of enum declarations.
 
 <h3><a id="user-content-Object_File" target="_self">File</a></h3>
 
-_File_ represents a Next source file.
+_File_ (extends [Decl](#user-content-Object_Common_Decl)) represents a Next source file.
 
 <h5><a id="user-content-Object_File-Decls" target="_self">.Decls</a></h5>
 
@@ -445,7 +643,7 @@ _.TrimmedList_ represents a list of unique imports sorted by package name.
 
 <h3><a id="user-content-Object_Interface" target="_self">Interface</a></h3>
 
-_Interface_ represents an interface declaration.
+_Interface_ (extends [Decl](#user-content-Object_Common_Decl)) represents an interface declaration.
 
 <h5><a id="user-content-Object_Interface-Methods" target="_self">.Methods</a></h5>
 
@@ -457,7 +655,7 @@ _.Type_ represents the interface type.
 
 <h3><a id="user-content-Object_InterfaceMethod" target="_self">InterfaceMethod</a></h3>
 
-_InterfaceMethod_ represents an interface method declaration.
+_InterfaceMethod_ (extends [Node](#user-content-Object_Common_Node)) represents an interface method declaration.
 
 <h5><a id="user-content-Object_InterfaceMethod-Comment" target="_self">.Comment</a></h5>
 
@@ -469,7 +667,7 @@ _.Decl_ represents the interface that contains the method.
 
 <h5><a id="user-content-Object_InterfaceMethod-Name" target="_self">.Name</a></h5>
 
-_.Name_ represents the [name object](#user-content-Object_NodeName) of the interface method.
+_.Name_ represents the [name object](#user-content-Object_Common_NodeName) of the interface method.
 
 <h5><a id="user-content-Object_InterfaceMethod-Params" target="_self">.Params</a></h5>
 
@@ -481,11 +679,11 @@ _.Result_ represents the return type of the method.
 
 <h3><a id="user-content-Object_InterfaceMethodName" target="_self">InterfaceMethodName</a></h3>
 
-_InterfaceMethodName_ represents the [name object](#user-content-Object_NodeName) of an [interface method](#user-content-Object_InterfaceMethod).
+_InterfaceMethodName_ represents the [name object](#user-content-Object_Common_NodeName) of an [interface method](#user-content-Object_InterfaceMethod).
 
 <h3><a id="user-content-Object_InterfaceMethodParam" target="_self">InterfaceMethodParam</a></h3>
 
-_InterfaceMethodParam_ represents an interface method parameter declaration.
+_InterfaceMethodParam_ (extends [Node](#user-content-Object_Common_Node)) represents an interface method parameter declaration.
 
 <h5><a id="user-content-Object_InterfaceMethodParam-Method" target="_self">.Method</a></h5>
 
@@ -493,7 +691,7 @@ _.Method_ represents the interface method that contains the parameter.
 
 <h5><a id="user-content-Object_InterfaceMethodParam-Name" target="_self">.Name</a></h5>
 
-_.Name_ represents the [name object](#user-content-Object_NodeName) of the interface method parameter.
+_.Name_ represents the [name object](#user-content-Object_Common_NodeName) of the interface method parameter.
 
 <h5><a id="user-content-Object_InterfaceMethodParam-Type" target="_self">.Type</a></h5>
 
@@ -501,7 +699,7 @@ _.Type_ represents the parameter type.
 
 <h3><a id="user-content-Object_InterfaceMethodParamName" target="_self">InterfaceMethodParamName</a></h3>
 
-_InterfaceMethodParamName_ represents the [name object](#user-content-Object_NodeName) of an [interface method parameter](#user-content-Object_InterfaceMethodParam).
+_InterfaceMethodParamName_ represents the [name object](#user-content-Object_Common_NodeName) of an [interface method parameter](#user-content-Object_InterfaceMethodParam).
 
 <h3><a id="user-content-Object_InterfaceMethodParamType" target="_self">InterfaceMethodParamType</a></h3>
 
@@ -517,7 +715,7 @@ _.Type_ represnts the underlying type of the parameter.
 
 <h3><a id="user-content-Object_InterfaceMethodParams" target="_self">InterfaceMethodParams</a></h3>
 
-_InterfaceMethodParams_ represents the [list](#user-content-Object_Fields) of [interface method parameters](#user-content-Object_InterfaceMethodParam).
+_InterfaceMethodParams_ represents the [list](#user-content-Object_Common_Fields) of [interface method parameters](#user-content-Object_InterfaceMethodParam).
 
 <h3><a id="user-content-Object_InterfaceMethodResult" target="_self">InterfaceMethodResult</a></h3>
 
@@ -533,61 +731,19 @@ _.Type_ represents the underlying type of the result.
 
 <h3><a id="user-content-Object_InterfaceMethods" target="_self">InterfaceMethods</a></h3>
 
-_InterfaceMethods_ represents the [list](#user-content-Object_Fields) of [interface methods](#user-content-Object_InterfaceMethod).
+_InterfaceMethods_ represents the [list](#user-content-Object_Common_Fields) of [interface methods](#user-content-Object_InterfaceMethod).
+
+<h3><a id="user-content-Object_InterfaceType" target="_self">InterfaceType</a></h3>
+
+_InterfaceType_ represents the type of an [interface](#user-content-Object_Interface) declaration.
 
 <h3><a id="user-content-Object_Interfaces" target="_self">Interfaces</a></h3>
 
-_Interfaces_ represents a [list](#user-content-Object_List) of interface declarations.
+_Interfaces_ represents a [list](#user-content-Object_Common_List) of interface declarations.
 
-<h3><a id="user-content-Object_List" target="_self">List</a></h3>
+<h3><a id="user-content-Object_MapType" target="_self">MapType</a></h3>
 
-_List_ represents a list of objects.
-
-<h5><a id="user-content-Object_List-List" target="_self">.List</a></h5>
-
-_.List_ represents the list of objects. It is used to provide a uniform way to access.
-
-<h3><a id="user-content-Object_Node" target="_self">Node</a></h3>
-
-_Node_ represents a Node in the AST. It's a special object that can be annotated with a documentation comment.
-
-<h5><a id="user-content-Object_Node-Annotations" target="_self">.Annotations</a></h5>
-
-_.Annotations_ represents the annotations for the node.
-
-<h5><a id="user-content-Object_Node-Doc" target="_self">.Doc</a></h5>
-
-_.Doc_ represents the documentation comment for the node.
-
-<h5><a id="user-content-Object_Node-File" target="_self">.File</a></h5>
-
-_.File_ represents the file containing the node.
-
-<h5><a id="user-content-Object_Node-Package" target="_self">.Package</a></h5>
-
-_.Package_ represents the package containing the node.
-It's a shortcut for Node.File().Package().
-
-<h3><a id="user-content-Object_NodeName" target="_self">NodeName</a></h3>
-
-_NodeName_ represents a name of a node in a declaration:
-- Const name
-- Enum member name
-- Struct field name
-- Interface method name
-- Interface method parameter name
-
-<h5><a id="user-content-Object_NodeName-Node" target="_self">.Node</a></h5>
-
-_.Node_ represents the [node](#user-content-Object_Node) that contains the name.
-
-<h5><a id="user-content-Object_NodeName-String" target="_self">.String</a></h5>
-
-_.String_ represents the string representation of the node name.
-
-<h3><a id="user-content-Object_Object" target="_self">Object</a></h3>
-
-_Object_ represents an object in Next which can be rendered in a template like this: {{next Object}}
+_MapType_ represents a map type.
 
 <h3><a id="user-content-Object_Package" target="_self">Package</a></h3>
 
@@ -595,7 +751,7 @@ _Package_ represents a Next package.
 
 <h5><a id="user-content-Object_Package-Annotations" target="_self">.Annotations</a></h5>
 
-_.Annotations_ represents the package [annotations](#user-content-Object_Annotations).
+_.Annotations_ represents the package [annotations](#user-content-Object_Common_Annotations).
 
 <h5><a id="user-content-Object_Package-Doc" target="_self">.Doc</a></h5>
 
@@ -629,9 +785,13 @@ _.Name_ represents the package name string.
 
 _.Types_ represents the all declared types in the package.
 
+<h3><a id="user-content-Object_PrimitiveType" target="_self">PrimitiveType</a></h3>
+
+_PrimitiveType_ represents a primitive type.
+
 <h3><a id="user-content-Object_Struct" target="_self">Struct</a></h3>
 
-_Struct_ represents a struct declaration.
+_Struct_ (extends [Decl](#user-content-Object_Common_Decl)) represents a struct declaration.
 
 <h5><a id="user-content-Object_Struct-Fields" target="_self">.Fields</a></h5>
 
@@ -639,15 +799,15 @@ _.Fields_ represents the list of struct fields.
 
 <h3><a id="user-content-Object_StructField" target="_self">StructField</a></h3>
 
-_StructField_ represents a struct field declaration.
+_StructField_ (extends [Node](#user-content-Object_Common_Node)) represents a struct field declaration.
 
 <h5><a id="user-content-Object_StructField-Name" target="_self">.Name</a></h5>
 
-_.Name_ represents the [name object](#user-content-Object_NodeName) of the struct field.
+_.Name_ represents the [name object](#user-content-Object_Common_NodeName) of the struct field.
 
 <h3><a id="user-content-Object_StructFieldName" target="_self">StructFieldName</a></h3>
 
-_StructFieldName_ represents the [name object](#user-content-Object_NodeName) of a [struct field](#user-content-Object_StructField).
+_StructFieldName_ represents the [name object](#user-content-Object_Common_NodeName) of a [struct field](#user-content-Object_StructField).
 
 <h3><a id="user-content-Object_StructFieldType" target="_self">StructFieldType</a></h3>
 
@@ -655,63 +815,19 @@ _StructFieldType_ represents a struct field type.
 
 <h3><a id="user-content-Object_StructFields" target="_self">StructFields</a></h3>
 
-_StructFields_ represents the [list](#user-content-Object_Fields) of [struct fields](#user-content-Object_StructField).
+_StructFields_ represents the [list](#user-content-Object_Common_Fields) of [struct fields](#user-content-Object_StructField).
 
-<h3><a id="user-content-Object_Structs" target="_self">Structs</a></h3>
-
-_Structs_ represents a [list](#user-content-Object_List) of struct declarations.
-
-<h3><a id="user-content-Object_Symbol" target="_self">Symbol</a></h3>
-
-_Symbol_ represents a Next symbol: value(const, enum member), type(enum, struct, interface).
-
-<h3><a id="user-content-Object_Type" target="_self">Type</a></h3>
-
-_Type_ represents a Next type.
-
-<h4><a id="user-content-Object_Type_ArrayType" target="_self">ArrayType</a></h4>
-
-_ArrayType_ represents an array type.
-
-<h4><a id="user-content-Object_Type_EnumType" target="_self">EnumType</a></h4>
-
-_EnumType_ represents the type of an [enum](#user-content-Object_Enum) declaration.
-
-<h4><a id="user-content-Object_Type_InterfaceType" target="_self">InterfaceType</a></h4>
-
-_InterfaceType_ represents the type of an [interface](#user-content-Object_Interface) declaration.
-
-<h4><a id="user-content-Object_Type_MapType" target="_self">MapType</a></h4>
-
-_MapType_ represents a map type.
-
-<h4><a id="user-content-Object_Type_PrimitiveType" target="_self">PrimitiveType</a></h4>
-
-_PrimitiveType_ represents a primitive type.
-
-<h4><a id="user-content-Object_Type_StructType" target="_self">StructType</a></h4>
+<h3><a id="user-content-Object_StructType" target="_self">StructType</a></h3>
 
 _StructType_ represents the type of a [struct](#user-content-Object_Struct) declaration.
 
-<h4><a id="user-content-Object_Type_UsedType" target="_self">UsedType</a></h4>
+<h3><a id="user-content-Object_Structs" target="_self">Structs</a></h3>
+
+_Structs_ represents a [list](#user-content-Object_Common_List) of struct declarations.
+
+<h3><a id="user-content-Object_UsedType" target="_self">UsedType</a></h3>
 
 _UsedType_ represents a used type in a file.
-
-<h4><a id="user-content-Object_Type_VectorType" target="_self">VectorType</a></h4>
-
-_VectorType_ represents a vector type.
-
-<h5><a id="user-content-Object_Type-Decl" target="_self">.Decl</a></h5>
-
-_.Decl_ represents the [declaration](#user-content-Decl) of the type.
-
-<h5><a id="user-content-Object_Type-Kind" target="_self">.Kind</a></h5>
-
-_.Kind_ returns the kind of the type.
-
-<h5><a id="user-content-Object_Type-String" target="_self">.String</a></h5>
-
-_.String_ represents the string representation of the type.
 
 <h5><a id="user-content-Object_UsedType-File" target="_self">.File</a></h5>
 
@@ -747,7 +863,11 @@ _.String_ represents the string representation of the value.
 
 <h5><a id="user-content-Object_Value-Type" target="_self">.Type</a></h5>
 
-_.Type_ represents the [primitive type](#user-content-Object_Type_PrimitiveType) of the value.
+_.Type_ represents the [primitive type](#user-content-Object_PrimitiveType) of the value.
+
+<h3><a id="user-content-Object_VectorType" target="_self">VectorType</a></h3>
+
+_VectorType_ represents a vector type.
 
 <h5><a id="user-content-Object_import-Comment" target="_self">.Comment</a></h5>
 

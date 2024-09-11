@@ -100,7 +100,15 @@ type templateContextInfo struct {
 	ext     string // file extension for current language
 }
 
-// templateContext represents the context of a template.
+// @api(Context)
+// Context-related methods and properties are used to retrieve information, perform operations, and generate code within the current code generator's context. These methods or properties are called directly by name, for example:
+//
+// ```npl
+// {{head}}
+// {{next this)}}
+// {{lang}}
+// {{exist meta.path}}
+// ```
 type templateContext struct {
 	templateContextInfo
 
@@ -131,7 +139,7 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		dontOverrides:       make(map[string]bool),
 	}
 	tc.funcs = template.FuncMap{
-		// @api(Function/env) represents the environment variables defined in the command line with the flag `-D`.
+		// @api(Context/env) represents the environment variables defined in the command line with the flag `-D`.
 		//
 		// Example:
 		//
@@ -144,7 +152,7 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		// ```
 		"env": tc.env,
 
-		// @api(Function/this) represents the current [declaration](#Object/Decl) object to be rendered.
+		// @api(Context/this) represents the current [declaration](#Object/Common/Decl) object to be rendered.
 		// this defined in the template [meta](#meta) `meta/this`. Supported types are:
 		//
 		// - [file](#Object/File)
@@ -156,10 +164,10 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		// It's a [file](#Object/File) by default.
 		"this": tc.this,
 
-		// @api(Function/lang) represents the current language to be generated.
+		// @api(Context/lang) represents the current language to be generated.
 		"lang": func() string { return tc.lang },
 
-		// @api(Function/meta) represents the metadata of a entrypoint template.
+		// @api(Context/meta) represents the metadata of a entrypoint template.
 		// To define a meta, you should define a template with the name "meta/<key>".
 		// Currently, the following meta keys are supported:
 		//
@@ -183,7 +191,7 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		// before rendering the entrypoint template.
 		"meta": func() Meta { return tc.meta },
 
-		// @api(Function/error) used to return an error message in the template.
+		// @api(Context/error) used to return an error message in the template.
 		//
 		// Example:
 		//
@@ -192,7 +200,7 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		// ```
 		"error": tc.error,
 
-		// @api(Function/errorf) used to return a formatted error message in the template.
+		// @api(Context/errorf) used to return a formatted error message in the template.
 		//
 		// Example:
 		//
@@ -201,12 +209,12 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		// ```
 		"errorf": tc.errorf,
 
-		// @api(Function/exist) checks whether the given path exists.
+		// @api(Context/exist) checks whether the given path exists.
 		// If the path is not absolute, it will be resolved relative to the current output directory
 		// for the current language by command line flag `-O`.
 		"exist": tc.exist,
 
-		// @api(Function/head) outputs the header of the generated file.
+		// @api(Context/head) outputs the header of the generated file.
 		//
 		// Example:
 		//
@@ -225,19 +233,19 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		// ```
 		"head": tc.head,
 
-		// @api(Function/align) aligns the given text with the last line indent of the generated content.
+		// @api(Context/align) aligns the given text with the last line indent of the generated content.
 		"align": tc.align,
 
-		// @api(Function/type) outputs the string representation of the given [type](#Object/Type) for the current language.
+		// @api(Context/type) outputs the string representation of the given [type](#Object/Common/Type) for the current language.
 		"type": tc.type_,
 
-		// @api(Function/next) executes the next template with the given [object](#Object).
+		// @api(Context/next) executes the next template with the given [object](#Object).
 		"next": tc.next,
 
-		// @api(Function/super) executes the super template with the given [object](#Object).
+		// @api(Context/super) executes the super template with the given [object](#Object).
 		"super": tc.super,
 
-		// @api(Function/render) executes the template with the given name and data.
+		// @api(Context/render) executes the template with the given name and data.
 		"render": tc.render,
 	}
 	return tc

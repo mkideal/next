@@ -14,10 +14,10 @@ import (
 	"github.com/next/next/src/token"
 )
 
-// @api(Object/Annotations) represents a group of annotations by `name` => [Annotation](#Object/Annotation).
+// @api(Object/Common/Annotations) represents a group of annotations by `name` => [Annotation](#Object/Common/Annotation).
 //
 // Annotations is a map that stores multiple annotations for a given entity.
-// The key is the annotation name (string), and the value is the corresponding [Annotation](#Object/Annotation) object.
+// The key is the annotation name (string), and the value is the corresponding [Annotation](#Object/Common/Annotation) object.
 type Annotations map[string]Annotation
 
 func (a Annotations) get(name string) Annotation {
@@ -27,15 +27,15 @@ func (a Annotations) get(name string) Annotation {
 	return a[name]
 }
 
-// @api(Object/Annotation) represents an annotation by `name` => value.
+// @api(Object/Common/Annotation) represents an annotation by `name` => value.
 //
 // Annotation is a map that stores the parameters of a single annotation.
-// It allows for flexible parameter types, including strings, numbers, booleans and [types](#Object/Type).
+// It allows for flexible parameter types, including strings, numbers, booleans and [types](#Object/Common/Type).
 //
 // Example:
 //
 // Next code:
-
+//
 // ```next
 //
 //	@json(omitempty)

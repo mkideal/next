@@ -7,7 +7,7 @@ import (
 
 // -------------------------------------------------------------------------
 
-// @api(Object/Symbol) represents a Next symbol: value(const, enum member), type(enum, struct, interface).
+// @api(Object/Common/Symbol) represents a Next symbol: value(const, enum member), type(enum, struct, interface).
 type Symbol interface {
 	LocatedObject
 

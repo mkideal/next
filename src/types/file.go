@@ -19,7 +19,7 @@ type Package struct {
 	// @api(Object/Package.Doc) represents the package [documentation](#Object/Doc).
 	Doc *Doc
 
-	// @api(Object/Package.Annotations) represents the package [annotations](#Object/Annotations).
+	// @api(Object/Package.Annotations) represents the package [annotations](#Object/Common/Annotations).
 	Annotations Annotations
 }
 
@@ -83,7 +83,7 @@ func (p *Package) Types() []Type {
 	return p.types
 }
 
-// @api(Object/File) represents a Next source file.
+// @api(Object/File) (extends [Decl](#Object/Common/Decl)) represents a Next source file.
 type File struct {
 	pos token.Pos // position of the file
 	pkg *Package  // package containing the file
