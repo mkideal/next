@@ -77,6 +77,11 @@ release: go/generate go/vet
 	$(call release_unix,windows,386)
 	$(call release_windows,amd64)
 
+.PHONY: docgen
+docgen: go/generate go/vet
+	@echo "Generating documentation..."
+	@go run ./scripts/docgen.go ./src/types/ docs/en/api.md
+
 .PHONY: test/src
 test/src: go/generate go/vet
 	@echo "Running tests..."

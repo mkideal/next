@@ -162,7 +162,7 @@ func generateMarkdown(item *TemplateItem, outputFile string) error {
 }
 
 func linkName(path string) string {
-	return strings.ReplaceAll(strings.ReplaceAll(path, ".", "-"), "/", "_")
+	return "user-content-" + strings.ReplaceAll(strings.ReplaceAll(path, ".", "-"), "/", "_")
 }
 
 func writeMarkdownTree(toc, content io.Writer, item *TemplateItem, depth int, parentPath string) {
