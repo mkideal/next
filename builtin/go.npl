@@ -147,7 +147,7 @@ func (x {{next .Type}}) String() string {
 {{- end}}
 
 {{- define "next/go/enum.member.name" -}}
-{{next .Field.Decl.Type}}{{.String | pascalCase}}
+{{next .Node.Decl.Type}}{{.String | pascalCase}}
 {{- end}}
 
 {{/* next/go/struct: Generates a struct type declaration */}}

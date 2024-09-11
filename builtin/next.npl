@@ -22,12 +22,12 @@
 
 {{/* next/comment: Generates formatted comment text */}}
 {{- define "next/comment" -}}
-{{align .Text}}
+{{align .String}}
 {{- end}}
 
 {{/* next/doc: Generates formatted documentation comment text */}}
 {{- define "next/doc" -}}
-{{align .Text}}
+{{align .String}}
 {{- end}}
 
 {{/* next/imports: Generates code for all import statements in a file */}}
