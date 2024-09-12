@@ -1,8 +1,5 @@
 {{- define "next/java/file" -}}
-package {{render "java/package:name" .Package}};
-
-{{next .Imports -}}
-{{next .Decls -}}
+{{error "next/java/file not supported!"}}
 {{- end}}
 
 {{- define "next/java/imports" -}}
@@ -13,9 +10,8 @@ import java.util.Arrays;
 {{- range .TrimmedList}}
 {{next .}}
 {{- end}}
-{{_}}
-{{- end}}
-{{- end}}
+{{end}}
+{{end}}
 
 {{- define "next/java/doc" -}}
 {{.Format "" " * " "/**\n" " */" | align}}
