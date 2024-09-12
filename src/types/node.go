@@ -22,11 +22,11 @@ type Imports struct {
 	List []*Import
 }
 
-func (i *Imports) resolve(ctx *Context, file *File) {
+func (i *Imports) resolve(c *Compiler, file *File) {
 	for _, spec := range i.List {
-		spec.target = ctx.lookupFile(file.Path, spec.Path)
+		spec.target = c.lookupFile(file.Path, spec.Path)
 		if spec.target == nil {
-			ctx.addErrorf(spec.pos, "import file not found: %s", spec.Path)
+			c.addErrorf(spec.pos, "import file not found: %s", spec.Path)
 		}
 	}
 }
@@ -67,10 +67,10 @@ type Import struct {
 	FullPath string
 }
 
-func newImport(ctx *Context, file *File, src *ast.ImportDecl) *Import {
+func newImport(c *Compiler, file *File, src *ast.ImportDecl) *Import {
 	path, err := strconv.Unquote(src.Path.Value)
 	if err != nil {
-		ctx.addErrorf(src.Path.Pos(), "invalid import path %v: %v", src.Path.Value, err)
+		c.addErrorf(src.Path.Pos(), "invalid import path %v: %v", src.Path.Value, err)
 		path = "!BAD-IMPORT-PATH!"
 	}
 	i := &Import{
@@ -85,7 +85,7 @@ func newImport(ctx *Context, file *File, src *ast.ImportDecl) *Import {
 		var err error
 		path, err = filepath.Abs(filepath.Join(filepath.Dir(file.Path), path))
 		if err != nil {
-			ctx.addErrorf(token.NoPos, "failed to get absolute path of %s: %v", i.Path, err)
+			c.addErrorf(token.NoPos, "failed to get absolute path of %s: %v", i.Path, err)
 		} else {
 			i.FullPath = path
 		}
@@ -99,7 +99,7 @@ func (i *Import) Target() *File { return i.target }
 // @api(Object/Import.File) represents the file containing the import declaration.
 func (i *Import) File() *File { return i.file }
 
-func (i *Import) resolve(ctx *Context, file *File, _ Scope) {}
+func (i *Import) resolve(c *Compiler, file *File, _ Scope) {}
 
 // @api(Object/Common/List) represents a list of objects.
 type List[T Object] []T
@@ -131,21 +131,21 @@ type Decls struct {
 	lang string
 }
 
-func (d *Decls) resolve(ctx *Context, file *File) {
+func (d *Decls) resolve(c *Compiler, file *File) {
 	if d == nil {
 		return
 	}
-	for _, c := range d.consts {
-		c.resolve(ctx, file, file)
+	for _, x := range d.consts {
+		x.resolve(c, file, file)
 	}
-	for _, e := range d.enums {
-		e.resolve(ctx, file, file)
+	for _, x := range d.enums {
+		x.resolve(c, file, file)
 	}
-	for _, s := range d.structs {
-		s.resolve(ctx, file, file)
+	for _, x := range d.structs {
+		x.resolve(c, file, file)
 	}
-	for _, i := range d.interfaces {
-		i.resolve(ctx, file, file)
+	for _, x := range d.interfaces {
+		x.resolve(c, file, file)
 	}
 }
 
@@ -253,8 +253,8 @@ func newCommonNode[Self Node](
 	return d
 }
 
-func (d *commonNode[Self]) resolve(ctx *Context, file *File, scope Scope) {
-	d.annotations = ctx.resolveAnnotationGroup(file, d.self, d.unresolved.annotations)
+func (d *commonNode[Self]) resolve(c *Compiler, file *File, scope Scope) {
+	d.annotations = c.resolveAnnotationGroup(file, d.self, d.unresolved.annotations)
 }
 
 // Doc implements Node interface.
@@ -289,20 +289,20 @@ type Value struct {
 	}
 }
 
-func newValue(ctx *Context, file *File, name string, namePos token.Pos, src ast.Expr) *Value {
+func newValue(c *Compiler, file *File, name string, namePos token.Pos, src ast.Expr) *Value {
 	v := &Value{
 		namePos: namePos,
 		name:    name,
 	}
 	if src != nil {
-		file.addObject(ctx, src, v)
+		file.addObject(c, src, v)
 	}
 	v.unresolved.value = src
 	return v
 }
 
-func (v *Value) resolve(ctx *Context, file *File, scope Scope) {
-	v.val = v.resolveValue(ctx, file, scope, make([]*Value, 0, 16))
+func (v *Value) resolve(c *Compiler, file *File, scope Scope) {
+	v.val = v.resolveValue(c, file, scope, make([]*Value, 0, 16))
 	switch v.Any().(type) {
 	case int64:
 		v.typ = primitiveTypes["int64"]
@@ -315,11 +315,11 @@ func (v *Value) resolve(ctx *Context, file *File, scope Scope) {
 	case string:
 		v.typ = primitiveTypes["string"]
 	default:
-		ctx.addErrorf(v.namePos, "unexpected constant type: %T", v.Any())
+		c.addErrorf(v.namePos, "unexpected constant type: %T", v.Any())
 	}
 }
 
-func (v *Value) resolveValue(ctx *Context, file *File, scope Scope, refs []*Value) constant.Value {
+func (v *Value) resolveValue(c *Compiler, file *File, scope Scope, refs []*Value) constant.Value {
 	// If value already resolved, return it
 	if v.val != nil {
 		return v.val
@@ -327,20 +327,20 @@ func (v *Value) resolveValue(ctx *Context, file *File, scope Scope, refs []*Valu
 
 	// If enum type is nil, resolve constant value expression in which iota is not allowed
 	if v.enum.typ == nil {
-		v.val = ctx.recursiveResolveValue(file, scope, append(refs, v), v.unresolved.value, nil)
+		v.val = c.recursiveResolveValue(file, scope, append(refs, v), v.unresolved.value, nil)
 		return v.val
 	}
 
 	if v.unresolved.value != nil {
 		// Resolve value expression
-		v.val = ctx.recursiveResolveValue(file, v.enum.typ, append(refs, v), v.unresolved.value, &v.enum.iota)
+		v.val = c.recursiveResolveValue(file, v.enum.typ, append(refs, v), v.unresolved.value, &v.enum.iota)
 	} else if v.enum.index == 0 {
 		// First member of enum type has value 0 if not specified
 		v.val = constant.MakeInt64(0)
 	} else {
 		// Resolve previous value
 		prev := v.enum.typ.Members.List[v.enum.index-1]
-		prev.value.resolveValue(ctx, file, v.enum.typ, append(refs, v))
+		prev.value.resolveValue(c, file, v.enum.typ, append(refs, v))
 
 		// Increment iota value
 		v.enum.iota.value = prev.value.enum.iota.value + 1
@@ -350,7 +350,7 @@ func (v *Value) resolveValue(ctx *Context, file *File, scope Scope, refs []*Valu
 
 		if start.value.val != nil && start.value.enum.iota.found {
 			// If start value is specified and it has iota expression, resolve it with the current iota value
-			v.val = ctx.recursiveResolveValue(file, v.enum.typ, append(refs, v), start.value.unresolved.value, &v.enum.iota)
+			v.val = c.recursiveResolveValue(file, v.enum.typ, append(refs, v), start.value.unresolved.value, &v.enum.iota)
 		} else {
 			// Otherwise, add 1 to the previous value
 			v.val = constant.BinaryOp(prev.value.val, token.ADD, constant.MakeInt64(1))
@@ -409,34 +409,34 @@ type Const struct {
 	Comment *Comment
 }
 
-func newConst(ctx *Context, file *File, src *ast.GenDecl[ast.Expr]) *Const {
-	c := &Const{
+func newConst(c *Compiler, file *File, src *ast.GenDecl[ast.Expr]) *Const {
+	x := &Const{
 		Comment: newComment(src.Comment),
 	}
-	file.addObject(ctx, src, c)
-	c.commonNode = newCommonNode(c, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
-	c.value = newValue(ctx, file, src.Name.Name, src.Name.NamePos, src.Spec)
-	return c
+	file.addObject(c, src, x)
+	x.commonNode = newCommonNode(x, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
+	x.value = newValue(c, file, src.Name.Name, src.Name.NamePos, src.Spec)
+	return x
 }
 
-func (c *Const) resolve(ctx *Context, file *File, scope Scope) {
-	c.commonNode.resolve(ctx, file, scope)
-	c.value.resolve(ctx, file, scope)
+func (x *Const) resolve(c *Compiler, file *File, scope Scope) {
+	x.commonNode.resolve(c, file, scope)
+	x.value.resolve(c, file, scope)
 }
 
 // @api(Object/Const.Name) represents the [name object](#Object.NodeName) of the constant.
-func (c *Const) Name() *NodeName[*Const] {
-	return c.name
+func (x *Const) Name() *NodeName[*Const] {
+	return x.name
 }
 
 // @api(Object/Const.Type) represents the type of the constant.
-func (c *Const) Type() *PrimitiveType {
-	return c.value.Type()
+func (x *Const) Type() *PrimitiveType {
+	return x.value.Type()
 }
 
 // @api(Object/Const.Value) represents the [value object](#Object/Value) of the constant.
-func (c *Const) Value() *Value {
-	return c.value
+func (x *Const) Value() *Value {
+	return x.value
 }
 
 // @api(Object/Common/Fields) represents a list of fields in a declaration.
@@ -483,22 +483,22 @@ type Enum struct {
 	Members *EnumMembers
 }
 
-func newEnum(ctx *Context, file *File, src *ast.GenDecl[*ast.EnumType]) *Enum {
+func newEnum(c *Compiler, file *File, src *ast.GenDecl[*ast.EnumType]) *Enum {
 	e := &Enum{}
-	file.addObject(ctx, src, e)
+	file.addObject(c, src, e)
 	e.commonNode = newCommonNode(e, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	e.Type = newDeclType(src.Pos(), token.KindEnum, src.Name.Name, e)
 	e.Members = &EnumMembers{Decl: e}
 	for i, m := range src.Spec.Members.List {
-		e.Members.List = append(e.Members.List, newEnumMember(ctx, file, e, m, i))
+		e.Members.List = append(e.Members.List, newEnumMember(c, file, e, m, i))
 	}
 	return e
 }
 
-func (e *Enum) resolve(ctx *Context, file *File, scope Scope) {
-	e.commonNode.resolve(ctx, file, scope)
+func (e *Enum) resolve(c *Compiler, file *File, scope Scope) {
+	e.commonNode.resolve(c, file, scope)
 	for _, m := range e.Members.List {
-		m.resolve(ctx, file, scope)
+		m.resolve(c, file, scope)
 	}
 }
 
@@ -516,22 +516,22 @@ type EnumMember struct {
 	Comment *Comment
 }
 
-func newEnumMember(ctx *Context, file *File, e *Enum, src *ast.EnumMember, index int) *EnumMember {
+func newEnumMember(c *Compiler, file *File, e *Enum, src *ast.EnumMember, index int) *EnumMember {
 	m := &EnumMember{
 		Comment: newComment(src.Comment),
 		Decl:    e,
 	}
-	file.addObject(ctx, src, m)
+	file.addObject(c, src, m)
 	m.commonNode = newCommonNode(m, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
-	m.value = newValue(ctx, file, src.Name.Name, src.Name.NamePos, src.Value)
+	m.value = newValue(c, file, src.Name.Name, src.Name.NamePos, src.Value)
 	m.value.enum.typ = e
 	m.value.enum.index = index
 	return m
 }
 
-func (m *EnumMember) resolve(ctx *Context, file *File, scope Scope) {
-	m.commonNode.resolve(ctx, file, scope)
-	m.value.resolve(ctx, file, scope)
+func (m *EnumMember) resolve(c *Compiler, file *File, scope Scope) {
+	m.commonNode.resolve(c, file, scope)
+	m.value.resolve(c, file, scope)
 }
 
 // @api(Object/EnumMember.Name) represents the [name object](#Object/Common/NodeName) of the enum member.
@@ -568,22 +568,22 @@ type Struct struct {
 	Type *DeclType[*Struct]
 }
 
-func newStruct(ctx *Context, file *File, src *ast.GenDecl[*ast.StructType]) *Struct {
+func newStruct(c *Compiler, file *File, src *ast.GenDecl[*ast.StructType]) *Struct {
 	s := &Struct{}
-	file.addObject(ctx, src, s)
+	file.addObject(c, src, s)
 	s.commonNode = newCommonNode(s, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	s.Type = newDeclType(src.Pos(), token.KindStruct, src.Name.Name, s)
 	s.fields = &StructFields{Decl: s}
 	for _, f := range src.Spec.Fields.List {
-		s.fields.List = append(s.fields.List, newStructField(ctx, file, s, f))
+		s.fields.List = append(s.fields.List, newStructField(c, file, s, f))
 	}
 	return s
 }
 
-func (s *Struct) resolve(ctx *Context, file *File, scope Scope) {
-	s.commonNode.resolve(ctx, file, scope)
+func (s *Struct) resolve(c *Compiler, file *File, scope Scope) {
+	s.commonNode.resolve(c, file, scope)
 	for _, f := range s.fields.List {
-		f.resolve(ctx, file, scope)
+		f.resolve(c, file, scope)
 	}
 }
 
@@ -606,17 +606,17 @@ type StructField struct {
 	Comment *Comment
 }
 
-func newStructField(ctx *Context, file *File, s *Struct, src *ast.StructField) *StructField {
+func newStructField(c *Compiler, file *File, s *Struct, src *ast.StructField) *StructField {
 	f := &StructField{Decl: s}
-	file.addObject(ctx, src, f)
+	file.addObject(c, src, f)
 	f.commonNode = newCommonNode(f, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
-	f.Type = newStructFieldType(ctx, file, f, src.Type)
+	f.Type = newStructFieldType(c, file, f, src.Type)
 	return f
 }
 
-func (f *StructField) resolve(ctx *Context, file *File, scope Scope) {
-	f.commonNode.resolve(ctx, file, scope)
-	f.Type.resolve(ctx, file, scope)
+func (f *StructField) resolve(c *Compiler, file *File, scope Scope) {
+	f.commonNode.resolve(c, file, scope)
+	f.Type.resolve(c, file, scope)
 }
 
 // @api(Object/StructField.Name) represents the [name object](#Object/Common/NodeName) of the struct field.
@@ -637,14 +637,14 @@ type StructFieldType struct {
 	Field *StructField
 }
 
-func newStructFieldType(_ *Context, _ *File, f *StructField, src ast.Type) *StructFieldType {
+func newStructFieldType(_ *Compiler, _ *File, f *StructField, src ast.Type) *StructFieldType {
 	t := &StructFieldType{Field: f}
 	t.unresolved.typ = src
 	return t
 }
 
-func (t *StructFieldType) resolve(ctx *Context, file *File, scope Scope) {
-	t.Type = ctx.resolveType(file, t.unresolved.typ, false)
+func (t *StructFieldType) resolve(c *Compiler, file *File, scope Scope) {
+	t.Type = c.resolveType(file, t.unresolved.typ, false)
 }
 
 // @api(Object/Interface) (extends [Decl](#Object/Common/Decl)) represents an interface declaration.
@@ -661,22 +661,22 @@ type Interface struct {
 	Type *DeclType[*Interface]
 }
 
-func newInterface(ctx *Context, file *File, src *ast.GenDecl[*ast.InterfaceType]) *Interface {
+func newInterface(c *Compiler, file *File, src *ast.GenDecl[*ast.InterfaceType]) *Interface {
 	i := &Interface{}
-	file.addObject(ctx, src, i)
+	file.addObject(c, src, i)
 	i.commonNode = newCommonNode(i, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	i.Type = newDeclType(src.Pos(), token.KindInterface, src.Name.Name, i)
 	i.methods = &InterfaceMethods{Decl: i}
 	for _, m := range src.Spec.Methods.List {
-		i.methods.List = append(i.methods.List, newInterfaceMethod(ctx, file, i, m))
+		i.methods.List = append(i.methods.List, newInterfaceMethod(c, file, i, m))
 	}
 	return i
 }
 
-func (i *Interface) resolve(ctx *Context, file *File, scope Scope) {
-	i.commonNode.resolve(ctx, file, scope)
+func (i *Interface) resolve(c *Compiler, file *File, scope Scope) {
+	i.commonNode.resolve(c, file, scope)
 	for _, m := range i.methods.List {
-		m.resolve(ctx, file, scope)
+		m.resolve(c, file, scope)
 	}
 }
 
@@ -702,28 +702,28 @@ type InterfaceMethod struct {
 	Comment *Comment
 }
 
-func newInterfaceMethod(ctx *Context, file *File, i *Interface, src *ast.Method) *InterfaceMethod {
+func newInterfaceMethod(c *Compiler, file *File, i *Interface, src *ast.Method) *InterfaceMethod {
 	m := &InterfaceMethod{
 		Decl:    i,
 		Comment: newComment(src.Comment),
 	}
-	file.addObject(ctx, src, m)
+	file.addObject(c, src, m)
 	m.commonNode = newCommonNode(m, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	m.Params = &InterfaceMethodParams{Decl: m}
 	for _, p := range src.Params.List {
-		m.Params.List = append(m.Params.List, newInterfaceMethodParam(ctx, file, m, p))
+		m.Params.List = append(m.Params.List, newInterfaceMethodParam(c, file, m, p))
 	}
-	m.Result = newInterfaceMethodResult(ctx, file, m, src.Result)
+	m.Result = newInterfaceMethodResult(c, file, m, src.Result)
 	return m
 }
 
-func (m *InterfaceMethod) resolve(ctx *Context, file *File, scope Scope) {
-	m.commonNode.resolve(ctx, file, scope)
+func (m *InterfaceMethod) resolve(c *Compiler, file *File, scope Scope) {
+	m.commonNode.resolve(c, file, scope)
 	for _, p := range m.Params.List {
-		p.resolve(ctx, file, scope)
+		p.resolve(c, file, scope)
 	}
 	if m.Result != nil {
-		m.Result.resolve(ctx, file, scope)
+		m.Result.resolve(c, file, scope)
 	}
 }
 
@@ -743,20 +743,20 @@ type InterfaceMethodParam struct {
 	Type *InterfaceMethodParamType
 }
 
-func newInterfaceMethodParam(ctx *Context, file *File, m *InterfaceMethod, src *ast.MethodParam) *InterfaceMethodParam {
+func newInterfaceMethodParam(c *Compiler, file *File, m *InterfaceMethod, src *ast.MethodParam) *InterfaceMethodParam {
 	p := &InterfaceMethodParam{
 		Method: m,
 	}
-	file.addObject(ctx, src, p)
+	file.addObject(c, src, p)
 	p.commonNode = newCommonNode(p, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	p.unresolved.annotations = src.Annotations
-	p.Type = newInterfaceMethodParamType(ctx, file, p, src.Type)
+	p.Type = newInterfaceMethodParamType(c, file, p, src.Type)
 	return p
 }
 
-func (p *InterfaceMethodParam) resolve(ctx *Context, file *File, scope Scope) {
-	p.annotations = ctx.resolveAnnotationGroup(file, p, p.unresolved.annotations)
-	p.Type.resolve(ctx, file, scope)
+func (p *InterfaceMethodParam) resolve(c *Compiler, file *File, scope Scope) {
+	p.annotations = c.resolveAnnotationGroup(file, p, p.unresolved.annotations)
+	p.Type.resolve(c, file, scope)
 }
 
 // @api(Object/InterfaceMethodParam.Name) represents the [name object](#Object/Common/NodeName) of the interface method parameter.
@@ -777,14 +777,14 @@ type InterfaceMethodParamType struct {
 	Type Type
 }
 
-func newInterfaceMethodParamType(_ *Context, _ *File, p *InterfaceMethodParam, src ast.Type) *InterfaceMethodParamType {
+func newInterfaceMethodParamType(_ *Compiler, _ *File, p *InterfaceMethodParam, src ast.Type) *InterfaceMethodParamType {
 	t := &InterfaceMethodParamType{Param: p}
 	t.unresolved.typ = src
 	return t
 }
 
-func (t *InterfaceMethodParamType) resolve(ctx *Context, file *File, scope Scope) {
-	t.Type = ctx.resolveType(file, t.unresolved.typ, false)
+func (t *InterfaceMethodParamType) resolve(c *Compiler, file *File, scope Scope) {
+	t.Type = c.resolveType(file, t.unresolved.typ, false)
 }
 
 // @api(Object/InterfaceMethodResult) represents an interface method result.
@@ -800,17 +800,17 @@ type InterfaceMethodResult struct {
 	Type Type
 }
 
-func newInterfaceMethodResult(_ *Context, _ *File, m *InterfaceMethod, src ast.Type) *InterfaceMethodResult {
+func newInterfaceMethodResult(_ *Compiler, _ *File, m *InterfaceMethod, src ast.Type) *InterfaceMethodResult {
 	t := &InterfaceMethodResult{Method: m}
 	t.unresolved.typ = src
 	return t
 }
 
-func (t *InterfaceMethodResult) resolve(ctx *Context, file *File, scope Scope) {
+func (t *InterfaceMethodResult) resolve(c *Compiler, file *File, scope Scope) {
 	if t.unresolved.typ == nil {
 		return
 	}
-	t.Type = ctx.resolveType(file, t.unresolved.typ, false)
+	t.Type = c.resolveType(file, t.unresolved.typ, false)
 }
 
 // isAvailable reports whether the declaration is available in the current language.

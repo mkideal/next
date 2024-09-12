@@ -41,7 +41,7 @@ func main() {
 	flagSet.Init(os.Args[0], flag.ContinueOnError)
 	flagSet.Usage = func() {}
 
-	ctx := types.NewContext(builtin)
+	ctx := types.NewCompiler(builtin)
 	ctx.SetupCommandFlags(flagSet, flags.UseUsage(flagSet.Output(), flags.NameColor(term.Bold)))
 
 	// set output color for error messages

@@ -41,7 +41,7 @@ func (p *Package) Name() string { return p.name }
 // ```
 func (p *Package) In(pkg *Package) bool { return p == nil || p == pkg }
 
-func (p *Package) resolve(c *Context) error {
+func (p *Package) resolve(c *Compiler) error {
 	slices.SortFunc(p.files, func(a, b *File) int {
 		return cmp.Compare(a.Path, b.Path)
 	})
@@ -106,7 +106,7 @@ type File struct {
 	Path string
 }
 
-func newFile(ctx *Context, src *ast.File, path string) *File {
+func newFile(c *Compiler, src *ast.File, path string) *File {
 	f := &File{
 		src:     src,
 		pos:     src.Pos(),
@@ -120,29 +120,29 @@ func newFile(ctx *Context, src *ast.File, path string) *File {
 	f.unresolved.annotations = src.Annotations
 
 	for _, i := range src.Imports {
-		f.imports.List = append(f.imports.List, newImport(ctx, f, i))
+		f.imports.List = append(f.imports.List, newImport(c, f, i))
 	}
 
 	for _, d := range src.Decls {
 		switch d := d.(type) {
 		case *ast.ConstDecl:
-			f.decls.consts = append(f.decls.consts, newConst(ctx, f, d))
+			f.decls.consts = append(f.decls.consts, newConst(c, f, d))
 		case *ast.EnumDecl:
-			f.decls.enums = append(f.decls.enums, newEnum(ctx, f, d))
+			f.decls.enums = append(f.decls.enums, newEnum(c, f, d))
 		case *ast.StructDecl:
-			f.decls.structs = append(f.decls.structs, newStruct(ctx, f, d))
+			f.decls.structs = append(f.decls.structs, newStruct(c, f, d))
 		case *ast.InterfaceDecl:
-			f.decls.interfaces = append(f.decls.interfaces, newInterface(ctx, f, d))
+			f.decls.interfaces = append(f.decls.interfaces, newInterface(c, f, d))
 		default:
-			ctx.addErrorf(d.Pos(), "unsupported declaration: %T", d)
+			c.addErrorf(d.Pos(), "unsupported declaration: %T", d)
 		}
 	}
 
 	for _, s := range src.Stmts {
-		f.stmts = append(f.stmts, newStmt(ctx, f, s))
+		f.stmts = append(f.stmts, newStmt(c, f, s))
 	}
 	if pos, err := f.createSymbols(); err != nil {
-		ctx.errors.Add(ctx.fset.Position(pos), err.Error())
+		c.errors.Add(c.fset.Position(pos), err.Error())
 	}
 	return f
 }
@@ -165,9 +165,9 @@ func (f *File) Doc() *Doc { return f.doc }
 
 func (f *File) Annotations() Annotations { return f.annotations }
 
-func (f *File) addObject(ctx *Context, n ast.Node, x Object) {
+func (f *File) addObject(c *Compiler, n ast.Node, x Object) {
 	if _, dup := f.objects[n]; dup {
-		ctx.addErrorf(n.Pos(), "node already added: %T", n)
+		c.addErrorf(n.Pos(), "node already added: %T", n)
 		return
 	}
 	f.objects[n] = x
@@ -238,7 +238,7 @@ func (f *File) createSymbols() (token.Pos, error) {
 	return token.NoPos, nil
 }
 
-func (f *File) resolve(ctx *Context) {
-	f.annotations = ctx.resolveAnnotationGroup(f, f, f.unresolved.annotations)
-	f.decls.resolve(ctx, f)
+func (f *File) resolve(c *Compiler) {
+	f.annotations = c.resolveAnnotationGroup(f, f, f.unresolved.annotations)
+	f.decls.resolve(c, f)
 }

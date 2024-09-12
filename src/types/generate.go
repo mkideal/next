@@ -63,7 +63,7 @@ func createSearchDirs() []string {
 }
 
 // Genertate generates files for each language specified in the flags.outputs.
-func (c *Context) Generate() error {
+func (c *Compiler) Generate() error {
 	if len(c.flags.outputs) == 0 {
 		return nil
 	}
@@ -132,7 +132,7 @@ func (c *Context) Generate() error {
 	return nil
 }
 
-func (c *Context) loadMap(m flags.Map, lang string) error {
+func (c *Compiler) loadMap(m flags.Map, lang string) error {
 	f, err := c.builtin.Open("builtin/" + lang + langMapExt)
 	if err != nil {
 		if !os.IsNotExist(err) {
@@ -154,7 +154,7 @@ func (c *Context) loadMap(m flags.Map, lang string) error {
 	return nil
 }
 
-func (c *Context) loadMapFromFile(m flags.Map, lang, path string) error {
+func (c *Compiler) loadMapFromFile(m flags.Map, lang, path string) error {
 	f, err := os.Open(path)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -166,7 +166,7 @@ func (c *Context) loadMapFromFile(m flags.Map, lang, path string) error {
 	return parseLangMap(m, lang, f)
 }
 
-func (c *Context) generateForTemplatePath(lang, ext, dir, tmplPath string) error {
+func (c *Compiler) generateForTemplatePath(lang, ext, dir, tmplPath string) error {
 	tmplFiles, err := fsutil.AppendFiles(nil, tmplPath, templateExt, true)
 	if err != nil {
 		return fmt.Errorf("failed to list template files in %q: %v", tmplPath, err)
@@ -181,7 +181,7 @@ func (c *Context) generateForTemplatePath(lang, ext, dir, tmplPath string) error
 	return nil
 }
 
-func (c *Context) generateForTemplateFile(lang, ext, dir, tmplFile string) error {
+func (c *Compiler) generateForTemplateFile(lang, ext, dir, tmplFile string) error {
 	content, err := os.ReadFile(tmplFile)
 	if err != nil {
 		return fmt.Errorf("failed to read file %q: %w", tmplFile, err)

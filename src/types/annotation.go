@@ -93,7 +93,7 @@ type linkedAnnotation struct {
 	obj Object
 }
 
-func (c *Context) solveAnnotations() error {
+func (c *Compiler) solveAnnotations() error {
 	parser := shellwords.NewParser()
 	parser.ParseEnv = true
 	programs := make(map[string][][]string)
@@ -174,7 +174,7 @@ func (c *Context) solveAnnotations() error {
 	return nil
 }
 
-func (c *Context) createAnnotationSolverRequest(name string) *api.AnnotationSolverRequest {
+func (c *Compiler) createAnnotationSolverRequest(name string) *api.AnnotationSolverRequest {
 	req := &api.AnnotationSolverRequest{
 		Objects:     make(map[api.ID]*api.Object),
 		Annotations: make(map[api.ID]*api.Annotation),

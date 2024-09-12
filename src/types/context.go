@@ -20,8 +20,8 @@ import (
 	"github.com/next/next/src/token"
 )
 
-// Context represents a context of a Next program
-type Context struct {
+// Compiler represents a compiler of a Next program
+type Compiler struct {
 	// command line flags
 	flags struct {
 		verbose   int
@@ -60,9 +60,9 @@ type Context struct {
 	annotations map[token.Pos]*linkedAnnotation
 }
 
-// NewContext creates a new context with builtin language supports
-func NewContext(builtin fs.FS) *Context {
-	c := &Context{
+// NewCompiler creates a new compiler with builtin language supports
+func NewCompiler(builtin fs.FS) *Compiler {
+	c := &Compiler{
 		builtin:     builtin,
 		fset:        token.NewFileSet(),
 		files:       make(map[string]*File),
@@ -79,7 +79,7 @@ func NewContext(builtin fs.FS) *Context {
 	return c
 }
 
-func (c *Context) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
+func (c *Compiler) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 	isAnsiSupported := term.IsTerminal(flagSet.Output()) && term.IsSupportsAnsi()
 	grey := func(s string) string {
 		if isAnsiSupported {
@@ -153,17 +153,17 @@ func (c *Context) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 }
 
 // FileSet returns the file set used to track file positions
-func (c *Context) FileSet() *token.FileSet {
+func (c *Compiler) FileSet() *token.FileSet {
 	return c.fset
 }
 
 // GetFile returns the file by path
-func (c *Context) GetFile(path string) *File {
+func (c *Compiler) GetFile(path string) *File {
 	return c.files[path]
 }
 
 // AddFile adds a file to the context
-func (c *Context) AddFile(f *ast.File) (*File, error) {
+func (c *Compiler) AddFile(f *ast.File) (*File, error) {
 	filename := c.fset.Position(f.Pos()).Filename
 	if file, ok := c.files[filename]; ok {
 		c.addErrorf(f.Pos(), "file %s already exists", filename)
@@ -192,16 +192,16 @@ func (c *Context) AddFile(f *ast.File) (*File, error) {
 }
 
 // Output returns the output writer for logging
-func (c *Context) Output() io.Writer {
+func (c *Compiler) Output() io.Writer {
 	return os.Stderr
 }
 
 // IsDebugEnabled returns true if debug logging is enabled
-func (c *Context) IsDebugEnabled() bool {
+func (c *Compiler) IsDebugEnabled() bool {
 	return c.flags.verbose >= 2
 }
 
-func (c *Context) log(msg string) {
+func (c *Compiler) log(msg string) {
 	if !strings.HasSuffix(msg, "\n") {
 		msg += "\n"
 	}
@@ -215,35 +215,35 @@ func (c *Context) log(msg string) {
 }
 
 // Trace logs a message if trace logging is enabled
-func (c *Context) Trace(args ...any) {
+func (c *Compiler) Trace(args ...any) {
 	if c.flags.verbose >= 3 {
 		c.log(fmt.Sprint(args...))
 	}
 }
 
 // Tracef logs a formatted message if trace logging is enabled
-func (c *Context) Tracef(format string, args ...any) {
+func (c *Compiler) Tracef(format string, args ...any) {
 	if c.flags.verbose >= 3 {
 		c.log(fmt.Sprintf(format, args...))
 	}
 }
 
 // Print logs a message if debug logging is enabled
-func (c *Context) Print(args ...any) {
+func (c *Compiler) Print(args ...any) {
 	if c.flags.verbose >= 2 {
 		c.log(fmt.Sprint(args...))
 	}
 }
 
 // Printf logs a formatted message if debug logging is enabled
-func (c *Context) Printf(format string, args ...any) {
+func (c *Compiler) Printf(format string, args ...any) {
 	if c.flags.verbose >= 2 {
 		c.log(fmt.Sprintf(format, args...))
 	}
 }
 
 // Info logs an info message if verbose logging is enabled
-func (c *Context) Info(args ...any) {
+func (c *Compiler) Info(args ...any) {
 	if c.flags.verbose < 1 {
 		return
 	}
@@ -251,7 +251,7 @@ func (c *Context) Info(args ...any) {
 }
 
 // Infof logs a formatted info message if verbose logging is enabled
-func (c *Context) Infof(format string, args ...any) {
+func (c *Compiler) Infof(format string, args ...any) {
 	if c.flags.verbose < 1 {
 		return
 	}
@@ -259,12 +259,12 @@ func (c *Context) Infof(format string, args ...any) {
 }
 
 // Error logs an error message
-func (c *Context) Error(args ...any) {
+func (c *Compiler) Error(args ...any) {
 	c.log(fmt.Sprint(args...))
 }
 
 // Position returns the current position for call expression
-func (c *Context) Position() token.Position {
+func (c *Compiler) Position() token.Position {
 	if len(c.stack) == 0 {
 		return token.Position{}
 	}
@@ -272,17 +272,17 @@ func (c *Context) Position() token.Position {
 }
 
 // addError adds an error message with position to the error list
-func (c *Context) addError(pos token.Pos, msg string) {
+func (c *Compiler) addError(pos token.Pos, msg string) {
 	c.errors.Add(c.fset.Position(pos), msg)
 }
 
 // addErrorf adds a formatted error message with position to the error list
-func (c *Context) addErrorf(pos token.Pos, format string, args ...any) {
+func (c *Compiler) addErrorf(pos token.Pos, format string, args ...any) {
 	c.errors.Add(c.fset.Position(pos), fmt.Sprintf(format, args...))
 }
 
 // getFileByPos returns the file by position
-func (c *Context) getFileByPos(pos token.Pos) *File {
+func (c *Compiler) getFileByPos(pos token.Pos) *File {
 	path, err := filepath.Abs(c.fset.Position(pos).Filename)
 	if err != nil {
 		c.addErrorf(pos, "failed to get absolute path of %s: %v", c.fset.Position(pos).Filename, err)
@@ -292,7 +292,7 @@ func (c *Context) getFileByPos(pos token.Pos) *File {
 }
 
 // lookupFile returns the file by full path or relative path
-func (c *Context) lookupFile(fullPath, relativePath string) *File {
+func (c *Compiler) lookupFile(fullPath, relativePath string) *File {
 	if relativePath == "" {
 		return nil
 	}
@@ -308,24 +308,24 @@ func (c *Context) lookupFile(fullPath, relativePath string) *File {
 }
 
 // pushTrace pushes a position to the trace
-func (c *Context) pushTrace(pos token.Pos) {
+func (c *Compiler) pushTrace(pos token.Pos) {
 	c.stack = append(c.stack, pos)
 }
 
 // popTrace pops a position from the trace
-func (c *Context) popTrace() {
+func (c *Compiler) popTrace() {
 	c.stack = c.stack[:len(c.stack)-1]
 }
 
 // call calls a function with arguments
-func (c *Context) call(pos token.Pos, name string, args ...constant.Value) (constant.Value, error) {
+func (c *Compiler) call(pos token.Pos, name string, args ...constant.Value) (constant.Value, error) {
 	c.pushTrace(pos)
 	defer c.popTrace()
 	return constant.Call(c, name, args)
 }
 
 // Resolve resolves all files in the context.
-func (c *Context) Resolve() error {
+func (c *Compiler) Resolve() error {
 	// sort files by package name and position
 	files := make([]*File, 0, len(c.files))
 	for i := range c.files {
@@ -390,7 +390,7 @@ func (c *Context) Resolve() error {
 }
 
 // resolveAnnotationGroup resolves an annotation group
-func (c *Context) resolveAnnotationGroup(file *File, obj Node, annotations *ast.AnnotationGroup) Annotations {
+func (c *Compiler) resolveAnnotationGroup(file *File, obj Node, annotations *ast.AnnotationGroup) Annotations {
 	if annotations == nil {
 		return nil
 	}
@@ -434,12 +434,12 @@ func (c *Context) resolveAnnotationGroup(file *File, obj Node, annotations *ast.
 }
 
 // resolveValue resolves a value of an expression
-func (c *Context) resolveValue(file *File, expr ast.Expr, iota *iotaValue) constant.Value {
+func (c *Compiler) resolveValue(file *File, expr ast.Expr, iota *iotaValue) constant.Value {
 	return c.recursiveResolveValue(file, file, make([]*Value, 0, 16), expr, iota)
 }
 
 // resolveSymbolValue resolves a value of a symbol
-func (c *Context) resolveSymbolValue(file *File, scope Scope, refs []*Value, v *Value) constant.Value {
+func (c *Compiler) resolveSymbolValue(file *File, scope Scope, refs []*Value, v *Value) constant.Value {
 	if v.val != nil {
 		// value already resolved
 		return v.val
@@ -456,7 +456,7 @@ func (c *Context) resolveSymbolValue(file *File, scope Scope, refs []*Value, v *
 	return v.val
 }
 
-func (c *Context) recursiveResolveValue(file *File, scope Scope, refs []*Value, expr ast.Expr, iota *iotaValue) (result constant.Value) {
+func (c *Compiler) recursiveResolveValue(file *File, scope Scope, refs []*Value, expr ast.Expr, iota *iotaValue) (result constant.Value) {
 	defer func() {
 		if r := recover(); r != nil {
 			c.addErrorf(expr.Pos(), "%v", r)
@@ -544,11 +544,11 @@ func (c *Context) recursiveResolveValue(file *File, scope Scope, refs []*Value, 
 }
 
 // resolveUint64 resolves an unsigned integer value of an expression
-func (c *Context) resolveInt64(file *File, expr ast.Expr) int64 {
+func (c *Compiler) resolveInt64(file *File, expr ast.Expr) int64 {
 	return c.recursiveResolveInt64(file, file, expr, make([]*Value, 0, 16), nil)
 }
 
-func (c *Context) recursiveResolveInt64(file *File, scope Scope, expr ast.Expr, refs []*Value, iota *iotaValue) int64 {
+func (c *Compiler) recursiveResolveInt64(file *File, scope Scope, expr ast.Expr, refs []*Value, iota *iotaValue) int64 {
 	val := c.recursiveResolveValue(file, scope, refs, expr, iota)
 	switch val.Kind() {
 	case constant.Int:
@@ -570,7 +570,7 @@ func (c *Context) recursiveResolveInt64(file *File, scope Scope, expr ast.Expr, 
 }
 
 // resolveType resolves a type
-func (c *Context) resolveType(file *File, t ast.Type, ignoreError bool) Type {
+func (c *Compiler) resolveType(file *File, t ast.Type, ignoreError bool) Type {
 	var result Type
 	switch t := t.(type) {
 	case *ast.Ident:
@@ -597,7 +597,7 @@ func (c *Context) resolveType(file *File, t ast.Type, ignoreError bool) Type {
 	return result
 }
 
-func (c *Context) resolveIdentType(file *File, i *ast.Ident, ignoreError bool) Type {
+func (c *Compiler) resolveIdentType(file *File, i *ast.Ident, ignoreError bool) Type {
 	if t, ok := primitiveTypes[i.Name]; ok {
 		return t
 	}
@@ -611,7 +611,7 @@ func (c *Context) resolveIdentType(file *File, i *ast.Ident, ignoreError bool) T
 	return t
 }
 
-func (c *Context) resolveSelectorExprChain(t *ast.SelectorExpr, ignoreError bool) []string {
+func (c *Compiler) resolveSelectorExprChain(t *ast.SelectorExpr, ignoreError bool) []string {
 	var names []string
 	for t != nil {
 		names = append(names, t.Sel.Name)
@@ -633,7 +633,7 @@ func (c *Context) resolveSelectorExprChain(t *ast.SelectorExpr, ignoreError bool
 	return names
 }
 
-func (c *Context) resolveSelectorExprType(file *File, t *ast.SelectorExpr, ignoreError bool) Type {
+func (c *Compiler) resolveSelectorExprType(file *File, t *ast.SelectorExpr, ignoreError bool) Type {
 	names := c.resolveSelectorExprChain(t, ignoreError)
 	if len(names) < 2 {
 		return nil
@@ -655,7 +655,7 @@ func (c *Context) resolveSelectorExprType(file *File, t *ast.SelectorExpr, ignor
 	return typ
 }
 
-func (c *Context) resolveArrayType(file *File, t *ast.ArrayType, ignoreError bool) Type {
+func (c *Compiler) resolveArrayType(file *File, t *ast.ArrayType, ignoreError bool) Type {
 	typ := c.resolveType(file, t.T, ignoreError)
 	if typ == nil {
 		return nil
@@ -667,7 +667,7 @@ func (c *Context) resolveArrayType(file *File, t *ast.ArrayType, ignoreError boo
 	}
 }
 
-func (c *Context) resolveVectorType(file *File, t *ast.VectorType, ignoreError bool) Type {
+func (c *Compiler) resolveVectorType(file *File, t *ast.VectorType, ignoreError bool) Type {
 	typ := c.resolveType(file, t.T, ignoreError)
 	if typ == nil {
 		return nil
@@ -678,7 +678,7 @@ func (c *Context) resolveVectorType(file *File, t *ast.VectorType, ignoreError b
 	}
 }
 
-func (c *Context) resolveMapType(file *File, t *ast.MapType, ignoreError bool) Type {
+func (c *Compiler) resolveMapType(file *File, t *ast.MapType, ignoreError bool) Type {
 	k := c.resolveType(file, t.K, ignoreError)
 	if k == nil {
 		return nil

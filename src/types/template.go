@@ -94,7 +94,7 @@ func executeTemplate(t *template.Template, data any) (string, error) {
 
 // templateContextInfo represents the context information of a template.
 type templateContextInfo struct {
-	context *Context
+	context *Compiler
 	lang    string // current language
 	dir     string // output directory for current language
 	ext     string // file extension for current language

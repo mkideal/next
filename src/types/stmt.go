@@ -9,18 +9,18 @@ import (
 // Stmt represents a Next statement.
 type Stmt interface {
 	stmtNode()
-	resolve(ctx *Context, file *File)
+	resolve(*Compiler, *File)
 }
 
-func newStmt(ctx *Context, file *File, src ast.Stmt) Stmt {
+func newStmt(c *Compiler, file *File, src ast.Stmt) Stmt {
 	switch s := src.(type) {
 	case *ast.ExprStmt:
 		x := ast.Unparen(s.X)
 		if call, ok := x.(*ast.CallExpr); ok {
-			return newCallStmt(ctx, file, call)
+			return newCallStmt(c, file, call)
 		}
 	}
-	ctx.addErrorf(src.Pos(), "unsupported statement: %T", src)
+	c.addErrorf(src.Pos(), "unsupported statement: %T", src)
 	return nil
 }
 
@@ -29,26 +29,26 @@ type CallStmt struct {
 	CallExpr *ast.CallExpr
 }
 
-func newCallStmt(ctx *Context, file *File, call *ast.CallExpr) *CallStmt {
+func newCallStmt(c *Compiler, file *File, call *ast.CallExpr) *CallStmt {
 	s := &CallStmt{pos: call.Pos(), CallExpr: call}
-	file.addObject(ctx, call, s)
+	file.addObject(c, call, s)
 	return s
 }
 
-func (s *CallStmt) resolve(ctx *Context, file *File) {
+func (s *CallStmt) resolve(c *Compiler, file *File) {
 	fun := ast.Unparen(s.CallExpr.Fun)
 	ident, ok := fun.(*ast.Ident)
 	if !ok {
-		ctx.addErrorf(fun.Pos(), "unexpected function %T", fun)
+		c.addErrorf(fun.Pos(), "unexpected function %T", fun)
 		return
 	}
 	args := make([]constant.Value, len(s.CallExpr.Args))
 	for i, arg := range s.CallExpr.Args {
-		args[i] = ctx.resolveValue(file, arg, nil)
+		args[i] = c.resolveValue(file, arg, nil)
 	}
-	_, err := ctx.call(s.pos, ident.Name, args...)
+	_, err := c.call(s.pos, ident.Name, args...)
 	if err != nil {
-		ctx.addErrorf(s.CallExpr.Pos(), "call %s: %s", ident.Name, err)
+		c.addErrorf(s.CallExpr.Pos(), "call %s: %s", ident.Name, err)
 	}
 }
 

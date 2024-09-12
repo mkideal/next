@@ -76,8 +76,9 @@
 
 <h2><a id="user-content-Context" target="_self">Context</a></h2>
 
-_Context_
-Context-related methods and properties are used to retrieve information, perform operations, and generate code within the current code generator's context. These methods or properties are called directly by name, for example:
+_Context_ related methods and properties are used to retrieve information, perform operations,
+and generate code within the current code generator's context. These methods or properties are
+called directly by name, for example:
 
 ```npl
 {{head}}
@@ -157,12 +158,12 @@ _lang_ represents the current language to be generated.
 <h3><a id="user-content-Context_meta" target="_self">meta</a></h3>
 
 _meta_ represents the metadata of a entrypoint template.
-To define a meta, you should define a template with the name "meta/<key>".
+To define a meta, you should define a template with the name `meta/<key>`.
 Currently, the following meta keys are supported:
 
-- "meta/this": the current object to be rendered.
-- "meta/path": the output path for the current object.
-- "meta/skip": whether to skip the current object.
+- `meta/this`: the current object to be rendered.
+- `meta/path`: the output path for the current object.
+- `meta/skip`: whether to skip the current object.
 
 Any other meta keys are user-defined. You can use them in the templates like `{{meta.<key>}}`.
 
@@ -210,8 +211,7 @@ _type_ outputs the string representation of the given [type](#user-content-Objec
 
 <h2><a id="user-content-Object" target="_self">Object</a></h2>
 
-_Object_
-Object is a generic object type. These objects can be used as parameters for the [next](#user-content-Context_next)
+_Object_ is a generic object type. These objects can be used as parameters for the [next](#user-content-Context_next)
 function, like `{{next .}}`. Except for objects under [Common](#user-content-Object_Common), the type names
 of other objects are lowercase names separated by dots. For example, the type name of a `Const`
 object is `const`, and the type name of a `ConstName` object is `const.name`. These objects can
@@ -260,8 +260,7 @@ Usage in templates:
 
 <h3><a id="user-content-Object_Common" target="_self">Common</a></h3>
 
-_Common_
-Common contains some general types, including a generic type. Unless specifically stated,
+_Common_ contains some general types, including a generic type. Unless specifically stated,
 these objects cannot be directly called using the [next](#user-content-Context_next) function.
 The [Value](#user-content-Object_Common_Value) object represents a value, which can be either a constant
 value or an enum member's value. The object type for the former is `const.value`, and for
@@ -325,7 +324,7 @@ The key is the annotation name (string), and the value is the corresponding [Ann
 
 <h4><a id="user-content-Object_Common_Decl" target="_self">Decl</a></h4>
 
-_Decl_ represents an top-level declaration in a file.
+_Decl_ represents a top-level declaration in a file.
 
 All declarations are [nodes](#user-content-Object_Common_Node). Currently, the following declarations are supported:
 
