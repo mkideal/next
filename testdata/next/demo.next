@@ -5,8 +5,8 @@
     // - "fmt" is imported to demonstrate importing with go type
     //
     // Format for go_imports:
-    // - path/to/pkg.Func (for functions, variables, constants, etc.)
-    // - *path/to/pkg.Type (for types, including pointer types)
+    // - path/to/pkg.Var (for functions, variables, constants, etc.)
+    // - *path/to/pkg.Type (for types, "*" is required for importing types)
     //
     // Note: Avoid duplicating import paths. Use comma separation for multiple imports.
     go_imports="net/http.HandlerFunc,*fmt.Stringer",
@@ -22,6 +22,7 @@ const Timeout = MaxRetries * 1000; // Constant expression
 
 // Color represents different color options
 // Values: Red (1), Green (2), Blue (4), Yellow (8)
+@next(type=int8)
 enum Color {
     Red = 1 << iota;
     Green;
@@ -29,6 +30,30 @@ enum Color {
     Yellow;
 }
 
+// MathConstants represents mathematical constants
+enum MathConstants {
+    Pi = 3.14159265358979323846;
+    E = 2.71828182845904523536;
+}
+
+// User represents a user in the system
+struct User {
+    int64 id;
+    string username;
+    vector<string> tags;
+    map<string, int> scores;
+    array<float64, 3> coordinates;
+    Color favoriteColor;
+    any extra;
+}
+
+// uint64 represents a 64-bit unsigned integer.
+// - In Go, it is aliased as uint64
+// - In C++, it is aliased as uint64_t
+// - In Java, it is aliased as long
+// - In Rust, it is aliased as u64
+// - In C#, it is aliased as ulong
+// - In other languages, it is represented as a struct with low and high 32-bit integers.
 @next(
     go_alias="uint64",
     cpp_alias="uint64_t",
@@ -41,19 +66,19 @@ struct uint64 {
     int32 high;
 }
 
-// User represents a user in the system
-struct User {
-    int64 id;
-    string username;
-    vector<string> tags;
-    map<string, int> scores;
-    array<float64, 3> coordinates;
-    Color favoriteColor;
+// uint128 represents a 128-bit unsigned integer.
+// - In rust, it is aliased as u128
+// - In other languages, it is represented as a struct with low and high 64-bit integers.
+@next(rust_alias="u128")
+struct uint128 {
+    uint64 low;
+    uint64 high;
+}
 
-    @next(available="go|cpp")
-    uint64 timestamp;
-
-    any extra;
+// Contract represents a smart contract
+struct Contract {
+    uint128 address;
+    any data;
 }
 
 // OperatingSystem represents different operating systems
@@ -66,10 +91,12 @@ enum OperatingSystem {
 }
 
 // LoginRequest represents a login request message (type 101)
+// @message annotation is a custom annotation that generates message types.
 @message(type=101, req)
 struct LoginRequest {
     string username;
     string password;
+    // @optional annotation is a custom annotation that marks a field as optional.
     @optional string device;
     @optional(default=OperatingSystem.IOS) OperatingSystem os;
 }
@@ -81,80 +108,40 @@ struct LoginResponse {
     User user;
 }
 
-// AuthService provides authentication functionality
-interface AuthService {
-    // Login authenticates a user
-    // @next(error) indicates that the method may return an error:
-    // - For Go: The method returns (LoginResponse, error)
-    // - For C++/Java: The method throws an exception
-    //
-    // @next(mut) indicates that the method may mutate the object:
-    // - For C++: The method is non-const
-    // - For other languages: This annotation may not have a direct effect
-    @next(error, mut)
-    Login(LoginRequest request) LoginResponse;
-}
-
-// HelloService provides greeting functionality
-interface HelloService {
-    Hello(string name);
-    GetName() string;
-
-    @next(error, mut)
-    Print();
-}
-
-// Level represents different logging levels
-@next(type=int8)
-enum Level {
-    Debug = iota;
-    Info;
-    Warn;
-    Error;
-}
-
-// Logger provides logging functionality
-interface Logger {
-    Debug(string x, vector<any> values);
-    GetLevel() Level;
-    @next(mut)
-    SetLevel(Level level);
-}
-
 // Reader provides reading functionality
 interface Reader {
     // Read reads data into the buffer
+    //
+    // @next(error) applies to the method:
+    // - For Go: The method may return an error
+    // - For C++/Java: The method throws an exception
+    //
+    // @next(mut) applies to the method:
+    // - For C++: The method is non-const
+    // - For other languages: This annotation may not have a direct effect
+    //
     // @next(mut) applies to the parameter buffer:
     // - For C++: The parameter is non-const, allowing modification
     // - For other languages: This annotation may not have a direct effect, 
     //   but indicates that the buffer content may be modified
+    @next(error, mut)
     Read(@next(mut) bytes buffer) int;
-}
-
-// Writer provides writing functionality
-interface Writer {
-    @next(mut)
-    Write(bytes data) int;
-}
-
-// ReadWriter combines Reader and Writer interfaces
-interface ReadWriter {
-    Read(@next(mut) bytes buffer) int;
-    @next(mut)
-    Write(bytes data) int;
 }
 
 @next(
     available="go|java",
-    go_alias="net/http.HandlerFunc",
+    go_alias="net/http.Handler",
     java_alias="java.util.function.Function<com.sun.net.httpserver.HttpExchange, String>",
 )
-interface HTTPHandlerFunc {}
+interface HTTPHandler {}
 
 @next(available="go|java")
 interface HTTPServer {
+    // @next(error) indicates that the method may return an error:
+    // - For Go: The method returns (LoginResponse, error)
+    // - For C++/Java: The method throws an exception
     @next(error)
-    HandleFunc(string path, HTTPHandlerFunc handler);
+    Handle(string path, HTTPHandler handler);
 }
 
 // HTTPClient provides HTTP request functionality
@@ -166,62 +153,7 @@ interface HTTPClient {
     @next(error, available="go|java")
     Get(string url) string;
 
-    // Available for Java and C++
-    @next(error, available="java|cpp")
-    Post(string url, string body) string;
-
-    // Available for Go
-    @next(available="go")
-    FetchJSON();
-
     // Available for C++
-    @next(available="cpp")
-    StreamData();
-
-    // Available for Java
-    @next(available="java")
-    CompressRequest();
-}
-
-// UserProfile contains user-specific information
-struct UserProfile {
-    string id;
-
-    @next(available="go|java|cpp")
-    string displayName;
-
-    @next(available="go")
-    map<string, any> preferences;
-
-    @next(available="java")
-    vector<string> roles;
-
-    @next(available="cpp")
-    uint64 lastLoginTimestamp;
-}
-
-// MathConstants represents mathematical constants
-enum MathConstants {
-    Pi = 3.14159265358979323846;
-    E = 2.71828182845904523536;
-}
-
-// uint128 represents a 128-bit unsigned integer
-@next(rust_alias="u128")
-struct uint128 {
-    uint64 low;
-    uint64 high;
-}
-
-// Complex represents a 128-bit complex number
-@next(go_alias="complex128")
-struct Complex {
-    float64 real;
-    float64 imag;
-}
-
-// Contract represents a contract with an address and location
-struct Contract {
-    uint128 address;
-    Complex location;
+    @next(error, available="cpp")
+    Post(string url, string body) string;
 }
