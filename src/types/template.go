@@ -24,7 +24,7 @@ import (
 	"github.com/next/next/src/fsutil"
 )
 
-// Meta represents the metadata of a template.
+// Meta represents the metadata of a entrypoint template file.
 type Meta map[string]string
 
 func (m Meta) lookup(key string) pair.Pair[string, bool] {
@@ -106,7 +106,7 @@ type templateContextInfo struct {
 //
 // ```npl
 // {{head}}
-// {{next this)}}
+// {{next this}}
 // {{lang}}
 // {{exist meta.path}}
 // ```
@@ -166,14 +166,21 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		"this": tc.this,
 
 		// @api(Context/lang) represents the current language to be generated.
+		//
+		// Example:
+		//
+		// ```npl
+		// {{lang}}
+		// {{printf "%s_alias" lang}}
+		// ```
 		"lang": func() string { return tc.lang },
 
-		// @api(Context/meta) represents the metadata of a entrypoint template.
+		// @api(Context/meta) represents the metadata of a entrypoint template file by flag `-T`.
 		// To define a meta, you should define a template with the name `meta/<key>`.
-		// Currently, the following meta keys are supported:
+		// Currently, the following meta keys are used by the code generator:
 		//
-		// - `meta/this`: the current object to be rendered.
-		// - `meta/path`: the output path for the current object.
+		// - `meta/this`: the current object to be rendered. See [this](#Context/this) for more details.
+		// - `meta/path`: the output path for the current object. If the path is not absolute, it will be resolved relative to the current output directory for the current language by command line flag `-O`.
 		// - `meta/skip`: whether to skip the current object.
 		//
 		// Any other meta keys are user-defined. You can use them in the templates like `{{meta.<key>}}`.
@@ -182,14 +189,13 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		//
 		// ```npl
 		// {{- define "meta/this" -}}file{{- end -}}
-		// {{- define "meta/path" -}}/path/to/file{{- end -}}
+		// {{- define "meta/path" -}}path/to/file{{- end -}}
 		// {{- define "meta/skip" -}}{{exist meta.path}}{{- end -}}
 		// {{- define "meta/custom" -}}custom value{{- end -}}
 		// ```
 		//
-		// All meta templates should be defined in the entrypoint template.
-		// The meta will be resolved in the order of the template definition
-		// before rendering the entrypoint template.
+		// **The metadata will be resolved in the order of the template definition
+		// before rendering the entrypoint template.**
 		"meta": func() Meta { return tc.meta },
 
 		// @api(Context/error) used to return an error message in the template.
@@ -213,6 +219,13 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		// @api(Context/exist) checks whether the given path exists.
 		// If the path is not absolute, it will be resolved relative to the current output directory
 		// for the current language by command line flag `-O`.
+		//
+		// Example:
+		// ```npl
+		// {{exist "path/to/file"}}
+		// {{exist "/absolute/path/to/file"}}
+		// {{exist meta.path}}
+		// ```
 		"exist": tc.exist,
 
 		// @api(Context/head) outputs the header of the generated file.
@@ -234,19 +247,61 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		// ```
 		"head": tc.head,
 
-		// @api(Context/align) aligns the given text with the last line indent of the generated content.
+		// @api(Context/align) aligns the given text with the same indent as the first line.
+		//
+		// Example (without align):
+		// ```npl
+		//		{{print "hello\nworld"}}
+		// ```
+		//
+		// Output:
+		// ```
+		//		hello
+		//	world
+		// ```
+		//
+		// To align it, you can use `align`:
+		// ```npl
+		//		{{align "hello\nworld"}}
+		// ```
+		//
+		// Output:
+		//
+		// ```
+		//		hello
+		//		world
+		// ```
+		//
+		// It's useful when you want to align the generated content, especially for multi-line strings (e.g., comments).
 		"align": tc.align,
 
 		// @api(Context/type) outputs the string representation of the given [type](#Object/Common/Type) for the current language.
 		"type": tc.type_,
 
 		// @api(Context/next) executes the next template with the given [object](#Object).
+		// `{{next object}}` is equivalent to `{{render (object.Typeof) object}}`.
+		//
+		// Example:
+		//
+		// ```npl
+		// {{- /* Overrides "next/go/struct": add method 'MessageType' for each message after struct */ -}}
+		// {{- define "go/struct"}}
+		// {{- super .}}
+		// {{- with .Annotations.message.type}}
+		//
+		// func ({{next $.Type}}) MessageType() int { return {{.}} }
+		// {{- end}}
+		// {{- end -}}
+		//
+		// {{next this}}
+		// ```
 		"next": tc.next,
 
 		// @api(Context/super) executes the super template with the given [object](#Object).
 		"super": tc.super,
 
 		// @api(Context/render) executes the template with the given name and data.
+		//
 		"render": tc.render,
 	}
 	return tc
@@ -578,7 +633,7 @@ func (tc *templateContext) next(obj Object, langs ...string) (string, error) {
 	if len(langs) == 1 {
 		lang = langs[0]
 	}
-	names := tc.parseTemplateNames(lang, obj.getType())
+	names := tc.parseTemplateNames(lang, obj.Typeof())
 	return tc.nextWithNames(names, obj)
 }
 

@@ -15,10 +15,24 @@ import (
 )
 
 type TemplateItem struct {
-	Path     string
+	Name     string
 	Content  string
 	Children map[string]*TemplateItem
 	Links    []string
+}
+
+func (t *TemplateItem) IsProperty() bool {
+	return strings.HasPrefix(t.Name, ".")
+}
+
+func (t *TemplateItem) NumProperties() int {
+	n := 0
+	for _, child := range t.Children {
+		if child.IsProperty() {
+			n++
+		}
+	}
+	return n
 }
 
 func trimSpace(s string) string {
@@ -97,39 +111,68 @@ func processCommentGroup(group *ast.CommentGroup, root *TemplateItem) {
 
 	path := strings.TrimPrefix(firstComment, "// @api(")
 	end := strings.Index(path, ")")
-	group.List[0].Text = "// _" + entityName(path[:end]) + "_ " + strings.TrimSpace(path[end+1:])
-	path = path[:end]
-	currentItem := addToTree(root, path)
+	currentItem := addToTree(root, path[:end])
+	group.List[0].Text = "// _" + currentItem.Name + "_ " + strings.TrimSpace(path[end+1:])
 
 	var content bytes.Buffer
-	var coding = false
+	var coding int
+	const (
+		codingNone = iota
+		codingStart
+		codingEnd
+	)
 	for _, comment := range group.List { // Start from the second comment
 		text := strings.TrimPrefix(comment.Text, "//")
 		text = trimSpace(text)
 		if strings.HasPrefix(text, "```") {
-			coding = !coding
-			if !coding && content.Len() > 1 && bytes.Equal(content.Bytes()[content.Len()-2:], []byte("\n\n")) {
-				content.Truncate(content.Len() - 1)
+			if coding == codingStart {
+				coding = codingEnd
+				if content.Len() > 1 && bytes.Equal(content.Bytes()[content.Len()-2:], []byte("\n\n")) {
+					content.Truncate(content.Len() - 1)
+				}
+			} else {
+				coding = codingStart
+				content.WriteString("\n")
 			}
 		}
 		content.WriteString(text)
-		content.WriteString("\n")
+		if coding != codingNone || (text == "" || isListItem(text)) {
+			content.WriteString("\n")
+		} else {
+			content.WriteString(" ")
+		}
+		if coding == codingEnd {
+			coding = codingNone
+		}
 	}
+	content.WriteString("\n")
 
 	currentItem.Content = content.String()
 	currentItem.Links = extractLinks(currentItem.Content)
+}
+
+func isListItem(text string) bool {
+	return len(text) >= 2 && (text[0] == '*' || text[0] == '-' || text[0] == '+') && text[1] == ' '
 }
 
 func addToTree(root *TemplateItem, path string) *TemplateItem {
 	parts := strings.Split(path, "/")
 	current := root
 
+	if len(parts) > 0 {
+		if index := strings.Index(parts[len(parts)-1], "."); index != -1 {
+			newPart := parts[len(parts)-1][index:]
+			parts[len(parts)-1] = parts[len(parts)-1][:index]
+			parts = append(parts, newPart)
+		}
+	}
+
 	for _, part := range parts {
 		if current.Children == nil {
 			current.Children = make(map[string]*TemplateItem)
 		}
 		if _, exists := current.Children[part]; !exists {
-			current.Children[part] = &TemplateItem{Path: part}
+			current.Children[part] = &TemplateItem{Name: part}
 		}
 		current = current.Children[part]
 	}
@@ -167,30 +210,16 @@ func linkName(path string) string {
 	return "user-content-" + strings.ReplaceAll(strings.ReplaceAll(path, ".", "-"), "/", "_")
 }
 
-func entityName(path string) string {
-	if i := strings.LastIndex(path, "/"); i != -1 {
-		path = path[i+1:]
-	}
-	if i := strings.Index(path, "."); i != -1 {
-		return path[i:]
-	}
-	if i := strings.Index(path, "-"); i != -1 {
-		return path[i:]
-	}
-	return path
-}
-
 func writeMarkdownTree(toc, content io.Writer, item *TemplateItem, depth int, parentPath string) {
-	if item.Path != "" {
-		name := entityName(item.Path)
+	if item.Name != "" {
 		level := depth + 1
-		fullPath := parentPath + item.Path
-		if name != item.Path {
+		fullPath := parentPath + item.Name
+		if item.IsProperty() {
 			level = 5 // <h5>
 		}
-		fmt.Fprintf(content, "<h%d><a id=\"%s\" target=\"_self\">%s</a></h%d>\n", level, linkName(fullPath), name, level)
-		if name == item.Path {
-			fmt.Fprintf(toc, "%s<li><a href=\"#%s\">%s</a></li>\n", strings.Repeat("  ", depth), linkName(fullPath), name)
+		fmt.Fprintf(content, "<h%d><a id=\"%s\" target=\"_self\">%s</a></h%d>\n", level, linkName(fullPath), item.Name, level)
+		if !item.IsProperty() {
+			fmt.Fprintf(toc, "%s<li><a href=\"#%s\">%s</a></li>\n", strings.Repeat("  ", depth), linkName(fullPath), item.Name)
 		}
 
 		if item.Content != "" {
@@ -200,18 +229,19 @@ func writeMarkdownTree(toc, content io.Writer, item *TemplateItem, depth int, pa
 	}
 
 	children := sortedChildren(item)
-	parentPath = parentPath + item.Path
+	parentPath = parentPath + item.Name
 	if parentPath != "" {
 		parentPath = parentPath + "/"
 	}
-	if len(children) == 0 {
-		return
+	if len(children) > item.NumProperties() {
+		fmt.Fprintf(toc, "<ul>\n")
 	}
-	fmt.Fprintf(toc, "<ul>\n")
 	for _, child := range children {
 		writeMarkdownTree(toc, content, child, depth+1, parentPath)
 	}
-	fmt.Fprintf(toc, "</ul>\n")
+	if len(children) > item.NumProperties() {
+		fmt.Fprintf(toc, "</ul>\n")
+	}
 
 }
 
@@ -229,13 +259,34 @@ func processLinks(content string) string {
 	})
 }
 
+func specialOrder(name string) int {
+	if len(name) == 0 {
+		return 0
+	}
+	switch name[0] {
+	case '.':
+		return -1
+	case '-':
+		return -2
+	case '_':
+		return -3
+	default:
+		return 0
+	}
+}
+
 func sortedChildren(item *TemplateItem) []*TemplateItem {
 	var children []*TemplateItem
 	for _, child := range item.Children {
 		children = append(children, child)
 	}
 	sort.Slice(children, func(i, j int) bool {
-		return children[i].Path < children[j].Path
+		oi := specialOrder(children[i].Name)
+		oj := specialOrder(children[j].Name)
+		if oi != oj {
+			return oi < oj
+		}
+		return children[i].Name < children[j].Name
 	})
 	return children
 }

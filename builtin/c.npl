@@ -13,10 +13,35 @@
 typedef unsigned char _Bool;
 #endif
 {{next .Imports -}}
+{{render "c/file:forward.declarations" . -}}
 {{_}}
 {{next .Decls -}}
 {{_}}
 #endif /* {{render "c/this:file.header.macro" .}} */
+{{- end}}
+
+{{- define "next/c/file:forward.declarations" -}}
+{{- if .Decls.Enums.List}}
+// Enums forward declarations
+{{- range .Decls.Enums.List}}
+{{- if not .Annotations.next.cpp_alias}}
+{{- if .MemberType.Kind.IsInteger}}
+typedef enum {{next .Type}} {{next .Type}};
+{{- else}}
+typedef /* enum */ struct {{next .Type}} {{next .Type}};
+{{- end}}
+{{- end}}
+{{- end}}
+{{end -}}
+
+{{- if .Decls.Structs.List}}
+// Structs forward declarations
+{{- range .Decls.Structs.List}}
+{{- if not .Annotations.next.cpp_alias}}
+typedef struct {{next .Type}} {{next .Type}};
+{{- end}}
+{{- end}}
+{{end -}}
 {{- end}}
 
 {{- define "next/c/decl:name" -}}
@@ -56,17 +81,36 @@ typedef unsigned char _Bool;
 {{- end}}
 
 {{- define "next/c/enum" -}}
-{{next .Doc}}typedef enum {
+{{- if .MemberType.Kind.IsInteger -}}
+{{next .Doc}}typedef enum {{next .Type}} {
     {{- next .Members}}
 } {{next .Type}};
+{{- else -}}
+{{next .Doc}}typedef struct {{next .Type}} {
+{{- if .MemberType.Kind.IsString}}
+    const char* value;
+{{- else if .MemberType.Kind.IsFloat}}
+    double value;
+{{- else}}
+    {{errorf "unsupported enum member type: %s" .MemberType.Kind}}
 {{- end}}
+} {{next .Type}};
+{{range .Members.List}}
+{{next . -}}
+{{end}}
+{{- end -}}
+{{end}}
 
 {{- define "next/c/enum.member" -}}
+{{- if .Decl.MemberType.Kind.IsInteger -}}
 {{next .Doc}}{{next .Decl.Type}}_{{next .Name}} = {{.Value}},{{next .Comment}}
+{{- else -}}
+{{next .Doc}}#define {{next .Decl.Type}}_{{next .Name}} (({{next .Decl.Type}}){ {{- .Value -}} }){{next .Comment}}
+{{- end}}
 {{- end}}
 
 {{- define "next/c/struct" -}}
-{{next .Doc}}typedef struct {
+{{next .Doc}}typedef struct {{next .Type}} {
     {{- next .Fields}}
 } {{next .Type}};
 {{- end}}

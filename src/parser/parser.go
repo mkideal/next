@@ -430,15 +430,16 @@ func (p *parser) safePos(pos token.Pos) (res token.Pos) {
 // ----------------------------------------------------------------------------
 // Annotation parsing
 
-func (p *parser) parseAnnotationGroup() *ast.AnnotationGroup {
+func (p *parser) parseAnnotationGroup() (*ast.CommentGroup, *ast.AnnotationGroup) {
+	var doc = p.leadComment
 	var annotations []*ast.Annotation
 	for p.tok == token.AT {
 		annotations = append(annotations, p.parseAnnotation())
 	}
 	if len(annotations) == 0 {
-		return nil
+		return doc, nil
 	}
-	return &ast.AnnotationGroup{List: annotations}
+	return doc, &ast.AnnotationGroup{List: annotations}
 }
 
 func (p *parser) parseAnnotation() *ast.Annotation {
@@ -605,8 +606,7 @@ func parseMethodParam(p *parser) *ast.MethodParam {
 	if p.trace {
 		defer un(trace(p, "MethodParam"))
 	}
-	doc := p.leadComment
-	annotations := p.parseAnnotationGroup()
+	doc, annotations := p.parseAnnotationGroup()
 	typ := p.parseType()
 	name := p.parseIdent()
 	return &ast.MethodParam{
@@ -622,8 +622,7 @@ func (p *parser) parseMethod() *ast.Method {
 		defer un(trace(p, "Method"))
 	}
 
-	doc := p.leadComment
-	annotations := p.parseAnnotationGroup()
+	doc, annotations := p.parseAnnotationGroup()
 	name := p.parseIdent()
 	openging := p.expect(token.LPAREN)
 	closing, params := parseList("MethodParamList", p, token.RPAREN, token.COMMA, false, parseMethodParam)
@@ -648,8 +647,7 @@ func (p *parser) parseField() *ast.StructField {
 		defer un(trace(p, "Field"))
 	}
 
-	doc := p.leadComment
-	annotations := p.parseAnnotationGroup()
+	doc, annotations := p.parseAnnotationGroup()
 	typ := p.parseType()
 	name := p.parseIdent()
 	comment := p.expectSemi()
@@ -710,8 +708,7 @@ func (p *parser) parseMember() *ast.EnumMember {
 		defer un(trace(p, "Member"))
 	}
 
-	doc := p.leadComment
-	annotations := p.parseAnnotationGroup()
+	doc, annotations := p.parseAnnotationGroup()
 	name := p.parseIdent()
 	var value ast.Expr
 	var assignPos token.Pos
@@ -1012,13 +1009,12 @@ func (p *parser) parseImportDecl() *ast.ImportDecl {
 	return spec
 }
 
-func parseGenDecl[T ast.Node](p *parser, annotations *ast.AnnotationGroup, f parseSpecFunction[T]) *ast.GenDecl[T] {
+func parseGenDecl[T ast.Node](p *parser, doc *ast.CommentGroup, annotations *ast.AnnotationGroup, f parseSpecFunction[T]) *ast.GenDecl[T] {
 	tok := p.tok
 	if p.trace {
 		defer un(trace(p, "GenDecl("+tok.String()+")"))
 	}
 
-	doc := p.leadComment
 	pos := p.pos
 	p.next()
 	name := p.parseIdent()
@@ -1044,23 +1040,23 @@ func (p *parser) parseDeclStmt() ast.Node {
 		defer un(trace(p, "DeclarationStmt"))
 	}
 
-	annotations := p.parseAnnotationGroup()
+	doc, annotations := p.parseAnnotationGroup()
 
 	switch p.tok {
 	case token.IMPORT:
 		return p.parseImportDecl()
 
 	case token.CONST:
-		return parseGenDecl(p, annotations, parseConstSpec)
+		return parseGenDecl(p, doc, annotations, parseConstSpec)
 
 	case token.ENUM:
-		return parseGenDecl(p, annotations, parseEnumType)
+		return parseGenDecl(p, doc, annotations, parseEnumType)
 
 	case token.STRUCT:
-		return parseGenDecl(p, annotations, parseStructType)
+		return parseGenDecl(p, doc, annotations, parseStructType)
 
 	case token.INTERFACE:
-		return parseGenDecl(p, annotations, parseInterfaceType)
+		return parseGenDecl(p, doc, annotations, parseInterfaceType)
 
 	default:
 		return p.parseStmt()
@@ -1082,8 +1078,7 @@ func (p *parser) parseFile() *ast.File {
 	}
 
 	// package clause
-	doc := p.leadComment
-	annotations := p.parseAnnotationGroup()
+	doc, annotations := p.parseAnnotationGroup()
 	pos := p.expect(token.PACKAGE)
 	ident := p.parseIdent()
 	if ident.Name == "_" {

@@ -204,7 +204,7 @@ func (c *Compiler) createAnnotationSolverRequest(name string) *api.AnnotationSol
 	for pos, obj := range objects {
 		req.Objects[api.ID(pos)] = &api.Object{
 			ID:   api.ID(pos),
-			Type: obj.getType(),
+			Type: obj.Typeof(),
 			Name: obj.getName(),
 			Pkg:  obj.File().pkg.name,
 			File: obj.File().Path,

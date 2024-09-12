@@ -28,7 +28,7 @@ enum Color {
 }
 
 @next(
-    available="go,cpp",
+    available="go|cpp",
     go_alias="uint64",
     cpp_alias="uint64_t",
 )
@@ -43,10 +43,19 @@ struct User {
     array<float64, 3> coordinates;
     Color favoriteColor;
 
-    @next(available="go,cpp")
+    @next(available="go|cpp")
     uint64 timestamp;
 
     any extra;
+}
+
+// OperateSystem is an string enum type for operating systems
+enum OperateSystem {
+    Windows = "windows";
+    Linux = "linux";
+    MacOS = "macos";
+    Android = "android";
+    iOS = "ios";
 }
 
 // LoginRequest is a message which type is 101
@@ -54,6 +63,8 @@ struct User {
 struct LoginRequest {
     string username;
     string password;
+    @optional string device;
+    @optional(default=OperateSystem.iOS) OperateSystem os;
 }
 
 // LoginResponse is a message which type is 102
@@ -118,13 +129,13 @@ interface ReadWriter {
 }
 
 @next(
-    available="go,java",
+    available="go|java",
     go_alias="net/http.HandlerFunc",
     java_alias="java.util.function.Function<com.sun.net.httpserver.HttpExchange, String>",
 )
 interface HTTPHandlerFunc {}
 
-@next(available="go,java")
+@next(available="go|java")
 interface HTTPServer {
     @next(error)
     HandleFunc(string path, HTTPHandlerFunc handler);
@@ -136,11 +147,11 @@ interface HTTPClient {
     All(string url) string;
 
     // Get is available for go and java
-    @next(error, available="go,java")
+    @next(error, available="go|java")
     Get(string url) string;
 
     // Post is available for java and cpp
-    @next(error, available="java,cpp")
+    @next(error, available="java|cpp")
     Post(string url, string body) string;
 
     // GoMethod is available for go
@@ -162,7 +173,7 @@ struct LanguageSpecificed {
     string id;
 
     // name is available for go, java, and cpp
-    @next(available="go,java,cpp")
+    @next(available="go|java|cpp")
     string name;
 
     // x is available for go
@@ -176,4 +187,10 @@ struct LanguageSpecificed {
     // z is available for cpp
     @next(available="cpp")
     string z;
+}
+
+// FloatEnum is an enum type with float values
+enum FloatEnum {
+    Pi = 3.14159265358979323846;
+    E = 2.71828182845904523536;
 }

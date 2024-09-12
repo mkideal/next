@@ -57,10 +57,10 @@ type Import struct {
 	// @api(Object/Import.Doc) represents the import declaration [documentation](#Object/Doc).
 	Doc *Doc
 
-	// @api(Object/import.Comment) represents the import declaration line [comment](#Object/Comment).
+	// @api(Object/Import.Comment) represents the import declaration line [comment](#Object/Comment).
 	Comment *Comment
 
-	// @api(Object/import.Path) represents the import path.
+	// @api(Object/Import.Path) represents the import path.
 	Path string
 
 	// @api(Object/Import.FullPath) represents the full path of the import.
@@ -184,6 +184,7 @@ func (d *Decls) Interfaces() Interfaces {
 // @api(Object/Common/NodeName) represents a name of a node in a declaration.
 //
 // Currently, the following types are supported:
+//
 // - [ConstName](#Object/ConstName)
 // - [EnumMemberName](#Object/EnumMemberName)
 // - [StructFieldName](#Object/StructFieldName)
@@ -195,19 +196,19 @@ type NodeName[T Node] struct {
 	node T
 }
 
-// @api(Object/ConstName) represents the [name object](#Object/Common/NodeName) of a [const](#Object/Const) declaration.
+// @api(Object/ConstName) represents the [NodeName](#Object/Common/NodeName) of a [const](#Object/Const) declaration.
 type ConstName = NodeName[*Const]
 
-// @api(Object/EnumMemberName) represents the [name object](#Object/Common/NodeName) of an [enum member](#Object/EnumMember).
+// @api(Object/EnumMemberName) represents the [NodeName](#Object/Common/NodeName) of an [enum member](#Object/EnumMember).
 type EnumMemberName = NodeName[*EnumMember]
 
-// @api(Object/StructFieldName) represents the [name object](#Object/Common/NodeName) of a [struct field](#Object/StructField).
+// @api(Object/StructFieldName) represents the [NodeName](#Object/Common/NodeName) of a [struct field](#Object/StructField).
 type StructFieldName = NodeName[*StructField]
 
-// @api(Object/InterfaceMethodName) represents the [name object](#Object/Common/NodeName) of an [interface method](#Object/InterfaceMethod).
+// @api(Object/InterfaceMethodName) represents the [NodeName](#Object/Common/NodeName) of an [interface method](#Object/InterfaceMethod).
 type InterfaceMethodName = NodeName[*InterfaceMethod]
 
-// @api(Object/InterfaceMethodParamName) represents the [name object](#Object/Common/NodeName) of an [interface method parameter](#Object/InterfaceMethodParam).
+// @api(Object/InterfaceMethodParamName) represents the [NodeName](#Object/Common/NodeName) of an [interface method parameter](#Object/InterfaceMethodParam).
 type InterfaceMethodParamName = NodeName[*InterfaceMethodParam]
 
 func newNodeName[T Node](pos token.Pos, name string, field T) *NodeName[T] {
@@ -424,7 +425,7 @@ func (x *Const) resolve(c *Compiler, file *File, scope Scope) {
 	x.value.resolve(c, file, scope)
 }
 
-// @api(Object/Const.Name) represents the [name object](#Object.NodeName) of the constant.
+// @api(Object/Const.Name) represents the [NodeName](#Object.NodeName) of the constant.
 func (x *Const) Name() *NodeName[*Const] {
 	return x.name
 }
@@ -444,6 +445,7 @@ type Fields[D Node, F Object] struct {
 	// @api(Object/Common/Fields.Decl) is the declaration object that contains the fields.
 	//
 	// Currently, it is one of following types:
+	//
 	// - [Enum](#Object/Enum)
 	// - [Struct](#Object/Struct)
 	// - [Interface](#Object/Interface)
@@ -453,6 +455,7 @@ type Fields[D Node, F Object] struct {
 	// @api(Object/Common/Fields.List) is the list of fields in the declaration.
 	//
 	// Currently, the field object is one of following types:
+	//
 	// - [EnumMember](#Object/EnumMember)
 	// - [StructField](#Object/StructField)
 	// - [InterfaceMethod](#Object/InterfaceMethod).
@@ -476,10 +479,13 @@ type InterfaceMethodParams = Fields[*InterfaceMethod, *InterfaceMethodParam]
 type Enum struct {
 	*commonNode[*Enum]
 
-	//  @api(Object/Enum.Type) is the enum type.
+	// @api(Object/Enum.MemberType) represents the type of the enum members.
+	MemberType *PrimitiveType
+
+	// @api(Object/Enum.Type) is the enum type.
 	Type *DeclType[*Enum]
 
-	//  @api(Object/Enum.Members) is the list of enum members.
+	// @api(Object/Enum.Members) is the list of enum members.
 	Members *EnumMembers
 }
 
@@ -487,7 +493,7 @@ func newEnum(c *Compiler, file *File, src *ast.GenDecl[*ast.EnumType]) *Enum {
 	e := &Enum{}
 	file.addObject(c, src, e)
 	e.commonNode = newCommonNode(e, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
-	e.Type = newDeclType(src.Pos(), token.KindEnum, src.Name.Name, e)
+	e.Type = newDeclType(src.Pos(), KindEnum, src.Name.Name, e)
 	e.Members = &EnumMembers{Decl: e}
 	for i, m := range src.Spec.Members.List {
 		e.Members.List = append(e.Members.List, newEnumMember(c, file, e, m, i))
@@ -500,6 +506,21 @@ func (e *Enum) resolve(c *Compiler, file *File, scope Scope) {
 	for _, m := range e.Members.List {
 		m.resolve(c, file, scope)
 	}
+	if len(e.Members.List) == 0 {
+		e.MemberType = primitiveTypes["int"]
+	} else if c.errors.Len() == 0 {
+		e.MemberType = e.Members.List[0].Value().Type()
+		for _, m := range e.Members.List {
+			if kind := e.MemberType.kind.Compatible(m.Value().Type().kind); kind.Valid() {
+				if e.MemberType.kind != kind {
+					e.MemberType = m.value.Type()
+				}
+			} else {
+				c.addErrorf(m.Value().namePos, "incompatible type %s for enum member %s", m.Value().Type().name, m.Name().String())
+				return
+			}
+		}
+	}
 }
 
 // @api(Object/EnumMember) (extends [Decl](#Object/Common/Decl)) represents an enum member object in an [enum](#Object/Enum) declaration.
@@ -509,10 +530,10 @@ type EnumMember struct {
 	// value is the enum member value.
 	value *Value
 
-	//  @api(Object/EnumMember.Decl) represents the [enum](#Object/Enum) that contains the member.
+	// @api(Object/EnumMember.Decl) represents the [enum](#Object/Enum) that contains the member.
 	Decl *Enum
 
-	//  @api(Object/EnumMember.Comment) represents the line [comment](#Object/Comment) of the enum member declaration.
+	// @api(Object/EnumMember.Comment) represents the line [comment](#Object/Comment) of the enum member declaration.
 	Comment *Comment
 }
 
@@ -534,7 +555,7 @@ func (m *EnumMember) resolve(c *Compiler, file *File, scope Scope) {
 	m.value.resolve(c, file, scope)
 }
 
-// @api(Object/EnumMember.Name) represents the [name object](#Object/Common/NodeName) of the enum member.
+// @api(Object/EnumMember.Name) represents the [NodeName](#Object/Common/NodeName) of the enum member.
 func (m *EnumMember) Name() *NodeName[*EnumMember] {
 	return m.name
 }
@@ -564,7 +585,7 @@ type Struct struct {
 	// fields is the list of struct fields.
 	fields *StructFields
 
-	//  @api(Object/Struct.Type) represents the struct type.
+	// @api(Object/Struct.Type) represents the struct type.
 	Type *DeclType[*Struct]
 }
 
@@ -572,7 +593,7 @@ func newStruct(c *Compiler, file *File, src *ast.GenDecl[*ast.StructType]) *Stru
 	s := &Struct{}
 	file.addObject(c, src, s)
 	s.commonNode = newCommonNode(s, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
-	s.Type = newDeclType(src.Pos(), token.KindStruct, src.Name.Name, s)
+	s.Type = newDeclType(src.Pos(), KindStruct, src.Name.Name, s)
 	s.fields = &StructFields{Decl: s}
 	for _, f := range src.Spec.Fields.List {
 		s.fields.List = append(s.fields.List, newStructField(c, file, s, f))
@@ -596,13 +617,13 @@ func (s *Struct) Fields() *StructFields {
 type StructField struct {
 	*commonNode[*StructField]
 
-	//  @api(Object/StructField.Decl) represents the struct that contains the field.
+	// @api(Object/StructField.Decl) represents the struct that contains the field.
 	Decl *Struct
 
-	//  @api(Object/StructField.Type) represents the [struct field type](#Object/StructFieldType).
+	// @api(Object/StructField.Type) represents the [struct field type](#Object/StructFieldType).
 	Type *StructFieldType
 
-	//  @api(Object/StructField.Comment) represents the line [comment](#Object/Comment) of the struct field declaration.
+	// @api(Object/StructField.Comment) represents the line [comment](#Object/Comment) of the struct field declaration.
 	Comment *Comment
 }
 
@@ -619,7 +640,7 @@ func (f *StructField) resolve(c *Compiler, file *File, scope Scope) {
 	f.Type.resolve(c, file, scope)
 }
 
-// @api(Object/StructField.Name) represents the [name object](#Object/Common/NodeName) of the struct field.
+// @api(Object/StructField.Name) represents the [NodeName](#Object/Common/NodeName) of the struct field.
 func (f *StructField) Name() *NodeName[*StructField] {
 	return f.name
 }
@@ -630,10 +651,10 @@ type StructFieldType struct {
 		typ ast.Type
 	}
 
-	//  @api(Object/StructFieldType.Type) represents the underlying type of the struct field.
+	// @api(Object/StructFieldType.Type) represents the underlying type of the struct field.
 	Type Type
 
-	//  @api(Object/StructFieldType.Field) represents the struct field that contains the type.
+	// @api(Object/StructFieldType.Field) represents the struct field that contains the type.
 	Field *StructField
 }
 
@@ -665,7 +686,7 @@ func newInterface(c *Compiler, file *File, src *ast.GenDecl[*ast.InterfaceType])
 	i := &Interface{}
 	file.addObject(c, src, i)
 	i.commonNode = newCommonNode(i, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
-	i.Type = newDeclType(src.Pos(), token.KindInterface, src.Name.Name, i)
+	i.Type = newDeclType(src.Pos(), KindInterface, src.Name.Name, i)
 	i.methods = &InterfaceMethods{Decl: i}
 	for _, m := range src.Spec.Methods.List {
 		i.methods.List = append(i.methods.List, newInterfaceMethod(c, file, i, m))
@@ -727,7 +748,7 @@ func (m *InterfaceMethod) resolve(c *Compiler, file *File, scope Scope) {
 	}
 }
 
-// @api(Object/InterfaceMethod.Name) represents the [name object](#Object/Common/NodeName) of the interface method.
+// @api(Object/InterfaceMethod.Name) represents the [NodeName](#Object/Common/NodeName) of the interface method.
 func (m *InterfaceMethod) Name() *NodeName[*InterfaceMethod] {
 	return m.name
 }
@@ -759,7 +780,7 @@ func (p *InterfaceMethodParam) resolve(c *Compiler, file *File, scope Scope) {
 	p.Type.resolve(c, file, scope)
 }
 
-// @api(Object/InterfaceMethodParam.Name) represents the [name object](#Object/Common/NodeName) of the interface method parameter.
+// @api(Object/InterfaceMethodParam.Name) represents the [NodeName](#Object/Common/NodeName) of the interface method parameter.
 func (p *InterfaceMethodParam) Name() *NodeName[*InterfaceMethodParam] {
 	return p.name
 }

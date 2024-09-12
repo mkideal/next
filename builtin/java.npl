@@ -64,10 +64,6 @@ public class Constants {
 }
 {{- end}}
 
-{{- define "next/java/enum:member.type" -}}
-{{if .Annotations.next.type}}{{next .Annotations.next.type}}{{else}}int{{end}}
-{{- end}}
-
 {{- define "next/java/enum.member" -}}
 {{next .Doc}}{{next .Name}}(({{render "java/enum:member.type" .Decl}}) {{.Value}}){{if not .IsLast}},{{else}};{{end}}{{next .Comment}}
 {{- end}}

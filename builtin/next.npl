@@ -71,6 +71,11 @@ enum {{next .Type}} {
 }
 {{- end}}
 
+{{/* next/enum:member.type: Determines the underlying type for an enum */}}
+{{- define "next/enum:member.type" -}}
+{{if .Annotations.next.type}}{{next .Annotations.next.type}}{{else}}{{next .MemberType}}{{end}}
+{{- end}}
+
 {{/* next/enum.type: Generates the type name for an enum */}}
 {{- define "next/enum.type" -}}
 {{render "next/type:internal.alias" .}}

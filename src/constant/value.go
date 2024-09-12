@@ -137,37 +137,51 @@ func (x ratVal) String() string   { return rtof(x).String() }
 func (x floatVal) String() string {
 	f := x.val
 
+	// Handle special cases
 	if f.IsInf() {
-		return f.String()
+		if f.Sign() > 0 {
+			return "+Inf"
+		}
+		return "-Inf"
 	}
 
-	if x, _ := f.Float64(); f.Sign() == 0 == (x == 0) && !math.IsInf(x, 0) {
-		s := fmt.Sprintf("%.6g", x)
-		if !f.IsInt() && !strings.Contains(s, ".") {
-			s = fmt.Sprintf("%g", x)
-		}
+	// Convert to string with full precision
+	s := f.Text('g', -1)
+
+	// If the number is zero
+	if f.Sign() == 0 {
+		return "0"
+	}
+
+	// If the number is an integer, ensure it's formatted as such
+	if !strings.ContainsAny(s, ".eE") {
 		return s
 	}
 
-	var mant big.Float
-	exp := f.MantExp(&mant)
+	// For numbers in scientific notation
+	if strings.ContainsAny(s, "eE") {
+		parts := strings.Split(strings.ToLower(s), "e")
+		mantissa := parts[0]
+		exponent := parts[1]
 
-	m, _ := mant.Float64()
-	d := float64(exp) * (math.Ln2 / math.Ln10)
+		// Remove trailing zeros from mantissa
+		mantissa = strings.TrimRight(strings.TrimRight(mantissa, "0"), ".")
 
-	e := int64(d)
-	m *= math.Pow(10, d-float64(e))
+		// If mantissa is empty, it was 1 or -1, so restore it
+		if mantissa == "" || mantissa == "-" {
+			mantissa += "1"
+		}
 
-	switch am := math.Abs(m); {
-	case am < 1-0.5e-6:
-		m *= 10
-		e--
-	case am >= 10:
-		m /= 10
-		e++
+		return fmt.Sprintf("%se%s", mantissa, exponent)
 	}
 
-	return fmt.Sprintf("%.6ge%+d", m, e)
+	// For regular numbers, remove trailing zeros
+	s = strings.TrimRight(s, "0")
+	if strings.HasSuffix(s, ".") {
+		s = s[:len(s)-1]
+	}
+
+	return s
 }
 
 func (x unknownVal) ExactString() string { return x.String() }

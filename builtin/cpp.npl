@@ -56,14 +56,22 @@ namespace {{$ns}} {
 {{- if .Decls.Enums.List}}
 // Enums forward declarations
 {{- range .Decls.Enums.List}}
+{{- if not .Annotations.next.cpp_alias}}
+{{- if .MemberType.Kind.IsInteger}}
 enum class {{next .Type}};
+{{- else}}
+/* enum */ class {{next .Type}};
+{{- end}}
+{{- end}}
 {{- end}}
 {{end -}}
 
 {{- if .Decls.Structs.List}}
 // Classes forward declarations
 {{- range .Decls.Structs.List}}
+{{- if not .Annotations.next.cpp_alias}}
 class {{next .Type}};
+{{- end}}
 {{- end}}
 {{end -}}
 {{- end}}
@@ -73,17 +81,43 @@ class {{next .Type}};
 {{- end}}
 
 {{- define "next/cpp/enum" -}}
+{{- if not .Annotations.next.cpp_alias -}}
+{{- if .MemberType.Kind.IsInteger -}}
 {{next .Doc}}enum class {{next .Type}} : {{render "cpp/enum:member.type" .}} {
 {{- next .Members}}
 };
-{{- end}}
+{{- else -}}
+/* enum */ class {{next .Type}} {
+private:
+    {{render "cpp/enum:member.type" .}} value;
 
-{{- define "next/cpp/enum:member.type" -}}
-{{if .Annotations.next.type}}{{next .Annotations.next.type}}{{else}}int{{end}}
+public:
+    {{- next .Members}}
+
+    {{next .Type}}(const {{render "cpp/enum:member.type" .}}& v) : value(v) {}
+
+    bool operator==(const {{next .Type}}& other) const {
+        return value == other.value;
+    }
+
+    operator {{render "cpp/enum:member.type" .}}() const {
+        return value;
+    }
+};
+{{- end}}
+{{- end}}
 {{- end}}
 
 {{- define "next/cpp/enum.member" -}}
+{{- if .Decl.MemberType.Kind.IsInteger -}}
 {{next .Doc}}{{next .Name}} = {{.Value}},{{next .Comment}}
+{{- else if .Decl.MemberType.Kind.IsString -}}
+static inline const {{render "cpp/enum:member.type" .Decl}} {{next .Name}} = {{.Value}};
+{{- else if .Decl.MemberType.Kind.IsFloat -}}
+static inline constexpr {{render "cpp/enum:member.type" .Decl}} {{next .Name}} = {{.Value}};
+{{- else -}}
+{{errorf "unsupported enum member type: %s" .Decl.MemberType.Kind}}
+{{- end}}
 {{- end}}
 
 {{- define "next/cpp/struct" -}}

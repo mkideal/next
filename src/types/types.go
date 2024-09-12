@@ -17,27 +17,48 @@ import (
 // -------------------------------------------------------------------------
 
 // @api(Object) is a generic object type. These objects can be used as parameters for the [next](#Context/next)
-// function, like `{{next .}}`. Except for objects under [Common](#Object/Common), the type names
-// of other objects are lowercase names separated by dots. For example, the type name of a `Const`
-// object is `const`, and the type name of a `ConstName` object is `const.name`. These objects can
-// be customized for code generation by defining templates. For example:
-//
-// ```npl
-// {{- define "go/const" -}}
-// const {{next .Name}} = {{.Value}};
-// {{- end}}
-//
-// {{- define "go/const.name" -}}
-// {{.Node.Name}}_{{.String}}
-// {{- end}}
-// ```
-//
-// So when generating Go code, the output content for a `Const` object would be `const {{.Name}} = {{.Value}};`,
-// and the output content for a `ConstName` object would be `{{.Node.Name}}_{{.String}}`. These two
-// definitions will override the built-in template functions `next/go/const` and `next/go/const.name`.
+// function, like `{{next .}}`.
 type Object interface {
-	// getType returns the type of the object.
-	getType() string
+	// @api(Object.Typeof) returns the type name of the object.
+	// The type name is a string that represents the type of the object.
+	// Except for objects under [Common](#Object/Common), the type names of other objects are lowercase names
+	// separated by dots. For example, the type name of a `EnumMember` object is `enum.member`, and the type name
+	// of a `EnumMemberName` object is `enum.member.name`. These objects can be customized for code generation by
+	// defining templates. For example:
+	//
+	// ```next
+	//	package demo;
+	//
+	//	enum Color {
+	//	    Red = 1;
+	//	    Green = 2;
+	//	    Blue = 3;
+	//	}
+	// ```
+	//
+	// ```npl
+	// {{- define "go/enum.member" -}}
+	// const {{next .Name}} = {{.Value}}
+	// {{- end}}
+	//
+	// {{- define "go/enum.member.name" -}}
+	// {{.Node.Decl.Name}}_{{.}}
+	// {{- end}}
+	// ```
+	//
+	// Output:
+	// ```go
+	// package demo
+	//
+	// type Color int
+	//
+	// const Color_Red = 1
+	// const Color_Green = 2
+	// const Color_Blue = 3
+	// ```
+	//
+	// These two definitions will override the built-in template functions `next/go/enum.member` and `next/go/enum.member.name`.
+	Typeof() string
 }
 
 // All objects listed here implement the Object interface.
@@ -85,29 +106,29 @@ var _ Object = (*CallStmt)(nil)
 // Generic objects
 
 // list objects: consts, enums, structs, interfaces
-func (x List[T]) getType() string {
+func (x List[T]) Typeof() string {
 	var zero T
-	return zero.getType() + "s"
+	return zero.Typeof() + "s"
 }
 
 // Fields objects: enum.members, struct.fields, interface.methods
-func (x *Fields[D, F]) getType() string {
+func (x *Fields[D, F]) Typeof() string {
 	var zero F
-	return zero.getType() + "s"
+	return zero.Typeof() + "s"
 }
 
 // Name objects: const.name, enum.member.name, struct.field.name, interface.method.name, interface.method.param.name
-func (x *NodeName[T]) getType() string {
-	return x.node.getType() + ".name"
+func (x *NodeName[T]) Typeof() string {
+	return x.node.Typeof() + ".name"
 }
 
-func (*File) getType() string    { return "file" }
-func (*Doc) getType() string     { return "doc" }
-func (*Comment) getType() string { return "comment" }
-func (*Imports) getType() string { return "imports" }
-func (*Import) getType() string  { return "import" }
-func (*Decls) getType() string   { return "decls" }
-func (x *Value) getType() string {
+func (*File) Typeof() string    { return "file" }
+func (*Doc) Typeof() string     { return "doc" }
+func (*Comment) Typeof() string { return "comment" }
+func (*Imports) Typeof() string { return "imports" }
+func (*Import) Typeof() string  { return "import" }
+func (*Decls) Typeof() string   { return "decls" }
+func (x *Value) Typeof() string {
 	if x.enum.typ == nil {
 		return "const.value"
 	}
@@ -116,30 +137,30 @@ func (x *Value) getType() string {
 
 // Type objects
 
-func (*UsedType) getType() string        { return "used.type" }
-func (x *PrimitiveType) getType() string { return "primitive.type" }
-func (*ArrayType) getType() string       { return "array.type" }
-func (*VectorType) getType() string      { return "vector.type" }
-func (*MapType) getType() string         { return "map.type" }
-func (x *DeclType[T]) getType() string   { return x.decl.getType() + ".type" }
+func (*UsedType) Typeof() string        { return "used.type" }
+func (x *PrimitiveType) Typeof() string { return "primitive.type" }
+func (*ArrayType) Typeof() string       { return "array.type" }
+func (*VectorType) Typeof() string      { return "vector.type" }
+func (*MapType) Typeof() string         { return "map.type" }
+func (x *DeclType[T]) Typeof() string   { return x.decl.Typeof() + ".type" }
 
 // Decl objects
 
-func (*Const) getType() string                    { return "const" }
-func (*Enum) getType() string                     { return "enum" }
-func (*EnumMember) getType() string               { return "enum.member" }
-func (*Struct) getType() string                   { return "struct" }
-func (*StructField) getType() string              { return "struct.field" }
-func (*StructFieldType) getType() string          { return "struct.field.type" }
-func (*Interface) getType() string                { return "interface" }
-func (*InterfaceMethod) getType() string          { return "interface.method" }
-func (*InterfaceMethodParam) getType() string     { return "interface.method.param" }
-func (*InterfaceMethodParamType) getType() string { return "interface.method.param.type" }
-func (*InterfaceMethodResult) getType() string    { return "interface.method.result" }
+func (*Const) Typeof() string                    { return "const" }
+func (*Enum) Typeof() string                     { return "enum" }
+func (*EnumMember) Typeof() string               { return "enum.member" }
+func (*Struct) Typeof() string                   { return "struct" }
+func (*StructField) Typeof() string              { return "struct.field" }
+func (*StructFieldType) Typeof() string          { return "struct.field.type" }
+func (*Interface) Typeof() string                { return "interface" }
+func (*InterfaceMethod) Typeof() string          { return "interface.method" }
+func (*InterfaceMethodParam) Typeof() string     { return "interface.method.param" }
+func (*InterfaceMethodParamType) Typeof() string { return "interface.method.param.type" }
+func (*InterfaceMethodResult) Typeof() string    { return "interface.method.result" }
 
 // Stmt objects
 
-func (*CallStmt) getType() string { return "stmt.call" }
+func (*CallStmt) Typeof() string { return "stmt.call" }
 
 // -------------------------------------------------------------------------
 
@@ -262,7 +283,7 @@ type builtinDecl struct{}
 
 var _ Decl = builtinDecl{}
 
-func (builtinDecl) getType() string          { return "<builtin.decl>" }
+func (builtinDecl) Typeof() string           { return "<builtin.decl>" }
 func (builtinDecl) getName() string          { return "<builtin>" }
 func (builtinDecl) getPos() token.Pos        { return token.NoPos }
 func (builtinDecl) File() *File              { return nil }
@@ -289,8 +310,8 @@ func (builtinDecl) declNode()                {}
 type Type interface {
 	Object
 
-	// @api(Object/Common/Type.Kind) returns the kind of the type.
-	Kind() token.Kind
+	// @api(Object/Common/Type.Kind) returns the [kind](#Object/Common/Type/Kind) of the type.
+	Kind() Kind
 
 	// @api(Object/Common/Type.String) represents the string representation of the type.
 	String() string
@@ -314,12 +335,12 @@ func (x *VectorType) Decl() Decl    { return builtinDecl{} }
 func (x *MapType) Decl() Decl       { return builtinDecl{} }
 func (x *DeclType[T]) Decl() Decl   { return x.decl }
 
-func (x *UsedType) Kind() token.Kind      { return x.Type.Kind() }
-func (x *PrimitiveType) Kind() token.Kind { return x.kind }
-func (*ArrayType) Kind() token.Kind       { return token.KindArray }
-func (*VectorType) Kind() token.Kind      { return token.KindVector }
-func (*MapType) Kind() token.Kind         { return token.KindMap }
-func (x *DeclType[T]) Kind() token.Kind   { return x.kind }
+func (x *UsedType) Kind() Kind      { return x.Type.Kind() }
+func (x *PrimitiveType) Kind() Kind { return x.kind }
+func (*ArrayType) Kind() Kind       { return KindArray }
+func (*VectorType) Kind() Kind      { return KindVector }
+func (*MapType) Kind() Kind         { return KindMap }
+func (x *DeclType[T]) Kind() Kind   { return x.kind }
 
 // @api(Object/UsedType) represents a used type in a file.
 type UsedType struct {
@@ -347,36 +368,40 @@ func UsedTypeNode(u *UsedType) ast.Type { return u.node }
 // @api(Object/PrimitiveType) represents a primitive type.
 type PrimitiveType struct {
 	name string
-	kind token.Kind
+	kind Kind
 }
 
 func (b *PrimitiveType) String() string { return b.name }
 
 var primitiveTypes = func() map[string]*PrimitiveType {
 	m := make(map[string]*PrimitiveType)
-	for _, kind := range token.PrimitiveKinds {
+	for _, kind := range primitiveKinds {
 		name := strings.ToLower(kind.String())
 		m[name] = &PrimitiveType{kind: kind, name: name}
 	}
 	return m
 }()
 
-// @api(Object/ArrayType) represents an array type.
+// @api(Object/ArrayType) represents an array [type](#Object/Common/Type).
 type ArrayType struct {
 	pos token.Pos
 
+	// @api(Object/ArrayType.ElemType) represents the element [type](#Object/Common/Type) of the array.
 	ElemType Type
-	N        int64
+
+	// @api(Object/ArrayType.N) represents the number of elements in the array.
+	N int64
 }
 
 func (a *ArrayType) String() string {
 	return "array<" + a.ElemType.String() + "," + strconv.FormatInt(a.N, 10) + ">"
 }
 
-// @api(Object/VectorType) represents a vector type.
+// @api(Object/VectorType) represents a vector [type](#Object/Common/Type).
 type VectorType struct {
 	pos token.Pos
 
+	// @api(Object/VectorType.ElemType) represents the element [type](#Object/Common/Type) of the vector.
 	ElemType Type
 }
 
@@ -384,11 +409,14 @@ func (v *VectorType) String() string {
 	return "vector<" + v.ElemType.String() + ">"
 }
 
-// @api(Object/MapType) represents a map type.
+// @api(Object/MapType) represents a map [type](#Object/Common/Type).
 type MapType struct {
 	pos token.Pos
 
-	KeyType  Type
+	// @api(Object/MapType.KeyType) represents the key [type](#Object/Common/Type) of the map.
+	KeyType Type
+
+	// @api(Object/MapType.ElemType) represents the element [type](#Object/Common/Type) of the map.
 	ElemType Type
 }
 
@@ -399,21 +427,21 @@ func (m *MapType) String() string {
 // DeclType represents a declaration type which is a type of a declaration: enum, struct, interface.
 type DeclType[T Decl] struct {
 	pos  token.Pos
-	kind token.Kind
+	kind Kind
 	name string
 	decl T
 }
 
-// @api(Object/EnumType) represents the type of an [enum](#Object/Enum) declaration.
+// @api(Object/EnumType) represents the [type](#Object/Common/Type) of an [enum](#Object/Enum) declaration.
 type EnumType = DeclType[*Enum]
 
-// @api(Object/StructType) represents the type of a [struct](#Object/Struct) declaration.
+// @api(Object/StructType) represents the [type](#Object/Common/Type) of a [struct](#Object/Struct) declaration.
 type StructType = DeclType[*Struct]
 
-// @api(Object/InterfaceType) represents the type of an [interface](#Object/Interface) declaration.
+// @api(Object/InterfaceType) represents the [type](#Object/Common/Type) of an [interface](#Object/Interface) declaration.
 type InterfaceType = DeclType[*Interface]
 
-func newDeclType[T Decl](pos token.Pos, kind token.Kind, name string, decl T) *DeclType[T] {
+func newDeclType[T Decl](pos token.Pos, kind Kind, name string, decl T) *DeclType[T] {
 	return &DeclType[T]{pos: pos, kind: kind, name: name, decl: decl}
 }
 

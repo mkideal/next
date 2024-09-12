@@ -41,8 +41,8 @@ func main() {
 	flagSet.Init(os.Args[0], flag.ContinueOnError)
 	flagSet.Usage = func() {}
 
-	ctx := types.NewCompiler(builtin)
-	ctx.SetupCommandFlags(flagSet, flags.UseUsage(flagSet.Output(), flags.NameColor(term.Bold)))
+	compiler := types.NewCompiler(builtin)
+	compiler.SetupCommandFlags(flagSet, flags.UseUsage(flagSet.Output(), flags.NameColor(term.Bold)))
 
 	// set output color for error messages
 	flagSet.SetOutput(term.ColorizeWriter(os.Stderr, term.Red))
@@ -114,13 +114,13 @@ func main() {
 
 	// parse and resolve all files
 	for _, file := range files {
-		f := result(parser.ParseFile(ctx.FileSet(), file, stdin, parser.ParseComments))
-		result(ctx.AddFile(f))
+		f := result(parser.ParseFile(compiler.FileSet(), file, stdin, parser.ParseComments))
+		result(compiler.AddFile(f))
 	}
-	try(ctx.Resolve())
+	try(compiler.Resolve())
 
 	// generate files
-	try(ctx.Generate())
+	try(types.Generate(compiler))
 }
 
 func usageError(flagSet *flag.FlagSet, format string, args ...any) {

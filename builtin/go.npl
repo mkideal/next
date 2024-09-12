@@ -116,11 +116,6 @@ var _ = (*{{.File.Package.Name}}.{{next (index (.File.Package.Types) 0)}})(nil)
 {{next .Doc}}const {{next .Name}} = {{.Value}}{{next .Comment}}
 {{- end}}
 
-{{/* next/go/enum:member.type: Determines the underlying type for an enum */}}
-{{- define "next/go/enum:member.type" -}}
-{{if .Annotations.next.type}}{{next .Annotations.next.type}}{{else}}int{{end}}
-{{- end}}
-
 {{/* next/go/enum: Generates an enum type declaration, constants, and String method */}}
 {{- define "next/go/enum" -}}
 {{next .Doc}}type {{next .Type}} {{render "go/enum:member.type" .}}
@@ -130,14 +125,21 @@ const (
 )
 
 func (x {{next .Type}}) String() string {
-    {{- $name := next .Type}}
+{{- if .MemberType.Kind.IsString}}
+    return string(x)
+{{- else}}
     switch x {
     {{- range .Members.List}}
     case {{next .Name}}:
         return "{{.Name}}"
     {{- end}}
     }
-    return "{{$name}}(" + strconv.FormatInt(int64(x), 10) + ")"
+{{- if .MemberType.Kind.IsInteger}}
+    return "{{next $.Type}}(" + strconv.FormatInt(int64(x), 10) + ")"
+{{- else}}
+    return fmt.Sprintf("{{next $.Type}}(%v)", x)
+{{- end}}
+{{- end}}
 }
 {{- end}}
 
