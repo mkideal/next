@@ -35,7 +35,7 @@ import "time"
 ```
 */}}
 {{- define "next/go/imports:decl" -}}
-{{ _ }}
+{{_}}
 import "strconv"
 {{- if .File.Annotations.next.go_imports}}
 {{- range (.File.Annotations.next.go_imports | split "," | map (trim | split "." | first | trimPrefix "*") | sort | uniq)}}
@@ -45,7 +45,7 @@ import "{{.}}"
 {{range .TrimmedList}}
 {{- if len .File.Package.Types}}
 {{next .}}
-{{ _ }}
+{{_}}
 {{- end}}
 {{- end}}
 {{- end}}
@@ -74,7 +74,7 @@ var _ = time.Now
 ```
 */}}
 {{- define "next/go/imports:unused" -}}
-{{ _ }}
+{{_}}
 var _ = strconv.FormatInt
 {{- if .File.Annotations.next.go_imports}}
 {{- range (.File.Annotations.next.go_imports | split "," | sort | uniq)}}
@@ -89,11 +89,11 @@ var _ = {{$pkg}}.{{$val}}
 {{- end}}
 {{- end}}
 {{- end}}
-{{ _ }}
+{{_}}
     {{- range .TrimmedList}}
         {{- if len .File.Package.Types}}
             {{- render "go/import:unused" .}}
-{{ _ }}
+{{_}}
         {{- end}}
     {{- end}}
 {{- end}}

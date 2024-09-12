@@ -1,3 +1,4 @@
+//go:generate go run github.com/gopherd/tools/cmd/docgen@v0.0.1 ./ ../../docs/en/api.md
 package types
 
 import (
