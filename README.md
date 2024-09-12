@@ -4,6 +4,10 @@ Next is a powerful Generic **Interface Definition Language (IDL)** designed to c
 
 [Language Specification (English)](./docs/en/language_spec.md) | [语言规范 (中文)](./docs/zh/language_spec.md)
 
+## Screenshot
+
+![Screenshot](./docs/res/screenshot.png)
+
 ## ✨ Key Features
 
 - 🌐 Multi-language code generation from a single source
