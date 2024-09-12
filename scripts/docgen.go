@@ -93,13 +93,13 @@ func processFile(filename string, root *TemplateItem) error {
 	}
 
 	for _, commentGroup := range node.Comments {
-		processCommentGroup(commentGroup, root)
+		processCommentGroup(fset, commentGroup, root)
 	}
 
 	return nil
 }
 
-func processCommentGroup(group *ast.CommentGroup, root *TemplateItem) {
+func processCommentGroup(fset *token.FileSet, group *ast.CommentGroup, root *TemplateItem) {
 	if len(group.List) == 0 {
 		return
 	}
@@ -112,7 +112,12 @@ func processCommentGroup(group *ast.CommentGroup, root *TemplateItem) {
 	path := strings.TrimPrefix(firstComment, "// @api(")
 	end := strings.Index(path, ")")
 	currentItem := addToTree(root, path[:end])
-	group.List[0].Text = "// _" + currentItem.Name + "_ " + strings.TrimSpace(path[end+1:])
+	offset := 1
+	if name := strings.TrimSpace(path[end+1:]); name != "" {
+		group.List[0].Text = "// _" + currentItem.Name + "_ " + name
+		offset = 0
+	}
+	path = path[:end]
 
 	var content bytes.Buffer
 	var coding int
@@ -121,7 +126,7 @@ func processCommentGroup(group *ast.CommentGroup, root *TemplateItem) {
 		codingStart
 		codingEnd
 	)
-	for _, comment := range group.List { // Start from the second comment
+	for _, comment := range group.List[offset:] {
 		text := strings.TrimPrefix(comment.Text, "//")
 		text = trimSpace(text)
 		if strings.HasPrefix(text, "```") {
@@ -144,6 +149,10 @@ func processCommentGroup(group *ast.CommentGroup, root *TemplateItem) {
 		if coding == codingEnd {
 			coding = codingNone
 		}
+	}
+	if coding == codingStart {
+		fmt.Fprintf(os.Stderr, "%s: unclosed code block in %q\n", fset.Position(group.Pos()), path)
+		os.Exit(1)
 	}
 	content.WriteString("\n")
 
@@ -215,7 +224,7 @@ func writeMarkdownTree(toc, content io.Writer, item *TemplateItem, depth int, pa
 		level := depth + 1
 		fullPath := parentPath + item.Name
 		if item.IsProperty() {
-			level = 5 // <h5>
+			level = 6 // <h6>
 		}
 		fmt.Fprintf(content, "<h%d><a id=\"%s\" target=\"_self\">%s</a></h%d>\n", level, linkName(fullPath), item.Name, level)
 		if !item.IsProperty() {

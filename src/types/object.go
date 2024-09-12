@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"slices"
 	"strconv"
+	"strings"
 
-	"github.com/gopherd/core/op"
-	"github.com/gopherd/core/text"
+	"github.com/gopherd/core/container/iters"
 	"github.com/next/next/src/ast"
 	"github.com/next/next/src/constant"
 	"github.com/next/next/src/token"
@@ -837,12 +837,12 @@ func (t *InterfaceMethodResult) resolve(c *Compiler, file *File, scope Scope) {
 // isAvailable reports whether the declaration is available in the current language.
 func isAvailable(decl Node, lang string) bool {
 	s, ok := decl.Annotations().get("next").get("available").(string)
-	return !ok || text.ContainsWord(s, lang)
+	// TODO: support logical expression.
+	return !ok || iters.Contains(iters.Map(slices.Values(strings.Split(s, "|")), strings.TrimSpace), lang)
 }
 
 // available returns the declaration if it is available in the current language.
 func available[T Node](obj T, lang string) (T, bool) {
-	op.Assertf(lang != "", "language must not be empty")
 	if !isAvailable(obj, lang) {
 		return obj, false
 	}
@@ -859,7 +859,6 @@ func available[T Node](obj T, lang string) (T, bool) {
 
 // availableFields returns the list of fields that are available in the current language.
 func availableFields[D, F Node](fields *Fields[D, F], lang string) *Fields[D, F] {
-	op.Assertf(lang != "", "language must not be empty")
 	for i, f := range fields.List {
 		if isAvailable(f, lang) {
 			continue
@@ -878,7 +877,6 @@ func availableFields[D, F Node](fields *Fields[D, F], lang string) *Fields[D, F]
 
 // availableList returns the list of declarations that are available in the current language.
 func availableList[T Node](list List[T], lang string) List[T] {
-	op.Assertf(lang != "", "language must not be empty")
 	availables := make([]T, 0, len(list))
 	for i, d := range list {
 		if _, ok := available(d, lang); ok {

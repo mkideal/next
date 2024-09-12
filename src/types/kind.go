@@ -48,12 +48,13 @@ const (
 	kindCount // -count-
 )
 
-// @api(Object/Common/Type/Kind.Valid) represents the type kind.
+// @api(Object/Common/Type/Kind.Valid) reports whether the type is valid.
 func (k Kind) Valid() bool {
 	return k > KindInvalid && k < kindCount
 }
 
 // @api(Object/Common/Type/Kind.Bits) returns the number of bits for the type.
+// If the type has unknown bits, it returns 0 (for example, `any`, `string`, `bytes`).
 func (k Kind) Bits() int {
 	switch k {
 	case KindInt8, KindByte, KindBool:

@@ -30,9 +30,9 @@ type Object interface {
 	//	package demo;
 	//
 	//	enum Color {
-	//	    Red = 1;
-	//	    Green = 2;
-	//	    Blue = 3;
+	//		Red = 1;
+	//		Green = 2;
+	//		Blue = 3;
 	//	}
 	// ```
 	//
@@ -202,7 +202,7 @@ type Node interface {
 	File() *File
 
 	// @api(Object/Common/Node.Package) represents the package containing the node.
-	// It's a shortcut for Node.File().Package().
+	// It's a shortcut for Node.File.Package.
 	Package() *Package
 
 	// @api(Object/Common/Node.Doc) represents the documentation comment for the node.

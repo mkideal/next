@@ -28,11 +28,16 @@ enum Color {
 }
 
 @next(
-    available="go|cpp",
     go_alias="uint64",
     cpp_alias="uint64_t",
+    java_alias="long",
+    rust_alias="u64",
+    csharp_alias="ulong",
 )
-interface uint64 {}
+struct uint64 {
+    int32 low;
+    int32 high;
+}
 
 // User is a struct type
 struct User {
@@ -193,4 +198,24 @@ struct LanguageSpecificed {
 enum FloatEnum {
     Pi = 3.14159265358979323846;
     E = 2.71828182845904523536;
+}
+
+// uint128 is an integer type with 128 bits
+@next(rust_alias="u128")
+struct uint128 {
+    uint64 low;
+    uint64 high;
+}
+
+// complex128 is a complex number type with 128 bits
+@next(go_alias="complex128")
+struct complex128 {
+    float64 real;
+    float64 imag;
+}
+
+// Contract is a struct type with an address and a location
+struct Contract {
+    uint128 address;
+    complex128 location;
 }
