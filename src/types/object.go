@@ -617,11 +617,15 @@ func (s *Struct) Fields() *StructFields {
 type StructField struct {
 	*commonNode[*StructField]
 
+	unresolved struct {
+		typ ast.Type
+	}
+
 	// @api(Object/StructField.Decl) represents the struct that contains the field.
 	Decl *Struct
 
-	// @api(Object/StructField.Type) represents the [struct field type](#Object/StructFieldType).
-	Type *StructFieldType
+	// @api(Object/StructField.Type) represents the [type](#Object/Common/Type) of the struct field.
+	Type Type
 
 	// @api(Object/StructField.Comment) represents the line [comment](#Object/Comment) of the struct field declaration.
 	Comment *Comment
@@ -631,41 +635,18 @@ func newStructField(c *Compiler, file *File, s *Struct, src *ast.StructField) *S
 	f := &StructField{Decl: s}
 	file.addObject(c, src, f)
 	f.commonNode = newCommonNode(f, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
-	f.Type = newStructFieldType(c, file, f, src.Type)
+	f.unresolved.typ = src.Type
 	return f
 }
 
 func (f *StructField) resolve(c *Compiler, file *File, scope Scope) {
 	f.commonNode.resolve(c, file, scope)
-	f.Type.resolve(c, file, scope)
+	f.Type = c.resolveType(file, f.unresolved.typ, false)
 }
 
 // @api(Object/StructField.Name) represents the [NodeName](#Object/Common/NodeName) of the struct field.
 func (f *StructField) Name() *NodeName[*StructField] {
 	return f.name
-}
-
-// @api(Object/StructFieldType) represents a struct field type.
-type StructFieldType struct {
-	unresolved struct {
-		typ ast.Type
-	}
-
-	// @api(Object/StructFieldType.Type) represents the underlying type of the struct field.
-	Type Type
-
-	// @api(Object/StructFieldType.Field) represents the struct field that contains the type.
-	Field *StructField
-}
-
-func newStructFieldType(_ *Compiler, _ *File, f *StructField, src ast.Type) *StructFieldType {
-	t := &StructFieldType{Field: f}
-	t.unresolved.typ = src
-	return t
-}
-
-func (t *StructFieldType) resolve(c *Compiler, file *File, scope Scope) {
-	t.Type = c.resolveType(file, t.unresolved.typ, false)
 }
 
 // @api(Object/Interface) (extends [Decl](#Object/Common/Decl)) represents an interface declaration.
@@ -757,11 +738,15 @@ func (m *InterfaceMethod) Name() *NodeName[*InterfaceMethod] {
 type InterfaceMethodParam struct {
 	*commonNode[*InterfaceMethodParam]
 
+	unresolved struct {
+		typ ast.Type
+	}
+
 	// @api(Object/InterfaceMethodParam.Method) represents the interface method that contains the parameter.
 	Method *InterfaceMethod
 
-	// @api(Object/InterfaceMethodParam.Type) represents the parameter type.
-	Type *InterfaceMethodParamType
+	// @api(Object/InterfaceMethodParam.Type) represents the [type](#Object/Common/Type) of the parameter.
+	Type Type
 }
 
 func newInterfaceMethodParam(c *Compiler, file *File, m *InterfaceMethod, src *ast.MethodParam) *InterfaceMethodParam {
@@ -770,42 +755,18 @@ func newInterfaceMethodParam(c *Compiler, file *File, m *InterfaceMethod, src *a
 	}
 	file.addObject(c, src, p)
 	p.commonNode = newCommonNode(p, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
-	p.unresolved.annotations = src.Annotations
-	p.Type = newInterfaceMethodParamType(c, file, p, src.Type)
+	p.unresolved.typ = src.Type
 	return p
 }
 
 func (p *InterfaceMethodParam) resolve(c *Compiler, file *File, scope Scope) {
-	p.annotations = c.resolveAnnotationGroup(file, p, p.unresolved.annotations)
-	p.Type.resolve(c, file, scope)
+	p.commonNode.resolve(c, file, scope)
+	p.Type = c.resolveType(file, p.unresolved.typ, false)
 }
 
 // @api(Object/InterfaceMethodParam.Name) represents the [NodeName](#Object/Common/NodeName) of the interface method parameter.
 func (p *InterfaceMethodParam) Name() *NodeName[*InterfaceMethodParam] {
 	return p.name
-}
-
-// @api(Object/InterfaceMethodParamType) represents an interface method parameter type.
-type InterfaceMethodParamType struct {
-	unresolved struct {
-		typ ast.Type
-	}
-
-	// @api(Object/InterfaceMethodParamType.Param) represents the interface method parameter that contains the type.
-	Param *InterfaceMethodParam
-
-	// @api(Object/InterfaceMethodParamType.Type) represnts the underlying type of the parameter.
-	Type Type
-}
-
-func newInterfaceMethodParamType(_ *Compiler, _ *File, p *InterfaceMethodParam, src ast.Type) *InterfaceMethodParamType {
-	t := &InterfaceMethodParamType{Param: p}
-	t.unresolved.typ = src
-	return t
-}
-
-func (t *InterfaceMethodParamType) resolve(c *Compiler, file *File, scope Scope) {
-	t.Type = c.resolveType(file, t.unresolved.typ, false)
 }
 
 // @api(Object/InterfaceMethodResult) represents an interface method result.

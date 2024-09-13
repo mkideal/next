@@ -1,5 +1,5 @@
 {{- define "meta/this"}}struct{{end -}}
-{{- define "meta/path"}}{{this.Package.Name}}/handle_{{this.Type.String | snakeCase}}.go{{end -}}
+{{- define "meta/path"}}{{this.Package.Name}}/handle_{{next this.Type | snakeCase}}.go{{end -}}
 {{/* Skip if file exists or message type is not set */}}
 {{- define "meta/skip"}}{{or (exist meta.path) (not this.Annotations.message.type) (not this.Annotations.message.req)}}{{end -}}
 

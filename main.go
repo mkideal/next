@@ -200,8 +200,12 @@ func formatError(err error) {
 		return
 	}
 	tryPrintTemplateError(errs[0])
+	maxIndent := 32
+	if len(errs) > maxIndent {
+		maxIndent = 0
+	}
 	for i := 1; i < len(errs); i++ {
-		fmt.Fprint(os.Stderr, strings.Repeat(" ", i))
+		fmt.Fprint(os.Stderr, strings.Repeat(" ", min(i, maxIndent)))
 		tryPrintTemplateError(errs[i])
 	}
 }
@@ -219,7 +223,7 @@ func tryPrintTemplateError(err string) {
 	}
 	parts := strings.SplitN(err, ":", 4)
 	if len(parts) < 4 {
-		fmt.Fprintln(os.Stderr, err)
+		term.Fprintln(os.Stderr, errorColor.Colorize(err))
 		return
 	}
 	line := parts[1]
@@ -228,7 +232,7 @@ func tryPrintTemplateError(err string) {
 		column = strconv.Itoa(i + 1)
 	}
 	message := parts[3]
-	fmt.Fprintf(
+	term.Fprintf(
 		os.Stderr, "%s:%s:%s:%s\n",
 		fileColor.Colorize(parts[0]),
 		lineColor.Colorize(line),

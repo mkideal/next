@@ -1,6 +1,5 @@
-# Rust
 ext=.rust
-comment(%S%)=// %S%
+comment=// %T%
 
 int=i32
 int8=i8
@@ -14,6 +13,6 @@ string=String
 byte=u8
 bytes=Vec<u8>
 any=Box<dyn Any>
-map<%K%,%V%>=HashMap<%K%,%V%>
-vector<%T%>=Vec<%T%>
-array<%T%,%N%>=[%T%; %N%]
+map=HashMap<%K%,%V%>
+vector=Vec<%T%>
+array=[%T%; %N%]

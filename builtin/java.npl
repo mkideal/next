@@ -98,6 +98,6 @@ public class Constants {
 {{if .Type}}{{next .Type}}{{else}}void{{end}}
 {{- end}}
 
-{{- define "next/java/type:alias" -}}
+{{- define "next/java/decl.type:alias" -}}
 {{- .Decl.Annotations.next.java_alias -}}
 {{- end}}

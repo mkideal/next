@@ -1,6 +1,5 @@
-# C
 ext=.h
-comment(%S%)=/* %S% */
+comment=/* %T% */
 
 int=int32_t
 int8=int8_t
@@ -14,6 +13,6 @@ string=char*
 byte=uint8_t
 bytes=uint8_t*
 any=void*
-array<%T%,%N%>=%T%[%N%]
-# map<%K%,%V%>=<c.map: not supported by default>
-# vector<%T%>=<c.vector: not supported by default>
+array=%T%[%N%]
+# map=<c.map: not supported by default>
+# vector=<c.vector: not supported by default>

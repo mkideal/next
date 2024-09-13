@@ -1,6 +1,5 @@
-# Java
 ext=.java
-comment(%S%)=// %S%
+comment=// %T%
 
 int=int
 int8=byte
@@ -14,9 +13,9 @@ string=String
 byte=byte
 bytes=byte[]
 any=Object
-map<%K%,%V%>=Map<box(%K%),box(%V%)>
-vector<%T%>=List<box(%T%)>
-array<%T%,%N%>=%T%[]
+map=Map<box(%K%),box(%V%)>
+vector=List<box(%T%)>
+array=%T%[]
 
 box(int)=Integer
 box(byte)=Byte

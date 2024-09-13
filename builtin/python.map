@@ -1,6 +1,5 @@
-# Python
 ext=.py
-comment(%S%)=# %S%
+comment=# %T%
 
 int=int
 int8=int
@@ -14,6 +13,6 @@ string=str
 byte=int
 bytes=bytes
 any=Any
-map<%K%,%V%>=Dict[%K%,%V%]
-vector<%T%>=List[%T%]
-array<%T%,%N%>=List[%T%]
+map=Dict[%K%,%V%]
+vector=List[%T%]
+array=List[%T%]

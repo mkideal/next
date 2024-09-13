@@ -1,5 +1,5 @@
 {{- define "meta/this"}}interface{{end -}}
-{{- define "meta/path"}}{{render "java/package:name" this.Package | replace "." "/"}}/{{this.Type}}.java{{end -}}
+{{- define "meta/path"}}{{render "java/package:name" this.Package | replace "." "/"}}/{{next this.Type}}.java{{end -}}
 
 {{- /* Overrides "next/java/interface": add package and imports before interface */ -}}
 {{- define "java/interface" -}}

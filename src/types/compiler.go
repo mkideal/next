@@ -130,15 +130,15 @@ func (c *Compiler) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 		"`LANG.KEY=VALUE` specifies the mappings for a given language and type/feature.\n"+
 		"Type mappings: Map Next types to language-specific types.\n"+
 		"  Primitive types: int, int8, int16, int32, int64, bool, string, any, byte, bytes\n"+
-		"  Generic types: vector<%T%>, array<%T%,%N%>, map<%K%,%V%>\n"+
+		"  Generic types: vector, array, map\n"+
 		"    "+b("%T%")+", "+b("%N%")+", "+b("%K%")+", "+b("%V%")+" are placeholders replaced with actual types or values.\n"+
 		"Feature mappings: Set language-specific properties like file extensions or comment styles.\n"+
 		"Example:\n"+
-		"  -M \"cpp.vector<%T%>\"=\"std::vector<%T%>\"\n"+
-		"  -M \"java.array<%T%,%N%>\"=\"ArrayList<%T%>\"\n"+
-		"  -M \"go.map<%K%,%V%>\"=\"map[%K%]%V%\"\n"+
+		"  -M \"cpp.vector\"=\"std::vector<%T%>\"\n"+
+		"  -M \"java.array\"=\"ArrayList<%T%>\"\n"+
+		"  -M \"go.map\"=\"map[%K%]%V%\"\n"+
 		"  -M python.ext=.py\n"+
-		"  -M \"ruby.comment(%S%)\"=\"# %S%\"\n",
+		"  -M \"ruby.comment)\"=\"# %T%\"\n",
 	))
 
 	flagSet.Var(&c.flags.solvers, "X", u(""+

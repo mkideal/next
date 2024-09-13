@@ -1,6 +1,5 @@
-# C++
 ext=.h
-comment(%S%)=// %S%
+comment=// %T%
 
 int=int
 int8=int8_t
@@ -14,6 +13,6 @@ string=std::string
 byte=unsigned char
 bytes=std::vector<unsigned char>
 any=std::any
-map<%K%,%V%>=std::unordered_map<%K%,%V%>
-vector<%T%>=std::vector<%T%>
-array<%T%,%N%>=std::array<%T%,%N%>
+map=std::unordered_map<%K%,%V%>
+vector=std::vector<%T%>
+array=std::array<%T%,%N%>

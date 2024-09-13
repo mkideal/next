@@ -1,6 +1,5 @@
-# Javascript
 ext=.js
-comment(%S%)=// %S%
+comment=// %T%
 
 int=Number
 int8=Number
@@ -14,6 +13,6 @@ string=String
 byte=Number
 bytes=Uint8Array
 any=Object
-map<%K%,%V%>=Map
-vector<%T%>=Array
-array<%T%,%N%>=Array
+map=Map
+vector=Array
+array=Array

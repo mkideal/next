@@ -116,7 +116,12 @@ typedef struct {{next .Type}} {{next .Type}};
 {{- end}}
 
 {{- define "next/c/struct.field" -}}
+{{- $type := .Type.Value -}}
+{{- if $type.Kind.IsArray -}}
+{{next .Doc}}{{next $type.ElemType}} {{next .Name}}[{{$type.N}}];{{next .Comment}}
+{{- else -}}
 {{next .Doc}}{{next .Type}} {{next .Name}};{{next .Comment}}
+{{- end}}
 {{- end}}
 
 {{- define "next/c/interface" -}}

@@ -1,6 +1,5 @@
-# C#
 ext=.cs
-comment(%S%)=// %S%
+comment=// %T%
 
 int=int
 int8=sbyte
@@ -14,6 +13,6 @@ string=string
 byte=byte
 bytes=byte[]
 any=object
-map<%K%,%V%>=Dictionary<%K%,%V%>
-vector<%T%>=List<%T%>
-array<%T%,%N%>=%T%[]
+map=Dictionary<%K%,%V%>
+vector=List<%T%>
+array=%T%[]

@@ -2,7 +2,7 @@
     go_package="github.com/next/next/testdata/gen/go/c",
     cpp_package="demo::c",
     c_package="DEMO_C_",
-    java_package="com.demo.c",
+    java_package="com.example.c",
 )
 package c;
 

@@ -1,5 +1,5 @@
 {{- define "meta/this"}}enum{{end -}}
-{{- define "meta/path"}}{{render "java/package:name" this.Package | replace "." "/"}}/{{this.Type}}.java{{end -}}
+{{- define "meta/path"}}{{render "java/package:name" this.Package | replace "." "/"}}/{{next this.Type}}.java{{end -}}
 
 {{- define "java/enum" -}}
 package {{render "java/package:name" .Package}};

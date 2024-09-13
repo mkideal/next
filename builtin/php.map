@@ -1,6 +1,5 @@
-# PHP
 ext=.php
-comment(%S%)=// %S%
+comment=// %T%
 
 int=int
 int8=int
@@ -14,6 +13,6 @@ string=string
 byte=int
 bytes=string
 any=mixed
-map<%K%,%V%>=array
-vector<%T%>=array
-array<%T%,%N%>=array
+map=array
+vector=array
+array=array

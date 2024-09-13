@@ -149,8 +149,8 @@ public:
 {{snakeCase .String}}
 {{- end}}
 
-{{- define "next/cpp/interface.method.param.type" -}}
-{{if not .Param.Annotations.next.mut}}const {{end}}{{next .Type}}&
+{{- define "next/cpp/interface.method.param" -}}
+{{if not .Annotations.next.mut}}const {{end}}{{next .Type}}& {{next .Name}}
 {{- end}}
 
 {{- define "next/cpp/interface.method.result" -}}

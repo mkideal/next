@@ -12,7 +12,7 @@
     go_imports="net/http.HandlerFunc,*fmt.Stringer",
     cpp_package="demo",
     c_package="DEMO_",
-    java_package="com.demo",
+    java_package="com.example.demo",
 )
 package demo;
 

@@ -94,7 +94,7 @@ test/template: install
 		-O cpp=testdata/gen/cpp -T cpp=testdata/templates/cpp \
 		-O csharp=testdata/gen/csharp -T csharp=testdata/templates/csharp \
 		-O c=testdata/gen/c -T c=testdata/templates/c \
-		-M "c.vector<%T%>=void*" -M "c.map<%K%,%V%>=void*" -M "c.array<%T%,%N%>=void*" \
+		-M "c.vector=void*" -M "c.map=void*" \
 		testdata/next/
 
 .PHONY: clean

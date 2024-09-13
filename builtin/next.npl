@@ -78,7 +78,7 @@ enum {{next .Type}} {
 
 {{/* next/enum.type: Generates the type name for an enum */}}
 {{- define "next/enum.type" -}}
-{{render "next/type:internal.alias" .}}
+{{render "next/decl.type:internal.alias" .}}
 {{- end}}
 
 {{/* next/enum.members: Generates code for all members of an enum */}}
@@ -112,7 +112,7 @@ enum {{next .Type}} {
 
 {{/* next/struct.type: Generates the type name for a struct */}}
 {{- define "next/struct.type" -}}
-{{render "next/type:internal.alias" .}}
+{{render "next/decl.type:internal.alias" .}}
 {{- end}}
 
 {{/* next/struct.fields: Generates code for all fields of a struct */}}
@@ -125,11 +125,6 @@ enum {{next .Type}} {
 {{/* next/struct.field: Generates code for a single struct field */}}
 {{- define "next/struct.field" -}}
 {{next .Doc}}{{next .Type}} {{next .Name}};{{next .Comment}}
-{{- end}}
-
-{{/* next/struct.field.type: Generates the type of a struct field */}}
-{{- define "next/struct.field.type" -}}
-{{next .Type}}
 {{- end}}
 
 {{/* next/struct.field.name: Generates the name of a struct field */}}
@@ -164,7 +159,7 @@ enum {{next .Type}} {
 
 {{/* next/interface.type: Generates the type name for an interface */}}
 {{- define "next/interface.type" -}}
-{{render "next/type:internal.alias" .}}
+{{render "next/decl.type:internal.alias" .}}
 {{- end}}
 
 {{/* next/interface.methods: Generates code for all methods of an interface */}}
@@ -196,11 +191,6 @@ enum {{next .Type}} {
 {{next .Type}} {{next .Name}}
 {{- end}}
 
-{{/* next/interface.method.param.type: Generates the type of an interface method parameter */}}
-{{- define "next/interface.method.param.type" -}}
-{{next .Type}}
-{{- end}}
-
 {{/* next/interface.method.param.name: Generates the name of an interface method parameter */}}
 {{- define "next/interface.method.param.name" -}}
 {{.}}
@@ -212,22 +202,22 @@ enum {{next .Type}} {
 {{- end}}
 {{- end}}
 
-{{/* next/type:internal.alias: Handles internal type aliases */}}
-{{- define "next/type:internal.alias" -}}
+{{/* next/decl.type:internal.alias: Handles internal type aliases */}}
+{{- define "next/decl.type:internal.alias" -}}
 {{- if or (not .Decl.Annotations.next) (not (index .Decl.Annotations.next (printf "%s_alias" lang))) }}
-{{- render "type" . -}}
+{{- render "decl.type" . -}}
 {{- else -}}
-{{- render "type:alias" . | trim -}}
+{{- render "decl.type:alias" . | trim -}}
 {{- end}}
 {{- end}}
 
-{{/* next/type: Generates a type */}}
-{{- define "next/type" -}}
-{{- type . -}}
+{{/* next/decl.type: Generates a decl type: enum.type, struct.type, interface.type */}}
+{{- define "next/decl.type" -}}
+{{- .String | pascalCase -}}
 {{- end}}
 
-{{/* next/type:alias: Generates a type alias */}}
-{{- define "next/type:alias" -}}
+{{/* next/decl.type:alias: Generates a type alias */}}
+{{- define "next/decl.type:alias" -}}
 {{- index .Decl.Annotations.next (printf "%s_alias" lang) -}}
 {{- end}}
 

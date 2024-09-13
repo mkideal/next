@@ -66,7 +66,6 @@
     <li><a href="#user-content-Object_InterfaceMethodName">InterfaceMethodName</a></li>
     <li><a href="#user-content-Object_InterfaceMethodParam">InterfaceMethodParam</a></li>
     <li><a href="#user-content-Object_InterfaceMethodParamName">InterfaceMethodParamName</a></li>
-    <li><a href="#user-content-Object_InterfaceMethodParamType">InterfaceMethodParamType</a></li>
     <li><a href="#user-content-Object_InterfaceMethodParams">InterfaceMethodParams</a></li>
     <li><a href="#user-content-Object_InterfaceMethodResult">InterfaceMethodResult</a></li>
     <li><a href="#user-content-Object_InterfaceMethods">InterfaceMethods</a></li>
@@ -78,7 +77,6 @@
     <li><a href="#user-content-Object_Struct">Struct</a></li>
     <li><a href="#user-content-Object_StructField">StructField</a></li>
     <li><a href="#user-content-Object_StructFieldName">StructFieldName</a></li>
-    <li><a href="#user-content-Object_StructFieldType">StructFieldType</a></li>
     <li><a href="#user-content-Object_StructFields">StructFields</a></li>
     <li><a href="#user-content-Object_StructType">StructType</a></li>
     <li><a href="#user-content-Object_Structs">Structs</a></li>
@@ -153,6 +151,8 @@ Example:
 <h3><a id="user-content-Context_errorf" target="_self">errorf</a></h3>
 
 `errorf` used to return a formatted error message in the template. 
+- **Parameters**: (_format_: string, _args_: ...any)
+
 Example: 
 
 ```npl
@@ -237,11 +237,56 @@ func ({{next $.Type}}) MessageType() int { return {{.}} }
 
 <h3><a id="user-content-Context_render" target="_self">render</a></h3>
 
-`render` executes the template with the given name and data.
+`render` executes the template with the given name and data. 
+- **Parameters**: (_name_: string, _data_: any[, _lang_: string])
+
+`name` is the template name to be executed. `lang` is the current language by default if not specified. 
+`name` has a specific format. When the corresponding template is not found, it will look up the parent template according to the rules of [super](#user-content-Context_super). 
+Example: 
+```npl
+{{render "go/struct" this}}
+{{render "struct" this "go"}}
+```
 
 <h3><a id="user-content-Context_super" target="_self">super</a></h3>
 
-`super` executes the super template with the given [object](#user-content-Object).
+`super` executes the super template with the given [object](#user-content-Object). super is used to call the parent template in the current template. It's useful when you want to extend the parent template. The super template looks up the template with the following priority: 
+
+```mermaid
+graph LR
+A["type[:name]"] -->|super| B["lang/type[:name]"]
+B -->|super| C["next/lang/type[:name]"]
+C -->|super| D["next/type[:name]"]
+```
+
+e.g., 
+
+```mermaid
+graph LR
+A["struct:foo"] -->|super| B["go/struct:foo"]
+B -->|super| C["next/go/struct:foo"]
+C -->|super| D["next/struct:foo"]
+```
+
+
+```mermaid
+graph LR
+A["struct"] -->|super| B["go/struct"]
+B -->|super| C["next/go/struct"]
+C -->|super| D["next/struct"]
+```
+
+Example: 
+```npl
+{{- /* Overrides "next/go/struct": add method 'MessageType' for each message after struct */ -}}
+{{- define "go/struct"}}
+{{- super .}}
+{{- with .Annotations.message.type}}
+
+func ({{next $.Type}}) MessageType() int { return {{.}} }
+{{- end}}
+{{- end -}}
+```
 
 <h3><a id="user-content-Context_this" target="_self">this</a></h3>
 
@@ -733,6 +778,10 @@ Currently, the following types are supported:
 
 `.String` represents the string representation of the type.
 
+<h6><a id="user-content-Object_Common_Type_-Value" target="_self">.Value</a></h6>
+
+`.Value` returns the reflect value of the type.
+
 <h5><a id="user-content-Object_Common_Type_Kind" target="_self">Kind</a></h5>
 
 `Kind` represents the type kind. Currently, the following kinds are supported: 
@@ -763,6 +812,22 @@ Currently, the following types are supported:
 
 `.Compatible` returns the compatible type between two types. If the types are not compatible, it returns `KindInvalid`. If the types are the same, it returns the type. If the types are numeric, it returns the type with the most bits.
 
+<h6><a id="user-content-Object_Common_Type_Kind_-IsAny" target="_self">.IsAny</a></h6>
+
+`.IsAny` reports whether the type is any.
+
+<h6><a id="user-content-Object_Common_Type_Kind_-IsArray" target="_self">.IsArray</a></h6>
+
+`.IsArray` reports whether the type is an array.
+
+<h6><a id="user-content-Object_Common_Type_Kind_-IsBool" target="_self">.IsBool</a></h6>
+
+`.IsBool` reports whether the type is a boolean.
+
+<h6><a id="user-content-Object_Common_Type_Kind_-IsBytes" target="_self">.IsBytes</a></h6>
+
+`.IsBytes` reports whether the type is a byte slice.
+
 <h6><a id="user-content-Object_Common_Type_Kind_-IsFloat" target="_self">.IsFloat</a></h6>
 
 `.IsFloat` reports whether the type is a floating point.
@@ -771,6 +836,10 @@ Currently, the following types are supported:
 
 `.IsInteger` reports whether the type is an integer.
 
+<h6><a id="user-content-Object_Common_Type_Kind_-IsMap" target="_self">.IsMap</a></h6>
+
+`.IsMap` reports whether the type is a map.
+
 <h6><a id="user-content-Object_Common_Type_Kind_-IsNumeric" target="_self">.IsNumeric</a></h6>
 
 `.IsNumeric` reports whether the type is a numeric type.
@@ -778,6 +847,10 @@ Currently, the following types are supported:
 <h6><a id="user-content-Object_Common_Type_Kind_-IsString" target="_self">.IsString</a></h6>
 
 `.IsString` reports whether the type is a string.
+
+<h6><a id="user-content-Object_Common_Type_Kind_-IsVector" target="_self">.IsVector</a></h6>
+
+`.IsVector` reports whether the type is a vector.
 
 <h6><a id="user-content-Object_Common_Type_Kind_-Valid" target="_self">.Valid</a></h6>
 
@@ -1048,23 +1121,11 @@ Usage in templates:
 
 <h6><a id="user-content-Object_InterfaceMethodParam_-Type" target="_self">.Type</a></h6>
 
-`.Type` represents the parameter type.
+`.Type` represents the [type](#user-content-Object_Common_Type) of the parameter.
 
 <h3><a id="user-content-Object_InterfaceMethodParamName" target="_self">InterfaceMethodParamName</a></h3>
 
 `InterfaceMethodParamName` represents the [NodeName](#user-content-Object_Common_NodeName) of an [interface method parameter](#user-content-Object_InterfaceMethodParam).
-
-<h3><a id="user-content-Object_InterfaceMethodParamType" target="_self">InterfaceMethodParamType</a></h3>
-
-`InterfaceMethodParamType` represents an interface method parameter type.
-
-<h6><a id="user-content-Object_InterfaceMethodParamType_-Param" target="_self">.Param</a></h6>
-
-`.Param` represents the interface method parameter that contains the type.
-
-<h6><a id="user-content-Object_InterfaceMethodParamType_-Type" target="_self">.Type</a></h6>
-
-`.Type` represnts the underlying type of the parameter.
 
 <h3><a id="user-content-Object_InterfaceMethodParams" target="_self">InterfaceMethodParams</a></h3>
 
@@ -1178,23 +1239,11 @@ Example:
 
 <h6><a id="user-content-Object_StructField_-Type" target="_self">.Type</a></h6>
 
-`.Type` represents the [struct field type](#user-content-Object_StructFieldType).
+`.Type` represents the [type](#user-content-Object_Common_Type) of the struct field.
 
 <h3><a id="user-content-Object_StructFieldName" target="_self">StructFieldName</a></h3>
 
 `StructFieldName` represents the [NodeName](#user-content-Object_Common_NodeName) of a [struct field](#user-content-Object_StructField).
-
-<h3><a id="user-content-Object_StructFieldType" target="_self">StructFieldType</a></h3>
-
-`StructFieldType` represents a struct field type.
-
-<h6><a id="user-content-Object_StructFieldType_-Field" target="_self">.Field</a></h6>
-
-`.Field` represents the struct field that contains the type.
-
-<h6><a id="user-content-Object_StructFieldType_-Type" target="_self">.Type</a></h6>
-
-`.Type` represents the underlying type of the struct field.
 
 <h3><a id="user-content-Object_StructFields" target="_self">StructFields</a></h3>
 

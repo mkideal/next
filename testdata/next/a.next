@@ -4,7 +4,7 @@
     go_package="github.com/next/next/testdata/gen/go/a",
     cpp_package="demo::a",
     c_package="DEMO_A_",
-    java_package="com.demo.a",
+    java_package="com.example.a",
 )
 package a;
 

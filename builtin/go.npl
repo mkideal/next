@@ -197,7 +197,7 @@ func (x {{next .Type}}) String() string {
 {{- end}}
 
 {{/*
-next/go/type:alias: Processes the @next(go_alias) annotation to replace symbolic types with actual Go types.
+next/go/decl.type:alias: Processes the @next(go_alias) annotation to replace symbolic types with actual Go types.
 
 This function handles the go_alias annotation, which allows defining placeholder types in Next that are replaced
 with actual Go types during code generation. It's particularly useful for interfaces and structs that are defined
@@ -227,7 +227,7 @@ type HTTPServer interface {
 }
 ```
 */}}
-{{- define "next/go/type:alias" -}}
+{{- define "next/go/decl.type:alias" -}}
 {{- $alias := .Decl.Annotations.next.go_alias -}}
 {{- $parts := split "." $alias -}}
 {{- if eq 1 (len $parts) -}}

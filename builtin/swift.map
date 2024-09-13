@@ -1,6 +1,5 @@
-# Swift
 ext=.swift
-comment(%S%)=// %S%
+comment=// %T%
 
 int=Int
 int8=Int8
@@ -14,6 +13,6 @@ string=String
 byte=UInt8
 bytes=[UInt8]
 any=Any
-map<%K%,%V%>=[%K%:%V%]
-vector<%T%>=[%T%]
-array<%T%,%N%>=[%T%]
+map=[%K%:%V%]
+vector=[%T%]
+array=[%T%]

@@ -89,14 +89,28 @@ func (k Kind) IsFloat() bool {
 }
 
 // @api(Object/Common/Type/Kind.IsNumeric) reports whether the type is a numeric type.
-func (k Kind) IsNumeric() bool {
-	return k.IsInteger() || k.IsFloat()
-}
+func (k Kind) IsNumeric() bool { return k.IsInteger() || k.IsFloat() }
 
 // @api(Object/Common/Type/Kind.IsString) reports whether the type is a string.
-func (k Kind) IsString() bool {
-	return k == KindString
-}
+func (k Kind) IsString() bool { return k == KindString }
+
+// @api(Object/Common/Type/Kind.IsBytes) reports whether the type is a byte slice.
+func (k Kind) IsBytes() bool { return k == KindBytes }
+
+// @api(Object/Common/Type/Kind.IsBool) reports whether the type is a boolean.
+func (k Kind) IsBool() bool { return k == KindBool }
+
+// @api(Object/Common/Type/Kind.IsAny) reports whether the type is any.
+func (k Kind) IsAny() bool { return k == KindAny }
+
+// @api(Object/Common/Type/Kind.IsMap) reports whether the type is a map.
+func (k Kind) IsMap() bool { return k == KindMap }
+
+// @api(Object/Common/Type/Kind.IsVector) reports whether the type is a vector.
+func (k Kind) IsVector() bool { return k == KindVector }
+
+// @api(Object/Common/Type/Kind.IsArray) reports whether the type is an array.
+func (k Kind) IsArray() bool { return k == KindArray }
 
 // @api(Object/Common/Type/Kind.Compatible) returns the compatible type between two types.
 // If the types are not compatible, it returns `KindInvalid`.

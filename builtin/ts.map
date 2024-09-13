@@ -1,6 +1,5 @@
-# TypeScript
 ext=.ts
-comment(%S%)=// %S%
+comment=// %T%
 
 int=number
 int8=number
@@ -14,6 +13,6 @@ string=string
 byte=number
 bytes=Uint8Array
 any=any
-map<%K%,%V%>=Map<%K%,%V%>
-vector<%T%>=Array<%T%>
-array<%T%,%N%>=Array<%T%>
+map=Map<%K%,%V%>
+vector=Array<%T%>
+array=Array<%T%>

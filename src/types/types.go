@@ -2,6 +2,7 @@
 package types
 
 import (
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -96,11 +97,9 @@ var _ Object = (*Enum)(nil)
 var _ Object = (*EnumMember)(nil)
 var _ Object = (*Struct)(nil)
 var _ Object = (*StructField)(nil)
-var _ Object = (*StructFieldType)(nil)
 var _ Object = (*Interface)(nil)
 var _ Object = (*InterfaceMethod)(nil)
 var _ Object = (*InterfaceMethodParam)(nil)
-var _ Object = (*InterfaceMethodParamType)(nil)
 var _ Object = (*InterfaceMethodResult)(nil)
 var _ Object = (*CallStmt)(nil)
 
@@ -147,17 +146,15 @@ func (x *DeclType[T]) Typeof() string   { return x.decl.Typeof() + ".type" }
 
 // Decl objects
 
-func (*Const) Typeof() string                    { return "const" }
-func (*Enum) Typeof() string                     { return "enum" }
-func (*EnumMember) Typeof() string               { return "enum.member" }
-func (*Struct) Typeof() string                   { return "struct" }
-func (*StructField) Typeof() string              { return "struct.field" }
-func (*StructFieldType) Typeof() string          { return "struct.field.type" }
-func (*Interface) Typeof() string                { return "interface" }
-func (*InterfaceMethod) Typeof() string          { return "interface.method" }
-func (*InterfaceMethodParam) Typeof() string     { return "interface.method.param" }
-func (*InterfaceMethodParamType) Typeof() string { return "interface.method.param.type" }
-func (*InterfaceMethodResult) Typeof() string    { return "interface.method.result" }
+func (*Const) Typeof() string                 { return "const" }
+func (*Enum) Typeof() string                  { return "enum" }
+func (*EnumMember) Typeof() string            { return "enum.member" }
+func (*Struct) Typeof() string                { return "struct" }
+func (*StructField) Typeof() string           { return "struct.field" }
+func (*Interface) Typeof() string             { return "interface" }
+func (*InterfaceMethod) Typeof() string       { return "interface.method" }
+func (*InterfaceMethodParam) Typeof() string  { return "interface.method.param" }
+func (*InterfaceMethodResult) Typeof() string { return "interface.method.result" }
 
 // Stmt objects
 
@@ -319,6 +316,9 @@ type Type interface {
 
 	// @api(Object/Common/Type.Decl) represents the [declaration](#Decl) of the type.
 	Decl() Decl
+
+	// @api(Object/Common/Type.Value) returns the reflect value of the type.
+	Value() reflect.Value
 }
 
 // All types listed here implement the Type interface.
@@ -363,6 +363,8 @@ func Use(t Type, f *File, node ast.Type) *UsedType {
 // String returns the string representation of the used type.
 func (u *UsedType) String() string { return u.Type.String() }
 
+func (u *UsedType) Value() reflect.Value { return u.Type.Value() }
+
 // UsedTypeNode returns the AST node of the used type.
 func UsedTypeNode(u *UsedType) ast.Type { return u.node }
 
@@ -373,6 +375,10 @@ type PrimitiveType struct {
 }
 
 func (b *PrimitiveType) String() string { return b.name }
+
+func (b *PrimitiveType) Value() reflect.Value { return reflect.ValueOf(b) }
+
+func (b *PrimitiveType) ToPrimitive() *PrimitiveType { return b }
 
 var primitiveTypes = func() map[string]*PrimitiveType {
 	m := make(map[string]*PrimitiveType)
@@ -398,6 +404,8 @@ func (a *ArrayType) String() string {
 	return "array<" + a.ElemType.String() + "," + strconv.FormatInt(a.N, 10) + ">"
 }
 
+func (a *ArrayType) Value() reflect.Value { return reflect.ValueOf(a) }
+
 // @api(Object/VectorType) represents a vector [type](#Object/Common/Type).
 type VectorType struct {
 	pos token.Pos
@@ -409,6 +417,8 @@ type VectorType struct {
 func (v *VectorType) String() string {
 	return "vector<" + v.ElemType.String() + ">"
 }
+
+func (v *VectorType) Value() reflect.Value { return reflect.ValueOf(v) }
 
 // @api(Object/MapType) represents a map [type](#Object/Common/Type).
 type MapType struct {
@@ -424,6 +434,8 @@ type MapType struct {
 func (m *MapType) String() string {
 	return "map<" + m.KeyType.String() + "," + m.ElemType.String() + ">"
 }
+
+func (m *MapType) Value() reflect.Value { return reflect.ValueOf(m) }
 
 // DeclType represents a declaration type which is a type of a declaration: enum, struct, interface.
 type DeclType[T Decl] struct {
@@ -447,3 +459,5 @@ func newDeclType[T Decl](pos token.Pos, kind Kind, name string, decl T) *DeclTyp
 }
 
 func (d *DeclType[T]) String() string { return d.name }
+
+func (d *DeclType[T]) Value() reflect.Value { return reflect.ValueOf(d) }
