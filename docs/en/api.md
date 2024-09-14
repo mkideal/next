@@ -720,7 +720,7 @@ Currently, the following nodes are supported:
 
 <h6><a id="user-content-Object_Common_Node_-Package" target="_self">.Package</a></h6>
 
-`.Package` represents the package containing the node. It's a shortcut for Node.File.Package.
+`.Package` represents the package containing the node.
 
 <h4><a id="user-content-Object_Common_NodeName" target="_self">NodeName</a></h4>
 
@@ -1166,6 +1166,20 @@ Usage in templates:
 
 `.Annotations` represents the package [annotations](#user-content-Object_Common_Annotations).
 
+<h6><a id="user-content-Object_Package_-Contains" target="_self">.Contains</a></h6>
+
+`.Contains` reports whether the package contains the given type. If the current package is nil, it always returns true. 
+Example: 
+
+```npl
+{{- define "next/go/used.type" -}}
+{{if not (.File.Package.Contains .Type) -}}
+{{.Type.Decl.File.Package.Name -}}.
+{{- end -}}
+{{next .Type}}
+{{- end}}
+```
+
 <h6><a id="user-content-Object_Package_-Doc" target="_self">.Doc</a></h6>
 
 `.Doc` represents the package [documentation](#user-content-Object_Doc).
@@ -1173,20 +1187,6 @@ Usage in templates:
 <h6><a id="user-content-Object_Package_-Files" target="_self">.Files</a></h6>
 
 `.Files` represents the all declared files in the package.
-
-<h6><a id="user-content-Object_Package_-In" target="_self">.In</a></h6>
-
-`.In` reports whether the package is the same as the given package. If the current package is nil, it always returns true. 
-Example: 
-
-```npl
-{{- define "next/go/used.type" -}}
-{{if not (.Type.Decl.File.Package.In .File.Package) -}}
-{{.Type.Decl.File.Package.Name -}}.
-{{- end -}}
-{{next .Type}}
-{{- end}}
-```
 
 <h6><a id="user-content-Object_Package_-Name" target="_self">.Name</a></h6>
 
@@ -1254,7 +1254,7 @@ Example:
 
 <h6><a id="user-content-Object_UsedType_-File" target="_self">.File</a></h6>
 
-`.File` represents the file containing the used type.
+`.File` represents the file where the type is used.
 
 <h6><a id="user-content-Object_UsedType_-Type" target="_self">.Type</a></h6>
 

@@ -169,6 +169,6 @@ struct {{next .Type}} {
 {{- end -}}
 {{- end}}
 
-{{- define "next/c/type" -}}
+{{- define "next/c/decl.type" -}}
 {{super . | render "c/decl:name"}}
 {{- end}}

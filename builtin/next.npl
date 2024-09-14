@@ -7,16 +7,16 @@
 {{/* next/decls: Generates code for all declarations in a file, including constants, enums, structs, and interfaces */}}
 {{- define "next/decls" -}}
 {{- if .Consts -}}
-{{next .Consts}}
+    {{- next .Consts}}
 {{end -}}
 {{- if .Enums -}}
-{{next .Enums}}
+    {{- next .Enums}}
 {{end -}}
 {{- if .Structs -}}
-{{next .Structs}}
+    {{- next .Structs}}
 {{end -}}
 {{- if .Interfaces -}}
-{{next .Interfaces}}
+    {{- next .Interfaces}}
 {{end -}}
 {{- end}}
 

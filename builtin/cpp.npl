@@ -28,7 +28,7 @@
 {{- end}}
 
 {{- define "next/cpp/used.type" -}}
-{{if not (.Type.Decl.File.Package.In .File.Package) -}}
+{{if not (.File.Package.Contains .Type) -}}
 {{$ns := .Type.Decl.File.Package.Annotations.next.cpp_package -}}
 {{if $ns -}}
 {{$ns}}::

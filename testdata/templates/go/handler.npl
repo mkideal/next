@@ -11,10 +11,8 @@ import (
     "net/http"
 )
 
-{{- with .Annotations.message.type}}
-
-func handle{{next $.Type}}(w http.ResponseWriter, r *http.Request) error {
-    var req {{next $.Type}}
+func handle{{next .Type}}(w http.ResponseWriter, r *http.Request) error {
+    var req {{next .Type}}
     if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
         return err
     }
@@ -22,7 +20,6 @@ func handle{{next $.Type}}(w http.ResponseWriter, r *http.Request) error {
     _ = req
     return nil
 }
-{{- end}}
 {{- end -}}
 
 {{head}}

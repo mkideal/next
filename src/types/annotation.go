@@ -433,10 +433,10 @@ func (c *Compiler) createAnnotationSolverRequest(name string) *api.AnnotationSol
 		obj := a.obj.(Node)
 		req.Annotations[api.ID(pos)] = &api.Annotation{
 			ID:     api.ID(pos),
-			Object: api.ID(obj.getPos()),
+			Object: api.ID(obj.Pos()),
 			Params: params,
 		}
-		objects[obj.getPos()] = obj
+		objects[obj.Pos()] = obj
 	}
 	for pos, obj := range objects {
 		req.Objects[api.ID(pos)] = &api.Object{

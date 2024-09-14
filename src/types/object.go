@@ -283,6 +283,7 @@ type Value struct {
 	unresolved struct {
 		value ast.Expr
 	}
+	file *File
 	enum struct {
 		typ   *Enum     // parent enum
 		index int       // index in the enum type. start from 0
@@ -294,12 +295,17 @@ func newValue(c *Compiler, file *File, name string, namePos token.Pos, src ast.E
 	v := &Value{
 		namePos: namePos,
 		name:    name,
+		file:    file,
 	}
 	if src != nil {
 		file.addObject(c, src, v)
 	}
 	v.unresolved.value = src
 	return v
+}
+
+func (v *Value) File() *File {
+	return v.file
 }
 
 func (v *Value) resolve(c *Compiler, file *File, scope Scope) {
@@ -493,7 +499,7 @@ func newEnum(c *Compiler, file *File, src *ast.GenDecl[*ast.EnumType]) *Enum {
 	e := &Enum{}
 	file.addObject(c, src, e)
 	e.commonNode = newCommonNode(e, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
-	e.Type = newDeclType(src.Pos(), KindEnum, src.Name.Name, e)
+	e.Type = newDeclType(file, src.Pos(), KindEnum, src.Name.Name, e)
 	e.Members = &EnumMembers{Decl: e}
 	for i, m := range src.Spec.Members.List {
 		e.Members.List = append(e.Members.List, newEnumMember(c, file, e, m, i))
@@ -593,7 +599,7 @@ func newStruct(c *Compiler, file *File, src *ast.GenDecl[*ast.StructType]) *Stru
 	s := &Struct{}
 	file.addObject(c, src, s)
 	s.commonNode = newCommonNode(s, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
-	s.Type = newDeclType(src.Pos(), KindStruct, src.Name.Name, s)
+	s.Type = newDeclType(file, src.Pos(), KindStruct, src.Name.Name, s)
 	s.fields = &StructFields{Decl: s}
 	for _, f := range src.Spec.Fields.List {
 		s.fields.List = append(s.fields.List, newStructField(c, file, s, f))
@@ -667,7 +673,7 @@ func newInterface(c *Compiler, file *File, src *ast.GenDecl[*ast.InterfaceType])
 	i := &Interface{}
 	file.addObject(c, src, i)
 	i.commonNode = newCommonNode(i, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
-	i.Type = newDeclType(src.Pos(), KindInterface, src.Name.Name, i)
+	i.Type = newDeclType(file, src.Pos(), KindInterface, src.Name.Name, i)
 	i.methods = &InterfaceMethods{Decl: i}
 	for _, m := range src.Spec.Methods.List {
 		i.methods.List = append(i.methods.List, newInterfaceMethod(c, file, i, m))

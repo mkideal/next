@@ -105,7 +105,7 @@ var _ = (*{{.File.Package.Name}}.{{next (index (.File.Package.Types) 0)}})(nil)
 
 {{/* next/go/used.type: Generates a fully qualified type name, including package name if necessary */}}
 {{- define "next/go/used.type" -}}
-{{if not (.Type.Decl.File.Package.In .File.Package) -}}
+{{if not (.File.Package.Contains .Type) -}}
 {{.Type.Decl.File.Package.Name -}}.
 {{- end -}}
 {{next .Type}}

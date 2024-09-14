@@ -2,6 +2,7 @@ package types
 
 import (
 	"cmp"
+	"fmt"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -26,20 +27,31 @@ type Package struct {
 // @api(Object/Package.Name) represents the package name string.
 func (p *Package) Name() string { return p.name }
 
-// @api(Object/Package.In) reports whether the package is the same as the given package.
+// @api(Object/Package.Contains) reports whether the package contains the given type.
 // If the current package is nil, it always returns true.
 //
 // Example:
 //
 // ```npl
 // {{- define "next/go/used.type" -}}
-// {{if not (.Type.Decl.File.Package.In .File.Package) -}}
+// {{if not (.File.Package.Contains .Type) -}}
 // {{.Type.Decl.File.Package.Name -}}.
 // {{- end -}}
 // {{next .Type}}
 // {{- end}}
 // ```
-func (p *Package) In(pkg *Package) bool { return p == nil || p == pkg }
+func (p *Package) Contains(node Object) (bool, error) {
+	var p2 *Package
+	switch node := node.(type) {
+	case Type:
+		p2 = node.Decl().File().Package()
+	case Symbol:
+		p2 = node.File().Package()
+	default:
+		return false, fmt.Errorf("Contains: unexpected type %T, want Type or Symbol", node)
+	}
+	return p2 == nil || p == p2, nil
+}
 
 func (p *Package) resolve(c *Compiler) error {
 	slices.SortFunc(p.files, func(a, b *File) int {
@@ -145,6 +157,14 @@ func newFile(c *Compiler, src *ast.File, path string) *File {
 		c.errors.Add(c.fset.Position(pos), err.Error())
 	}
 	return f
+}
+
+// @api(Object/File.Package) represents the file's package.
+func (x *File) Package() *Package {
+	if x == nil {
+		return nil
+	}
+	return x.pkg
 }
 
 // @api(Object/File.Name) represents the file name without the ".next" extension.

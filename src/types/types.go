@@ -166,14 +166,24 @@ func (*CallStmt) Typeof() string { return "stmt.call" }
 type LocatedObject interface {
 	Object
 
-	// getPos returns the position of the object.
-	getPos() token.Pos
+	// Pos returns the position of the object.
+	Pos() token.Pos
+
+	// @api(Object/Common/Node.File) represents the file containing the node.
+	File() *File
+
+	// @api(Object/Common/Node.Package) represents the package containing the node.
+	Package() *Package
 }
 
-func (x *File) getPos() token.Pos             { return x.pos }
-func (x *commonNode[Self]) getPos() token.Pos { return x.pos }
-func (x *Value) getPos() token.Pos            { return x.namePos }
-func (x *DeclType[T]) getPos() token.Pos      { return x.pos }
+func (x *File) Pos() token.Pos             { return x.pos }
+func (x *commonNode[Self]) Pos() token.Pos { return x.pos }
+func (x *Value) Pos() token.Pos            { return x.namePos }
+func (x *DeclType[T]) Pos() token.Pos      { return x.pos }
+
+func (x *commonNode[Self]) Package() *Package { return x.File().Package() }
+func (x *Value) Package() *Package            { return x.File().Package() }
+func (x *DeclType[T]) Package() *Package      { return x.File().Package() }
 
 // -------------------------------------------------------------------------
 
@@ -195,13 +205,6 @@ type Node interface {
 
 	// getName returns the name of the node.
 	getName() string
-
-	// @api(Object/Common/Node.File) represents the file containing the node.
-	File() *File
-
-	// @api(Object/Common/Node.Package) represents the package containing the node.
-	// It's a shortcut for Node.File.Package.
-	Package() *Package
 
 	// @api(Object/Common/Node.Doc) represents the documentation comment for the node.
 	Doc() *Doc
@@ -230,20 +233,6 @@ func (x *commonNode[Self]) File() *File {
 		return nil
 	}
 	return x.file
-}
-
-func (x *File) Package() *Package {
-	if x == nil {
-		return nil
-	}
-	return x.pkg
-}
-
-func (x *commonNode[Self]) Package() *Package {
-	if x == nil || x.file == nil {
-		return nil
-	}
-	return x.file.pkg
 }
 
 // -------------------------------------------------------------------------
@@ -283,7 +272,7 @@ var _ Decl = builtinDecl{}
 
 func (builtinDecl) Typeof() string           { return "<builtin.decl>" }
 func (builtinDecl) getName() string          { return "<builtin>" }
-func (builtinDecl) getPos() token.Pos        { return token.NoPos }
+func (builtinDecl) Pos() token.Pos           { return token.NoPos }
 func (builtinDecl) File() *File              { return nil }
 func (builtinDecl) Package() *Package        { return nil }
 func (builtinDecl) Doc() *Doc                { return nil }
@@ -345,14 +334,13 @@ func (x *DeclType[T]) Kind() Kind   { return x.kind }
 
 // @api(Object/UsedType) represents a used type in a file.
 type UsedType struct {
-	// @api(Object/UsedType.File) represents the file containing the used type.
+	node ast.Type
+
+	// @api(Object/UsedType.File) represents the file where the type is used.
 	File *File
 
 	// @api(Object/UsedType.Type) represents the used type.
 	Type Type
-
-	// node represents the AST node of the used type.
-	node ast.Type
 }
 
 // Use uses a type in a file.
@@ -360,7 +348,6 @@ func Use(t Type, f *File, node ast.Type) *UsedType {
 	return &UsedType{Type: t, File: f, node: node}
 }
 
-// String returns the string representation of the used type.
 func (u *UsedType) String() string { return u.Type.String() }
 
 func (u *UsedType) Value() reflect.Value { return u.Type.Value() }
@@ -442,6 +429,7 @@ type DeclType[T Decl] struct {
 	pos  token.Pos
 	kind Kind
 	name string
+	file *File
 	decl T
 }
 
@@ -454,10 +442,12 @@ type StructType = DeclType[*Struct]
 // @api(Object/InterfaceType) represents the [type](#Object/Common/Type) of an [interface](#Object/Interface) declaration.
 type InterfaceType = DeclType[*Interface]
 
-func newDeclType[T Decl](pos token.Pos, kind Kind, name string, decl T) *DeclType[T] {
-	return &DeclType[T]{pos: pos, kind: kind, name: name, decl: decl}
+func newDeclType[T Decl](file *File, pos token.Pos, kind Kind, name string, decl T) *DeclType[T] {
+	return &DeclType[T]{file: file, pos: pos, kind: kind, name: name, decl: decl}
 }
 
 func (d *DeclType[T]) String() string { return d.name }
 
 func (d *DeclType[T]) Value() reflect.Value { return reflect.ValueOf(d) }
+
+func (d *DeclType[T]) File() *File { return d.file }
