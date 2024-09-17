@@ -113,7 +113,7 @@ var _ = (*{{.File.Package.Name}}.{{next (index (.File.Package.Types) 0)}})(nil)
 
 {{/* next/go/const: Generates a constant declaration */}}
 {{- define "next/go/const" -}}
-{{next .Doc}}const {{next .Name}} = {{.Value}}{{next .Comment}}
+{{next .Doc}}const {{render "go/const:name" .}} = {{.Value}}{{next .Comment}}
 {{- end}}
 
 {{/* next/go/enum: Generates an enum type declaration, constants, and String method */}}
@@ -130,7 +130,7 @@ func (x {{next .Type}}) String() string {
 {{- else}}
     switch x {
     {{- range .Members.List}}
-    case {{next .Name}}:
+    case {{render "go/enum.member:name" .}}:
         return "{{.Name}}"
     {{- end}}
     }
@@ -145,11 +145,11 @@ func (x {{next .Type}}) String() string {
 
 {{/* next/go/enum.member: Generates a constant declaration for an enum member */}}
 {{- define "next/go/enum.member" -}}
-{{next .Doc}}{{next .Name}} = {{.Value}}{{next .Comment}}
+{{next .Doc}}{{render "go/enum.member:name" .}} = {{.Value}}{{next .Comment}}
 {{- end}}
 
-{{- define "next/go/enum.member.name" -}}
-{{next .Node.Decl.Type}}{{.String | pascalCase}}
+{{- define "next/go/enum.member:name" -}}
+{{next .Decl.Type}}{{.Name | pascalCase}}
 {{- end}}
 
 {{/* next/go/struct: Generates a struct type declaration */}}
@@ -161,7 +161,7 @@ func (x {{next .Type}}) String() string {
 
 {{/* next/go/struct.field: Generates a struct field declaration */}}
 {{- define "next/go/struct.field" -}}
-{{next .Doc}}{{next .Name}} {{next .Type}}{{render "go/struct.field.tag" .}}{{next .Comment}}
+{{next .Doc}}{{render "go/struct.field:name" .}} {{next .Type}}{{render "go/struct.field.tag" .}}{{next .Comment}}
 {{- end}}
 
 {{/* next/go/struct.field.tag: Placeholder for generating struct field tags */}}
@@ -170,8 +170,8 @@ func (x {{next .Type}}) String() string {
 {{- end}}
 
 {{/* next/go/struct.field.name: Generates the name for a struct field */}}
-{{- define "next/go/struct.field.name" -}}
-{{.String | pascalCase }}
+{{- define "next/go/struct.field:name" -}}
+{{.Name | pascalCase }}
 {{- end}}
 
 {{/* next/go/interface: Generates an interface type declaration */}}
@@ -183,7 +183,7 @@ func (x {{next .Type}}) String() string {
 
 {{/* next/go/interface.method.param: Generates a parameter declaration for an interface method */}}
 {{- define "next/go/interface.method.param" -}}
-{{next .Name}} {{next .Type}}
+{{render "go/interface.method.param:name" .}} {{next .Type}}
 {{- end}}
 
 {{/* next/go/interface.method.result: Generates the return type(s) for an interface method */}}

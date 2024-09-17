@@ -46,7 +46,7 @@ func (e *Enum) parent() Scope { return e.file }
 func (f *File) LookupLocalSymbol(name string) Symbol { return f.symbols[name] }
 func (e *Enum) LookupLocalSymbol(name string) Symbol {
 	for _, m := range e.Members.List {
-		if m.name.name == name {
+		if m.name == name {
 			return m.value
 		}
 	}

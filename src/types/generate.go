@@ -349,7 +349,7 @@ func gen[T Decl](tc *templateContext, t *template.Template, decl T) error {
 	}
 
 	// write the generated content to the output file
-	path := op.Or(meta.lookup("path").First, decl.getName()+tc.ext)
+	path := op.Or(meta.lookup("path").First, decl.Name()+tc.ext)
 	if !filepath.IsAbs(path) {
 		path = filepath.Join(tc.dir, path)
 	}

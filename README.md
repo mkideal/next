@@ -18,7 +18,7 @@ Next is a powerful Generic **Interface Definition Language (IDL)** designed to c
 
 ## 📚 Built-in Language Support
 
-Next includes built-in templates for various languages, including **C**, **C++**, **C#**, **Go**, **Java**, **JavaScript**, **PHP**, **Python**, **Rust**, **Swift**, **TypeScript**, **JSON**, **Protobuf**, **Markdown**, **Kotlin**, **SQL**, **R**, **Objective-C**, **Lua** and more. These serve as a foundation for code generation and can be easily customized or extended using the template hierarchy system.
+Next includes built-in templates for various languages, including **C**, **C++**, **C#**, **Go**, **Java**, **JavaScript**, **Kotlin**, **Lua**, **Objective-C**, **PHP**, **Protobuf**, **Python**, **R**, **Rust**, **Swift**, **TypeScript**. These serve as a foundation for code generation and can be easily customized or extended using the template hierarchy system.
 
 ## 🛠️ Template System
 

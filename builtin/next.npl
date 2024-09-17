@@ -51,12 +51,12 @@ import "{{.Path}}";
 
 {{/* next/const: Generates code for a single constant declaration */}}
 {{- define "next/const" -}}
-{{next .Doc}}const {{next .Name}} = {{.Value}};{{next .Comment}}
+{{next .Doc}}const {{render "const:name" .}} = {{.Value}};{{next .Comment}}
 {{- end}}
 
 {{/* next/const.name: Generates the name of a constant */}}
-{{- define "next/const.name" -}}
-{{.}}
+{{- define "next/const:name" -}}
+{{.Name}}
 {{- end}}
 
 {{/* next/enums: Generates code for all enum declarations in a file */}}
@@ -90,12 +90,12 @@ enum {{next .Type}} {
 
 {{/* next/enum.member: Generates code for a single enum member */}}
 {{- define "next/enum.member" -}}
-{{next .Doc}}{{next .Name}} = {{.Value}},{{next .Comment}}
+{{next .Doc}}{{render "enum.member:name" .}} = {{.Value}},{{next .Comment}}
 {{- end}}
 
 {{/* next/enum.member.name: Generates the name of an enum member */}}
-{{- define "next/enum.member.name" -}}
-{{.}}
+{{- define "next/enum.member:name" -}}
+{{.Name}}
 {{- end}}
 
 {{/* next/structs: Generates code for all struct declarations in a file */}}
@@ -124,12 +124,12 @@ enum {{next .Type}} {
 
 {{/* next/struct.field: Generates code for a single struct field */}}
 {{- define "next/struct.field" -}}
-{{next .Doc}}{{next .Type}} {{next .Name}};{{next .Comment}}
+{{next .Doc}}{{next .Type}} {{render "struct.field:name" .}};{{next .Comment}}
 {{- end}}
 
 {{/* next/struct.field.name: Generates the name of a struct field */}}
-{{- define "next/struct.field.name" -}}
-{{.}}
+{{- define "next/struct.field:name" -}}
+{{.Name}}
 {{- end}}
 
 {{/* next/interfaces: Generates code for all interface declarations in a file */}}
@@ -171,12 +171,12 @@ enum {{next .Type}} {
 
 {{/* next/interface.method: Generates code for a single interface method */}}
 {{- define "next/interface.method" -}}
-{{next .Doc}}{{next .Name}}({{next .Params}}){{next .Result}}{{next .Comment}}
+{{next .Doc}}{{render "interface.method:name" .}}({{next .Params}}){{next .Result}}{{next .Comment}}
 {{- end}}
 
 {{/* next/interface.method.name: Generates the name of an interface method */}}
-{{- define "next/interface.method.name" -}}
-{{.}}
+{{- define "next/interface.method:name" -}}
+{{.Name}}
 {{- end}}
 
 {{/* next/interface.method.params: Generates code for all parameters of an interface method */}}
@@ -188,12 +188,12 @@ enum {{next .Type}} {
 
 {{/* next/interface.method.param: Generates code for a single interface method parameter */}}
 {{- define "next/interface.method.param" -}}
-{{next .Type}} {{next .Name}}
+{{next .Type}} {{render "interface.method.param:name" .}}
 {{- end}}
 
 {{/* next/interface.method.param.name: Generates the name of an interface method parameter */}}
-{{- define "next/interface.method.param.name" -}}
-{{.}}
+{{- define "next/interface.method.param:name" -}}
+{{.Name}}
 {{- end}}
 
 {{/* next/interface.method.result: Generates the return type of an interface method */}}

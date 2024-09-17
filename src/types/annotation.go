@@ -442,7 +442,7 @@ func (c *Compiler) createAnnotationSolverRequest(name string) *api.AnnotationSol
 		req.Objects[api.ID(pos)] = &api.Object{
 			ID:   api.ID(pos),
 			Type: obj.Typeof(),
-			Name: obj.getName(),
+			Name: obj.Name(),
 			Pkg:  obj.File().pkg.name,
 			File: obj.File().Path,
 		}

@@ -25,8 +25,9 @@ type Object interface {
 	// The type name is a string that represents the type of the object.
 	// Except for objects under [Common](#Object/Common), the type names of other objects are lowercase names
 	// separated by dots. For example, the type name of a `EnumMember` object is `enum.member`, and the type name
-	// of a `EnumMemberName` object is `enum.member.name`. These objects can be customized for code generation by
-	// defining templates. For example:
+	// of a `Enum` object is `enum`. These objects can be customized for code generation by defining templates.
+	//
+	// Example:
 	//
 	// ```next
 	//	package demo;
@@ -43,8 +44,8 @@ type Object interface {
 	// const {{next .Name}} = {{.Value}}
 	// {{- end}}
 	//
-	// {{- define "go/enum.member.name" -}}
-	// {{.Node.Decl.Name}}_{{.}}
+	// {{- define "go/enum.member:name" -}}
+	// {{.Decl.Name}}_{{.}}
 	// {{- end}}
 	// ```
 	//
@@ -72,11 +73,6 @@ var _ Object = (*EnumMembers)(nil)
 var _ Object = (*StructFields)(nil)
 var _ Object = (*InterfaceMethods)(nil)
 var _ Object = (*InterfaceMethodParams)(nil)
-var _ Object = (*ConstName)(nil)
-var _ Object = (*EnumMemberName)(nil)
-var _ Object = (*StructFieldName)(nil)
-var _ Object = (*InterfaceMethodName)(nil)
-var _ Object = (*InterfaceMethodParamName)(nil)
 var _ Object = (*File)(nil)
 var _ Object = (*Doc)(nil)
 var _ Object = (*Comment)(nil)
@@ -115,11 +111,6 @@ func (x List[T]) Typeof() string {
 func (x *Fields[D, F]) Typeof() string {
 	var zero F
 	return zero.Typeof() + "s"
-}
-
-// Name objects: const.name, enum.member.name, struct.field.name, interface.method.name, interface.method.param.name
-func (x *NodeName[T]) Typeof() string {
-	return x.node.Typeof() + ".name"
 }
 
 func (*Package) Typeof() string { return "package" }
@@ -204,8 +195,8 @@ func (x *DeclType[T]) Package() *Package      { return x.File().Package() }
 type Node interface {
 	LocatedObject
 
-	// getName returns the name of the node.
-	getName() string
+	// Name returns the name of the node.
+	Name() string
 
 	// @api(Object/Common/Node.Doc) represents the documentation comment for the node.
 	Doc() *Doc
@@ -225,9 +216,7 @@ var _ Node = (*StructField)(nil)
 var _ Node = (*InterfaceMethod)(nil)
 var _ Node = (*InterfaceMethodParam)(nil)
 
-func (x *Package) getName() string          { return x.Name() }
-func (x *File) getName() string             { return x.Name() }
-func (x *commonNode[Self]) getName() string { return x.name.name }
+func (x *commonNode[Self]) Name() string { return x.name }
 
 func (x *File) File() *File { return x }
 func (x *commonNode[Self]) File() *File {
@@ -243,6 +232,7 @@ func (x *commonNode[Self]) File() *File {
 //
 // All declarations are [nodes](#Object/Common/Node). Currently, the following declarations are supported:
 //
+// - [Package](#Object/Package)
 // - [File](#Object/File)
 // - [Const](#Object/Const)
 // - [Enum](#Object/Enum)
@@ -275,7 +265,7 @@ type builtinDecl struct{}
 var _ Decl = builtinDecl{}
 
 func (builtinDecl) Typeof() string           { return "<builtin.decl>" }
-func (builtinDecl) getName() string          { return "<builtin>" }
+func (builtinDecl) Name() string             { return "<builtin>" }
 func (builtinDecl) Pos() token.Pos           { return token.NoPos }
 func (builtinDecl) File() *File              { return nil }
 func (builtinDecl) Package() *Package        { return nil }

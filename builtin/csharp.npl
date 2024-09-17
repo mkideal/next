@@ -26,7 +26,7 @@ using {{render "csharp/package:namespace" .File.Package}};
 {{- end}}
 
 {{- define "next/csharp/const" -}}
-{{next .Doc}}public const {{next .Type}} {{next .Name}} = {{.Value}};{{next .Comment}}
+{{next .Doc}}public const {{next .Type}} {{render "csharp/const:name" .}} = {{.Value}};{{next .Comment}}
 {{- end}}
 
 {{- define "next/csharp/enum" -}}
@@ -37,7 +37,7 @@ using {{render "csharp/package:namespace" .File.Package}};
 {{- end}}
 
 {{- define "next/csharp/enum.member" -}}
-{{next .Doc}}{{next .Name}} = {{.Value}},{{next .Comment}}
+{{next .Doc}}{{render "csharp/enum.member:name" .}} = {{.Value}},{{next .Comment}}
 {{- end}}
 
 {{- define "next/csharp/struct" -}}
@@ -48,7 +48,7 @@ using {{render "csharp/package:namespace" .File.Package}};
 {{- end}}
 
 {{- define "next/csharp/struct.field" -}}
-{{next .Doc}}public {{next .Type}} {{next .Name}} { get; set; }{{next .Comment}}
+{{next .Doc}}public {{next .Type}} {{render "csharp/struct.field:name" .}} { get; set; }{{next .Comment}}
 {{- end}}
 
 {{- define "next/csharp/struct.field.name" -}}
@@ -63,7 +63,7 @@ using {{render "csharp/package:namespace" .File.Package}};
 {{- end}}
 
 {{- define "next/csharp/interface.method" -}}
-{{next .Doc}}{{next .Result}} {{next .Name}}({{next .Params}});{{next .Comment}}
+{{next .Doc}}{{next .Result}} {{render "csharp/interface.method:name" .}}({{next .Params}});{{next .Comment}}
 {{- end}}
 
 {{- define "next/csharp/interface.method.result" -}}
@@ -71,9 +71,5 @@ using {{render "csharp/package:namespace" .File.Package}};
 {{- end}}
 
 {{- define "next/csharp/interface.method.param" -}}
-{{if .Annotations.next.mut}}ref {{end}}{{next .Type}} {{next .Name}}
-{{- end}}
-
-{{- define "next/csharp/interface.method.param.name" -}}
-{{.String | camelCase}}
+{{if .Annotations.next.mut}}ref {{end}}{{next .Type}} {{render "csharp/interface.method.param:name" .}}
 {{- end}}

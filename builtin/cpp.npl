@@ -77,7 +77,7 @@ class {{next .Type}};
 {{- end}}
 
 {{- define "next/cpp/const" -}}
-{{next .Doc}}static constexpr auto {{next .Name}} = {{.Value}};{{next .Comment}}
+{{next .Doc}}static constexpr auto {{render "cpp/const:name" .}} = {{.Value}};{{next .Comment}}
 {{- end}}
 
 {{- define "next/cpp/enum" -}}
@@ -110,11 +110,11 @@ public:
 
 {{- define "next/cpp/enum.member" -}}
 {{- if .Decl.MemberType.Kind.IsInteger -}}
-{{next .Doc}}{{next .Name}} = {{.Value}},{{next .Comment}}
+{{next .Doc}}{{render "cpp/enum.member:name" .}} = {{.Value}},{{next .Comment}}
 {{- else if .Decl.MemberType.Kind.IsString -}}
-static inline const {{render "cpp/enum:member.type" .Decl}} {{next .Name}} = {{.Value}};
+static inline const {{render "cpp/enum:member.type" .Decl}} {{render "cpp/enum.member:name" .}} = {{.Value}};
 {{- else if .Decl.MemberType.Kind.IsFloat -}}
-static inline constexpr {{render "cpp/enum:member.type" .Decl}} {{next .Name}} = {{.Value}};
+static inline constexpr {{render "cpp/enum:member.type" .Decl}} {{render "cpp/enum.member:name" .}} = {{.Value}};
 {{- else -}}
 {{errorf "unsupported enum member type: %s" .Decl.MemberType.Kind}}
 {{- end}}
@@ -130,7 +130,7 @@ public:
 {{- end}}
 
 {{- define "next/cpp/struct.field" -}}
-{{next .Doc}}{{next .Type}} {{next .Name | camelCase}};{{next .Comment}}
+{{next .Doc}}{{next .Type}} {{render "cpp/struct.field:name" . | camelCase}};{{next .Comment}}
 {{- end}}
 
 {{- define "next/cpp/interface" -}}
@@ -142,15 +142,15 @@ public:
 {{- end}}
 
 {{- define "next/cpp/interface.method" -}}
-{{next .Doc}}virtual {{next .Result}} {{next .Name}}({{next .Params}}) {{if not .Annotations.next.mut}}const {{end}}= 0;{{next .Comment}}
+{{next .Doc}}virtual {{next .Result}} {{render "cpp/interface.method:name" .}}({{next .Params}}) {{if not .Annotations.next.mut}}const {{end}}= 0;{{next .Comment}}
 {{- end}}
 
-{{- define "next/cpp/interface.method.name" -}}
-{{snakeCase .String}}
+{{- define "next/cpp/interface.method:name" -}}
+{{snakeCase .Name}}
 {{- end}}
 
 {{- define "next/cpp/interface.method.param" -}}
-{{if not .Annotations.next.mut}}const {{end}}{{next .Type}}& {{next .Name}}
+{{if not .Annotations.next.mut}}const {{end}}{{next .Type}}& {{render "cpp/interface.method.param:name" .}}
 {{- end}}
 
 {{- define "next/cpp/interface.method.result" -}}

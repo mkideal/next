@@ -170,6 +170,7 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		// @api(Context/this) represents the current [declaration](#Object/Common/Decl) object to be rendered.
 		// this defined in the template [meta](#meta) `meta/this`. Supported types are:
 		//
+		// - [package](#Object/Package)
 		// - [file](#Object/File)
 		// - [const](#Object/Const)
 		// - [enum](#Object/Enum)

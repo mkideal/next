@@ -181,52 +181,12 @@ func (d *Decls) Interfaces() Interfaces {
 	return availableList(d.interfaces, d.lang)
 }
 
-// @api(Object/Common/NodeName) represents a name of a node in a declaration.
-//
-// Currently, the following types are supported:
-//
-// - [ConstName](#Object/ConstName)
-// - [EnumMemberName](#Object/EnumMemberName)
-// - [StructFieldName](#Object/StructFieldName)
-// - [InterfaceMethodName](#Object/InterfaceMethodName)
-// - [InterfaceMethodParamName](#Object/InterfaceMethodParamName)
-type NodeName[T Node] struct {
-	pos  token.Pos
-	name string
-	node T
-}
-
-// @api(Object/ConstName) represents the [NodeName](#Object/Common/NodeName) of a [const](#Object/Const) declaration.
-type ConstName = NodeName[*Const]
-
-// @api(Object/EnumMemberName) represents the [NodeName](#Object/Common/NodeName) of an [enum member](#Object/EnumMember).
-type EnumMemberName = NodeName[*EnumMember]
-
-// @api(Object/StructFieldName) represents the [NodeName](#Object/Common/NodeName) of a [struct field](#Object/StructField).
-type StructFieldName = NodeName[*StructField]
-
-// @api(Object/InterfaceMethodName) represents the [NodeName](#Object/Common/NodeName) of an [interface method](#Object/InterfaceMethod).
-type InterfaceMethodName = NodeName[*InterfaceMethod]
-
-// @api(Object/InterfaceMethodParamName) represents the [NodeName](#Object/Common/NodeName) of an [interface method parameter](#Object/InterfaceMethodParam).
-type InterfaceMethodParamName = NodeName[*InterfaceMethodParam]
-
-func newNodeName[T Node](pos token.Pos, name string, field T) *NodeName[T] {
-	return &NodeName[T]{pos: pos, name: name, node: field}
-}
-
-// @api(Object/Common/NodeName.Node) represents the [node](#Object/Common/Node) that contains the name.
-func (n *NodeName[T]) Node() T { return n.node }
-
-// @api(Object/Common/NodeName.String) represents the string representation of the node name.
-func (n *NodeName[T]) String() string { return n.name }
-
 // commonNode represents a common node.
 type commonNode[Self Node] struct {
-	self Self            // self represents the declaration object itself
-	pos  token.Pos       // position of the declaration
-	name *NodeName[Self] // name of the declaration
-	file *File           // file containing the declaration
+	self Self      // self represents the declaration object itself
+	pos  token.Pos // position of the declaration
+	name string    // name of the declaration
+	file *File     // file containing the declaration
 
 	// unresolved is the unresolved declaration data. It is resolved in the
 	// resolve method.
@@ -246,7 +206,7 @@ func newCommonNode[Self Node](
 	d := &commonNode[Self]{
 		self: self,
 		pos:  pos,
-		name: newNodeName(pos, name, self),
+		name: name,
 		file: file,
 		doc:  newDoc(doc),
 	}
@@ -431,11 +391,6 @@ func (x *Const) resolve(c *Compiler, file *File, scope Scope) {
 	x.value.resolve(c, file, scope)
 }
 
-// @api(Object/Const.Name) represents the [NodeName](#Object.NodeName) of the constant.
-func (x *Const) Name() *NodeName[*Const] {
-	return x.name
-}
-
 // @api(Object/Const.Type) represents the type of the constant.
 func (x *Const) Type() *PrimitiveType {
 	return x.value.Type()
@@ -522,7 +477,7 @@ func (e *Enum) resolve(c *Compiler, file *File, scope Scope) {
 					e.MemberType = m.value.Type()
 				}
 			} else {
-				c.addErrorf(m.Value().namePos, "incompatible type %s for enum member %s", m.Value().Type().name, m.Name().String())
+				c.addErrorf(m.Value().namePos, "incompatible type %s for enum member %s", m.Value().Type().name, m.Name())
 				return
 			}
 		}
@@ -559,11 +514,6 @@ func newEnumMember(c *Compiler, file *File, e *Enum, src *ast.EnumMember, index 
 func (m *EnumMember) resolve(c *Compiler, file *File, scope Scope) {
 	m.commonNode.resolve(c, file, scope)
 	m.value.resolve(c, file, scope)
-}
-
-// @api(Object/EnumMember.Name) represents the [NodeName](#Object/Common/NodeName) of the enum member.
-func (m *EnumMember) Name() *NodeName[*EnumMember] {
-	return m.name
 }
 
 // @api(Object/EnumMember.Value) represents the [value object](#Object/Value) of the enum member.
@@ -650,11 +600,6 @@ func (f *StructField) resolve(c *Compiler, file *File, scope Scope) {
 	f.Type = c.resolveType(file, f.unresolved.typ, false)
 }
 
-// @api(Object/StructField.Name) represents the [NodeName](#Object/Common/NodeName) of the struct field.
-func (f *StructField) Name() *NodeName[*StructField] {
-	return f.name
-}
-
 // @api(Object/Interface) (extends [Decl](#Object/Common/Decl)) represents an interface declaration.
 type Interface struct {
 	*commonNode[*Interface]
@@ -735,11 +680,6 @@ func (m *InterfaceMethod) resolve(c *Compiler, file *File, scope Scope) {
 	}
 }
 
-// @api(Object/InterfaceMethod.Name) represents the [NodeName](#Object/Common/NodeName) of the interface method.
-func (m *InterfaceMethod) Name() *NodeName[*InterfaceMethod] {
-	return m.name
-}
-
 // @api(Object/InterfaceMethodParam) (extends [Node](#Object/Common/Node)) represents an interface method parameter declaration.
 type InterfaceMethodParam struct {
 	*commonNode[*InterfaceMethodParam]
@@ -768,11 +708,6 @@ func newInterfaceMethodParam(c *Compiler, file *File, m *InterfaceMethod, src *a
 func (p *InterfaceMethodParam) resolve(c *Compiler, file *File, scope Scope) {
 	p.commonNode.resolve(c, file, scope)
 	p.Type = c.resolveType(file, p.unresolved.typ, false)
-}
-
-// @api(Object/InterfaceMethodParam.Name) represents the [NodeName](#Object/Common/NodeName) of the interface method parameter.
-func (p *InterfaceMethodParam) Name() *NodeName[*InterfaceMethodParam] {
-	return p.name
 }
 
 // @api(Object/InterfaceMethodResult) represents an interface method result.

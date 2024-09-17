@@ -11,7 +11,7 @@ import (
 	"github.com/next/next/src/token"
 )
 
-// @api(Object/Package) represents a Next package.
+// @api(Object/Package) (extends [Decl](#Object/Common/Decl)) represents a Next package.
 type Package struct {
 	name  string
 	files []*File
@@ -26,16 +26,12 @@ func (p *Package) Pos() token.Pos { return token.NoPos }
 // @api(Object/Package.Name) represents the package name string.
 func (p *Package) Name() string { return p.name }
 
-// @api(Object/Package.doc) represents the package [documentation](#Object/doc).
 func (p *Package) Doc() *Doc { return p.doc }
 
-// @api(Object/Package.annotations) represents the package [annotations](#Object/Common/annotations).
 func (p *Package) Annotations() Annotations { return p.annotations }
 
-// @api(Object/Package.Package) represents the package itself.
 func (p *Package) Package() *Package { return p }
 
-// @api(Object/Package.File) represents the first declared file in the package.
 func (p *Package) File() *File {
 	if len(p.files) == 0 {
 		return nil
@@ -175,7 +171,6 @@ func newFile(c *Compiler, src *ast.File, path string) *File {
 	return f
 }
 
-// @api(Object/File.Package) represents the file's package.
 func (x *File) Package() *Package {
 	if x == nil {
 		return nil
@@ -252,22 +247,22 @@ func (f *File) createSymbols() (token.Pos, error) {
 		}
 	}
 	for _, d := range f.decls.enums {
-		if err := f.addSymbol(d.name.name, d.Type); err != nil {
+		if err := f.addSymbol(d.name, d.Type); err != nil {
 			return d.pos, err
 		}
 		for _, m := range d.Members.List {
-			if err := f.addSymbol(joinSymbolName(d.name.name, m.name.name), m.value); err != nil {
+			if err := f.addSymbol(joinSymbolName(d.name, m.name), m.value); err != nil {
 				return m.pos, err
 			}
 		}
 	}
 	for _, d := range f.decls.structs {
-		if err := f.addSymbol(d.name.name, d.Type); err != nil {
+		if err := f.addSymbol(d.name, d.Type); err != nil {
 			return d.pos, err
 		}
 	}
 	for _, d := range f.decls.interfaces {
-		if err := f.addSymbol(d.name.name, d.Type); err != nil {
+		if err := f.addSymbol(d.name, d.Type); err != nil {
 			return d.pos, err
 		}
 	}

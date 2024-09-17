@@ -44,12 +44,12 @@ typedef struct {{next .Type}} {{next .Type}};
 {{end -}}
 {{- end}}
 
-{{- define "next/c/decl:name" -}}
+{{- define "next/c/decl.name" -}}
 {{this.File.Annotations.next.c_package | upper}}{{.}}
 {{- end}}
 
 {{- define "next/c/this:file.header.macro" -}}
-{{render "c/decl:name" this.Name | upper}}_H
+{{render "c/decl.name" this.Name | upper}}_H
 {{- end}}
 
 {{- define "next/c/doc" -}}
@@ -73,11 +73,11 @@ typedef struct {{next .Type}} {{next .Type}};
 {{- end}}
 
 {{- define "next/c/const" -}}
-{{next .Doc}}#define {{next .Name}} {{.Value}}{{next .Comment}}
+{{next .Doc}}#define {{render "c/const:name" .}} {{.Value}}{{next .Comment}}
 {{- end}}
 
-{{- define "next/c/const.name" -}}
-{{render "c/decl:name" .}}
+{{- define "next/c/const:name" -}}
+{{render "c/decl.name" (.Name | snakeCase) | upper}}
 {{- end}}
 
 {{- define "next/c/enum" -}}
@@ -103,9 +103,9 @@ typedef struct {{next .Type}} {{next .Type}};
 
 {{- define "next/c/enum.member" -}}
 {{- if .Decl.MemberType.Kind.IsInteger -}}
-{{next .Doc}}{{next .Decl.Type}}_{{next .Name}} = {{.Value}},{{next .Comment}}
+{{next .Doc}}{{next .Decl.Type}}_{{render "c/enum.member:name" .}} = {{.Value}},{{next .Comment}}
 {{- else -}}
-{{next .Doc}}#define {{next .Decl.Type}}_{{next .Name}} (({{next .Decl.Type}}){ {{- .Value -}} }){{next .Comment}}
+{{next .Doc}}#define {{next .Decl.Type}}_{{render "c/enum.member:name" .}} (({{next .Decl.Type}}){ {{- .Value -}} }){{next .Comment}}
 {{- end}}
 {{- end}}
 
@@ -118,9 +118,9 @@ typedef struct {{next .Type}} {{next .Type}};
 {{- define "next/c/struct.field" -}}
 {{- $type := .Type.Value -}}
 {{- if $type.Kind.IsArray -}}
-{{next .Doc}}{{next $type.ElemType}} {{next .Name}}[{{$type.N}}];{{next .Comment}}
+{{next .Doc}}{{next $type.ElemType}} {{render "c/struct.field:name" .}}[{{$type.N}}];{{next .Comment}}
 {{- else -}}
-{{next .Doc}}{{next .Type}} {{next .Name}};{{next .Comment}}
+{{next .Doc}}{{next .Type}} {{render "c/struct.field:name" .}};{{next .Comment}}
 {{- end}}
 {{- end}}
 
@@ -130,27 +130,27 @@ typedef struct {{next .Type}} {{next .Type}};
 struct {{next .Type}} {
     void* context;
 {{- range .Methods.List}}
-    {{next .Result}} (*{{next .Name}})({{next $.Type}}* self{{if .Params.List}}, {{next .Params}}{{end}});
+    {{next .Result}} (*{{render "c/interface.method:name" .}})({{next $.Type}}* self{{if .Params.List}}, {{next .Params}}{{end}});
 {{- end}}
 };
 {{- range .Methods.List}}
 
-{{next .Doc}}static inline {{next .Result}} {{next $.Type}}_{{next .Name}}({{next $.Type}}* self{{if .Params.List}}, {{next .Params}}{{end}}) {
-    return self->{{next .Name}}(self{{if .Params.List}}, {{render "c/interface.method.params:names" .Params}}{{end}});
+{{next .Doc}}static inline {{next .Result}} {{next $.Type}}_{{render "c/interface.method:name" .}}({{next $.Type}}* self{{if .Params.List}}, {{next .Params}}{{end}}) {
+    return self->{{render "c/interface.method:name" .}}(self{{if .Params.List}}, {{render "c/interface.method.params:names" .Params}}{{end}});
 }
 {{- end}}
 {{- end}}
 
-{{- define "next/c/interface.method.name" -}}
-{{snakeCase .String}}
+{{- define "next/c/interface.method:name" -}}
+{{snakeCase .Name}}
 {{- end}}
 
 {{- define "next/c/interface.method.param" -}}
-{{next .Type}} {{next .Name}}
+{{next .Type}} {{render "c/interface.method.param:name" .}}
 {{- end}}
 
-{{- define "next/c/interface.method.param.name" -}}
-{{.}}
+{{- define "next/c/interface.method.param:name" -}}
+{{.Name}}
 {{- end}}
 
 {{- define "next/c/interface.method.result" -}}
@@ -165,10 +165,10 @@ struct {{next .Type}} {
 
 {{- define "next/c/interface.method.params:names" -}}
 {{- range $i, $p := .List -}}
-    {{if $i}}, {{end}}{{next $p.Name -}}
+    {{if $i}}, {{end}}{{render "c/interface.method.param:name" $p -}}
 {{- end -}}
 {{- end}}
 
 {{- define "next/c/decl.type" -}}
-{{super . | render "c/decl:name"}}
+{{super . | render "c/decl.name"}}
 {{- end}}

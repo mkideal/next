@@ -42,7 +42,6 @@
       <li><a href="#user-content-Object_Common_Fields">Fields</a></li>
       <li><a href="#user-content-Object_Common_List">List</a></li>
       <li><a href="#user-content-Object_Common_Node">Node</a></li>
-      <li><a href="#user-content-Object_Common_NodeName">NodeName</a></li>
       <li><a href="#user-content-Object_Common_Symbol">Symbol</a></li>
       <li><a href="#user-content-Object_Common_Type">Type</a></li>
 <ul>
@@ -50,13 +49,11 @@
 </ul>
 </ul>
     <li><a href="#user-content-Object_Const">Const</a></li>
-    <li><a href="#user-content-Object_ConstName">ConstName</a></li>
     <li><a href="#user-content-Object_Consts">Consts</a></li>
     <li><a href="#user-content-Object_Decls">Decls</a></li>
     <li><a href="#user-content-Object_Doc">Doc</a></li>
     <li><a href="#user-content-Object_Enum">Enum</a></li>
     <li><a href="#user-content-Object_EnumMember">EnumMember</a></li>
-    <li><a href="#user-content-Object_EnumMemberName">EnumMemberName</a></li>
     <li><a href="#user-content-Object_EnumMembers">EnumMembers</a></li>
     <li><a href="#user-content-Object_EnumType">EnumType</a></li>
     <li><a href="#user-content-Object_Enums">Enums</a></li>
@@ -65,9 +62,7 @@
     <li><a href="#user-content-Object_Imports">Imports</a></li>
     <li><a href="#user-content-Object_Interface">Interface</a></li>
     <li><a href="#user-content-Object_InterfaceMethod">InterfaceMethod</a></li>
-    <li><a href="#user-content-Object_InterfaceMethodName">InterfaceMethodName</a></li>
     <li><a href="#user-content-Object_InterfaceMethodParam">InterfaceMethodParam</a></li>
-    <li><a href="#user-content-Object_InterfaceMethodParamName">InterfaceMethodParamName</a></li>
     <li><a href="#user-content-Object_InterfaceMethodParams">InterfaceMethodParams</a></li>
     <li><a href="#user-content-Object_InterfaceMethodResult">InterfaceMethodResult</a></li>
     <li><a href="#user-content-Object_InterfaceMethods">InterfaceMethods</a></li>
@@ -78,7 +73,6 @@
     <li><a href="#user-content-Object_PrimitiveType">PrimitiveType</a></li>
     <li><a href="#user-content-Object_Struct">Struct</a></li>
     <li><a href="#user-content-Object_StructField">StructField</a></li>
-    <li><a href="#user-content-Object_StructFieldName">StructFieldName</a></li>
     <li><a href="#user-content-Object_StructFields">StructFields</a></li>
     <li><a href="#user-content-Object_StructType">StructType</a></li>
     <li><a href="#user-content-Object_Structs">Structs</a></li>
@@ -293,6 +287,7 @@ func ({{next $.Type}}) MessageType() int { return {{.}} }
 <h3><a id="user-content-Context_this" target="_self">this</a></h3>
 
 `this` represents the current [declaration](#user-content-Object_Common_Decl) object to be rendered. this defined in the template [meta](#user-content-meta) `meta/this`. Supported types are: 
+- [package](#user-content-Object_Package)
 - [file](#user-content-Object_File)
 - [const](#user-content-Object_Const)
 - [enum](#user-content-Object_Enum)
@@ -311,7 +306,8 @@ It's a [file](#user-content-Object_File) by default.
 
 <h6><a id="user-content-Object_-Typeof" target="_self">.Typeof</a></h6>
 
-`.Typeof` returns the type name of the object. The type name is a string that represents the type of the object. Except for objects under [Common](#user-content-Object_Common), the type names of other objects are lowercase names separated by dots. For example, the type name of a `EnumMember` object is `enum.member`, and the type name of a `EnumMemberName` object is `enum.member.name`. These objects can be customized for code generation by defining templates. For example: 
+`.Typeof` returns the type name of the object. The type name is a string that represents the type of the object. Except for objects under [Common](#user-content-Object_Common), the type names of other objects are lowercase names separated by dots. For example, the type name of a `EnumMember` object is `enum.member`, and the type name of a `Enum` object is `enum`. These objects can be customized for code generation by defining templates. 
+Example: 
 
 ```next
 package demo;
@@ -329,8 +325,8 @@ enum Color {
 const {{next .Name}} = {{.Value}}
 {{- end}}
 
-{{- define "go/enum.member.name" -}}
-{{.Node.Decl.Name}}_{{.}}
+{{- define "go/enum.member:name" -}}
+{{.Decl.Name}}_{{.}}
 {{- end}}
 ```
 
@@ -667,6 +663,7 @@ Annotations is a map that stores multiple annotations for a given entity. The ke
 
 `Decl` represents a top-level declaration in a file. 
 All declarations are [nodes](#user-content-Object_Common_Node). Currently, the following declarations are supported: 
+- [Package](#user-content-Object_Package)
 - [File](#user-content-Object_File)
 - [Const](#user-content-Object_Const)
 - [Enum](#user-content-Object_Enum)
@@ -732,24 +729,6 @@ Currently, the following nodes are supported:
 <h6><a id="user-content-Object_Common_Node_-Package" target="_self">.Package</a></h6>
 
 `.Package` represents the package containing the node.
-
-<h4><a id="user-content-Object_Common_NodeName" target="_self">NodeName</a></h4>
-
-`NodeName` represents a name of a node in a declaration. 
-Currently, the following types are supported: 
-- [ConstName](#user-content-Object_ConstName)
-- [EnumMemberName](#user-content-Object_EnumMemberName)
-- [StructFieldName](#user-content-Object_StructFieldName)
-- [InterfaceMethodName](#user-content-Object_InterfaceMethodName)
-- [InterfaceMethodParamName](#user-content-Object_InterfaceMethodParamName)
-
-<h6><a id="user-content-Object_Common_NodeName_-Node" target="_self">.Node</a></h6>
-
-`.Node` represents the [node](#user-content-Object_Common_Node) that contains the name.
-
-<h6><a id="user-content-Object_Common_NodeName_-String" target="_self">.String</a></h6>
-
-`.String` represents the string representation of the node name.
 
 <h4><a id="user-content-Object_Common_Symbol" target="_self">Symbol</a></h4>
 
@@ -866,10 +845,6 @@ Currently, the following types are supported:
 
 `.Comment` is the line [comment](#user-content-Object_Comment) of the constant declaration.
 
-<h6><a id="user-content-Object_Const_-Name" target="_self">.Name</a></h6>
-
-`.Name` represents the [NodeName](#user-content-Object-NodeName) of the constant.
-
 <h6><a id="user-content-Object_Const_-Type" target="_self">.Type</a></h6>
 
 `.Type` represents the type of the constant.
@@ -877,10 +852,6 @@ Currently, the following types are supported:
 <h6><a id="user-content-Object_Const_-Value" target="_self">.Value</a></h6>
 
 `.Value` represents the [value object](#user-content-Object_Value) of the constant.
-
-<h3><a id="user-content-Object_ConstName" target="_self">ConstName</a></h3>
-
-`ConstName` represents the [NodeName](#user-content-Object_Common_NodeName) of a [const](#user-content-Object_Const) declaration.
 
 <h3><a id="user-content-Object_Consts" target="_self">Consts</a></h3>
 
@@ -973,17 +944,9 @@ Usage in templates:
 
 `.Decl` represents the [enum](#user-content-Object_Enum) that contains the member.
 
-<h6><a id="user-content-Object_EnumMember_-Name" target="_self">.Name</a></h6>
-
-`.Name` represents the [NodeName](#user-content-Object_Common_NodeName) of the enum member.
-
 <h6><a id="user-content-Object_EnumMember_-Value" target="_self">.Value</a></h6>
 
 `.Value` represents the [value object](#user-content-Object_Value) of the enum member.
-
-<h3><a id="user-content-Object_EnumMemberName" target="_self">EnumMemberName</a></h3>
-
-`EnumMemberName` represents the [NodeName](#user-content-Object_Common_NodeName) of an [enum member](#user-content-Object_EnumMember).
 
 <h3><a id="user-content-Object_EnumMembers" target="_self">EnumMembers</a></h3>
 
@@ -1093,10 +1056,6 @@ Usage in templates:
 
 `.Decl` represents the interface that contains the method.
 
-<h6><a id="user-content-Object_InterfaceMethod_-Name" target="_self">.Name</a></h6>
-
-`.Name` represents the [NodeName](#user-content-Object_Common_NodeName) of the interface method.
-
 <h6><a id="user-content-Object_InterfaceMethod_-Params" target="_self">.Params</a></h6>
 
 `.Params` represents the list of method parameters.
@@ -1104,10 +1063,6 @@ Usage in templates:
 <h6><a id="user-content-Object_InterfaceMethod_-Result" target="_self">.Result</a></h6>
 
 `.Result` represents the return type of the method.
-
-<h3><a id="user-content-Object_InterfaceMethodName" target="_self">InterfaceMethodName</a></h3>
-
-`InterfaceMethodName` represents the [NodeName](#user-content-Object_Common_NodeName) of an [interface method](#user-content-Object_InterfaceMethod).
 
 <h3><a id="user-content-Object_InterfaceMethodParam" target="_self">InterfaceMethodParam</a></h3>
 
@@ -1117,17 +1072,9 @@ Usage in templates:
 
 `.Method` represents the interface method that contains the parameter.
 
-<h6><a id="user-content-Object_InterfaceMethodParam_-Name" target="_self">.Name</a></h6>
-
-`.Name` represents the [NodeName](#user-content-Object_Common_NodeName) of the interface method parameter.
-
 <h6><a id="user-content-Object_InterfaceMethodParam_-Type" target="_self">.Type</a></h6>
 
 `.Type` represents the [type](#user-content-Object_Common_Type) of the parameter.
-
-<h3><a id="user-content-Object_InterfaceMethodParamName" target="_self">InterfaceMethodParamName</a></h3>
-
-`InterfaceMethodParamName` represents the [NodeName](#user-content-Object_Common_NodeName) of an [interface method parameter](#user-content-Object_InterfaceMethodParam).
 
 <h3><a id="user-content-Object_InterfaceMethodParams" target="_self">InterfaceMethodParams</a></h3>
 
@@ -1171,7 +1118,7 @@ Usage in templates:
 
 <h3><a id="user-content-Object_Package" target="_self">Package</a></h3>
 
-`Package` represents a Next package.
+`Package` (extends [Decl](#user-content-Object_Common_Decl)) represents a Next package.
 
 <h6><a id="user-content-Object_Package_-Contains" target="_self">.Contains</a></h6>
 
@@ -1187,10 +1134,6 @@ Example:
 {{- end}}
 ```
 
-<h6><a id="user-content-Object_Package_-File" target="_self">.File</a></h6>
-
-`.File` represents the first declared file in the package.
-
 <h6><a id="user-content-Object_Package_-Files" target="_self">.Files</a></h6>
 
 `.Files` represents the all declared files in the package.
@@ -1199,21 +1142,9 @@ Example:
 
 `.Name` represents the package name string.
 
-<h6><a id="user-content-Object_Package_-Package" target="_self">.Package</a></h6>
-
-`.Package` represents the package itself.
-
 <h6><a id="user-content-Object_Package_-Types" target="_self">.Types</a></h6>
 
 `.Types` represents the all declared types in the package.
-
-<h6><a id="user-content-Object_Package_-annotations" target="_self">.annotations</a></h6>
-
-`.annotations` represents the package [annotations](#user-content-Object_Common_annotations).
-
-<h6><a id="user-content-Object_Package_-doc" target="_self">.doc</a></h6>
-
-`.doc` represents the package [documentation](#user-content-Object_doc).
 
 <h3><a id="user-content-Object_PrimitiveType" target="_self">PrimitiveType</a></h3>
 
@@ -1243,17 +1174,9 @@ Example:
 
 `.Decl` represents the struct that contains the field.
 
-<h6><a id="user-content-Object_StructField_-Name" target="_self">.Name</a></h6>
-
-`.Name` represents the [NodeName](#user-content-Object_Common_NodeName) of the struct field.
-
 <h6><a id="user-content-Object_StructField_-Type" target="_self">.Type</a></h6>
 
 `.Type` represents the [type](#user-content-Object_Common_Type) of the struct field.
-
-<h3><a id="user-content-Object_StructFieldName" target="_self">StructFieldName</a></h3>
-
-`StructFieldName` represents the [NodeName](#user-content-Object_Common_NodeName) of a [struct field](#user-content-Object_StructField).
 
 <h3><a id="user-content-Object_StructFields" target="_self">StructFields</a></h3>
 

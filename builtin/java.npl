@@ -32,7 +32,7 @@ import {{render "java/package:name" .Target.Package}}.*;
 {{- end}}
 
 {{- define "next/java/const" -}}
-{{next .Doc}}public static final {{next .Type}} {{next .Name | upper}} = {{.Value}}{{if eq "long" ((next .Type))}}l{{end}};{{next .Comment}}
+{{next .Doc}}public static final {{next .Type}} {{render "java/const:name" . | upper}} = {{.Value}}{{if eq "long" ((next .Type))}}l{{end}};{{next .Comment}}
 {{- end}}
 
 {{- define "next/java/enums" -}}
@@ -59,7 +59,7 @@ import {{render "java/package:name" .Target.Package}}.*;
 {{- end}}
 
 {{- define "next/java/enum.member" -}}
-{{next .Doc}}{{next .Name}}(({{render "java/enum:member.type" .Decl}}) {{.Value}}){{if not .IsLast}},{{else}};{{end}}{{next .Comment}}
+{{next .Doc}}{{render "java/enum.member:name" .}}(({{render "java/enum:member.type" .Decl}}) {{.Value}}){{if not .IsLast}},{{else}};{{end}}{{next .Comment}}
 {{- end}}
 
 {{- define "next/java/struct" -}}
@@ -71,7 +71,7 @@ import {{render "java/package:name" .Target.Package}}.*;
 
 {{- define "next/java/struct.field" -}}
 {{- $type := (next .Type) -}}
-{{- $name := (next .Name) -}}
+{{- $name := (render "java/struct.field:name" .) -}}
 {{next .Doc}}private {{$type}} {{$name}};{{next .Comment}}
 
     public {{$type}} get{{$name | capitalize}}() {
@@ -88,7 +88,7 @@ import {{render "java/package:name" .Target.Package}}.*;
 {{- end}}
 
 {{- define "next/java/interface.method" -}}
-{{next .Doc}}{{next .Result}} {{next .Name}}({{next .Params}}){{if .Annotations.next.error}} throws Exception{{end}};{{next .Comment}}
+{{next .Doc}}{{next .Result}} {{render "java/interface.method:name" .}}({{next .Params}}){{if .Annotations.next.error}} throws Exception{{end}};{{next .Comment}}
 {{- end}}
 
 {{- define "next/java/interface.method.result" -}}

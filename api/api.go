@@ -15,30 +15,30 @@ const (
 // ID represents an identifier.
 type ID = int
 
-type getType = string
+type ObjectType = string
 
 const (
-	ObjectFile            getType = "file"
-	ObjectConstDecl       getType = "const.decl"
-	ObjectConst           getType = "const"
-	ObjectEnumDecl        getType = "enum.decl"
-	ObjectEnum            getType = "enum"
-	ObjectEnumMember      getType = "enum.member"
-	ObjectStructDecl      getType = "struct.decl"
-	ObjectStruct          getType = "struct"
-	ObjectStructField     getType = "struct.field"
-	ObjectInterfaceDecl   getType = "interface.decl"
-	ObjectInterface       getType = "interface"
-	ObjectInterfaceMethod getType = "interface.method"
+	ObjectFile            ObjectType = "file"
+	ObjectConstDecl       ObjectType = "const.decl"
+	ObjectConst           ObjectType = "const"
+	ObjectEnumDecl        ObjectType = "enum.decl"
+	ObjectEnum            ObjectType = "enum"
+	ObjectEnumMember      ObjectType = "enum.member"
+	ObjectStructDecl      ObjectType = "struct.decl"
+	ObjectStruct          ObjectType = "struct"
+	ObjectStructField     ObjectType = "struct.field"
+	ObjectInterfaceDecl   ObjectType = "interface.decl"
+	ObjectInterface       ObjectType = "interface"
+	ObjectInterfaceMethod ObjectType = "interface.method"
 )
 
 // Object represents an object which may be annotated.
 type Object struct {
-	ID   ID      `json:"id"`
-	Name string  `json:"name"`
-	Type getType `json:"type"`
-	Pkg  string  `json:"pkg"`
-	File string  `json:"file"`
+	ID   ID         `json:"id"`
+	Name string     `json:"name"`
+	Type ObjectType `json:"type"`
+	Pkg  string     `json:"pkg"`
+	File string     `json:"file"`
 }
 
 // Annotation represents an annotation.
