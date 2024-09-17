@@ -97,7 +97,7 @@ test/template: install
 		-O rust=testdata/gen/rust/src -T rust=testdata/templates/rust \
 		-M "c.vector=void*" -M "c.map=void*" \
 		testdata/next/
-	@cd testdata/gen/rust && cargo init
+	@cd testdata/gen/rust && cargo init --vcs none
 
 .PHONY: clean
 clean:
