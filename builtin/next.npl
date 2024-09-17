@@ -118,7 +118,7 @@ enum {{next .Type}} {
 {{/* next/struct.fields: Generates code for all fields of a struct */}}
 {{- define "next/struct.fields" -}}
 {{- range .List}}
-    {{next . | align -}}
+    {{next .}}
 {{- end}}
 {{- end}}
 

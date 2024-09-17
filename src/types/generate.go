@@ -205,6 +205,9 @@ func generateForTemplateFile(c *Compiler, lang, ext, dir, tmplFile string) error
 	}
 
 	switch strings.ToLower(this) {
+	case "package":
+		return generateForPackage(tc, t)
+
 	case "file":
 		return generateForFile(tc, t)
 
@@ -221,8 +224,17 @@ func generateForTemplateFile(c *Compiler, lang, ext, dir, tmplFile string) error
 		return generateForInterface(tc, t)
 
 	default:
-		return fmt.Errorf(`unknown value for 'this': %q, expected "file", "const", "enum", "struct" or "interface"`, this)
+		return fmt.Errorf(`unknown value for 'this': %q, expected "package", "file", "const", "enum", "struct" or "interface"`, this)
 	}
+}
+
+func generateForPackage(tc *templateContext, t *template.Template) error {
+	for _, pkg := range tc.context.packages {
+		if err := gen(tc, t, pkg); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func generateForFile(tc *templateContext, t *template.Template) error {

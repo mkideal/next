@@ -1,0 +1,24 @@
+{{- define "meta/this"}}file{{end -}}
+{{- define "meta/path"}}{{this.Package.Name}}/{{this.Name}}.rs{{end -}}
+
+{{- /* Overrides "next/rust/import" */ -}}
+{{- define "rust/import" -}}
+use crate::{{.File.Package.Name}}::{{.File.Name}};
+{{- end -}}
+
+{{- /* Overrides "next/rust/struct.fields": add method 'message_type' for each struct after fields */ -}}
+{{- define "rust/struct" -}}
+{{- super .}}
+{{- with .Annotations.message.type}}
+
+impl {{next $.Type}} {
+    pub fn message_type() -> i32 {
+        {{.}}
+    }
+}
+{{- end}}
+{{- end -}}
+
+{{head}}
+
+{{next this}}

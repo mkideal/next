@@ -122,6 +122,7 @@ func (x *NodeName[T]) Typeof() string {
 	return x.node.Typeof() + ".name"
 }
 
+func (*Package) Typeof() string { return "package" }
 func (*File) Typeof() string    { return "file" }
 func (*Doc) Typeof() string     { return "doc" }
 func (*Comment) Typeof() string { return "comment" }
@@ -224,6 +225,7 @@ var _ Node = (*StructField)(nil)
 var _ Node = (*InterfaceMethod)(nil)
 var _ Node = (*InterfaceMethodParam)(nil)
 
+func (x *Package) getName() string          { return x.Name() }
 func (x *File) getName() string             { return x.Name() }
 func (x *commonNode[Self]) getName() string { return x.name.name }
 
@@ -253,12 +255,14 @@ type Decl interface {
 }
 
 // All decls listed here implement the Decl interface.
+var _ Decl = (*Package)(nil)
 var _ Decl = (*File)(nil)
 var _ Decl = (*Const)(nil)
 var _ Decl = (*Enum)(nil)
 var _ Decl = (*Struct)(nil)
 var _ Decl = (*Interface)(nil)
 
+func (x *Package) declNode()   {}
 func (x *File) declNode()      {}
 func (x *Const) declNode()     {}
 func (x *Enum) declNode()      {}

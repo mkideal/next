@@ -1173,10 +1173,6 @@ Usage in templates:
 
 `Package` represents a Next package.
 
-<h6><a id="user-content-Object_Package_-Annotations" target="_self">.Annotations</a></h6>
-
-`.Annotations` represents the package [annotations](#user-content-Object_Common_Annotations).
-
 <h6><a id="user-content-Object_Package_-Contains" target="_self">.Contains</a></h6>
 
 `.Contains` reports whether the package contains the given type. If the current package is nil, it always returns true. 
@@ -1191,9 +1187,9 @@ Example:
 {{- end}}
 ```
 
-<h6><a id="user-content-Object_Package_-Doc" target="_self">.Doc</a></h6>
+<h6><a id="user-content-Object_Package_-File" target="_self">.File</a></h6>
 
-`.Doc` represents the package [documentation](#user-content-Object_Doc).
+`.File` represents the first declared file in the package.
 
 <h6><a id="user-content-Object_Package_-Files" target="_self">.Files</a></h6>
 
@@ -1203,9 +1199,21 @@ Example:
 
 `.Name` represents the package name string.
 
+<h6><a id="user-content-Object_Package_-Package" target="_self">.Package</a></h6>
+
+`.Package` represents the package itself.
+
 <h6><a id="user-content-Object_Package_-Types" target="_self">.Types</a></h6>
 
 `.Types` represents the all declared types in the package.
+
+<h6><a id="user-content-Object_Package_-annotations" target="_self">.annotations</a></h6>
+
+`.annotations` represents the package [annotations](#user-content-Object_Common_annotations).
+
+<h6><a id="user-content-Object_Package_-doc" target="_self">.doc</a></h6>
+
+`.doc` represents the package [documentation](#user-content-Object_doc).
 
 <h3><a id="user-content-Object_PrimitiveType" target="_self">PrimitiveType</a></h3>
 

@@ -17,15 +17,41 @@ type Package struct {
 	files []*File
 	types []Type
 
-	// @api(Object/Package.Doc) represents the package [documentation](#Object/Doc).
-	Doc *Doc
-
-	// @api(Object/Package.Annotations) represents the package [annotations](#Object/Common/Annotations).
-	Annotations Annotations
+	doc         *Doc
+	annotations Annotations
 }
+
+func (p *Package) Pos() token.Pos { return token.NoPos }
 
 // @api(Object/Package.Name) represents the package name string.
 func (p *Package) Name() string { return p.name }
+
+// @api(Object/Package.doc) represents the package [documentation](#Object/doc).
+func (p *Package) Doc() *Doc { return p.doc }
+
+// @api(Object/Package.annotations) represents the package [annotations](#Object/Common/annotations).
+func (p *Package) Annotations() Annotations { return p.annotations }
+
+// @api(Object/Package.Package) represents the package itself.
+func (p *Package) Package() *Package { return p }
+
+// @api(Object/Package.File) represents the first declared file in the package.
+func (p *Package) File() *File {
+	if len(p.files) == 0 {
+		return nil
+	}
+	return p.files[0]
+}
+
+// @api(Object/Package.Files) represents the all declared files in the package.
+func (p *Package) Files() []*File {
+	return p.files
+}
+
+// @api(Object/Package.Types) represents the all declared types in the package.
+func (p *Package) Types() []Type {
+	return p.types
+}
 
 // @api(Object/Package.Contains) reports whether the package contains the given type.
 // If the current package is nil, it always returns true.
@@ -70,29 +96,19 @@ func (p *Package) resolve(c *Compiler) error {
 	}
 	for _, file := range p.files {
 		if file.doc != nil {
-			p.Doc = file.doc
+			p.doc = file.doc
 			break
 		}
 	}
-	p.Annotations = make(Annotations)
+	p.annotations = make(Annotations)
 	for _, file := range p.files {
 		if file.annotations != nil {
 			for name, group := range file.annotations {
-				p.Annotations[name] = group
+				p.annotations[name] = group
 			}
 		}
 	}
 	return nil
-}
-
-// @api(Object/Package.Files) represents the all declared files in the package.
-func (p *Package) Files() []*File {
-	return p.files
-}
-
-// @api(Object/Package.Types) represents the all declared types in the package.
-func (p *Package) Types() []Type {
-	return p.types
 }
 
 // @api(Object/File) (extends [Decl](#Object/Common/Decl)) represents a Next source file.

@@ -94,8 +94,10 @@ test/template: install
 		-O cpp=testdata/gen/cpp -T cpp=testdata/templates/cpp \
 		-O csharp=testdata/gen/csharp -T csharp=testdata/templates/csharp \
 		-O c=testdata/gen/c -T c=testdata/templates/c \
+		-O rust=testdata/gen/rust/src -T rust=testdata/templates/rust \
 		-M "c.vector=void*" -M "c.map=void*" \
 		testdata/next/
+	@cd testdata/gen/rust && cargo init
 
 .PHONY: clean
 clean:

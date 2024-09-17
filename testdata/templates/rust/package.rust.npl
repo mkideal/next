@@ -1,0 +1,8 @@
+{{- define "meta/this"}}package{{end -}}
+{{- define "meta/path"}}{{this.Package.Name}}/mod.rs{{end -}}
+
+{{head}}
+
+{{range this.Files -}}
+include!("{{.Name}}.rs");
+{{end}}

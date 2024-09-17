@@ -74,13 +74,13 @@ import {{render "java/package:name" .Target.Package}}.*;
 {{- $name := (next .Name) -}}
 {{next .Doc}}private {{$type}} {{$name}};{{next .Comment}}
 
-public {{$type}} get{{$name | capitalize}}() {
-    return {{$name}};
-}
+    public {{$type}} get{{$name | capitalize}}() {
+        return {{$name}};
+    }
 
-public void set{{$name | capitalize}}({{$type}} {{$name}}) {
-    this.{{$name}} = {{$name}};
-}
+    public void set{{$name | capitalize}}({{$type}} {{$name}}) {
+        this.{{$name}} = {{$name}};
+    }
 {{end}}
 
 {{- define "next/java/struct.field.name" -}}
