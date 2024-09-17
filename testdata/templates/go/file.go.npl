@@ -6,7 +6,7 @@
 {{- /* Overrides "next/go/struct": add method 'MessageType' for each message after struct */ -}}
 {{- define "go/struct"}}
 {{- super .}}
-{{- render "go/struct:message.type" .}}
+{{- render "struct:message.type" .}}
 {{- end -}}
 
 {{head}}

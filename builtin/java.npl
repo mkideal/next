@@ -22,7 +22,7 @@ import java.util.Arrays;
 {{- end}}
 
 {{- define "next/java/import" -}}
-import {{render "java/package:name" .Target.Package}}.*;
+import {{render "package:name" .Target.Package}}.*;
 {{- end}}
 
 {{- define "next/java/consts" -}}
@@ -32,7 +32,7 @@ import {{render "java/package:name" .Target.Package}}.*;
 {{- end}}
 
 {{- define "next/java/const" -}}
-{{next .Doc}}public static final {{next .Type}} {{render "java/const:name" . | upper}} = {{.Value}}{{if eq "long" ((next .Type))}}l{{end}};{{next .Comment}}
+{{next .Doc}}public static final {{next .Type}} {{render "const:name" . | upper}} = {{.Value}}{{if eq "long" ((next .Type))}}l{{end}};{{next .Comment}}
 {{- end}}
 
 {{- define "next/java/enums" -}}
@@ -46,20 +46,20 @@ import {{render "java/package:name" .Target.Package}}.*;
 {{next .Doc}}public enum {{next .Type}} {
     {{- next .Members}}
 
-    private final {{render "java/enum:member.type" .}} value;
+    private final {{render "enum:member.type" .}} value;
 
-    {{next .Type}}({{render "java/enum:member.type" .}} value) {
+    {{next .Type}}({{render "enum:member.type" .}} value) {
         this.value = value;
     }
 
-    public {{render "java/enum:member.type" .}} getValue() {
+    public {{render "enum:member.type" .}} getValue() {
         return value;
     }
 }
 {{- end}}
 
 {{- define "next/java/enum.member" -}}
-{{next .Doc}}{{render "java/enum.member:name" .}}(({{render "java/enum:member.type" .Decl}}) {{.Value}}){{if not .IsLast}},{{else}};{{end}}{{next .Comment}}
+{{next .Doc}}{{render "enum.member:name" .}}(({{render "enum:member.type" .Decl}}) {{.Value}}){{if not .IsLast}},{{else}};{{end}}{{next .Comment}}
 {{- end}}
 
 {{- define "next/java/struct" -}}
@@ -71,7 +71,7 @@ import {{render "java/package:name" .Target.Package}}.*;
 
 {{- define "next/java/struct.field" -}}
 {{- $type := (next .Type) -}}
-{{- $name := (render "java/struct.field:name" .) -}}
+{{- $name := (render "struct.field:name" .) -}}
 {{next .Doc}}private {{$type}} {{$name}};{{next .Comment}}
 
     public {{$type}} get{{$name | capitalize}}() {
@@ -88,7 +88,7 @@ import {{render "java/package:name" .Target.Package}}.*;
 {{- end}}
 
 {{- define "next/java/interface.method" -}}
-{{next .Doc}}{{next .Result}} {{render "java/interface.method:name" .}}({{next .Params}}){{if .Annotations.next.error}} throws Exception{{end}};{{next .Comment}}
+{{next .Doc}}{{next .Result}} {{render "interface.method:name" .}}({{next .Params}}){{if .Annotations.next.error}} throws Exception{{end}};{{next .Comment}}
 {{- end}}
 
 {{- define "next/java/interface.method.result" -}}

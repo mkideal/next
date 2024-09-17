@@ -374,7 +374,7 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		//
 		// Example:
 		// ```npl
-		// {{render "go/struct" this}}
+		// {{render "struct" this}}
 		// {{render "struct" this "go"}}
 		// ```
 		"render": tc.render,

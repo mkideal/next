@@ -6,7 +6,7 @@
 {{- load "./common/message_handler.npl" -}}
 
 {{- define "go/struct" -}}
-{{render "go/struct:message.handler" .}}
+{{render "struct:message.handler" .}}
 {{- end -}}
 
 {{head}}

@@ -9,7 +9,7 @@ use std::vec::Vec;
 use std::boxed::Box;
 use std::collections::HashMap;
 use std::any::Any;
-{{render "rust/imports:decl" . -}}
+{{render "imports:decl" . -}}
 {{- end}}
 
 {{/*
@@ -49,7 +49,7 @@ use {{.}};
 
 {{/* next/rust/const: Generates a constant declaration */}}
 {{- define "next/rust/const" -}}
-{{next .Doc}}pub const {{render "rust/const:name" . | snakeCase | upper}}: {{render "rust/const:type" .}} = {{.Value}};{{next .Comment}}
+{{next .Doc}}pub const {{render "const:name" . | snakeCase | upper}}: {{render "const:type" .}} = {{.Value}};{{next .Comment}}
 {{- end}}
 
 {{/* next/rust/const.type: Adjusts the type of the constant */}}
@@ -72,7 +72,7 @@ impl {{next .Type}} {
     pub fn value(&self) -> f64 {
         match self {
             {{- range .Members.List}}
-            {{next $.Type}}::{{render "rust/enum.member:name" .}} => {{.Value}},
+            {{next $.Type}}::{{render "enum.member:name" .}} => {{.Value}},
             {{- end}}
         }
     }
@@ -82,7 +82,7 @@ impl {{next .Type}} {
     pub fn value(&self) -> &'static str {
         match self {
             {{- range .Members.List}}
-            {{next $.Type}}::{{render "rust/enum.member:name" .}} => {{.Value}},
+            {{next $.Type}}::{{render "enum.member:name" .}} => {{.Value}},
             {{- end}}
         }
     }
@@ -92,7 +92,7 @@ impl {{next .Type}} {
     pub fn value(&self) -> {{next .MemberType}} {
         match self {
             {{- range .Members.List}}
-            {{next $.Type}}::{{render "rust/enum.member:name" .}} => {{.Value}},
+            {{next $.Type}}::{{render "enum.member:name" .}} => {{.Value}},
             {{- end}}
         }
     }
@@ -102,7 +102,7 @@ impl {{next .Type}} {
 
 {{/* next/rust/enum.member: Generates an enum variant with value */}}
 {{- define "next/rust/enum.member" -}}
-    {{next .Doc}}{{render "rust/enum.member:name" .}}{{if .Decl.MemberType.Kind.IsInteger}} = {{.Value}}{{end}}{{next .Comment}},
+    {{next .Doc}}{{render "enum.member:name" .}}{{if .Decl.MemberType.Kind.IsInteger}} = {{.Value}}{{end}}{{next .Comment}},
 {{- end}}
 
 {{/* next/rust/enum.member:name: Generates an enum member name */}}
@@ -119,7 +119,7 @@ impl {{next .Type}} {
 
 {{/* next/rust/struct.field: Generates a struct field declaration */}}
 {{- define "next/rust/struct.field" -}}
-    {{next .Doc}}pub {{render "rust/struct.field:name" .}}: {{next .Type}}{{next .Comment}},
+    {{next .Doc}}pub {{render "struct.field:name" .}}: {{next .Type}}{{next .Comment}},
 {{- end}}
 
 {{- define "next/rust/struct.field:name" -}}
@@ -135,7 +135,7 @@ impl {{next .Type}} {
 
 {{/* next/rust/interface.method: Generates a method signature in a trait */}}
 {{- define "next/rust/interface.method" -}}
-    {{next .Doc}}fn {{render "rust/interface.method:name" .}}({{next .Params}}){{next .Result}};{{next .Comment}}
+    {{next .Doc}}fn {{render "interface.method:name" .}}({{next .Params}}){{next .Result}};{{next .Comment}}
 {{- end}}
 
 {{- define "next/rust/interface.method:name" -}}
@@ -156,7 +156,7 @@ impl {{next .Type}} {
 
 {{/* next/rust/interface.method.param: Generates a parameter declaration */}}
 {{- define "next/rust/interface.method.param" -}}
-{{render "rust/interface.method.param:name" .}}: {{next .Type}}
+{{render "interface.method.param:name" .}}: {{next .Type}}
 {{- end}}
 
 {{/* next/rust/interface.method.result: Generates the return type */}}
@@ -180,6 +180,6 @@ impl {{next .Type}} {
 {{- if .Decl.Annotations.next.rust_alias -}}
     {{.Decl.Annotations.next.rust_alias}}
 {{- else -}}
-    {{render "next/decl.type" .}}
+    {{render "decl.type" .}}
 {{- end}}
 {{- end}}

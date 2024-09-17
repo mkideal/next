@@ -1,9 +1,9 @@
 {{- define "meta/this"}}struct{{end -}}
-{{- define "meta/path"}}{{render "java/package:name" this.Package | replace "." "/"}}/{{next this.Type}}.java{{end -}}
+{{- define "meta/path"}}{{render "package:name" this.Package | replace "." "/"}}/{{next this.Type}}.java{{end -}}
 
 {{- /* Overrides "next/java/struct": add package and imports before struct */ -}}
 {{- define "java/struct" -}}
-package {{render "java/package:name" .Package}};
+package {{render "package:name" .Package}};
 
 {{next .File.Imports}}
 {{super .}}

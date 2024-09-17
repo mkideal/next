@@ -249,7 +249,7 @@ Example:
 `name` has a specific format. When the corresponding template is not found, it will look up the parent template according to the rules of [super](#user-content-Context_super). 
 Example: 
 ```npl
-{{render "go/struct" this}}
+{{render "struct" this}}
 {{render "struct" this "go"}}
 ```
 

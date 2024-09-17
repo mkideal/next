@@ -2,10 +2,10 @@
 #pragma once
 
 {{next .Imports -}}
-{{render "cpp/file:namespace.begin" . -}}
-{{render "cpp/file:forward.declarations" . -}}
+{{render "file:namespace.begin" . -}}
+{{render "file:forward.declarations" . -}}
 {{next .Decls -}}
-{{render "cpp/file:namespace.end" . -}}
+{{render "file:namespace.end" . -}}
 {{- end}}
 
 {{- define "next/cpp/imports" -}}
@@ -77,30 +77,30 @@ class {{next .Type}};
 {{- end}}
 
 {{- define "next/cpp/const" -}}
-{{next .Doc}}static constexpr auto {{render "cpp/const:name" .}} = {{.Value}};{{next .Comment}}
+{{next .Doc}}static constexpr auto {{render "const:name" .}} = {{.Value}};{{next .Comment}}
 {{- end}}
 
 {{- define "next/cpp/enum" -}}
 {{- if not .Annotations.next.cpp_alias -}}
 {{- if .MemberType.Kind.IsInteger -}}
-{{next .Doc}}enum class {{next .Type}} : {{render "cpp/enum:member.type" .}} {
+{{next .Doc}}enum class {{next .Type}} : {{render "enum:member.type" .}} {
 {{- next .Members}}
 };
 {{- else -}}
 /* enum */ class {{next .Type}} {
 private:
-    {{render "cpp/enum:member.type" .}} value;
+    {{render "enum:member.type" .}} value;
 
 public:
     {{- next .Members}}
 
-    {{next .Type}}(const {{render "cpp/enum:member.type" .}}& v) : value(v) {}
+    {{next .Type}}(const {{render "enum:member.type" .}}& v) : value(v) {}
 
     bool operator==(const {{next .Type}}& other) const {
         return value == other.value;
     }
 
-    operator {{render "cpp/enum:member.type" .}}() const {
+    operator {{render "enum:member.type" .}}() const {
         return value;
     }
 };
@@ -110,11 +110,11 @@ public:
 
 {{- define "next/cpp/enum.member" -}}
 {{- if .Decl.MemberType.Kind.IsInteger -}}
-{{next .Doc}}{{render "cpp/enum.member:name" .}} = {{.Value}},{{next .Comment}}
+{{next .Doc}}{{render "enum.member:name" .}} = {{.Value}},{{next .Comment}}
 {{- else if .Decl.MemberType.Kind.IsString -}}
-static inline const {{render "cpp/enum:member.type" .Decl}} {{render "cpp/enum.member:name" .}} = {{.Value}};
+static inline const {{render "enum:member.type" .Decl}} {{render "enum.member:name" .}} = {{.Value}};
 {{- else if .Decl.MemberType.Kind.IsFloat -}}
-static inline constexpr {{render "cpp/enum:member.type" .Decl}} {{render "cpp/enum.member:name" .}} = {{.Value}};
+static inline constexpr {{render "enum:member.type" .Decl}} {{render "enum.member:name" .}} = {{.Value}};
 {{- else -}}
 {{errorf "unsupported enum member type: %s" .Decl.MemberType.Kind}}
 {{- end}}
@@ -130,7 +130,7 @@ public:
 {{- end}}
 
 {{- define "next/cpp/struct.field" -}}
-{{next .Doc}}{{next .Type}} {{render "cpp/struct.field:name" . | camelCase}};{{next .Comment}}
+{{next .Doc}}{{next .Type}} {{render "struct.field:name" . | camelCase}};{{next .Comment}}
 {{- end}}
 
 {{- define "next/cpp/interface" -}}
@@ -142,7 +142,7 @@ public:
 {{- end}}
 
 {{- define "next/cpp/interface.method" -}}
-{{next .Doc}}virtual {{next .Result}} {{render "cpp/interface.method:name" .}}({{next .Params}}) {{if not .Annotations.next.mut}}const {{end}}= 0;{{next .Comment}}
+{{next .Doc}}virtual {{next .Result}} {{render "interface.method:name" .}}({{next .Params}}) {{if not .Annotations.next.mut}}const {{end}}= 0;{{next .Comment}}
 {{- end}}
 
 {{- define "next/cpp/interface.method:name" -}}
@@ -150,7 +150,7 @@ public:
 {{- end}}
 
 {{- define "next/cpp/interface.method.param" -}}
-{{if not .Annotations.next.mut}}const {{end}}{{next .Type}}& {{render "cpp/interface.method.param:name" .}}
+{{if not .Annotations.next.mut}}const {{end}}{{next .Type}}& {{render "interface.method.param:name" .}}
 {{- end}}
 
 {{- define "next/cpp/interface.method.result" -}}
