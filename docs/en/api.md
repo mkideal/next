@@ -294,7 +294,7 @@ func ({{next $.Type}}) MessageType() int { return {{.}} }
 - [struct](#user-content-Object_Struct)
 - [interface](#user-content-Object_Interface)
 
-It's a [file](#user-content-Object_File) by default.
+It's "file" by default.
 
 <h3><a id="user-content-Context_type" target="_self">type</a></h3>
 

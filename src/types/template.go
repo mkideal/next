@@ -177,7 +177,7 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		// - [struct](#Object/Struct)
 		// - [interface](#Object/Interface)
 		//
-		// It's a [file](#Object/File) by default.
+		// It's "file" by default.
 		"this": tc.this,
 
 		// @api(Context/lang) represents the current language to be generated.
