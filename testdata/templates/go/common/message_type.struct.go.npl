@@ -1,0 +1,6 @@
+{{- define "go/struct:message.type"}}
+{{- with .Annotations.message.type}}
+
+func ({{next $.Type}}) MessageType() int { return {{.}} }
+{{- end}}
+{{- end -}}

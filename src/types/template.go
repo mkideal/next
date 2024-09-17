@@ -2,6 +2,7 @@ package types
 
 import (
 	"bytes"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -23,6 +24,9 @@ import (
 
 	"github.com/next/next/src/fsutil"
 )
+
+// StubPrefix is the prefix for stub templates.
+const StubPrefix = "next_stub_0041b8dcd21c3ad6ea2eb3a9f033a9861bc2873e6ab05106e8684ce1b961d4a7_"
 
 // Meta represents the metadata of a entrypoint template file.
 type Meta map[string]string
@@ -79,8 +83,12 @@ func ResolveMeta(tc *templateContext, t *template.Template, keys ...string) (Met
 }
 
 // createTemplate creates a new template from the given content.
-func createTemplate(name, content string, funcs template.FuncMap) (*template.Template, error) {
-	return template.New(name).Funcs(templates.Funcs).Funcs(funcs).Parse(content)
+func createTemplate(name, content string, funcs ...template.FuncMap) (*template.Template, error) {
+	t := template.New(name).Funcs(templates.Funcs)
+	for _, fs := range funcs {
+		t = t.Funcs(fs)
+	}
+	return t.Parse(content)
 }
 
 // executeTemplate executes a template content with the given data.
@@ -127,18 +135,17 @@ type templateContext struct {
 		// cache for loaded templates: filename -> *template.Template
 		templates sync.Map
 	}
-	dontOverrides map[string]bool
-	initiated     bool
-	funcs         template.FuncMap
-	stack         []string
-	maxStack      int
-	meta          Meta
+	initiated bool
+	funcs     template.FuncMap
+	stack     []string
+	pwds      []string
+	maxStack  int
+	meta      Meta
 }
 
 func newTemplateContext(info templateContextInfo) *templateContext {
 	tc := &templateContext{
 		templateContextInfo: info,
-		dontOverrides:       make(map[string]bool),
 		maxStack:            100,
 	}
 	if x := os.Getenv("NEXT_MAX_STACK"); x != "" {
@@ -151,9 +158,8 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		// @api(Context/env) represents the environment variables defined in the command line with the flag `-D`.
 		//
 		// Example:
-		//
 		// ```sh
-		// next -D PROJECT_NAME=demo
+		// $ next -D PROJECT_NAME=demo
 		// ```
 		//
 		// ```npl
@@ -176,7 +182,6 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		// @api(Context/lang) represents the current language to be generated.
 		//
 		// Example:
-		//
 		// ```npl
 		// {{lang}}
 		// {{printf "%s_alias" lang}}
@@ -194,7 +199,6 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		// Any other meta keys are user-defined. You can use them in the templates like `{{meta.<key>}}`.
 		//
 		// Example:
-		//
 		// ```npl
 		// {{- define "meta/this" -}}file{{- end -}}
 		// {{- define "meta/path" -}}path/to/file{{- end -}}
@@ -209,7 +213,6 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		// @api(Context/error) used to return an error message in the template.
 		//
 		// Example:
-		//
 		// ```npl
 		// {{error "Something went wrong"}}
 		// ```
@@ -220,11 +223,18 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		// - **Parameters**: (_format_: string, _args_: ...any)
 		//
 		// Example:
-		//
 		// ```npl
 		// {{errorf "%s went wrong" "Something"}}
 		// ```
 		"errorf": tc.errorf,
+
+		// @api(Context/pwd) returns the current template file's directory.
+		//
+		// Example:
+		// ```npl
+		// {{pwd}}
+		// ```
+		"pwd": tc.pwd,
 
 		// @api(Context/exist) checks whether the given path exists.
 		// If the path is not absolute, it will be resolved relative to the current output directory
@@ -241,7 +251,6 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		// @api(Context/head) outputs the header of the generated file.
 		//
 		// Example:
-		//
 		// ```
 		// {{head}}
 		// ```
@@ -285,14 +294,25 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		// It's useful when you want to align the generated content, especially for multi-line strings (e.g., comments).
 		"align": tc.align,
 
+		// @api(Context/load) loads a template file. It will execute the template immediately but ignore the output.
+		// It's useful when you want to load a template file and import the templates it needs.
+		//
+		// Example:
+		// ```npl
+		// {{load "path/to/template.npl"}}
+		// ```
+		"load": tc.load,
+
 		// @api(Context/type) outputs the string representation of the given [type](#Object/Common/Type) for the current language.
+		// The type function will lookup the type mapping in the command line flag `-M` and return the corresponding type. If
+		// the type is not found, it will lookup <LANG>.map file (e.g., cpp.map) for the type mapping. If the type is still not found,
+		// it will return an error.
 		"type": tc.type_,
 
 		// @api(Context/next) executes the next template with the given [object](#Object).
 		// `{{next object}}` is equivalent to `{{render (object.Typeof) object}}`.
 		//
 		// Example:
-		//
 		// ```npl
 		// {{- /* Overrides "next/go/struct": add method 'MessageType' for each message after struct */ -}}
 		// {{- define "go/struct"}}
@@ -313,14 +333,32 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		// the following priority:
 		//
 		// ```mermaid
-		// %%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#f0f8ff', 'primaryBorderColor': '#7eb0d5', 'lineColor': '#5a9bcf', 'primaryTextColor': '#333333' }}}%%
-		// flowchart LR
-		//     A["<span style='color:#9095FF'>type</span><span style='color:#E59C00'>[:name]</span>"] --> |<span style='color:#5a9bcf'>super</span>| B["<span style='color:#67D7E5'>lang</span>/<span style='color:#9095FF'>type</span><span style='color:#E59C00'>[:name]</span>"]
-		//     B --> |<span style='color:#5a9bcf'>super</span>| C["<span style='color:#58B7FF'>next</span>/<span style='color:#67D7E5'>lang</span>/<span style='color:#9095FF'>type</span><span style='color:#E59C00'>[:name]</span>"]
-		//     C --> |<span style='color:#5a9bcf'>super</span>| D["<span style='color:#58B7FF'>next</span>/<span style='color:#9095FF'>type</span><span style='color:#E59C00'>[:name]</span>"]
+		//	%%{init: {
+		//		'theme': 'base',
+		//		'themeVariables': {
+		//			'primaryColor': '#f0f8ff',
+		//			'primaryBorderColor': '#7eb0d5',
+		//			'lineColor': '#5a9bcf',
+		//			'primaryTextColor': '#333333'
+		//		},
+		//		'flowchart': {
+		//			'htmlLabels': true
+		//		},
+		//		'css': '
+		//			.type { color: #9095FF; }
+		//			.name { color: #E59C00; }
+		//			.lang { color: #67D7E5; }
+		//			.next { color: #58B7FF; }
+		//			.super { color: #5a9bcf; }
+		//		'
+		//	}}%%
+		//	flowchart LR
+		//		A["<span class='type'>type</span><span class='name'>[:name]</span>"] --> |<span class='super'>super</span>| B["<span class='lang'>lang</span>/<span class='type'>type</span><span class='name'>[:name]</span>"]
+		//		B --> |<span class='super'>super</span>| C["<span class='next'>next</span>/<span class='lang'>lang</span>/<span class='type'>type</span><span class='name'>[:name]</span>"]
+		//		C --> |<span class='super'>super</span>| D["<span class='next'>next</span>/<span class='type'>type</span><span class='name'>[:name]</span>"]
 		//
-		//     classDef default fill:#f0f8ff,stroke:#7eb0d5,stroke-width:1.5px,rx:12,ry:12;
-		//     linkStyle default stroke:#5a9bcf,stroke-width:1.5px;
+		//		classDef default fill:#f0f8ff,stroke:#7eb0d5,stroke-width:1.5px,rx:12,ry:12;
+		//		linkStyle default stroke:#5a9bcf,stroke-width:1.5px;
 		// ```
 		//
 		// e.g.,
@@ -369,18 +407,23 @@ func (tc *templateContext) reset(t *template.Template, d reflect.Value) error {
 	return tc.lazyInit()
 }
 
+func (tc *templateContext) pushPwd(pwd string) {
+	tc.pwds = append(tc.pwds, pwd)
+}
+
+func (tc *templateContext) popPwd() error {
+	if len(tc.pwds) == 0 {
+		return errors.New("empty pwd stack")
+	}
+	tc.pwds = tc.pwds[:len(tc.pwds)-1]
+	return nil
+}
+
 func (tc *templateContext) lazyInit() error {
 	if tc.initiated {
 		return nil
 	}
 	tc.initiated = true
-
-	for _, tt := range tc.entrypoint.Templates() {
-		if _, ok := tc.dontOverrides[tt.Name()]; ok {
-			return fmt.Errorf("template %q is already defined", tt.Name())
-		}
-		tc.dontOverrides[tt.Name()] = true
-	}
 
 	var files []string
 	for _, dir := range tc.context.searchDirs {
@@ -402,16 +445,16 @@ func (tc *templateContext) lazyInit() error {
 	}
 
 	// Load built-in templates
-	if _, err := tc.loadTemplate(tc.context.builtin, "builtin/next"+templateExt); err != nil {
+	if _, err := tc.loadTemplate("builtin/next"+templateExt, tc.context.builtin); err != nil {
 		return err
 	}
-	if _, err := tc.loadTemplate(tc.context.builtin, "builtin/"+tc.lang+templateExt); err != nil {
+	if _, err := tc.loadTemplate("builtin/"+tc.lang+templateExt, tc.context.builtin); err != nil {
 		return err
 	}
 
 	// Load custom templates
 	for _, file := range files {
-		if _, err := tc.loadTemplate(nil, file); err != nil {
+		if _, err := tc.loadTemplate(file, nil); err != nil {
 			return err
 		}
 	}
@@ -434,6 +477,13 @@ func (tc *templateContext) errorf(format string, args ...any) (string, error) {
 	return "", fmt.Errorf(format, args...)
 }
 
+func (tc *templateContext) pwd() (string, error) {
+	if len(tc.pwds) == 0 {
+		return "", errors.New("empty pwd stack")
+	}
+	return tc.pwds[len(tc.pwds)-1], nil
+}
+
 func (tc *templateContext) exist(name string) (bool, error) {
 	if name != "" && name[0] != '/' {
 		name = filepath.Join(tc.dir, name)
@@ -445,6 +495,17 @@ func (tc *templateContext) exist(name string) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+func (tc *templateContext) load(path string) (string, error) {
+	if len(tc.pwds) == 0 {
+		return "", errors.New("empty pwd stack")
+	}
+	path = filepath.Join(tc.pwds[len(tc.pwds)-1], path)
+	if _, err := tc.loadTemplate(path, nil); err != nil {
+		return "", err
+	}
+	return "", nil
 }
 
 func (tc *templateContext) type_(t any, langs ...string) (string, error) {
@@ -578,46 +639,90 @@ func (tc *templateContext) head() string {
 	return strings.ReplaceAll(p, "%T%", `Code generated by "next `+builder.Info().Version+`"; DO NOT EDIT.`)
 }
 
-func (tc *templateContext) loadTemplate(fs fs.FS, filename string) (*template.Template, error) {
-	if v, ok := tc.cache.templates.Load(filename); ok {
-		return v.(*template.Template), nil
-	}
-	tc.context.Printf("loading template %q", filename)
-
+func (tc *templateContext) loadTemplate(path string, fs fs.FS) (*template.Template, error) {
 	var content []byte
 	var err error
 
 	if fs != nil {
-		f, err := fs.Open(filename)
+		f, err := fs.Open(path)
 		if err != nil {
 			if !os.IsNotExist(err) {
 				return nil, err
 			}
-			tc.context.Infof("template %q not found", filename)
+			tc.context.Infof("template %q not found", path)
 			return nil, nil
 		}
 		defer f.Close()
 		content, err = io.ReadAll(f)
 	} else {
-		content, err = os.ReadFile(filename)
+		path, err = filepath.Abs(path)
+		if err != nil {
+			return nil, fmt.Errorf("failed to resolve template %q absolute path: %w", path, err)
+		}
+		if v, ok := tc.cache.templates.Load(path); ok {
+			return v.(*template.Template), nil
+		}
+		content, err = os.ReadFile(path)
 	}
 	if err != nil {
 		return nil, err
 	}
-	t, err := createTemplate(filename, string(content), tc.funcs)
+	t, err := createTemplate(path, string(content), tc.funcs)
 	if err != nil {
 		return nil, err
 	}
-	for _, tt := range t.Templates() {
-		if tc.dontOverrides[tt.Name()] {
+	templates := t.Templates()
+	for i := range templates {
+		tt := templates[i]
+		name := tt.Name()
+		if t2 := tc.entrypoint.Lookup(name); t2 != nil {
+			return nil, fmt.Errorf("template %q already defined at %s", name, t2.ParseName)
+		}
+		if fs != nil {
+			if _, err := tc.entrypoint.AddParseTree(name, tt.Tree); err != nil {
+				return nil, err
+			}
 			continue
 		}
-		if _, err := tc.entrypoint.AddParseTree(tt.Name(), tt.Tree); err != nil {
+		stubName := StubPrefix + hex.EncodeToString([]byte(name))
+		stubContent := fmt.Sprintf(`{{%s .}}`, stubName)
+		stubFuncs := template.FuncMap{
+			stubName: func(data any) (string, error) {
+				return tc.execute(tt, path, data)
+			},
+		}
+		stub, err := createTemplate(stubName, stubContent, tc.funcs, stubFuncs)
+		if err != nil {
+			return nil, err
+		}
+		tc.entrypoint.Funcs(stubFuncs)
+		if _, err := tc.entrypoint.AddParseTree(name, stub.Tree); err != nil {
 			return nil, err
 		}
 	}
-	tc.cache.templates.Store(filename, t)
+	tc.cache.templates.Store(path, t)
+	// Execute the template but ignore the result. This is to ensure that the template is valid
+	// and immediately imports the templates it needs.
+	tc.pushPwd(filepath.Dir(path))
+	defer tc.popPwd()
+	if err := t.Execute(io.Discard, tc); err != nil {
+		return nil, err
+	}
 	return t, nil
+}
+
+func (tc *templateContext) execute(tt *template.Template, path string, data any) (string, error) {
+	if path != "" {
+		tc.pushPwd(filepath.Dir(path))
+		defer tc.popPwd()
+	}
+	start := tc.buf.Len()
+	if err := tt.Execute(&tc.buf, data); err != nil {
+		return "", err
+	}
+	result := tc.buf.String()[start:]
+	tc.buf.Truncate(start)
+	return result, nil
 }
 
 const sep = "/"
@@ -759,13 +864,7 @@ func (tc *templateContext) renderWithNames(names []string, data any) (result str
 	defer func() {
 		tc.stack = tc.stack[:len(tc.stack)-1]
 	}()
-	start := tc.buf.Len()
-	if err := tt.Execute(&tc.buf, data); err != nil {
-		return "", err
-	}
-	result = tc.buf.String()[start:]
-	tc.buf.Truncate(start)
-	return result, nil
+	return tc.execute(tt, "", data)
 }
 
 func (tc *templateContext) lastLine() string {

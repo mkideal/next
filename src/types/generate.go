@@ -167,7 +167,7 @@ func loadMapFromFile(m flags.Map, lang, path string) error {
 }
 
 func generateForTemplatePath(c *Compiler, lang, ext, dir, tmplPath string) error {
-	tmplFiles, err := fsutil.AppendFiles(nil, tmplPath, templateExt, true)
+	tmplFiles, err := fsutil.AppendFiles(nil, tmplPath, templateExt, false)
 	if err != nil {
 		return fmt.Errorf("failed to list template files in %q: %v", tmplPath, err)
 	}
@@ -330,6 +330,8 @@ func gen[T Decl](tc *templateContext, t *template.Template, decl T) error {
 	}
 
 	// execute the template with the template context
+	tc.pushPwd(filepath.Dir(t.ParseName))
+	defer tc.popPwd()
 	if err := t.Execute(&tc.buf, tc); err != nil {
 		return err
 	}

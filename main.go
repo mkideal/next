@@ -189,7 +189,7 @@ func formatError(err error) {
 		s := strings.TrimSpace(errs[i])
 		s = strings.TrimPrefix(s, "template: ")
 		s = strings.TrimSuffix(s, ":")
-		if s == "" {
+		if s == "" || strings.HasPrefix(tryParseTemplateFilename(s), types.StubPrefix) {
 			errs = append(errs[:i], errs[i+1:]...)
 		} else {
 			errs[i] = s
@@ -210,6 +210,14 @@ func formatError(err error) {
 	}
 }
 
+func tryParseTemplateFilename(err string) string {
+	parts := strings.SplitN(err, ":", 4)
+	if len(parts) < 4 {
+		return ""
+	}
+	return parts[0]
+}
+
 // tryPrintTemplateError tries to print template error in a more readable format.
 // template error format: "<template name>:<line>:<column>: <error message>"
 func tryPrintTemplateError(err string) {
@@ -226,6 +234,12 @@ func tryPrintTemplateError(err string) {
 		term.Fprintln(os.Stderr, errorColor.Colorize(err))
 		return
 	}
+	filename := parts[0]
+	if wd, err := os.Getwd(); err == nil {
+		if rel, err := filepath.Rel(wd, filename); err == nil {
+			filename = rel
+		}
+	}
 	line := parts[1]
 	column := parts[2]
 	if i, err := strconv.Atoi(column); err == nil {
@@ -234,7 +248,7 @@ func tryPrintTemplateError(err string) {
 	message := parts[3]
 	term.Fprintf(
 		os.Stderr, "%s:%s:%s:%s\n",
-		fileColor.Colorize(parts[0]),
+		fileColor.Colorize(filename),
 		lineColor.Colorize(line),
 		columnColor.Colorize(column),
 		errorColor.Colorize(message),

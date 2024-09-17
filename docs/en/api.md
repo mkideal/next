@@ -12,8 +12,10 @@
     <li><a href="#user-content-Context_exist">exist</a></li>
     <li><a href="#user-content-Context_head">head</a></li>
     <li><a href="#user-content-Context_lang">lang</a></li>
+    <li><a href="#user-content-Context_load">load</a></li>
     <li><a href="#user-content-Context_meta">meta</a></li>
     <li><a href="#user-content-Context_next">next</a></li>
+    <li><a href="#user-content-Context_pwd">pwd</a></li>
     <li><a href="#user-content-Context_render">render</a></li>
     <li><a href="#user-content-Context_super">super</a></li>
     <li><a href="#user-content-Context_this">this</a></li>
@@ -129,9 +131,8 @@ It's useful when you want to align the generated content, especially for multi-l
 
 `env` represents the environment variables defined in the command line with the flag `-D`. 
 Example: 
-
 ```sh
-next -D PROJECT_NAME=demo
+$ next -D PROJECT_NAME=demo
 ```
 
 
@@ -143,7 +144,6 @@ next -D PROJECT_NAME=demo
 
 `error` used to return an error message in the template. 
 Example: 
-
 ```npl
 {{error "Something went wrong"}}
 ```
@@ -154,7 +154,6 @@ Example:
 - **Parameters**: (_format_: string, _args_: ...any)
 
 Example: 
-
 ```npl
 {{errorf "%s went wrong" "Something"}}
 ```
@@ -173,7 +172,6 @@ Example:
 
 `head` outputs the header of the generated file. 
 Example: 
-
 ```
 {{head}}
 ```
@@ -192,10 +190,17 @@ Output (for c):
 
 `lang` represents the current language to be generated. 
 Example: 
-
 ```npl
 {{lang}}
 {{printf "%s_alias" lang}}
+```
+
+<h3><a id="user-content-Context_load" target="_self">load</a></h3>
+
+`load` loads a template file. It will execute the template immediately but ignore the output. It's useful when you want to load a template file and import the templates it needs. 
+Example: 
+```npl
+{{load "path/to/template.npl"}}
 ```
 
 <h3><a id="user-content-Context_meta" target="_self">meta</a></h3>
@@ -207,7 +212,6 @@ Example:
 
 Any other meta keys are user-defined. You can use them in the templates like `{{meta.<key>}}`. 
 Example: 
-
 ```npl
 {{- define "meta/this" -}}file{{- end -}}
 {{- define "meta/path" -}}path/to/file{{- end -}}
@@ -221,7 +225,6 @@ Example:
 
 `next` executes the next template with the given [object](#user-content-Object). `{{next object}}` is equivalent to `{{render (object.Typeof) object}}`. 
 Example: 
-
 ```npl
 {{- /* Overrides "next/go/struct": add method 'MessageType' for each message after struct */ -}}
 {{- define "go/struct"}}
@@ -233,6 +236,14 @@ func ({{next $.Type}}) MessageType() int { return {{.}} }
 {{- end -}}
 
 {{next this}}
+```
+
+<h3><a id="user-content-Context_pwd" target="_self">pwd</a></h3>
+
+`pwd` returns the current template file's directory. 
+Example: 
+```npl
+{{pwd}}
 ```
 
 <h3><a id="user-content-Context_render" target="_self">render</a></h3>
@@ -253,14 +264,32 @@ Example:
 `super` executes the super template with the given [object](#user-content-Object). super is used to call the parent template in the current template. It's useful when you want to extend the parent template. The super template looks up the template with the following priority: 
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#f0f8ff', 'primaryBorderColor': '#7eb0d5', 'lineColor': '#5a9bcf', 'primaryTextColor': '#333333' }}}%%
+%%{init: {
+	'theme': 'base',
+	'themeVariables': {
+		'primaryColor': '#f0f8ff',
+		'primaryBorderColor': '#7eb0d5',
+		'lineColor': '#5a9bcf',
+		'primaryTextColor': '#333333'
+	},
+	'flowchart': {
+		'htmlLabels': true
+	},
+	'css': '
+		.type { color: #9095FF; }
+		.name { color: #E59C00; }
+		.lang { color: #67D7E5; }
+		.next { color: #58B7FF; }
+		.super { color: #5a9bcf; }
+	'
+}}%%
 flowchart LR
-A["<span style='color:#9095FF'>type</span><span style='color:#E59C00'>[:name]</span>"] --> |<span style='color:#5a9bcf'>super</span>| B["<span style='color:#67D7E5'>lang</span>/<span style='color:#9095FF'>type</span><span style='color:#E59C00'>[:name]</span>"]
-B --> |<span style='color:#5a9bcf'>super</span>| C["<span style='color:#58B7FF'>next</span>/<span style='color:#67D7E5'>lang</span>/<span style='color:#9095FF'>type</span><span style='color:#E59C00'>[:name]</span>"]
-C --> |<span style='color:#5a9bcf'>super</span>| D["<span style='color:#58B7FF'>next</span>/<span style='color:#9095FF'>type</span><span style='color:#E59C00'>[:name]</span>"]
+	A["<span class='type'>type</span><span class='name'>[:name]</span>"] --> |<span class='super'>super</span>| B["<span class='lang'>lang</span>/<span class='type'>type</span><span class='name'>[:name]</span>"]
+	B --> |<span class='super'>super</span>| C["<span class='next'>next</span>/<span class='lang'>lang</span>/<span class='type'>type</span><span class='name'>[:name]</span>"]
+	C --> |<span class='super'>super</span>| D["<span class='next'>next</span>/<span class='type'>type</span><span class='name'>[:name]</span>"]
 
-classDef default fill:#f0f8ff,stroke:#7eb0d5,stroke-width:1.5px,rx:12,ry:12;
-linkStyle default stroke:#5a9bcf,stroke-width:1.5px;
+	classDef default fill:#f0f8ff,stroke:#7eb0d5,stroke-width:1.5px,rx:12,ry:12;
+	linkStyle default stroke:#5a9bcf,stroke-width:1.5px;
 ```
 
 e.g., 
@@ -292,7 +321,7 @@ It's a [file](#user-content-Object_File) by default.
 
 <h3><a id="user-content-Context_type" target="_self">type</a></h3>
 
-`type` outputs the string representation of the given [type](#user-content-Object_Common_Type) for the current language.
+`type` outputs the string representation of the given [type](#user-content-Object_Common_Type) for the current language. The type function will lookup the type mapping in the command line flag `-M` and return the corresponding type. If the type is not found, it will lookup <LANG>.map file (e.g., cpp.map) for the type mapping. If the type is still not found, it will return an error.
 
 <h2><a id="user-content-Object" target="_self">Object</a></h2>
 

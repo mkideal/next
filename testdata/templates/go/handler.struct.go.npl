@@ -4,22 +4,7 @@
 {{- define "meta/skip"}}{{or (exist meta.path) (not this.Annotations.message.type) (not this.Annotations.message.req)}}{{end -}}
 
 {{- define "go/struct" -}}
-package {{this.Package.Name}}
-
-import (
-    "encoding/json"
-    "net/http"
-)
-
-func handle{{next .Type}}(w http.ResponseWriter, r *http.Request) error {
-    var req {{next .Type}}
-    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-        return err
-    }
-    // TODO: handle request
-    _ = req
-    return nil
-}
+{{render "go/struct:message.handler"}}
 {{- end -}}
 
 {{head}}

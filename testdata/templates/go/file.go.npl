@@ -1,13 +1,12 @@
 {{- define "meta/this"}}file{{end -}}
 {{- define "meta/path"}}{{this.Package.Name}}/{{this.Name}}.next.go{{end -}}
 
+{{- load "./common/message_type.struct.npl" -}}
+
 {{- /* Overrides "next/go/struct": add method 'MessageType' for each message after struct */ -}}
 {{- define "go/struct"}}
 {{- super .}}
-{{- with .Annotations.message.type}}
-
-func ({{next $.Type}}) MessageType() int { return {{.}} }
-{{- end}}
+{{- render "go/struct:message.type" .}}
 {{- end -}}
 
 {{head}}
