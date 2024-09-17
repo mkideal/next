@@ -26,11 +26,9 @@ import {{render "java/package:name" .Target.Package}}.*;
 {{- end}}
 
 {{- define "next/java/consts" -}}
-public class Constants {
     {{- range .List}}
     {{next . -}}
     {{- end}}
-}
 {{- end}}
 
 {{- define "next/java/const" -}}
@@ -67,24 +65,23 @@ public class Constants {
 {{- define "next/java/struct" -}}
 {{next .Doc}}public class {{next .Type}} {
     {{- next .Fields}}
-
     public {{next .Type}}() {}
 }
 {{- end}}
 
 {{- define "next/java/struct.field" -}}
-{{- $type := (next .Type)}}
-{{- $name := (next .Name)}}
-    {{next .Doc}}private {{$type}} {{$name}};{{next .Comment}}
+{{- $type := (next .Type) -}}
+{{- $name := (next .Name) -}}
+{{next .Doc}}private {{$type}} {{$name}};{{next .Comment}}
 
-    public {{$type}} get{{$name | capitalize}}() {
-        return {{$name}};
-    }
+public {{$type}} get{{$name | capitalize}}() {
+    return {{$name}};
+}
 
-    public void set{{$name | capitalize}}({{$type}} {{$name}}) {
-        this.{{$name}} = {{$name}};
-    }
-{{- end}}
+public void set{{$name | capitalize}}({{$type}} {{$name}}) {
+    this.{{$name}} = {{$name}};
+}
+{{end}}
 
 {{- define "next/java/struct.field.name" -}}
 {{.}}

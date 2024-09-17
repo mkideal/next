@@ -1,11 +1,14 @@
 {{- define "meta/this"}}file{{end -}}
-{{- define "meta/path"}}{{render "java/package:name" this.Package | replace "." "/"}}/Constants.java{{end -}}
+{{- define "meta/class"}}Constants{{end -}}
+{{- define "meta/path"}}{{render "java/package:name" this.Package | replace "." "/"}}/{{meta.class}}.java{{end -}}
 {{- define "meta/skip"}}{{eq 0 (len this.Decls.Consts.List)}}{{end -}}
 
 {{- define "java/file" -}}
 package {{render "java/package:name" .Package}};
 
-{{next .Decls.Consts -}}
+public class {{meta.class}} {
+{{- next .Decls.Consts}}
+}
 {{- end -}}
 
 {{head}}
