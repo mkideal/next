@@ -3,8 +3,10 @@
 {{/* Skip if file exists or message type is not set */}}
 {{- define "meta/skip"}}{{or (exist meta.path) (not this.Annotations.message.type) (not this.Annotations.message.req)}}{{end -}}
 
+{{- load "./common/message_handler.npl" -}}
+
 {{- define "go/struct" -}}
-{{render "go/struct:message.handler"}}
+{{render "go/struct:message.handler" .}}
 {{- end -}}
 
 {{head}}

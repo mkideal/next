@@ -1,7 +1,7 @@
 {{- define "meta/this"}}file{{end -}}
 {{- define "meta/path"}}{{this.Package.Name}}/{{this.Name}}.next.go{{end -}}
 
-{{- load "./common/message_type.struct.npl" -}}
+{{- load "./common/message_type.npl" -}}
 
 {{- /* Overrides "next/go/struct": add method 'MessageType' for each message after struct */ -}}
 {{- define "go/struct"}}
