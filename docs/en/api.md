@@ -264,32 +264,14 @@ Example:
 `super` executes the super template with the given [object](#user-content-Object). super is used to call the parent template in the current template. It's useful when you want to extend the parent template. The super template looks up the template with the following priority: 
 
 ```mermaid
-%%{init: {
-	'theme': 'base',
-	'themeVariables': {
-		'primaryColor': '#f0f8ff',
-		'primaryBorderColor': '#7eb0d5',
-		'lineColor': '#5a9bcf',
-		'primaryTextColor': '#333333'
-	},
-	'flowchart': {
-		'htmlLabels': true
-	},
-	'css': '
-		.type { color: #9095FF; }
-		.name { color: #E59C00; }
-		.lang { color: #67D7E5; }
-		.next { color: #58B7FF; }
-		.super { color: #5a9bcf; }
-	'
-}}%%
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#f0f8ff', 'primaryBorderColor': '#7eb0d5', 'lineColor': '#5a9bcf', 'primaryTextColor': '#333333' }}}%%
 flowchart LR
-	A["<span class='type'>type</span><span class='name'>[:name]</span>"] --> |<span class='super'>super</span>| B["<span class='lang'>lang</span>/<span class='type'>type</span><span class='name'>[:name]</span>"]
-	B --> |<span class='super'>super</span>| C["<span class='next'>next</span>/<span class='lang'>lang</span>/<span class='type'>type</span><span class='name'>[:name]</span>"]
-	C --> |<span class='super'>super</span>| D["<span class='next'>next</span>/<span class='type'>type</span><span class='name'>[:name]</span>"]
+A["<span style='color:#9095FF'>type</span><span style='color:#E59C00'>[:name]</span>"] --> |<span style='color:#5a9bcf'>super</span>| B["<span style='color:#67D7E5'>lang</span>/<span style='color:#9095FF'>type</span><span style='color:#E59C00'>[:name]</span>"]
+B --> |<span style='color:#5a9bcf'>super</span>| C["<span style='color:#58B7FF'>next</span>/<span style='color:#67D7E5'>lang</span>/<span style='color:#9095FF'>type</span><span style='color:#E59C00'>[:name]</span>"]
+C --> |<span style='color:#5a9bcf'>super</span>| D["<span style='color:#58B7FF'>next</span>/<span style='color:#9095FF'>type</span><span style='color:#E59C00'>[:name]</span>"]
 
-	classDef default fill:#f0f8ff,stroke:#7eb0d5,stroke-width:1.5px,rx:12,ry:12;
-	linkStyle default stroke:#5a9bcf,stroke-width:1.5px;
+classDef default fill:#f0f8ff,stroke:#7eb0d5,stroke-width:1.5px,rx:12,ry:12;
+linkStyle default stroke:#5a9bcf,stroke-width:1.5px;
 ```
 
 e.g., 
