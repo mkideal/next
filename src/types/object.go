@@ -199,7 +199,6 @@ type commonNode[Self Node] struct {
 }
 
 func newCommonNode[Self Node](
-	c *Compiler,
 	self Self, file *File,
 	pos token.Pos, name string,
 	doc *ast.CommentGroup, annotations *ast.AnnotationGroup,
@@ -382,7 +381,7 @@ func newConst(c *Compiler, file *File, src *ast.GenDecl[ast.Expr]) *Const {
 		Comment: newComment(src.Comment),
 	}
 	file.addObject(c, src, x)
-	x.commonNode = newCommonNode(c, x, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
+	x.commonNode = newCommonNode(x, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	x.value = newValue(c, file, src.Name.Name, src.Name.NamePos, src.Spec)
 	return x
 }
@@ -454,7 +453,7 @@ type Enum struct {
 func newEnum(c *Compiler, file *File, src *ast.GenDecl[*ast.EnumType]) *Enum {
 	e := &Enum{}
 	file.addObject(c, src, e)
-	e.commonNode = newCommonNode(c, e, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
+	e.commonNode = newCommonNode(e, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	e.Type = newDeclType(file, src.Pos(), KindEnum, src.Name.Name, e)
 	e.Members = &EnumMembers{Decl: e}
 	for i, m := range src.Spec.Members.List {
@@ -505,7 +504,7 @@ func newEnumMember(c *Compiler, file *File, e *Enum, src *ast.EnumMember, index 
 		Decl:    e,
 	}
 	file.addObject(c, src, m)
-	m.commonNode = newCommonNode(c, m, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
+	m.commonNode = newCommonNode(m, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	m.value = newValue(c, file, src.Name.Name, src.Name.NamePos, src.Value)
 	m.value.enum.typ = e
 	m.value.enum.index = index
@@ -554,7 +553,7 @@ type Struct struct {
 func newStruct(c *Compiler, file *File, src *ast.GenDecl[*ast.StructType]) *Struct {
 	s := &Struct{}
 	file.addObject(c, src, s)
-	s.commonNode = newCommonNode(c, s, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
+	s.commonNode = newCommonNode(s, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	s.Type = newDeclType(file, src.Pos(), KindStruct, src.Name.Name, s)
 	s.fields = &StructFields{Decl: s}
 	for i, f := range src.Spec.Fields.List {
@@ -597,7 +596,7 @@ type StructField struct {
 func newStructField(c *Compiler, file *File, s *Struct, src *ast.StructField, index int) *StructField {
 	f := &StructField{Decl: s, index: index}
 	file.addObject(c, src, f)
-	f.commonNode = newCommonNode(c, f, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
+	f.commonNode = newCommonNode(f, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	f.unresolved.typ = src.Type
 	return f
 }
@@ -629,7 +628,7 @@ type Interface struct {
 func newInterface(c *Compiler, file *File, src *ast.GenDecl[*ast.InterfaceType]) *Interface {
 	x := &Interface{}
 	file.addObject(c, src, x)
-	x.commonNode = newCommonNode(c, x, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
+	x.commonNode = newCommonNode(x, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	x.Type = newDeclType(file, src.Pos(), KindInterface, src.Name.Name, x)
 	x.methods = &InterfaceMethods{Decl: x}
 	for i, m := range src.Spec.Methods.List {
@@ -675,7 +674,7 @@ func newInterfaceMethod(c *Compiler, file *File, i *Interface, src *ast.Method, 
 		Comment: newComment(src.Comment),
 	}
 	file.addObject(c, src, m)
-	m.commonNode = newCommonNode(c, m, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
+	m.commonNode = newCommonNode(m, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	m.Params = &InterfaceMethodParams{Decl: m}
 	for i, p := range src.Params.List {
 		m.Params.List = append(m.Params.List, newInterfaceMethodParam(c, file, m, p, i))
@@ -721,7 +720,7 @@ func newInterfaceMethodParam(c *Compiler, file *File, m *InterfaceMethod, src *a
 		index:  index,
 	}
 	file.addObject(c, src, p)
-	p.commonNode = newCommonNode(c, p, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
+	p.commonNode = newCommonNode(p, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	p.unresolved.typ = src.Type
 	return p
 }
