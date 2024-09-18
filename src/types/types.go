@@ -2,6 +2,7 @@
 package types
 
 import (
+	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
@@ -154,12 +155,51 @@ func (*CallStmt) Typeof() string { return "stmt.call" }
 
 // -------------------------------------------------------------------------
 
+type Position struct {
+	Pos      token.Pos
+	Filename string
+	Line     int
+	Column   int
+}
+
+func (pos Position) IsValid() bool { return pos.Pos.IsValid() }
+
+func (pos Position) String() string {
+	s := pos.Filename
+	if pos.IsValid() {
+		if s != "" {
+			s += ":"
+		}
+		s += strconv.Itoa(pos.Line)
+		if pos.Column != 0 {
+			s += fmt.Sprintf(":%d", pos.Column)
+		}
+	}
+	if s == "" {
+		s = "-"
+	}
+	return s
+}
+
+func positionFor(c *Compiler, pos token.Pos) Position {
+	if pos.IsValid() {
+		p := c.fset.Position(pos)
+		return Position{
+			Pos:      pos,
+			Filename: p.Filename,
+			Line:     p.Line,
+			Column:   p.Column,
+		}
+	}
+	return Position{}
+}
+
 // LocatedObject represents an object with a position.
 type LocatedObject interface {
 	Object
 
 	// Pos returns the position of the object.
-	Pos() token.Pos
+	Pos() Position
 
 	// @api(Object/Common/Node.File) represents the file containing the node.
 	File() *File
@@ -168,10 +208,10 @@ type LocatedObject interface {
 	Package() *Package
 }
 
-func (x *File) Pos() token.Pos             { return x.pos }
-func (x *commonNode[Self]) Pos() token.Pos { return x.pos }
-func (x *Value) Pos() token.Pos            { return x.namePos }
-func (x *DeclType[T]) Pos() token.Pos      { return x.pos }
+func (x *File) Pos() Position             { return positionFor(x.compiler, x.pos) }
+func (x *commonNode[Self]) Pos() Position { return positionFor(x.file.compiler, x.pos) }
+func (x *Value) Pos() Position            { return positionFor(x.file.compiler, x.namePos) }
+func (x *DeclType[T]) Pos() Position      { return positionFor(x.file.compiler, x.pos) }
 
 func (x *commonNode[Self]) Package() *Package { return x.File().Package() }
 func (x *Value) Package() *Package            { return x.File().Package() }
@@ -241,6 +281,22 @@ func (x *commonNode[Self]) File() *File {
 type Decl interface {
 	Node
 
+	// @api(Object/Common/Decl.UsedKinds) returns the used kinds in the declaration.
+	// Returns 0 if the declaration does not use any kinds.
+	// Otherwise, returns the OR of all used kinds.
+	//
+	// Example:
+	// ```next
+	//	struct User {
+	//		int64 id;
+	//		string name;
+	//		vector<string> emails;
+	//		map<int, bool> flags;
+	//	}
+	// ```
+	// The used kinds in the `User` struct are: `(1<<KindInt64) | (1<<KindString) | (1<<KindVector) | (1<<KindMap) | (1<<KindInt) | (1<<KindBool)`.
+	UsedKinds() Kinds
+
 	declNode()
 }
 
@@ -252,6 +308,55 @@ var _ Decl = (*Enum)(nil)
 var _ Decl = (*Struct)(nil)
 var _ Decl = (*Interface)(nil)
 
+func (x *Package) UsedKinds() Kinds {
+	var kinds Kinds
+	for _, f := range x.files {
+		kinds |= f.UsedKinds()
+	}
+	return kinds
+}
+
+func (x *File) UsedKinds() Kinds {
+	var kinds Kinds
+	for _, d := range x.decls.consts {
+		kinds |= d.UsedKinds()
+	}
+	for _, d := range x.decls.enums {
+		kinds |= d.UsedKinds()
+	}
+	for _, d := range x.decls.structs {
+		kinds |= d.UsedKinds()
+	}
+	for _, d := range x.decls.interfaces {
+		kinds |= d.UsedKinds()
+	}
+	return kinds
+}
+
+func (x *Const) UsedKinds() Kinds { return x.Type().UsedKinds() }
+
+func (x *Enum) UsedKinds() Kinds { return x.Type.UsedKinds() | x.MemberType.UsedKinds() }
+
+func (x *Struct) UsedKinds() Kinds {
+	var kinds = x.Type.UsedKinds()
+	for _, f := range x.fields.List {
+		kinds |= f.Type.UsedKinds()
+	}
+	return kinds
+}
+func (x *Interface) UsedKinds() Kinds {
+	var kinds = x.Type.UsedKinds()
+	for _, m := range x.methods.List {
+		for _, p := range m.Params.List {
+			kinds |= p.Type.UsedKinds()
+		}
+		if m.Result.Type != nil {
+			kinds |= m.Result.Type.UsedKinds()
+		}
+	}
+	return kinds
+}
+
 func (x *Package) declNode()   {}
 func (x *File) declNode()      {}
 func (x *Const) declNode()     {}
@@ -260,18 +365,21 @@ func (x *Struct) declNode()    {}
 func (x *Interface) declNode() {}
 
 // builtinDecl represents a special declaration for built-in types.
-type builtinDecl struct{}
+type builtinDecl struct {
+	typ Type
+}
 
 var _ Decl = builtinDecl{}
 
 func (builtinDecl) Typeof() string           { return "<builtin.decl>" }
 func (builtinDecl) Name() string             { return "<builtin>" }
-func (builtinDecl) Pos() token.Pos           { return token.NoPos }
+func (builtinDecl) Pos() Position            { return Position{} }
 func (builtinDecl) File() *File              { return nil }
 func (builtinDecl) Package() *Package        { return nil }
 func (builtinDecl) Doc() *Doc                { return nil }
 func (builtinDecl) Annotations() Annotations { return nil }
 func (builtinDecl) declNode()                {}
+func (x builtinDecl) UsedKinds() Kinds       { return x.typ.UsedKinds() }
 
 // -------------------------------------------------------------------------
 // Types
@@ -294,6 +402,9 @@ type Type interface {
 	// @api(Object/Common/Type.Kind) returns the [kind](#Object/Common/Type/Kind) of the type.
 	Kind() Kind
 
+	// @api(Object/Common/Type.UsedKinds) returns the used kinds in the type.
+	UsedKinds() Kinds
+
 	// @api(Object/Common/Type.String) represents the string representation of the type.
 	String() string
 
@@ -313,10 +424,10 @@ var _ Type = (*MapType)(nil)
 var _ Type = (*DeclType[Decl])(nil)
 
 func (x *UsedType) Decl() Decl      { return x.Type.Decl() }
-func (x *PrimitiveType) Decl() Decl { return builtinDecl{} }
-func (x *ArrayType) Decl() Decl     { return builtinDecl{} }
-func (x *VectorType) Decl() Decl    { return builtinDecl{} }
-func (x *MapType) Decl() Decl       { return builtinDecl{} }
+func (x *PrimitiveType) Decl() Decl { return builtinDecl{x} }
+func (x *ArrayType) Decl() Decl     { return builtinDecl{x} }
+func (x *VectorType) Decl() Decl    { return builtinDecl{x} }
+func (x *MapType) Decl() Decl       { return builtinDecl{x} }
 func (x *DeclType[T]) Decl() Decl   { return x.decl }
 
 func (x *UsedType) Kind() Kind      { return x.Type.Kind() }
@@ -325,6 +436,15 @@ func (*ArrayType) Kind() Kind       { return KindArray }
 func (*VectorType) Kind() Kind      { return KindVector }
 func (*MapType) Kind() Kind         { return KindMap }
 func (x *DeclType[T]) Kind() Kind   { return x.kind }
+
+func (x *UsedType) UsedKinds() Kinds      { return x.Type.UsedKinds() }
+func (x *PrimitiveType) UsedKinds() Kinds { return x.kind.kinds() }
+func (x *DeclType[T]) UsedKinds() Kinds   { return x.kind.kinds() }
+func (x *ArrayType) UsedKinds() Kinds     { return x.Kind().kinds() | x.ElemType.UsedKinds() }
+func (x *VectorType) UsedKinds() Kinds    { return x.Kind().kinds() | x.ElemType.UsedKinds() }
+func (x *MapType) UsedKinds() Kinds {
+	return x.Kind().kinds() | x.KeyType.UsedKinds() | x.ElemType.UsedKinds()
+}
 
 // @api(Object/UsedType) represents a used type in a file.
 type UsedType struct {

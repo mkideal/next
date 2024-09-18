@@ -46,6 +46,7 @@
       <li><a href="#user-content-Object_Common_Type">Type</a></li>
 <ul>
         <li><a href="#user-content-Object_Common_Type_Kind">Kind</a></li>
+        <li><a href="#user-content-Object_Common_Type_Kinds">Kinds</a></li>
 </ul>
 </ul>
     <li><a href="#user-content-Object_Const">Const</a></li>
@@ -426,6 +427,10 @@ Login
 
 The `next` annotation is used to pass information to the next compiler. It's a reserved annotation and should not be used for other purposes. The `next` annotation can be annotated to `package` statements, `const` declarations, `enum` declarations, `struct` declarations, `field` declarations, `interface` declarations, `method` declarations, and `parameter` declarations.
 
+<h6><a id="user-content-Object_Common_Annotation_-Contains" target="_self">.Contains</a></h6>
+
+`.Contains` reports whether the annotation contains the given parameter.
+
 <h5><a id="user-content-Object_Common_Annotation_decl" target="_self">decl</a></h5>
 <h6><a id="user-content-Object_Common_Annotation_decl_-available" target="_self">.available</a></h6>
 
@@ -659,6 +664,10 @@ This will don't generate the `uint128` struct in the `rust` language, but use `u
 `Annotations` represents a group of annotations by `name` => [Annotation](#user-content-Object_Common_Annotation). 
 Annotations is a map that stores multiple annotations for a given entity. The key is the annotation name (string), and the value is the corresponding [Annotation](#user-content-Object_Common_Annotation) object.
 
+<h6><a id="user-content-Object_Common_Annotations_-Contains" target="_self">.Contains</a></h6>
+
+`.Contains` reports whether the annotations contain the given annotation.
+
 <h4><a id="user-content-Object_Common_Decl" target="_self">Decl</a></h4>
 
 `Decl` represents a top-level declaration in a file. 
@@ -669,6 +678,20 @@ All declarations are [nodes](#user-content-Object_Common_Node). Currently, the f
 - [Enum](#user-content-Object_Enum)
 - [Struct](#user-content-Object_Struct)
 - [Interface](#user-content-Object_Interface)
+
+<h6><a id="user-content-Object_Common_Decl_-UsedKinds" target="_self">.UsedKinds</a></h6>
+
+`.UsedKinds` returns the used kinds in the declaration. Returns 0 if the declaration does not use any kinds. Otherwise, returns the OR of all used kinds. 
+Example: 
+```next
+struct User {
+	int64 id;
+	string name;
+	vector<string> emails;
+	map<int, bool> flags;
+}
+```
+The used kinds in the `User` struct are: `(1<<KindInt64) | (1<<KindString) | (1<<KindVector) | (1<<KindMap) | (1<<KindInt) | (1<<KindBool)`.
 
 <h4><a id="user-content-Object_Common_Fields" target="_self">Fields</a></h4>
 
@@ -759,6 +782,10 @@ Currently, the following types are supported:
 
 `.String` represents the string representation of the type.
 
+<h6><a id="user-content-Object_Common_Type_-UsedKinds" target="_self">.UsedKinds</a></h6>
+
+`.UsedKinds` returns the used kinds in the type.
+
 <h6><a id="user-content-Object_Common_Type_-Value" target="_self">.Value</a></h6>
 
 `.Value` returns the reflect value of the type.
@@ -836,6 +863,14 @@ Currently, the following types are supported:
 <h6><a id="user-content-Object_Common_Type_Kind_-Valid" target="_self">.Valid</a></h6>
 
 `.Valid` reports whether the type is valid.
+
+<h5><a id="user-content-Object_Common_Type_Kinds" target="_self">Kinds</a></h5>
+
+`Kinds` represents the type kind set.
+
+<h6><a id="user-content-Object_Common_Type_Kinds_-Contains" target="_self">.Contains</a></h6>
+
+`.Contains` reports whether the type contains specific kind. The kind can be a `Kind` (or any integer) or a string representation of the [kind](#user-content-Object_Common_Type_Kind). If the kind is invalid, it returns an error. Currently, the following kinds are supported:
 
 <h3><a id="user-content-Object_Const" target="_self">Const</a></h3>
 
@@ -943,6 +978,10 @@ Usage in templates:
 <h6><a id="user-content-Object_EnumMember_-Decl" target="_self">.Decl</a></h6>
 
 `.Decl` represents the [enum](#user-content-Object_Enum) that contains the member.
+
+<h6><a id="user-content-Object_EnumMember_-Index" target="_self">.Index</a></h6>
+
+`.Index` represents the index of the enum member in the enum type.
 
 <h6><a id="user-content-Object_EnumMember_-Value" target="_self">.Value</a></h6>
 
@@ -1056,6 +1095,10 @@ Usage in templates:
 
 `.Decl` represents the interface that contains the method.
 
+<h6><a id="user-content-Object_InterfaceMethod_-Index" target="_self">.Index</a></h6>
+
+`.Index` represents the index of the interface method in the interface type.
+
 <h6><a id="user-content-Object_InterfaceMethod_-Params" target="_self">.Params</a></h6>
 
 `.Params` represents the list of method parameters.
@@ -1067,6 +1110,10 @@ Usage in templates:
 <h3><a id="user-content-Object_InterfaceMethodParam" target="_self">InterfaceMethodParam</a></h3>
 
 `InterfaceMethodParam` (extends [Node](#user-content-Object_Common_Node)) represents an interface method parameter declaration.
+
+<h6><a id="user-content-Object_InterfaceMethodParam_-Index" target="_self">.Index</a></h6>
+
+`.Index` represents the index of the interface method parameter in the method.
 
 <h6><a id="user-content-Object_InterfaceMethodParam_-Method" target="_self">.Method</a></h6>
 
@@ -1173,6 +1220,10 @@ Example:
 <h6><a id="user-content-Object_StructField_-Decl" target="_self">.Decl</a></h6>
 
 `.Decl` represents the struct that contains the field.
+
+<h6><a id="user-content-Object_StructField_-Index" target="_self">.Index</a></h6>
+
+`.Index` represents the index of the struct field in the struct type.
 
 <h6><a id="user-content-Object_StructField_-Type" target="_self">.Type</a></h6>
 

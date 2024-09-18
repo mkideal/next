@@ -95,6 +95,7 @@ test/template: install
 		-O csharp=testdata/gen/csharp -T csharp=testdata/templates/csharp \
 		-O c=testdata/gen/c -T c=testdata/templates/c \
 		-O rust=testdata/gen/rust/src -T rust=testdata/templates/rust \
+		-O protobuf=testdata/gen/protobuf -T protobuf=testdata/templates/protobuf \
 		-M "c.vector=void*" -M "c.map=void*" \
 		testdata/next/
 	@cd testdata/gen/rust && cargo init --vcs none

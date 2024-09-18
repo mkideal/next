@@ -5,11 +5,10 @@ import (
 	"path/filepath"
 	"slices"
 	"strconv"
-	"strings"
 
-	"github.com/gopherd/core/container/iters"
 	"github.com/next/next/src/ast"
 	"github.com/next/next/src/constant"
+	"github.com/next/next/src/parser"
 	"github.com/next/next/src/token"
 )
 
@@ -123,6 +122,7 @@ type Interfaces = List[*Interface]
 
 // @api(Object/Decls) holds all declarations in a file.
 type Decls struct {
+	compiler   *Compiler
 	consts     Consts
 	enums      Enums
 	structs    Structs
@@ -154,7 +154,7 @@ func (d *Decls) Consts() Consts {
 	if d == nil {
 		return nil
 	}
-	return availableList(d.consts, d.lang)
+	return availableList(d.compiler, d.consts, d.lang)
 }
 
 // @api(Object/Decls.Enums) represents the [list](#Object/Common/List) of [enum](#Object/Enum) declarations.
@@ -162,7 +162,7 @@ func (d *Decls) Enums() Enums {
 	if d == nil {
 		return nil
 	}
-	return availableList(d.enums, d.lang)
+	return availableList(d.compiler, d.enums, d.lang)
 }
 
 // @api(Object/Decls.Structs) represents the [list](#Object/Common/List) of [struct](#Object/Struct) declarations.
@@ -170,7 +170,7 @@ func (d *Decls) Structs() Structs {
 	if d == nil {
 		return nil
 	}
-	return availableList(d.structs, d.lang)
+	return availableList(d.compiler, d.structs, d.lang)
 }
 
 // @api(Object/Decls.Interfaces) represents the [list](#Object/Common/List) of [interface](#Object/Interface) declarations.
@@ -178,7 +178,7 @@ func (d *Decls) Interfaces() Interfaces {
 	if d == nil {
 		return nil
 	}
-	return availableList(d.interfaces, d.lang)
+	return availableList(d.compiler, d.interfaces, d.lang)
 }
 
 // commonNode represents a common node.
@@ -199,6 +199,7 @@ type commonNode[Self Node] struct {
 }
 
 func newCommonNode[Self Node](
+	c *Compiler,
 	self Self, file *File,
 	pos token.Pos, name string,
 	doc *ast.CommentGroup, annotations *ast.AnnotationGroup,
@@ -381,7 +382,7 @@ func newConst(c *Compiler, file *File, src *ast.GenDecl[ast.Expr]) *Const {
 		Comment: newComment(src.Comment),
 	}
 	file.addObject(c, src, x)
-	x.commonNode = newCommonNode(x, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
+	x.commonNode = newCommonNode(c, x, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	x.value = newValue(c, file, src.Name.Name, src.Name.NamePos, src.Spec)
 	return x
 }
@@ -444,7 +445,7 @@ type Enum struct {
 	MemberType *PrimitiveType
 
 	// @api(Object/Enum.Type) is the enum type.
-	Type *DeclType[*Enum]
+	Type *EnumType
 
 	// @api(Object/Enum.Members) is the list of enum members.
 	Members *EnumMembers
@@ -453,7 +454,7 @@ type Enum struct {
 func newEnum(c *Compiler, file *File, src *ast.GenDecl[*ast.EnumType]) *Enum {
 	e := &Enum{}
 	file.addObject(c, src, e)
-	e.commonNode = newCommonNode(e, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
+	e.commonNode = newCommonNode(c, e, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	e.Type = newDeclType(file, src.Pos(), KindEnum, src.Name.Name, e)
 	e.Members = &EnumMembers{Decl: e}
 	for i, m := range src.Spec.Members.List {
@@ -504,7 +505,7 @@ func newEnumMember(c *Compiler, file *File, e *Enum, src *ast.EnumMember, index 
 		Decl:    e,
 	}
 	file.addObject(c, src, m)
-	m.commonNode = newCommonNode(m, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
+	m.commonNode = newCommonNode(c, m, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	m.value = newValue(c, file, src.Name.Name, src.Name.NamePos, src.Value)
 	m.value.enum.typ = e
 	m.value.enum.index = index
@@ -514,6 +515,11 @@ func newEnumMember(c *Compiler, file *File, e *Enum, src *ast.EnumMember, index 
 func (m *EnumMember) resolve(c *Compiler, file *File, scope Scope) {
 	m.commonNode.resolve(c, file, scope)
 	m.value.resolve(c, file, scope)
+}
+
+// @api(Object/EnumMember.Index) represents the index of the enum member in the enum type.
+func (m *EnumMember) Index() int {
+	return m.value.enum.index
 }
 
 // @api(Object/EnumMember.Value) represents the [value object](#Object/Value) of the enum member.
@@ -542,17 +548,17 @@ type Struct struct {
 	fields *StructFields
 
 	// @api(Object/Struct.Type) represents the struct type.
-	Type *DeclType[*Struct]
+	Type *StructType
 }
 
 func newStruct(c *Compiler, file *File, src *ast.GenDecl[*ast.StructType]) *Struct {
 	s := &Struct{}
 	file.addObject(c, src, s)
-	s.commonNode = newCommonNode(s, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
+	s.commonNode = newCommonNode(c, s, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	s.Type = newDeclType(file, src.Pos(), KindStruct, src.Name.Name, s)
 	s.fields = &StructFields{Decl: s}
-	for _, f := range src.Spec.Fields.List {
-		s.fields.List = append(s.fields.List, newStructField(c, file, s, f))
+	for i, f := range src.Spec.Fields.List {
+		s.fields.List = append(s.fields.List, newStructField(c, file, s, f, i))
 	}
 	return s
 }
@@ -566,7 +572,7 @@ func (s *Struct) resolve(c *Compiler, file *File, scope Scope) {
 
 // @api(Object/Struct.Fields) represents the list of struct fields.
 func (s *Struct) Fields() *StructFields {
-	return availableFields(s.fields, s.lang)
+	return availableFields(s.file.compiler, s.fields, s.lang)
 }
 
 // @api(Object/StructField) (extends [Node](#Object/Common/Node)) represents a struct field declaration.
@@ -576,6 +582,7 @@ type StructField struct {
 	unresolved struct {
 		typ ast.Type
 	}
+	index int
 
 	// @api(Object/StructField.Decl) represents the struct that contains the field.
 	Decl *Struct
@@ -587,10 +594,10 @@ type StructField struct {
 	Comment *Comment
 }
 
-func newStructField(c *Compiler, file *File, s *Struct, src *ast.StructField) *StructField {
-	f := &StructField{Decl: s}
+func newStructField(c *Compiler, file *File, s *Struct, src *ast.StructField, index int) *StructField {
+	f := &StructField{Decl: s, index: index}
 	file.addObject(c, src, f)
-	f.commonNode = newCommonNode(f, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
+	f.commonNode = newCommonNode(c, f, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	f.unresolved.typ = src.Type
 	return f
 }
@@ -598,6 +605,11 @@ func newStructField(c *Compiler, file *File, s *Struct, src *ast.StructField) *S
 func (f *StructField) resolve(c *Compiler, file *File, scope Scope) {
 	f.commonNode.resolve(c, file, scope)
 	f.Type = c.resolveType(file, f.unresolved.typ, false)
+}
+
+// @api(Object/StructField.Index) represents the index of the struct field in the struct type.
+func (f *StructField) Index() int {
+	return f.index
 }
 
 // @api(Object/Interface) (extends [Decl](#Object/Common/Decl)) represents an interface declaration.
@@ -611,19 +623,19 @@ type Interface struct {
 	methods *InterfaceMethods
 
 	// @api(Object/Interface.Type) represents the interface type.
-	Type *DeclType[*Interface]
+	Type *InterfaceType
 }
 
 func newInterface(c *Compiler, file *File, src *ast.GenDecl[*ast.InterfaceType]) *Interface {
-	i := &Interface{}
-	file.addObject(c, src, i)
-	i.commonNode = newCommonNode(i, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
-	i.Type = newDeclType(file, src.Pos(), KindInterface, src.Name.Name, i)
-	i.methods = &InterfaceMethods{Decl: i}
-	for _, m := range src.Spec.Methods.List {
-		i.methods.List = append(i.methods.List, newInterfaceMethod(c, file, i, m))
+	x := &Interface{}
+	file.addObject(c, src, x)
+	x.commonNode = newCommonNode(c, x, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
+	x.Type = newDeclType(file, src.Pos(), KindInterface, src.Name.Name, x)
+	x.methods = &InterfaceMethods{Decl: x}
+	for i, m := range src.Spec.Methods.List {
+		x.methods.List = append(x.methods.List, newInterfaceMethod(c, file, x, m, i))
 	}
-	return i
+	return x
 }
 
 func (i *Interface) resolve(c *Compiler, file *File, scope Scope) {
@@ -635,12 +647,13 @@ func (i *Interface) resolve(c *Compiler, file *File, scope Scope) {
 
 // @api(Object/Interface.Methods) represents the list of interface methods.
 func (i *Interface) Methods() *InterfaceMethods {
-	return availableFields(i.methods, i.lang)
+	return availableFields(i.file.compiler, i.methods, i.lang)
 }
 
 // @api(Object/InterfaceMethod) (extends [Node](#Object/Common/Node)) represents an interface method declaration.
 type InterfaceMethod struct {
 	*commonNode[*InterfaceMethod]
+	index int
 
 	// @api(Object/InterfaceMethod.Decl) represents the interface that contains the method.
 	Decl *Interface
@@ -655,16 +668,17 @@ type InterfaceMethod struct {
 	Comment *Comment
 }
 
-func newInterfaceMethod(c *Compiler, file *File, i *Interface, src *ast.Method) *InterfaceMethod {
+func newInterfaceMethod(c *Compiler, file *File, i *Interface, src *ast.Method, index int) *InterfaceMethod {
 	m := &InterfaceMethod{
+		index:   index,
 		Decl:    i,
 		Comment: newComment(src.Comment),
 	}
 	file.addObject(c, src, m)
-	m.commonNode = newCommonNode(m, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
+	m.commonNode = newCommonNode(c, m, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	m.Params = &InterfaceMethodParams{Decl: m}
-	for _, p := range src.Params.List {
-		m.Params.List = append(m.Params.List, newInterfaceMethodParam(c, file, m, p))
+	for i, p := range src.Params.List {
+		m.Params.List = append(m.Params.List, newInterfaceMethodParam(c, file, m, p, i))
 	}
 	m.Result = newInterfaceMethodResult(c, file, m, src.Result)
 	return m
@@ -680,9 +694,15 @@ func (m *InterfaceMethod) resolve(c *Compiler, file *File, scope Scope) {
 	}
 }
 
+// @api(Object/InterfaceMethod.Index) represents the index of the interface method in the interface type.
+func (m *InterfaceMethod) Index() int {
+	return m.index
+}
+
 // @api(Object/InterfaceMethodParam) (extends [Node](#Object/Common/Node)) represents an interface method parameter declaration.
 type InterfaceMethodParam struct {
 	*commonNode[*InterfaceMethodParam]
+	index int
 
 	unresolved struct {
 		typ ast.Type
@@ -695,12 +715,13 @@ type InterfaceMethodParam struct {
 	Type Type
 }
 
-func newInterfaceMethodParam(c *Compiler, file *File, m *InterfaceMethod, src *ast.MethodParam) *InterfaceMethodParam {
+func newInterfaceMethodParam(c *Compiler, file *File, m *InterfaceMethod, src *ast.MethodParam, index int) *InterfaceMethodParam {
 	p := &InterfaceMethodParam{
 		Method: m,
+		index:  index,
 	}
 	file.addObject(c, src, p)
-	p.commonNode = newCommonNode(p, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
+	p.commonNode = newCommonNode(c, p, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	p.unresolved.typ = src.Type
 	return p
 }
@@ -708,6 +729,11 @@ func newInterfaceMethodParam(c *Compiler, file *File, m *InterfaceMethod, src *a
 func (p *InterfaceMethodParam) resolve(c *Compiler, file *File, scope Scope) {
 	p.commonNode.resolve(c, file, scope)
 	p.Type = c.resolveType(file, p.unresolved.typ, false)
+}
+
+// @api(Object/InterfaceMethodParam.Index) represents the index of the interface method parameter in the method.
+func (p *InterfaceMethodParam) Index() int {
+	return p.index
 }
 
 // @api(Object/InterfaceMethodResult) represents an interface method result.
@@ -737,15 +763,49 @@ func (t *InterfaceMethodResult) resolve(c *Compiler, file *File, scope Scope) {
 }
 
 // isAvailable reports whether the declaration is available in the current language.
-func isAvailable(decl Node, lang string) bool {
+func isAvailable(c *Compiler, decl Node, lang string) bool {
 	s, ok := decl.Annotations().get("next").get("available").(string)
-	// TODO: support logical expression.
-	return !ok || iters.Contains(iters.Map(slices.Values(strings.Split(s, "|")), strings.TrimSpace), lang)
+	if !ok {
+		return true
+	}
+	expr, err := parser.ParseExpr(s)
+	if err != nil {
+		panic(err)
+	}
+	return evalAvailableExpr(c, expr, lang)
+}
+
+func evalAvailableExpr(c *Compiler, expr ast.Expr, lang string) bool {
+	expr = ast.Unparen(expr)
+	switch expr := expr.(type) {
+	case *ast.Ident:
+		return expr.Name == lang
+	case *ast.UnaryExpr:
+		if expr.Op == token.NOT {
+			return !evalAvailableExpr(c, expr.X, lang)
+		}
+		panic("unexpected unary operator: " + expr.Op.String())
+	case *ast.BinaryExpr:
+		switch expr.Op {
+		case token.OR:
+			return evalAvailableExpr(c, expr.X, lang) || evalAvailableExpr(c, expr.Y, lang)
+		case token.AND:
+			return evalAvailableExpr(c, expr.X, lang) && evalAvailableExpr(c, expr.Y, lang)
+		case token.EQL:
+			return evalAvailableExpr(c, expr.X, lang) == evalAvailableExpr(c, expr.Y, lang)
+		case token.NEQ:
+			return evalAvailableExpr(c, expr.X, lang) != evalAvailableExpr(c, expr.Y, lang)
+		default:
+			panic("unexpected binary operator: " + expr.Op.String())
+		}
+	default:
+		panic("unexpected expression")
+	}
 }
 
 // available returns the declaration if it is available in the current language.
-func available[T Node](obj T, lang string) (T, bool) {
-	if !isAvailable(obj, lang) {
+func available[T Node](c *Compiler, obj T, lang string) (T, bool) {
+	if !isAvailable(c, obj, lang) {
 		return obj, false
 	}
 	switch decl := any(obj).(type) {
@@ -760,15 +820,15 @@ func available[T Node](obj T, lang string) (T, bool) {
 }
 
 // availableFields returns the list of fields that are available in the current language.
-func availableFields[D, F Node](fields *Fields[D, F], lang string) *Fields[D, F] {
+func availableFields[D, F Node](c *Compiler, fields *Fields[D, F], lang string) *Fields[D, F] {
 	for i, f := range fields.List {
-		if isAvailable(f, lang) {
+		if isAvailable(c, f, lang) {
 			continue
 		}
 		list := make([]F, 0, len(fields.List))
 		list = append(list, fields.List[:i]...)
 		for j := i + 1; j < len(fields.List); j++ {
-			if isAvailable(fields.List[j], lang) {
+			if isAvailable(c, fields.List[j], lang) {
 				list = append(list, fields.List[j])
 			}
 		}
@@ -778,10 +838,10 @@ func availableFields[D, F Node](fields *Fields[D, F], lang string) *Fields[D, F]
 }
 
 // availableList returns the list of declarations that are available in the current language.
-func availableList[T Node](list List[T], lang string) List[T] {
+func availableList[T Node](c *Compiler, list List[T], lang string) List[T] {
 	availables := make([]T, 0, len(list))
 	for i, d := range list {
-		if _, ok := available(d, lang); ok {
+		if _, ok := available(c, d, lang); ok {
 			availables = append(availables, list[i])
 		}
 	}

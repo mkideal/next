@@ -85,3 +85,64 @@ func ParseFile(fset *token.FileSet, filename string, src interface{}, mode Mode)
 
 	return
 }
+
+// ParseExprFrom is a convenience function for parsing an expression.
+// The arguments have the same meaning as for [ParseFile], but the source must
+// be a valid Next (type or value) expression. Specifically, fset must not
+// be nil.
+//
+// If the source couldn't be read, the returned AST is nil and the error
+// indicates the specific failure. If the source was read but syntax
+// errors were found, the result is a partial AST (with [ast.Bad]* nodes
+// representing the fragments of erroneous source code). Multiple errors
+// are returned via a scanner.ErrorList which is sorted by source position.
+func ParseExprFrom(fset *token.FileSet, filename string, src any, mode Mode) (expr ast.Expr, err error) {
+	if fset == nil {
+		panic("parser.ParseExprFrom: no token.FileSet provided (fset == nil)")
+	}
+
+	// get source
+	text, err := readSource(filename, src)
+	if err != nil {
+		return nil, err
+	}
+
+	var p parser
+	defer func() {
+		if e := recover(); e != nil {
+			// resume same panic if it's not a bailout
+			bail, ok := e.(bailout)
+			if !ok {
+				panic(e)
+			} else if bail.msg != "" {
+				p.errors.Add(p.file.Position(bail.pos), bail.msg)
+			}
+		}
+		p.errors.Sort()
+		err = p.errors.Err()
+	}()
+
+	// parse expr
+	p.init(fset, filename, text, mode)
+	expr = p.parseRhs()
+
+	// If a semicolon was inserted, consume it;
+	// report an error if there's more tokens.
+	if p.tok == token.SEMICOLON && p.lit == "\n" {
+		p.next()
+	}
+	p.expect(token.EOF)
+
+	return
+}
+
+// ParseExpr is a convenience function for obtaining the AST of an expression x.
+// The position information recorded in the AST is undefined. The filename used
+// in error messages is the empty string.
+//
+// If syntax errors were found, the result is a partial AST (with [ast.Bad]* nodes
+// representing the fragments of erroneous source code). Multiple errors are
+// returned via a scanner.ErrorList which is sorted by source position.
+func ParseExpr(x string) (ast.Expr, error) {
+	return ParseExprFrom(token.NewFileSet(), "", []byte(x), 0)
+}

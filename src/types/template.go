@@ -102,10 +102,10 @@ func executeTemplate(t *template.Template, data any) (string, error) {
 
 // templateContextInfo represents the context information of a template.
 type templateContextInfo struct {
-	context *Compiler
-	lang    string // current language
-	dir     string // output directory for current language
-	ext     string // file extension for current language
+	compiler *Compiler
+	lang     string // current language
+	dir      string // output directory for current language
+	ext      string // file extension for current language
 }
 
 // @api(Context) related methods and properties are used to retrieve information, perform operations,
@@ -409,7 +409,7 @@ func (tc *templateContext) lazyInit() error {
 	tc.initiated = true
 
 	var files []string
-	for _, dir := range tc.context.searchDirs {
+	for _, dir := range tc.compiler.searchDirs {
 		var err error
 		files, err = fsutil.AppendFiles(files, filepath.Join(dir, "next"+templateExt), templateExt, false)
 		if err != nil && !os.IsNotExist(err) {
@@ -428,10 +428,10 @@ func (tc *templateContext) lazyInit() error {
 	}
 
 	// Load built-in templates
-	if _, err := tc.loadTemplate("builtin/next"+templateExt, tc.context.builtin); err != nil {
+	if _, err := tc.loadTemplate("builtin/next"+templateExt, tc.compiler.builtin); err != nil {
 		return err
 	}
-	if _, err := tc.loadTemplate("builtin/"+tc.lang+templateExt, tc.context.builtin); err != nil {
+	if _, err := tc.loadTemplate("builtin/"+tc.lang+templateExt, tc.compiler.builtin); err != nil {
 		return err
 	}
 
@@ -449,7 +449,7 @@ func (tc *templateContext) this() reflect.Value {
 }
 
 func (tc *templateContext) env() flags.Map {
-	return tc.context.flags.envs
+	return tc.compiler.flags.envs
 }
 
 func (tc *templateContext) error(msg string) (string, error) {
@@ -511,7 +511,7 @@ func (tc *templateContext) type_(t any, langs ...string) (string, error) {
 }
 
 func (tc *templateContext) resolveLangType(lang string, t any) (result string, err error) {
-	mappings := tc.context.flags.mappings
+	mappings := tc.compiler.flags.mappings
 	defer func() {
 		if err == nil && strings.Contains(result, "box(") {
 			// replace box(...) with the actual type
@@ -614,7 +614,7 @@ func (tc *templateContext) resolveLangType(lang string, t any) (result string, e
 }
 
 func (tc *templateContext) head() string {
-	p, ok := tc.context.flags.mappings[tc.lang+".comment"]
+	p, ok := tc.compiler.flags.mappings[tc.lang+".comment"]
 	if !ok {
 		return ""
 	}
@@ -632,7 +632,7 @@ func (tc *templateContext) loadTemplate(path string, fs fs.FS) (*template.Templa
 			if !os.IsNotExist(err) {
 				return nil, err
 			}
-			tc.context.Infof("template %q not found", path)
+			tc.compiler.Infof("template %q not found", path)
 			return nil, nil
 		}
 		defer f.Close()
@@ -802,7 +802,7 @@ func (tc *templateContext) super(obj Object, langs ...string) (string, error) {
 		return "", fmt.Errorf("super not allowed in the template")
 	}
 	name := tc.stack[len(tc.stack)-1]
-	tc.context.Tracef("super template %q", name)
+	tc.compiler.Tracef("super template %q", name)
 	names := tc.parseTemplateNames(lang, name)
 	if len(names) < 2 {
 		return "", fmt.Errorf("invalid template name %q", name)
@@ -843,7 +843,7 @@ func (tc *templateContext) renderWithNames(names []string, data any) (result str
 		return "", err
 	}
 	tc.stack = append(tc.stack, tt.Name())
-	tc.context.Tracef("rendering template %q", tt.Name())
+	tc.compiler.Tracef("rendering template %q", tt.Name())
 	defer func() {
 		tc.stack = tc.stack[:len(tc.stack)-1]
 	}()

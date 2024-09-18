@@ -27,6 +27,15 @@ func (a Annotations) get(name string) Annotation {
 	return a[name]
 }
 
+// @api(Object/Common/Annotations.Contains) reports whether the annotations contain the given annotation.
+func (a Annotations) Contains(name string) bool {
+	if a == nil {
+		return false
+	}
+	_, ok := a[name]
+	return ok
+}
+
 // @api(Object/Common/Annotation) represents an annotation by `name` => value.
 //
 // Annotation is a map that stores the parameters of a single annotation.
@@ -86,6 +95,15 @@ func (a Annotation) get(name string) any {
 		return nil
 	}
 	return a[name]
+}
+
+// @api(Object/Common/Annotation.Contains) reports whether the annotation contains the given parameter.
+func (a Annotation) Contains(name string) bool {
+	if a == nil {
+		return false
+	}
+	_, ok := a[name]
+	return ok
 }
 
 // @api(Object/Common/Annotation/decl.available)
@@ -433,10 +451,10 @@ func (c *Compiler) createAnnotationSolverRequest(name string) *api.AnnotationSol
 		obj := a.obj.(Node)
 		req.Annotations[api.ID(pos)] = &api.Annotation{
 			ID:     api.ID(pos),
-			Object: api.ID(obj.Pos()),
+			Object: api.ID(obj.Pos().Pos),
 			Params: params,
 		}
-		objects[obj.Pos()] = obj
+		objects[obj.Pos().Pos] = obj
 	}
 	for pos, obj := range objects {
 		req.Objects[api.ID(pos)] = &api.Object{

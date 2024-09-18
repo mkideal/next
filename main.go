@@ -242,8 +242,11 @@ func tryPrintTemplateError(err string) {
 	}
 	line := parts[1]
 	column := parts[2]
-	if i, err := strconv.Atoi(column); err == nil {
-		column = strconv.Itoa(i + 1)
+	if !strings.HasSuffix(filename, nextExt) {
+		// add 1 to column if it is a number for non-next files (most likely for template files)
+		if i, err := strconv.Atoi(column); err == nil {
+			column = strconv.Itoa(i + 1)
+		}
 	}
 	message := parts[3]
 	term.Fprintf(

@@ -229,7 +229,10 @@ func (p *parser) next() {
 }
 
 // A bailout panic is raised to indicate early termination.
-type bailout struct{}
+type bailout struct {
+	msg string
+	pos token.Pos
+}
 
 func (p *parser) error(pos token.Pos, msg string) {
 	if p.trace {
@@ -933,6 +936,10 @@ func (p *parser) parseExpr(cmpAllowed bool) ast.Expr {
 	}
 
 	return p.parseBinaryExpr(nil, token.LowestPrec+1, cmpAllowed)
+}
+
+func (p *parser) parseRhs() ast.Expr {
+	return p.parseExpr(true)
 }
 
 func (p *parser) parseCallExpr(callType string) *ast.CallExpr {

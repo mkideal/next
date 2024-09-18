@@ -188,10 +188,10 @@ func generateForTemplateFile(c *Compiler, lang, ext, dir, tmplFile string) error
 	}
 
 	tc := newTemplateContext(templateContextInfo{
-		context: c,
-		lang:    lang,
-		dir:     dir,
-		ext:     ext,
+		compiler: c,
+		lang:     lang,
+		dir:      dir,
+		ext:      ext,
 	})
 	t, err := createTemplate(tmplFile, string(content), tc.funcs)
 	if err != nil {
@@ -229,7 +229,7 @@ func generateForTemplateFile(c *Compiler, lang, ext, dir, tmplFile string) error
 }
 
 func generateForPackage(tc *templateContext, t *template.Template) error {
-	for _, pkg := range tc.context.packages {
+	for _, pkg := range tc.compiler.packages {
 		if err := gen(tc, t, pkg); err != nil {
 			return err
 		}
@@ -238,7 +238,7 @@ func generateForPackage(tc *templateContext, t *template.Template) error {
 }
 
 func generateForFile(tc *templateContext, t *template.Template) error {
-	for _, f := range tc.context.files {
+	for _, f := range tc.compiler.files {
 		if err := gen(tc, t, f); err != nil {
 			return err
 		}
@@ -247,7 +247,7 @@ func generateForFile(tc *templateContext, t *template.Template) error {
 }
 
 func generateForConst(tc *templateContext, t *template.Template) error {
-	for _, file := range tc.context.files {
+	for _, file := range tc.compiler.files {
 		if file.decls == nil {
 			continue
 		}
@@ -261,7 +261,7 @@ func generateForConst(tc *templateContext, t *template.Template) error {
 }
 
 func generateForEnum(tc *templateContext, t *template.Template) error {
-	for _, file := range tc.context.files {
+	for _, file := range tc.compiler.files {
 		if file.decls == nil {
 			continue
 		}
@@ -275,7 +275,7 @@ func generateForEnum(tc *templateContext, t *template.Template) error {
 }
 
 func generateForStruct(tc *templateContext, t *template.Template) error {
-	for _, file := range tc.context.files {
+	for _, file := range tc.compiler.files {
 		if file.decls == nil {
 			continue
 		}
@@ -289,7 +289,7 @@ func generateForStruct(tc *templateContext, t *template.Template) error {
 }
 
 func generateForInterface(tc *templateContext, t *template.Template) error {
-	for _, file := range tc.context.files {
+	for _, file := range tc.compiler.files {
 		if file.decls == nil {
 			continue
 		}
@@ -311,7 +311,7 @@ func gen[T Decl](tc *templateContext, t *template.Template, decl T) error {
 	}
 
 	// skip if the declaration is not available in the target language
-	decl, ok := available(decl, tc.lang)
+	decl, ok := available(tc.compiler, decl, tc.lang)
 	if !ok {
 		return nil
 	}
@@ -327,7 +327,7 @@ func gen[T Decl](tc *templateContext, t *template.Template, decl T) error {
 		return err
 	}
 	for k, v := range meta {
-		tc.context.Printf("%s: meta[%q] = %q", t.Name(), k, v)
+		tc.compiler.Printf("%s: meta[%q] = %q", t.Name(), k, v)
 	}
 
 	// skip if the meta data contains 'skip' and its value is true

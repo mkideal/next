@@ -13,6 +13,7 @@
     cpp_package="demo",
     c_package="DEMO_",
     java_package="com.example.demo",
+    csharp_package="Demo",
 )
 package demo;
 
@@ -44,6 +45,7 @@ struct User {
     map<string, int> scores;
     array<float64, 3> coordinates;
     Color favoriteColor;
+    @deprecated string email;
     any extra;
 }
 
@@ -99,7 +101,18 @@ struct LoginRequest {
     string password;
     // @optional annotation is a custom annotation that marks a field as optional.
     @optional string device;
+    @next(available="!protobuf")
     @optional(default=OperatingSystem.IOS) OperatingSystem os;
+
+    // @optional is not supported for array, vector, and map fields:
+    //
+    // Bad example:
+    //  @optional array<float64, 3> coordinates;
+    //  @optional vector<string> tags;
+    //  @optional map<string, int> scores;
+
+    @next(proto_type="fixed64")
+    int64 timestamp;
 }
 
 // LoginResponse represents a login response message (type 102)

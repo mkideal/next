@@ -1,0 +1,6 @@
+{{/* Skip interfaces */}}
+{{- define "protobuf/interfaces"}}{{- end -}}
+
+{{head}}
+
+{{next this}}

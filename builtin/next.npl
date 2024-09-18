@@ -7,16 +7,16 @@
 {{/* next/decls: Generates code for all declarations in a file, including constants, enums, structs, and interfaces */}}
 {{- define "next/decls" -}}
 {{- if .Consts -}}
-    {{- next .Consts}}
+    {{- next .Consts -}}
 {{end -}}
 {{- if .Enums -}}
-    {{- next .Enums}}
+    {{- next .Enums -}}
 {{end -}}
 {{- if .Structs -}}
-    {{- next .Structs}}
+    {{- next .Structs -}}
 {{end -}}
 {{- if .Interfaces -}}
-    {{- next .Interfaces}}
+    {{- next .Interfaces -}}
 {{end -}}
 {{- end}}
 
@@ -44,8 +44,9 @@ import "{{.Path}}";
 
 {{/* next/consts: Generates code for all constant declarations in a file */}}
 {{- define "next/consts" -}}
-{{range .List}}
-{{next . -}}
+{{- range .List}}
+{{- next .}}
+{{_}}
 {{- end}}
 {{- end}}
 
@@ -141,11 +142,11 @@ enum {{next .Type}} {
 {{- define "next/decl:internal.types" -}}
 {{- $n := 0 -}}
 {{range .List}}
-    {{- if or (not .Annotations.next) (not (index .Annotations.next (printf "%s_alias" lang))) }}
-{{_}}
-        {{- if $n}}{{print "\n"}}{{end -}}
-            {{next .}}
-        {{- end}}
+    {{- if or (not .Annotations.next) (not (index .Annotations.next (printf "%s_alias" lang))) -}}
+        {{- println}}
+        {{- next .}}
+        {{- println}}
+    {{- end}}
     {{- $n = add 1 $n}}
 {{- end}}
 {{- end}}

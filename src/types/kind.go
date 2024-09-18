@@ -1,7 +1,48 @@
 package types
 
+import (
+	"fmt"
+	"reflect"
+	"strings"
+)
+
+// @api(Object/Common/Type/Kinds) represents the type kind set.
+type Kinds uint64
+
+func (ks Kinds) contains(k Kind) bool {
+	k = 1 << k
+	return ks&Kinds(k) == Kinds(k)
+}
+
+// @api(Object/Common/Type/Kinds.Contains) reports whether the type contains specific kind.
+// The kind can be a `Kind` (or any integer) or a string representation of the [kind](#Object/Common/Type/Kind).
+// If the kind is invalid, it returns an error. Currently, the following kinds are supported:
+func (ks Kinds) Contains(k any) (bool, error) {
+	switch k := k.(type) {
+	case Kind:
+		return ks.contains(k), nil
+	case string:
+		var o Kind
+		if err := o.Set(k); err != nil {
+			return false, err
+		}
+		return ks.contains(o), nil
+	default:
+		switch reflect.TypeOf(k).Kind() {
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			return ks.contains(Kind(reflect.ValueOf(k).Int())), nil
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			return ks.contains(Kind(reflect.ValueOf(k).Uint())), nil
+		default:
+			return false, fmt.Errorf("invalid type %T", k)
+		}
+	}
+}
+
 //go:generate stringer -type=Kind -linecomment
 type Kind int
+
+func (k Kind) kinds() Kinds { return 1 << k }
 
 // @api(Object/Common/Type/Kind) represents the type kind.
 // Currently, the following kinds are supported:
@@ -51,6 +92,50 @@ const (
 // @api(Object/Common/Type/Kind.Valid) reports whether the type is valid.
 func (k Kind) Valid() bool {
 	return k > KindInvalid && k < kindCount
+}
+
+func (k *Kind) Set(s string) error {
+	switch s = strings.ToLower(s); s {
+	case "bool":
+		*k = KindBool
+	case "int":
+		*k = KindInt
+	case "int8":
+		*k = KindInt8
+	case "int16":
+		*k = KindInt16
+	case "int32":
+		*k = KindInt32
+	case "int64":
+		*k = KindInt64
+	case "float32":
+		*k = KindFloat32
+	case "float64":
+		*k = KindFloat64
+	case "byte":
+		*k = KindByte
+	case "bytes":
+		*k = KindBytes
+	case "string":
+		*k = KindString
+	case "any":
+		*k = KindAny
+	case "map":
+		*k = KindMap
+	case "vector":
+		*k = KindVector
+	case "array":
+		*k = KindArray
+	case "enum":
+		*k = KindEnum
+	case "struct":
+		*k = KindStruct
+	case "interface":
+		*k = KindInterface
+	default:
+		return fmt.Errorf("invalid kind %q", s)
+	}
+	return nil
 }
 
 // @api(Object/Common/Type/Kind.Bits) returns the number of bits for the type.

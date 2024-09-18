@@ -21,7 +21,7 @@ type Package struct {
 	annotations Annotations
 }
 
-func (p *Package) Pos() token.Pos { return token.NoPos }
+func (p *Package) Pos() Position { return Position{} }
 
 // @api(Object/Package.Name) represents the package name string.
 func (p *Package) Name() string { return p.name }
@@ -109,9 +109,10 @@ func (p *Package) resolve(c *Compiler) error {
 
 // @api(Object/File) (extends [Decl](#Object/Common/Decl)) represents a Next source file.
 type File struct {
-	pos token.Pos // position of the file
-	pkg *Package  // package containing the file
-	src *ast.File // the original AST
+	compiler *Compiler
+	pos      token.Pos // position of the file
+	pkg      *Package  // package containing the file
+	src      *ast.File // the original AST
 
 	imports *Imports            // import declarations
 	decls   *Decls              // top-level declarations: const, enum, struct, interface
@@ -132,13 +133,14 @@ type File struct {
 
 func newFile(c *Compiler, src *ast.File, path string) *File {
 	f := &File{
-		src:     src,
-		pos:     src.Pos(),
-		Path:    path,
-		doc:     newDoc(src.Doc),
-		decls:   &Decls{},
-		symbols: make(map[string]Symbol),
-		objects: make(map[ast.Node]Object),
+		compiler: c,
+		src:      src,
+		pos:      src.Pos(),
+		Path:     path,
+		doc:      newDoc(src.Doc),
+		decls:    &Decls{compiler: c},
+		symbols:  make(map[string]Symbol),
+		objects:  make(map[ast.Node]Object),
 	}
 	f.imports = &Imports{File: f}
 	f.unresolved.annotations = src.Annotations

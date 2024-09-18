@@ -1,0 +1,140 @@
+{{- define "next/protobuf/file" -}}
+syntax = "proto3";
+
+package {{this.Package.Name}};
+{{render "next/protobuf/package:options" this.Package}}
+{{next .Imports}}
+{{next .Decls}}
+{{- end}}
+
+{{- /* Handle package-level options based on annotations */}}
+{{- define "next/protobuf/package:options"}}
+{{- if .Annotations.Contains "next" }}
+{{- range $key, $value := .Annotations.next }}
+    {{- if not (hasSuffix "_package" $key) -}}
+        {{- continue -}}
+    {{- end -}}
+    {{- $lang := $key | trimSuffix "_package" -}}
+    {{- if eq $lang "go" }}
+option go_package = "{{$value}}";
+    {{- else if eq $lang "java" }}
+option java_package = "{{$value}}";
+    {{- else if eq $lang "csharp" }}
+option csharp_namespace = "{{$value}}";
+    {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{- define "next/protobuf/imports" -}}
+{{- if this.UsedKinds.Contains "any"}}
+import "google/protobuf/any.proto";
+{{- end}}
+
+{{- range .List}}
+{{next .}}
+{{- end}}
+{{- end}}
+
+{{- define "next/protobuf/import" -}}
+import "{{.File.Name}}.proto";
+{{- end}}
+
+{{/* Skip constants */}}
+{{- define "next/protobuf/consts" -}}{{- end -}}
+
+{{- define "next/protobuf/enum" -}}
+{{- if .MemberType.Kind.IsInteger -}}
+{{next .Doc}}enum {{next .Type}} {
+    {{- $hasZero := false -}}
+    {{- range .Members.List}}
+        {{- if eq .Value.Any 0 -}}
+            {{- $hasZero = true -}}
+            {{- break -}}
+        {{- end -}}
+    {{- end}}
+    {{- if not $hasZero}}
+    XXX_Unspecified_{{next .Type}} = 0;
+    {{- end}}
+    {{- next .Members}}
+}
+{{- else -}}
+// enum {{next .Type}} Skipped.
+{{- end}}
+{{- end}}
+
+{{- define "next/protobuf/enum.member" -}}
+{{next .Doc}}{{render "enum.member:name" .}} = {{.Value}};
+{{- end}}
+
+{{- define "next/protobuf/struct" -}}
+{{next .Doc}}message {{next .Type}} {
+    {{- next .Fields}}
+}
+{{- end}}
+
+{{- define "next/protobuf/struct.field" -}}
+{{next .Doc}}
+    {{- /* Assign sequential tag number based on field index */ -}}
+    {{- $tag := add .Index 1 -}}
+    
+    {{- /* Handle custom field type if specified */ -}}
+    {{- $type := "" -}}
+    {{- if .Annotations.next.proto_type -}}
+        {{- $type = .Annotations.next.proto_type -}}
+    {{- else -}}
+        {{- $type = next .Type -}}
+    {{- end -}}
+
+    {{- if .Annotations.Contains "optional" -}}
+        {{- if .Type.Kind.IsArray -}}
+            {{errorf "%s: @optional annotation is not supported for array field" .Pos -}}
+        {{- else if .Type.Kind.IsVector -}}
+            {{errorf "%s: @optional annotation is not supported for vector field" .Pos -}}
+        {{- else if .Type.Kind.IsMap -}}
+            {{errorf "%s: @optional annotation is not supported for map field" .Pos -}}
+        {{- else -}}
+            {{- $type = printf "optional %s" $type -}}
+        {{- end -}}
+    {{- end -}}
+    
+    {{- /* Generate the field definition */ -}}
+    {{$type}} {{render "struct.field:name" .}} = {{$tag}}{{if .Annotations.Contains "deprecated"}} [deprecated = true]{{end}};
+{{- end}}
+
+{{- define "next/protobuf/interface" -}}
+{{next .Doc}}service {{next .Type}} {
+    {{- next .Methods}}
+}
+{{- end}}
+
+{{- define "next/protobuf/interface.method" -}}
+{{next .Doc}}rpc {{render "interface.method:name" .}} ({{render "interface.method:param.type" .}}) returns ({{next .Result}});
+{{- end}}
+
+{{- define "next/protobuf/interface.method:param.type" -}}
+{{- if .Params.List -}}
+{{- if eq (len .Params.List) 1 -}}
+{{- next (index .Params.List 0).Type -}}
+{{- else -}}
+{{- render "interface.method:name" .}}Request
+{{- end -}}
+{{- else -}}
+google.protobuf.Empty
+{{- end}}
+{{- end}}
+
+{{- define "next/protobuf/interface.method.result" -}}
+{{- if .Type -}}
+{{- next .Type -}}
+{{- else -}}
+google.protobuf.Empty
+{{- end}}
+{{- end}}
+
+{{- define "next/protobuf/used.type" -}}
+{{- if not (.File.Package.Contains .Type) -}}
+    {{.Type.File.Package.Name}}.
+{{- end}}
+{{- next .Type -}}
+{{- end}}
