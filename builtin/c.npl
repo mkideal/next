@@ -92,7 +92,7 @@ typedef struct {{next .Type}} {{next .Type}};
 {{- else if .MemberType.Kind.IsFloat}}
     double value;
 {{- else}}
-    {{errorf "unsupported enum member type: %s" .MemberType.Kind}}
+    {{error "unsupported enum member type: %s" .MemberType.Kind}}
 {{- end}}
 } {{next .Type}};
 {{range .Members.List}}

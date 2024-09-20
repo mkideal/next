@@ -219,16 +219,6 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		// ```
 		"error": tc.error,
 
-		// @api(Context/errorf) used to return a formatted error message in the template.
-		//
-		// - **Parameters**: (_format_: string, _args_: ...any)
-		//
-		// Example:
-		// ```npl
-		// {{errorf "%s went wrong" "Something"}}
-		// ```
-		"errorf": tc.errorf,
-
 		// @api(Context/pwd) returns the current template file's directory.
 		//
 		// Example:
@@ -306,7 +296,7 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 
 		// @api(Context/type) outputs the string representation of the given [type](#Object/Common/Type) for the current language.
 		// The type function will lookup the type mapping in the command line flag `-M` and return the corresponding type. If
-		// the type is not found, it will lookup <LANG>.map file (e.g., cpp.map) for the type mapping. If the type is still not found,
+		// the type is not found, it will lookup LANG.map file (e.g., cpp.map) for the type mapping. If the type is still not found,
 		// it will return an error.
 		"type": tc.type_,
 

@@ -57,18 +57,20 @@ type Compiler struct {
 	searchDirs []string
 
 	// all annotations
-	annotations map[token.Pos]*linkedAnnotation
+	annotations         map[token.Pos]*linkedAnnotation
+	annotationPositions map[locatedAnnotation]token.Pos
 }
 
 // NewCompiler creates a new compiler with builtin language supports
 func NewCompiler(builtin fs.FS) *Compiler {
 	c := &Compiler{
-		builtin:     builtin,
-		fset:        token.NewFileSet(),
-		files:       make(map[string]*File),
-		symbols:     make(map[string]Symbol),
-		searchDirs:  createSearchDirs(),
-		annotations: make(map[token.Pos]*linkedAnnotation),
+		builtin:             builtin,
+		fset:                token.NewFileSet(),
+		files:               make(map[string]*File),
+		symbols:             make(map[string]Symbol),
+		searchDirs:          createSearchDirs(),
+		annotations:         make(map[token.Pos]*linkedAnnotation),
+		annotationPositions: make(map[locatedAnnotation]token.Pos),
 	}
 	c.flags.envs = make(flags.Map)
 	c.flags.outputs = make(flags.Map)
@@ -104,7 +106,7 @@ func (c *Compiler) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 		"Define custom environment variables for use in code generation templates.\n"+
 		"`NAME"+grey("[=VALUE]")+"` represents the variable name and its optional value.\n"+
 		"Example:\n"+
-		"  -D VERSION=2.1 -D DEBUG -D NAME=myapp\n"+
+		"  next -D VERSION=2.1 -D DEBUG -D NAME=myapp\n"+
 		"And then, use the variables in templates like this: {{env.NAME}}, {{env.VERSION}}\n",
 	))
 
@@ -112,7 +114,7 @@ func (c *Compiler) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 		"Set output directories for generated code, organized by target language.\n"+
 		"`LANG=DIR` specifies the target language and its output directory.\n"+
 		"Example:\n"+
-		"  -O go=./output/go -O ts=./output/ts\n",
+		"  next -O go=./output/go -O ts=./output/ts\n",
 	))
 
 	flagSet.Var(&c.flags.templates, "T", u(""+
@@ -120,9 +122,10 @@ func (c *Compiler) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 		"`LANG=PATH` defines the target language and its template directory or file.\n"+
 		"Multiple templates can be specified for a single language.\n"+
 		"Example:\n"+
-		"  -T go=./templates/go\n"+
-		"  -T go=./templates/go_extra.npl\n"+
-		"  -T python=./templates/python.npl\n",
+		"  next \\\n"+
+		"    -T go=./templates/go \\\n"+
+		"    -T go=./templates/go_extra.npl \\\n"+
+		"    -T python=./templates/python.npl\n",
 	))
 
 	flagSet.Var(&c.flags.mappings, "M", u(""+
@@ -134,11 +137,12 @@ func (c *Compiler) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 		"    "+b("%T%")+", "+b("%N%")+", "+b("%K%")+", "+b("%V%")+" are placeholders replaced with actual types or values.\n"+
 		"Feature mappings: Set language-specific properties like file extensions or comment styles.\n"+
 		"Example:\n"+
-		"  -M \"cpp.vector\"=\"std::vector<%T%>\"\n"+
-		"  -M \"java.array\"=\"ArrayList<%T%>\"\n"+
-		"  -M \"go.map\"=\"map[%K%]%V%\"\n"+
-		"  -M python.ext=.py\n"+
-		"  -M \"ruby.comment)\"=\"# %T%\"\n",
+		"  next \\\n"+
+		"    -M cpp.vector=\"std::vector<%T%>\" \\\n"+
+		"    -M java.array=\"ArrayList<%T%>\" \\\n"+
+		"    -M go.map=\"map[%K%]%V%\" \\\n"+
+		"    -M python.ext=.py \\\n"+
+		"    -M ruby.comment=\"# %T%\"\n",
 	))
 
 	flagSet.Var(&c.flags.solvers, "X", u(""+
@@ -148,7 +152,7 @@ func (c *Compiler) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 		"All annotations are passed to the solver program via stdin and stdout.\n"+
 		b("NOTE")+": built-in annotation 'next' is reserved for the Next compiler.\n"+
 		"Example:\n"+
-		"  -X message=\"message-type-allocator -f message-types.json\"\n",
+		"  next -X message=\"message-type-allocator -f message-types.json\"\n",
 	))
 }
 
@@ -349,7 +353,7 @@ func (c *Compiler) Resolve() error {
 		for name, symbol := range file.symbols {
 			symbolName := joinSymbolName(file.pkg.name, name)
 			if prev, ok := c.symbols[symbolName]; ok {
-				c.addErrorf(symbol.Pos().Pos, "symbol %s redeclared: previous declaration at %s", symbolName, prev.Pos())
+				c.addErrorf(symbol.Pos().Offset, "symbol %s redeclared: previous declaration at %s", symbolName, prev.Pos())
 			} else {
 				c.symbols[symbolName] = symbol
 			}
@@ -387,50 +391,6 @@ func (c *Compiler) Resolve() error {
 	}
 
 	return c.errors.Err()
-}
-
-// resolveAnnotationGroup resolves an annotation group
-func (c *Compiler) resolveAnnotationGroup(file *File, obj Node, annotations *ast.AnnotationGroup) Annotations {
-	if annotations == nil {
-		return nil
-	}
-	result := make(Annotations)
-	for _, a := range annotations.List {
-		if _, dup := result[a.Name.Name]; dup {
-			c.addErrorf(a.Pos(), "annotation %s redeclared", a.Name.Name)
-			continue
-		}
-		annotation := make(Annotation)
-		c.annotations[a.Pos()] = &linkedAnnotation{
-			name:       a.Name.Name,
-			obj:        obj,
-			annotation: annotation,
-		}
-		for _, p := range a.Params {
-			name := p.Name.Name
-			if _, dup := annotation[name]; dup {
-				c.addErrorf(p.Pos(), "named parameter %s redefined", name)
-				continue
-			}
-			if p.Value == nil {
-				annotation[name] = true
-				continue
-			}
-			if t, ok := p.Value.(ast.Type); ok {
-				if typ := c.resolveType(file, t, true); typ != nil {
-					annotation[name] = typ
-					continue
-				}
-			}
-			if e, ok := p.Value.(ast.Expr); ok {
-				annotation[name] = constant.Underlying(c.resolveValue(file, e, nil))
-				continue
-			}
-			c.addErrorf(p.Pos(), "unexpected parameter %T", p.Value)
-		}
-		result[a.Name.Name] = annotation
-	}
-	return result
 }
 
 // resolveValue resolves a value of an expression

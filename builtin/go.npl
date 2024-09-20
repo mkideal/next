@@ -240,6 +240,6 @@ type HTTPServer interface {
     {{- if $ptr -}}*{{- end -}}
     {{$pkg}}.{{$typ}}
 {{- else }}
-{{- errorf "bad go_alias format: %q" $alias}}
+{{- error "bad go_alias format: %q" $alias}}
 {{- end -}}
 {{- end}}

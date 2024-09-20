@@ -1,4 +1,4 @@
-# Next Language Specification
+# Language Specification
 
 ## 1. Introduction
 
@@ -280,24 +280,24 @@ All expressions used in constant declarations must be valid constant expressions
 | **iota** | Used in enum declarations to declare built-in incrementing variable |
 | **int**(`x: bool\|int\|float`) | Convert bool, int, or float to integer |
 | **float**(`x: bool\|int\|float`) | Convert bool, int, or float to floating-point number |
-| **bool**(`x: any`) | Convert bool, int, float, or string to bool |
-| **min**(`x: any`, `y: any...`) | Get the minimum value of one or more values |
-| **max**(`x: any`, `y: any...`) | Get the maximum value of one or more values |
+| **bool**(`x`) | Convert bool, int, float, or string to bool |
+| **min**(`x, y...`) | Get the minimum value of one or more values |
+| **max**(`x, y...`) | Get the maximum value of one or more values |
 | **abs**(`x: int\|float`) | Get the absolute value |
 | **len**(`s: string`) | Calculate the length of a string |
-| **sprint**(`args: any...`) | Output arguments as a string, if all arguments are strings, separate them with spaces |
-| **sprintf**(`fmt: string`, `args: any...`) | Formatted string output |
-| **sprintln**(`args: any...`) | Similar to `sprint`, but adds a newline at the end |
-| **print**(`args: any...`) | Debug output information, automatically adds a newline if content doesn't have one |
-| **printf**(`fmt: string`, `args: any...`) | Debug output formatted information, automatically adds a newline if content doesn't have one |
-| **error**(`args: any...`) | Output error message, requires at least one argument |
-| **assert**(`cond: bool`, `args: any...`) | Assert if true |
-| **assert_eq**(`x: any`, `y: any`, `args: any...`) | Assert if `x` equals to `y` |
-| **assert_ne**(`x: any`, `y: any`, `args: any...`) | Assert if `x` does not equal to `y` |
-| **assert_lt**(`x: any`, `y: any`, `args: any...`) | Assert if `x` is less than `y` |
-| **assert_le**(`x: any`, `y: any`, `args: any...`) | Assert if `x` is less than or equal to `y` |
-| **assert_gt**(`x: any`, `y: any`, `args: any...`) | Assert if `x` is greater than `y` |
-| **assert_ge**(`x: any`, `y: any`, `args: any...`) | Assert if `x` is greater than or equal to `y` |
+| **sprint**(`args...`) | Output arguments as a string, if all arguments are strings, separate them with spaces |
+| **sprintf**(`fmt, args...`) | Formatted string output |
+| **sprintln**(`args...`) | Similar to `sprint`, but adds a newline at the end |
+| **print**(`args...`) | Debug output information, automatically adds a newline if content doesn't have one |
+| **printf**(`fmt, args...`) | Debug output formatted information, automatically adds a newline if content doesn't have one |
+| **error**(`args...`) | Output error message, requires at least one argument |
+| **assert**(`cond, args...`) | Assert if true |
+| **assert_eq**(`x, y, args...`) | Assert if `x` equals to `y` |
+| **assert_ne**(`x, y, args...`) | Assert if `x` does not equal to `y` |
+| **assert_lt**(`x, y, args...`) | Assert if `x` is less than `y` |
+| **assert_le**(`x, y, args...`) | Assert if `x` is less than or equal to `y` |
+| **assert_gt**(`x, y, args...`) | Assert if `x` is greater than `y` |
+| **assert_ge**(`x, y, args...`) | Assert if `x` is greater than or equal to `y` |
 
 ## 8. Lexical Conventions
 

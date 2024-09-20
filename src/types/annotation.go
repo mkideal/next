@@ -10,6 +10,7 @@ import (
 	"github.com/mattn/go-shellwords"
 
 	"github.com/next/next/api"
+	"github.com/next/next/src/ast"
 	"github.com/next/next/src/constant"
 	"github.com/next/next/src/token"
 )
@@ -108,7 +109,8 @@ func (a Annotation) Contains(name string) bool {
 
 // @api(Object/Common/Annotation/decl.available)
 // The `@next(available="expression")` annotation for `file`, `const`, `enum`, `struct`, `field`, `interface`, `method`
-// availability of the declaration.
+// availability of the declaration. The `expression` is a boolean expression that can be used to control the availability
+// of the declaration in the target language. Supported operators are `&`, `|`, `!`, `(`, `)`, and `true`, `false`.
 //
 // Example:
 // ```next
@@ -338,6 +340,11 @@ func (a Annotation) Contains(name string) bool {
 //	};
 // ```
 
+type locatedAnnotation struct {
+	key     string
+	declPos token.Pos
+}
+
 // linkedAnnotation represents an annotation linked to a declaration.
 type linkedAnnotation struct {
 	name       string
@@ -346,6 +353,69 @@ type linkedAnnotation struct {
 	// obj is declared as type `Object` to avoid circular dependency.
 	// Actually, it's a `Node`.
 	obj Object
+}
+
+// resolveAnnotations resolves an annotation group
+func resolveAnnotations(c *Compiler, file *File, obj Node, annotations *ast.AnnotationGroup) Annotations {
+	if annotations == nil {
+		return nil
+	}
+	result := make(Annotations)
+	for _, a := range annotations.List {
+		if _, dup := result[a.Name.Name]; dup {
+			c.addErrorf(a.Pos(), "annotation %s redeclared", a.Name.Name)
+			continue
+		}
+		annotation := make(Annotation)
+		la := &linkedAnnotation{
+			name:       a.Name.Name,
+			obj:        obj,
+			annotation: annotation,
+		}
+		pos := obj.Pos().Offset
+		c.annotations[pos] = la
+		c.annotationPositions[locatedAnnotation{
+			key:     a.Name.Name,
+			declPos: pos,
+		}] = pos
+		for _, p := range a.Params {
+			name := p.Name.Name
+			if _, dup := annotation[name]; dup {
+				c.addErrorf(p.Pos(), "named parameter %s redefined", name)
+				continue
+			}
+			var value any
+			if p.Value == nil {
+				value = true
+			} else if t, ok := p.Value.(ast.Type); ok {
+				if typ := c.resolveType(file, t, true); typ != nil {
+					value = typ
+				}
+			}
+			if value == nil {
+				if e, ok := p.Value.(ast.Expr); ok {
+					value = constant.Underlying(c.resolveValue(file, e, nil))
+				}
+			}
+			if value != nil {
+				annotation[name] = value
+				c.annotationPositions[locatedAnnotation{
+					key:     a.Name.Name + "." + p.Name.Name,
+					declPos: pos,
+				}] = p.Name.NamePos
+				if p.Value != nil {
+					c.annotationPositions[locatedAnnotation{
+						key:     a.Name.Name + "." + p.Name.Name + ":value",
+						declPos: pos,
+					}] = p.Value.Pos()
+				}
+			} else {
+				c.addErrorf(p.Pos(), "unexpected parameter %T", p.Value)
+			}
+		}
+		result[a.Name.Name] = annotation
+	}
+	return result
 }
 
 func (c *Compiler) solveAnnotations() error {
@@ -451,10 +521,10 @@ func (c *Compiler) createAnnotationSolverRequest(name string) *api.AnnotationSol
 		obj := a.obj.(Node)
 		req.Annotations[api.ID(pos)] = &api.Annotation{
 			ID:     api.ID(pos),
-			Object: api.ID(obj.Pos().Pos),
+			Object: api.ID(obj.Pos().Offset),
 			Params: params,
 		}
-		objects[obj.Pos().Pos] = obj
+		objects[obj.Pos().Offset] = obj
 	}
 	for pos, obj := range objects {
 		req.Objects[api.ID(pos)] = &api.Object{

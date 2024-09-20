@@ -1,4 +1,4 @@
-//go:generate go run github.com/gopherd/tools/cmd/docgen@v0.0.1 ./ ../../docs/en/api.md
+//go:generate go run github.com/gopherd/tools/cmd/docgen@v0.0.2 -I ./ -o ../../website/docs/api -level 0
 package types
 
 import (
@@ -12,14 +12,14 @@ import (
 )
 
 // @api(Object/Common) contains some general types, including a generic type. Unless specifically stated,
-// these objects cannot be directly called using the [next](#Context/next) function.
+// these objects cannot be directly called using the `Context/next` function.
 // The [Value](#Object/Common/Value) object represents a value, which can be either a constant
 // value or an enum member's value. The object type for the former is `const.value`, and for
 // the latter is `enum.member.value`.
 
 // -------------------------------------------------------------------------
 
-// @api(Object) is a generic object type. These objects can be used as parameters for the [next](#Context/next)
+// @api(Object) is a generic object type. These objects can be used as parameters for the `Context/next`
 // function, like `{{next .}}`.
 type Object interface {
 	// @api(Object.Typeof) returns the type name of the object.
@@ -156,13 +156,13 @@ func (*CallStmt) Typeof() string { return "stmt.call" }
 // -------------------------------------------------------------------------
 
 type Position struct {
-	Pos      token.Pos
+	Offset   token.Pos
 	Filename string
 	Line     int
 	Column   int
 }
 
-func (pos Position) IsValid() bool { return pos.Pos.IsValid() }
+func (pos Position) IsValid() bool { return pos.Offset.IsValid() }
 
 func (pos Position) String() string {
 	s := pos.Filename
@@ -185,7 +185,7 @@ func positionFor(c *Compiler, pos token.Pos) Position {
 	if pos.IsValid() {
 		p := c.fset.Position(pos)
 		return Position{
-			Pos:      pos,
+			Offset:   pos,
 			Filename: p.Filename,
 			Line:     p.Line,
 			Column:   p.Column,
@@ -241,7 +241,7 @@ type Node interface {
 	// @api(Object/Common/Node.Doc) represents the documentation comment for the node.
 	Doc() *Doc
 
-	// @api(Object/Common/Node.Annotations) represents the [annotations](#Annotation/Annotations) for the node.
+	// @api(Object/Common/Node.Annotations) represents the [annotations](#Object/Common/Annotations) for the node.
 	Annotations() Annotations
 }
 

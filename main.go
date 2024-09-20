@@ -28,7 +28,7 @@ var builtin embed.FS
 
 const currentDir = "."
 const nextExt = ".next"
-const website = "https://nextlang.org"
+const website = "https://next.as"
 const repository = "https://github.com/next/next"
 
 func main() {
@@ -142,14 +142,12 @@ func try(err any) {
 	case error:
 		if errs, ok := err.(scanner.ErrorList); ok {
 			const maxErrorCount = 20
-			var sb strings.Builder
 			for i := 0; i < len(errs) && i < maxErrorCount; i++ {
-				fmt.Fprintln(&sb, errs[i])
+				tryPrintPositionError(errs[i].Error())
 			}
 			if remaining := len(errs) - maxErrorCount; remaining > 0 {
-				fmt.Fprintf(&sb, "and %d more errors\n", remaining)
+				fmt.Fprintf(os.Stderr, "and %d more errors\n", remaining)
 			}
-			fmt.Fprint(os.Stderr, sb.String())
 		} else {
 			formatError(err)
 		}
@@ -189,38 +187,38 @@ func formatError(err error) {
 		s := strings.TrimSpace(errs[i])
 		s = strings.TrimPrefix(s, "template: ")
 		s = strings.TrimSuffix(s, ":")
-		if s == "" || strings.HasPrefix(tryParseTemplateFilename(s), types.StubPrefix) {
+		if s == "" || strings.HasPrefix(tryParseFilename(s), types.StubPrefix) {
 			errs = append(errs[:i], errs[i+1:]...)
 		} else {
 			errs[i] = s
 		}
 	}
 	if len(errs) == 0 {
-		tryPrintTemplateError(err.Error())
+		tryPrintPositionError(err.Error())
 		return
 	}
-	tryPrintTemplateError(errs[0])
+	tryPrintPositionError(errs[0])
 	maxIndent := 32
 	if len(errs) > maxIndent {
 		maxIndent = 0
 	}
 	for i := 1; i < len(errs); i++ {
 		fmt.Fprint(os.Stderr, strings.Repeat(" ", min(i, maxIndent)))
-		tryPrintTemplateError(errs[i])
+		tryPrintPositionError(errs[i])
 	}
 }
 
-func tryParseTemplateFilename(err string) string {
-	parts := strings.SplitN(err, ":", 4)
-	if len(parts) < 4 {
+func tryParseFilename(err string) string {
+	parts := strings.SplitN(err, ":", 2)
+	if len(parts) < 2 {
 		return ""
 	}
 	return parts[0]
 }
 
-// tryPrintTemplateError tries to print template error in a more readable format.
-// template error format: "<template name>:<line>:<column>: <error message>"
-func tryPrintTemplateError(err string) {
+// tryPrintPositionError tries to print template error in a more readable format.
+// template error format: "<filename>:<line>:<column>: <error message>"
+func tryPrintPositionError(err string) {
 	const fileColor = term.Color("")
 	const lineColor = term.BrightBlue
 	const columnColor = term.BrightGreen
@@ -230,7 +228,7 @@ func tryPrintTemplateError(err string) {
 		return
 	}
 	parts := strings.SplitN(err, ":", 4)
-	if len(parts) < 4 {
+	if len(parts) < 3 {
 		term.Fprintln(os.Stderr, errorColor.Colorize(err))
 		return
 	}
@@ -241,19 +239,31 @@ func tryPrintTemplateError(err string) {
 		}
 	}
 	line := parts[1]
-	column := parts[2]
+	column := ""
+	if len(parts) > 3 {
+		column = parts[2]
+	}
 	if !strings.HasSuffix(filename, nextExt) {
 		// add 1 to column if it is a number for non-next files (most likely for template files)
 		if i, err := strconv.Atoi(column); err == nil {
 			column = strconv.Itoa(i + 1)
 		}
 	}
-	message := parts[3]
-	term.Fprintf(
-		os.Stderr, "%s:%s:%s:%s\n",
-		fileColor.Colorize(filename),
-		lineColor.Colorize(line),
-		columnColor.Colorize(column),
-		errorColor.Colorize(message),
-	)
+	message := parts[len(parts)-1]
+	if column == "" {
+		term.Fprintf(
+			os.Stderr, "%s:%s:%s\n",
+			fileColor.Colorize(filename),
+			lineColor.Colorize(line),
+			errorColor.Colorize(message),
+		)
+	} else {
+		term.Fprintf(
+			os.Stderr, "%s:%s:%s:%s\n",
+			fileColor.Colorize(filename),
+			lineColor.Colorize(line),
+			columnColor.Colorize(column),
+			errorColor.Colorize(message),
+		)
+	}
 }

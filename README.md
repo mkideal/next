@@ -2,11 +2,11 @@
 
 Next is a powerful Generic **Interface Definition Language (IDL)** designed to create highly customized code across multiple programming languages. It leverages a flexible template system to transform high-level specifications into language-specific implementations.
 
-[Language Specification (English)](./docs/en/language_spec.md) | [语言规范 (中文)](./docs/zh/language_spec.md)
+[Language Specification](./website/docs/language_spec.md) | [API](./website/docs/api.md)
 
 ## Screenshot
 
-![Screenshot](./docs/res/screenshot.png)
+![Screenshot](./website/static/img/screenshot.png)
 
 ## ✨ Key Features
 
@@ -67,11 +67,11 @@ To install Next from source, use the following command:
 go install github.com/next/next@latest
 ```
 
-Make sure you have [Go](https://go.dev) `1.21+` installed on your system before running this command.
+Make sure you have [Go](https://go.dev) `1.23+` installed on your system before running this command.
 
 ## 📖 Documentation
 
-For detailed information on Next's syntax, features, and usage, please visit the official website at [nextlang.org](https://nextlang.org). The website provides comprehensive documentation, tutorials, and examples to help you get started with Next and make the most of its capabilities.
+For detailed information on Next's syntax, features, and usage, please visit the official website at [https://next.as](https://next.as). The website provides comprehensive documentation, tutorials, and examples to help you get started with Next and make the most of its capabilities.
 
 ## 📝 TODO
 

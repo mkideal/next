@@ -55,6 +55,7 @@ struct User {
 // - In Java, it is aliased as long
 // - In Rust, it is aliased as u64
 // - In C#, it is aliased as ulong
+// - In Protobuf, it is represented as uint64
 // - In other languages, it is represented as a struct with low and high 32-bit integers.
 @next(
     go_alias="uint64",
@@ -62,6 +63,7 @@ struct User {
     java_alias="long",
     rust_alias="u64",
     csharp_alias="ulong",
+    protobuf_alias="uint64",
 )
 struct uint64 {
     int32 low;

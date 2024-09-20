@@ -272,6 +272,6 @@ func (f *File) createSymbols() (token.Pos, error) {
 }
 
 func (f *File) resolve(c *Compiler) {
-	f.annotations = c.resolveAnnotationGroup(f, f, f.unresolved.annotations)
+	f.annotations = resolveAnnotations(c, f, f, f.unresolved.annotations)
 	f.decls.resolve(c, f)
 }

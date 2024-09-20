@@ -41,7 +41,9 @@ import "{{.File.Name}}.proto";
 {{- end}}
 
 {{/* Skip constants */}}
-{{- define "next/protobuf/consts" -}}{{- end -}}
+{{- define "next/protobuf/consts"}}
+// Constants Skipped.
+{{end -}}
 
 {{- define "next/protobuf/enum" -}}
 {{- if .MemberType.Kind.IsInteger -}}
@@ -54,7 +56,7 @@ import "{{.File.Name}}.proto";
         {{- end -}}
     {{- end}}
     {{- if not $hasZero}}
-    XXX_Unspecified_{{next .Type}} = 0;
+    {{next .Type | snakeCase | upper}}_UNSPECIFIED = 0;
     {{- end}}
     {{- next .Members}}
 }
@@ -67,6 +69,10 @@ import "{{.File.Name}}.proto";
 {{next .Doc}}{{render "enum.member:name" .}} = {{.Value}};
 {{- end}}
 
+{{- define "next/protobuf/enum.member:name" -}}
+{{.Name | snakeCase | upper}}
+{{- end}}
+
 {{- define "next/protobuf/struct" -}}
 {{next .Doc}}message {{next .Type}} {
     {{- next .Fields}}
@@ -74,33 +80,42 @@ import "{{.File.Name}}.proto";
 {{- end}}
 
 {{- define "next/protobuf/struct.field" -}}
-{{next .Doc}}
-    {{- /* Assign sequential tag number based on field index */ -}}
-    {{- $tag := add .Index 1 -}}
-    
-    {{- /* Handle custom field type if specified */ -}}
-    {{- $type := "" -}}
-    {{- if .Annotations.next.proto_type -}}
-        {{- $type = .Annotations.next.proto_type -}}
-    {{- else -}}
-        {{- $type = next .Type -}}
-    {{- end -}}
-
-    {{- if .Annotations.Contains "optional" -}}
-        {{- if .Type.Kind.IsArray -}}
-            {{errorf "%s: @optional annotation is not supported for array field" .Pos -}}
-        {{- else if .Type.Kind.IsVector -}}
-            {{errorf "%s: @optional annotation is not supported for vector field" .Pos -}}
-        {{- else if .Type.Kind.IsMap -}}
-            {{errorf "%s: @optional annotation is not supported for map field" .Pos -}}
-        {{- else -}}
-            {{- $type = printf "optional %s" $type -}}
-        {{- end -}}
-    {{- end -}}
-    
-    {{- /* Generate the field definition */ -}}
-    {{$type}} {{render "struct.field:name" .}} = {{$tag}}{{if .Annotations.Contains "deprecated"}} [deprecated = true]{{end}};
+{{next .Doc -}}
+    {{render "struct.field:type" .}} {{render "struct.field:name" .}} = {{render "struct.field:tag" .}}{{render "struct.field:deprecated" .}};{{next .Comment}}
 {{- end}}
+
+{{- define "next/protobuf/struct.field:deprecated" -}}
+{{if .Annotations.Contains "deprecated"}} [deprecated = true]{{end}}
+{{- end -}}
+
+{{- /* Assign sequential tag number based on field index */ -}}
+{{- define "next/protobuf/struct.field:tag" -}}
+{{add .Index 1}}
+{{- end -}}
+
+{{- /* Handle custom field type if specified */ -}}
+{{- define "next/protobuf/struct.field:type" -}}
+{{- $type := "" -}}
+{{- if .Annotations.next.proto_type -}}
+    {{- $type = .Annotations.next.proto_type -}}
+{{- else -}}
+    {{- $type = next .Type -}}
+{{- end -}}
+
+{{- if .Annotations.Contains "optional" -}}
+    {{- if .Type.Kind.IsArray -}}
+        {{error "%s: @optional annotation is not supported for array field" .Pos -}}
+    {{- else if .Type.Kind.IsVector -}}
+        {{error "%s: @optional annotation is not supported for vector field" .Pos -}}
+    {{- else if .Type.Kind.IsMap -}}
+        {{error "%s: @optional annotation is not supported for map field" .Pos -}}
+    {{- else -}}
+        {{- $type = printf "optional %s" $type -}}
+    {{- end -}}
+{{- end -}}
+
+{{- $type -}}
+{{- end -}}
 
 {{- define "next/protobuf/interface" -}}
 {{next .Doc}}service {{next .Type}} {
