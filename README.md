@@ -36,47 +36,12 @@ This hierarchy enables a powerful inheritance and overloading mechanism, similar
 
 When rendering a template, Next searches for the most specific template first (user-defined), then falls back to language-specific templates, and finally to base templates if no overrides are found.
 
-## 📥 Installation
-
-### Unix-like Systems (Linux, macOS, Git Bash for Windows, etc.)
-
-To install Next on Unix-like systems, you can use the following command:
-
-```sh
-curl -fsSL https://getnext.sh | sh
-```
-
-This script will download and install the latest version of Next on your system.
-
-### Windows
-
-For Windows users, follow these steps:
-
-1. Download the installation package from [dl.getnext.sh](https://dl.getnext.sh).
-2. Extract the downloaded ZIP file.
-3. Right-click on the `install.bat` file in the extracted folder.
-4. Select "Run as administrator" to execute the installation script.
-
-This will install the latest version of Next on your Windows system.
-
-### Installing from Source
-
-To install Next from source, use the following command:
-
-```sh
-go install github.com/next/next@latest
-```
-
-Make sure you have [Go](https://go.dev) `1.23+` installed on your system before running this command.
-
 ## 📖 Documentation
 
 For detailed information on Next's syntax, features, and usage, please visit the official website at [https://next.as](https://next.as). The website provides comprehensive documentation, tutorials, and examples to help you get started with Next and make the most of its capabilities.
 
 ## 📝 TODO
 
-- [ ] Implement load external template file: `{{import "../path/to/template/lib.npl"}}`
-- [ ] Implement consistency check for enum member types and provide type of enum value
 - [ ] Support more built-in templates for additional programming languages
 
 ## 🤝 Contributing
