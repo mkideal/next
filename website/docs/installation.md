@@ -31,10 +31,10 @@ go install github.com/next/next@latest
 
 Make sure you have [Go](https://go.dev) `1.23+` installed on your system before running this command.
 
-## IDE Extensions
+## Editor Extensions
 
-### VSCode
+### Visual Studio Code
 
-Install VSCode Extension for Next: [https://marketplace.visualstudio.com/items?itemName=nextlangorg.nextlang](https://marketplace.visualstudio.com/items?itemName=nextlangorg.nextlang)
+Install Visual Studio Code Extension for Next from [marketplace](https://marketplace.visualstudio.com/items?itemName=nextlangorg.nextlang)
 
-This extension provides syntax highlighting, and other helpful features for Next development in Visual Studio Code. You can install it directly from the provided link or search for `next lang` in the VS Code Extensions marketplace.
+This extension provides syntax highlighting, and other helpful features for Next development in Visual Studio Code. You can install it directly from the provided link or search for `next lang` in the Visual Studio Code Extensions marketplace.

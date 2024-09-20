@@ -66,8 +66,8 @@ const config: Config = {
           sidebarPath: "./sidebars.ts",
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl: REPO + "/tree/main/website/docs/",
-          showLastUpdateAuthor: true,
+          // editUrl: REPO + "/tree/main/website/",
+          // showLastUpdateAuthor: true,
           showLastUpdateTime: true,
         },
         //blog: {
@@ -79,7 +79,7 @@ const config: Config = {
         //  },
         //  // Please change this to your repo.
         //  // Remove this to remove the "edit this page" links.
-        //  editUrl: REPO + "/tree/main/website/blog/",
+        //  editUrl: REPO + "/tree/main/website/",
         //  // Useful options to enforce blogging best practices
         //  onInlineTags: "warn",
         //  onInlineAuthors: "warn",

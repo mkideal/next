@@ -1,16 +1,16 @@
 # Template Guide
 
-This guide provides a detailed overview of writing and using templates in the Next project, based on the actual npl files provided.
+This guide provides a detailed overview of writing and using templates in the Next project, based on the actual `.npl` files provided.
 
 ## Introduction to NPL Files
 
-NPL (Next Programming Language) files are used to define templates for code generation in the Next project. These templates control how different programming constructs are translated into various target languages.
+NPL (**N**ext Tem**p**late **L**anguage based on Go's [text/template](https://pkg.go.dev/text/template/)) files are used to define templates for code generation in the Next project. These templates control how different programming constructs are translated into various target languages.
 
 ## Basic Template Structure
 
 A typical npl file consists of the following elements:
 
-1. Metadata definitions
+1. Metadata definitions (for entrypoint template file via command line flags)
 2. Template definitions or overrides
 3. Main content generation
 
@@ -39,7 +39,7 @@ Metadata is crucial for controlling the template behavior. Common metadata inclu
 {{- define "meta/skip"}}{{exist meta.path}}{{end -}}
 ```
 
-- `meta/this`: Specifies the type of entity being generated (e.g., "file", "struct", "enum")
+- `meta/this`: Specifies the type of entity being generated (e.g., "file", "struct", "enum", see [@API/Context/this](/docs/api/context#user-content-Context_this) for details)
 - `meta/path`: Defines the output path for the generated file
 - `meta/skip`: Provides a condition to skip generation
 
@@ -57,6 +57,10 @@ public:
 };
 {{- end}}
 ```
+
+:::caution NOTE
+Template name starting with `next/` is reserved for builtin language supporting. For example, if you plan to write a extension for a new language `LANG`，you should define templates like `next/LANG/struct`.
+:::
 
 To extend an existing template, use the `super` keyword:
 
@@ -107,9 +111,10 @@ Example from cpp.npl:
 
 1. File Generation:
    ```npl
-   {{head}}
-
-   {{next this}}
+   {{- define "next/go/file" -}}
+   package {{.Package.Name}}
+   {{super . -}}
+   {{- end}}
    ```
 
 2. Struct Generation:

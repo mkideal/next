@@ -4,7 +4,43 @@ slug: /
 
 # Overview
 
-Next is a powerful language designed for generating code and various file types across multiple programming languages. It serves as a versatile tool for developers working on cross-language projects or those needing to maintain consistency across different codebases.
+Next is an advanced Interface Definition Language (IDL) designed for efficient and flexible code generation across multiple programming languages. This guide will walk you through the key concepts, syntax, and features of Next, helping you harness its power for your projects.
+
+## Introduction
+
+Next allows developers to define data structures, constants, interfaces, and more in a language-agnostic manner. It then uses a powerful template system to generate code for various target languages, making it an ideal choice for projects that need to maintain consistency across different programming environments.
+
+```mermaid
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#6c5ce7',
+    'primaryTextColor': '#ffffff',
+    'primaryBorderColor': '#5b4cc4',
+    'lineColor': '#a29bfe',
+    'secondaryColor': '#81ecec',
+    'tertiaryColor': '#fab1a0'
+  }
+}}%%
+flowchart TD
+    A([Next Definition]):::input --> B[Next Compiler]
+    G([Templates]):::input --> B
+    H([Type Mappings]):::input --> B
+    I([Annotations]):::input --> B
+    B --> C([Go Code]):::output
+    B --> D([C++ Code]):::output
+    B --> E([Java Code]):::output
+    B --> F([Other Languages]):::output
+
+    classDef default fill:#f0f0f0,stroke:#333,stroke-width:1px
+    classDef input fill:#81ecec,stroke:#0984e3,stroke-width:2px,color:#2d3436
+    classDef compiler fill:#6c5ce7,stroke:#5b4cc4,stroke-width:2px,color:#ffffff
+    classDef output fill:#fab1a0,stroke:#e17055,stroke-width:2px,color:#2d3436
+    
+    class B compiler
+    linkStyle default stroke:#a29bfe,stroke-width:2px
+```
+
 
 ## Key Features
 

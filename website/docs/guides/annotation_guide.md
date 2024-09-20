@@ -392,18 +392,6 @@ Annotations can be accessed and used within templates to customize code generati
 {{- end -}}
 ```
 
-### Conditional Code Generation Based on Availability
-
-```npl
-{{- if .Annotations.next.available | contains "cpp" -}}
-// C++-specific code
-{{- else if .Annotations.next.available | contains "go" -}}
-// Go-specific code
-{{- else -}}
-// Default code
-{{- end -}}
-```
-
 ### Handling Aliased Types
 
 ```npl
