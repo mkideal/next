@@ -47,7 +47,9 @@ function TopBanner() {
       <div className={styles.topBannerTitle}>
         {"🎉\xa0"}
         <Link
-          to={`/blog/releases/${announcedVersion}`}
+          // FIXME:
+          //to={`/blog/releases/${announcedVersion}`}
+          to={`/`}
           className={styles.topBannerTitleText}
         >
           <Translate

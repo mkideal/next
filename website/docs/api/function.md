@@ -1,3 +1,8 @@
+---
+sidebar_position: 1
+slug: /api
+---
+
 # Function
 
 ## _ {#user-content-_}
