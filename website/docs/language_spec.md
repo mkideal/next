@@ -26,7 +26,7 @@ identifier = letter { letter | unicode_digit } .
 The following keywords are reserved and may not be used as identifiers:
 
 ```
-package   import    const     enum      struct
+package   import    const     enum      struct    interface
 ```
 
 ### 2.4 Operators and Punctuation

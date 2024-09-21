@@ -272,7 +272,7 @@ Next uses a powerful template system based on Go's `text/template` package. This
 
 ### Basic Template Structure
 
-```next
+```npl
 {{- define "go/struct" -}}
 type {{next .Type}} struct {
     {{- next .Fields}}
@@ -284,7 +284,7 @@ type {{next .Type}} struct {
 
 Next supports template inheritance, allowing you to extend or override base templates:
 
-```next
+```npl
 {{- define "cpp/struct" -}}
 class {{next .Type}} {
 public:
@@ -297,7 +297,7 @@ public:
 
 The `super` keyword allows you to call the parent template within an overridden template:
 
-```next
+```npl
 {{- define "go/struct" -}}
 {{super .}}
 {{- with .Annotations.message.type}}

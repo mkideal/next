@@ -1,7 +1,16 @@
+import path from "path";
 import { themes as prismThemes } from "prism-react-renderer";
 import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
 import type { Options as ClientRedirectsOptions } from "@docusaurus/plugin-client-redirects";
+
+import Prism from "prismjs";
+
+if (typeof window !== "undefined") {
+  window.Prism = Prism;
+} else if (typeof global !== "undefined") {
+  global.Prism = Prism;
+}
 
 // FIXME: change to https://next.as
 const URL = "https://gopherd.com";
@@ -204,6 +213,15 @@ const config: Config = {
     prism: {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,
+      additionalLanguages: [
+        "protobuf",
+        "java",
+        "c",
+        "cpp",
+        "csharp",
+        "bash",
+        "go",
+      ],
       magicComments: [
         {
           className: "theme-code-block-highlighted-line",
