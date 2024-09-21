@@ -10,16 +10,18 @@ NPL (**N**ext Tem**p**late **L**anguage based on Go's [text/template](https://pk
 
 A typical npl file consists of the following elements:
 
-1. Metadata definitions (for entrypoint template file via command line flags)
+1. Metadata definitions (for entrypoint template file via command line flags `-T`)
 2. Template definitions or overrides
 3. Main content generation
 
 Example:
 
 ```npl
+{{/* Define metadata in entrypoint template file */}}
 {{- define "meta/this"}}file{{end -}}
 {{- define "meta/path"}}{{this.Package.Name}}/{{this.Name}}.next.h{{end -}}
 
+{{/* Overrides next/cpp/import template */}}
 {{- define "cpp/import" -}}
 #include "../{{.File.Package.Name}}/{{.File.Name}}.next.h"
 {{- end -}}

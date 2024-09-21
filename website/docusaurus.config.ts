@@ -1,10 +1,11 @@
-import path from "path";
 import { themes as prismThemes } from "prism-react-renderer";
 import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
 import type { Options as ClientRedirectsOptions } from "@docusaurus/plugin-client-redirects";
 
 import Prism from "prismjs";
+import prismLight from "./src/utils/prismLight";
+import prismDark from "./src/utils/prismDark";
 
 if (typeof window !== "undefined") {
   window.Prism = Prism;
@@ -211,8 +212,8 @@ const config: Config = {
       copyright: `Copyright © ${new Date().getFullYear()} Next, Inc. Built with Docusaurus.`,
     },
     prism: {
-      theme: prismThemes.github,
-      darkTheme: prismThemes.dracula,
+      theme: prismLight,
+      darkTheme: prismDark,
       additionalLanguages: [
         "protobuf",
         "java",

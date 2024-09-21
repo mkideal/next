@@ -1,5 +1,5 @@
 (function (Prism) {
-  const delimiter = "prolog";
+  const delimiter = "tag";
   Prism.languages.npl = {
     // Template actions {{ ... }}
     "template-action": {
@@ -8,11 +8,6 @@
         // Delimiters {{ and }}
         delimiter: {
           pattern: /^\{\{|\}\}$/,
-          alias: delimiter,
-        },
-        // Trim operators - at start or end
-        trim: {
-          pattern: /^-|-$/,
           alias: delimiter,
         },
         // Comments within template actions
@@ -24,17 +19,20 @@
         string: /"(?:\\.|[^"\\])*"/,
         // Keywords within template actions
         keyword:
-          /\b(?:if|else|range|with|end|block|define|template|and|or|not|render)\b/,
-        // Functions within template actions
-        function: /\b\w+(?=\s|\()/,
+          /\b(?:if|else|range|with|end|block|define|template|and|or|not)\b/,
         // Variables within template actions
-        variable: /\.\w+(?:\.\w+)*/,
+        variable: /\.(\w+(?:\.\w+)*)?/,
+        // Functions and variables within template actions
+        function: {
+          //pattern: /\b\w+(?:\.\w+)*\b/,
+          pattern: /\b(?<!\.)(?!(?:\w+\.)+\w*\b)\w+(?!\.)\b/,
+        },
         // Numbers within template actions
-        number: /\b\d+(\.\d+)?\b/,
+        number: /\b\d+(?:\.\d+)?\b/,
         // Operators within template actions, including pipe '|'
-        operator: /[|=!<>]=?|\|\|/,
+        operator: /\||=|:?=/,
         // Punctuation within template actions
-        punctuation: /[(),.-]/,
+        punctuation: /[(),]/,
       },
     },
   };

@@ -47,12 +47,12 @@ The `@next` annotation at the package level allows you to specify language-speci
 
 ```next
 @next(
-    go_package = "github.com/username/repo/demo",
-    cpp_package = "repo::demo",
-    c_package = "DEMO_",
-    java_package = "com.example.demo",
-    csharp_package = "Company.Demo",
-    go_imports = "fmt.Printf, *net/http.Client, *encoding/json.Decoder"
+    go_package="github.com/username/repo/demo",
+    cpp_package="repo::demo",
+    c_package="DEMO_",
+    java_package="com.example.demo",
+    csharp_package="Company.Demo",
+    go_imports="fmt.Printf, *net/http.Client, *encoding/json.Decoder"
 )
 package demo;
 ```
@@ -138,8 +138,8 @@ The `go_imports` parameter in the `@next` annotation for packages specifies addi
 
 ```next
 @next(
-    go_package = "github.com/username/repo/demo",
-    go_imports = "fmt.Printf, *net/http.Client, *encoding/json.Decoder, time.Now, *context.Context"
+    go_package="github.com/username/repo/demo",
+    go_imports="fmt.Printf, *net/http.Client, *encoding/json.Decoder, time.Now, *context.Context"
 )
 package demo;
 ```
@@ -174,7 +174,7 @@ var _ = (*context.Context)(nil)
 #### Enum-level @next
 
 ```next
-@next(type = int8)
+@next(type=int8)
 enum Color {
     Red = 1;
     Green = 2;
@@ -186,18 +186,18 @@ enum Color {
 
 ```next
 @next(
-    go_alias = "net/http.Handler",
-    java_alias = "java.util.function.Function<com.sun.net.httpserver.HttpExchange, String>",
-    cpp_alias = "std::function<void(const HttpRequest&, HttpResponse&)>",
-    csharp_alias = "System.Func<HttpContext, Task>"
+    go_alias="net/http.Handler",
+    java_alias="java.util.function.Function<com.sun.net.httpserver.HttpExchange, String>",
+    cpp_alias="std::function<void(const HttpRequest&, HttpResponse&)>",
+    csharp_alias="System.Func<HttpContext, Task>"
 )
 interface HTTPHandler {}
 
 @next(
-    go_alias = "time.Time",
-    java_alias = "java.time.Instant",
-    cpp_alias = "std::chrono::system_clock::time_point",
-    csharp_alias = "System.DateTime"
+    go_alias="time.Time",
+    java_alias="java.time.Instant",
+    cpp_alias="std::chrono::system_clock::time_point",
+    csharp_alias="System.DateTime"
 )
 struct Timestamp {
     int64 seconds;
@@ -293,25 +293,19 @@ Use `mut` judiciously to express intent about state modification, especially use
 The `available` parameter in the `@next` annotation controls conditional code generation for specific programming languages:
 
 ```next
-@next(available = "go|java")
+@next(available="go|java")
 interface HTTPServer {
     @next(error)
     Handle(string path, HTTPHandler handler);
 }
 
-@next(available = "cpp & !java")
+@next(available="!cpp & !java")
 struct ComplexNumber {
     double real;
     double imaginary;
 }
 
-@next(available = "(go | java) & !cpp")
-interface MobileService {
-    @next(error)
-    RegisterDevice(string deviceId, string platform);
-}
-
-@next(available = "c | cpp | go")
+@next(available="c | cpp | go")
 struct LowLevelBuffer {
     bytes data;
     int size;
@@ -333,40 +327,36 @@ The `available` parameter is strictly for specifying target programming language
 Custom annotations can be created for specific needs and processed in custom templates or plugins. Here are some examples:
 
 ```next
-@deprecated("Use NewUser() instead")
+@deprecated(instead="Use NewUser()")
 struct User {
     int id;
+    @json(omitempty)
     string name;
 }
 
-@required
-@json(name = "user_id", omitempty)
-int userId;
-
-@message(type = 101, req)
+@message(type=101, req)
 struct LoginRequest {
     string username;
     string password;
 }
 
 @auth(required)
-@rate_limit(requests = 100, per = "minute")
+@rate_limit(requests=100, per="minute")
 interface UserService {
     GetUser(int id) User;
 }
 
-@validate(min = 0, max = 100)
-int percentage;
-
-@db(table = "products", primaryKey = "id")
+@db(table="products", primaryKey="id")
 struct Product {
     int id;
     string name;
     float price;
+    @validate(min=0, max=100)
+    int percentage;
 }
 
 @async
-@retry(maxAttempts = 3, delay = "1s")
+@retry(maxAttempts=3, delay="1s")
 interface DataFetcher {
     FetchData(string url) bytes;
 }
@@ -388,7 +378,7 @@ Annotations can be accessed and used within templates to customize code generati
 
 ```npl
 {{- if .Annotations.Contains "json" -}}
-`json:"{{or (.Annotations.json.name) (.Name | camelCase)}},{{if .Annotations.json.omitempty}}omitempty{{end}}"`
+`json:"{{or (.Annotations.json.name) (.Name | camelCase)}}{{if .Annotations.json.omitempty}},omitempty{{end}}"`
 {{- end -}}
 ```
 
@@ -428,7 +418,7 @@ Annotations can be accessed and used within templates to customize code generati
 ```npl
 {{- if .Doc -}}
 /**
- * {{.Doc.Text}}
+ {{.Doc.Format "" "" "*" | align}}
  {{- if .Annotations.Contains "deprecated"}}
  * @deprecated {{.Annotations.deprecated}}
  {{- end}}
