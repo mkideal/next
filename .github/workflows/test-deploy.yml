@@ -1,5 +1,4 @@
 name: Test deployment
-
 on:
   pull_request:
     branches:
@@ -19,8 +18,12 @@ jobs:
         with:
           node-version: 18
           cache: npm
-
+          cache-dependency-path: website/package-lock.json
       - name: Install dependencies
-        run: npm ci
+        run: |
+          cd website
+          npm ci
       - name: Test build website
-        run: npm run build
+        run: |
+          cd website
+          npm run build
