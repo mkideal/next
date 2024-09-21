@@ -19,8 +19,10 @@ const config: Config = {
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: "next", // Usually your GitHub org/user name.
+  // FIXME: change to "next" when organization name "next" is available.
+  organizationName: "gopherd", // Usually your GitHub org/user name.
   projectName: "next", // Usually your repo name.
+  trailingSlash: false,
 
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
