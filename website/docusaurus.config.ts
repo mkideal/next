@@ -3,7 +3,9 @@ import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
 import type { Options as ClientRedirectsOptions } from "@docusaurus/plugin-client-redirects";
 
-const URL = "https://next.as";
+// FIXME: change to https://next.as
+const URL = "https://gopherd.com";
+// FIXME: change to "https://github.com/next/next"
 const REPO = "https://github.com/gopherd/next";
 
 const config: Config = {
@@ -15,7 +17,8 @@ const config: Config = {
   url: URL,
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: "/",
+  // FIXME: change to "/"
+  baseUrl: "/next/",
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
