@@ -223,44 +223,44 @@ Examples:
 ```next
 interface FileSystem {
     @next(error, mut)
-    Read(@next(mut) bytes buffer) int;
+    read(@next(mut) bytes buffer) int;
 
     @next(error)
-    Write(string filename, bytes data) bool;
+    write(string filename, bytes data) bool;
 
     @next(mut)
-    Seek(int offset, int whence) int;
+    seek(int offset, int whence) int;
 }
 
 interface Database {
     @next(error)
-    Query(string sql) Result;
+    query(string sql) Result;
 
     @next(error, mut)
-    Execute(@next(mut) Transaction tx) bool;
+    execute(@next(mut) Transaction tx) bool;
 }
 ```
 
 In these examples:
 
-- `Read` method:
+- `read` method:
   - May return an error (`error`)
   - Is mutable (`mut`)
   - Has a mutable `buffer` parameter
 
-- `Write` method:
+- `write` method:
   - May return an error (`error`)
   - Is immutable (no `mut`)
 
-- `Seek` method:
+- `seek` method:
   - Is mutable (`mut`)
   - Does not indicate error handling
 
-- `Query` method:
+- `query` method:
   - May return an error (`error`)
   - Is immutable (no `mut`)
 
-- `Execute` method:
+- `execute` method:
   - May return an error (`error`)
   - Is mutable (`mut`)
   - Has a mutable `tx` parameter
@@ -296,13 +296,13 @@ The `available` parameter in the `@next` annotation controls conditional code ge
 @next(available="go|java")
 interface HTTPServer {
     @next(error)
-    Handle(string path, HTTPHandler handler);
+    handle(string path, HTTPHandler handler);
 }
 
-@next(available="!cpp & !java")
-struct ComplexNumber {
-    double real;
-    double imaginary;
+@next(available="!cpp & !java", go_alias="complex128)
+struct Complex {
+    float64 real;
+    float64 imag;
 }
 
 @next(available="c | cpp | go")
@@ -343,7 +343,7 @@ struct LoginRequest {
 @auth(required)
 @rate_limit(requests=100, per="minute")
 interface UserService {
-    GetUser(int id) User;
+    getUser(int id) User;
 }
 
 @db(table="products", primaryKey="id")
@@ -358,7 +358,7 @@ struct Product {
 @async
 @retry(maxAttempts=3, delay="1s")
 interface DataFetcher {
-    FetchData(string url) bytes;
+    fetchData(string url) bytes;
 }
 ```
 

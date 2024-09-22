@@ -93,8 +93,8 @@ struct LoginRequest {
 
 interface UserService {
     @next(error)
-    GetUser(int64 id) User;
-    UpdateUserStatus(int64 id, Color favoriteColor) bool;
+    getUser(int64 id) User;
+    updateUserStatus(int64 id, Color favoriteColor) bool;
 }
 ```
 

@@ -96,7 +96,7 @@ Next also provides several composite types for more complex data structures:
 6. **Interface**: Method signatures
    ```next
    interface Reader {
-       Read(bytes buffer) int;
+       read(bytes buffer) int;
    }
    ```
 
@@ -210,8 +210,8 @@ Interfaces in Next define a set of method signatures that can be implemented by 
 
 ```next
 interface Shape {
-    Area() float64;
-    Perimeter() float64;
+    area() float64;
+    perimeter() float64;
 }
 ```
 
@@ -222,10 +222,10 @@ You can use annotations to indicate error handling in interfaces:
 ```next
 interface FileSystem {
     @next(error)
-    Read(string path) bytes;
+    read(string path) bytes;
     
     @next(error)
-    Write(string path, bytes data);
+    write(string path, bytes data);
 }
 ```
 

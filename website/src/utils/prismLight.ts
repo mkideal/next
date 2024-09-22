@@ -57,9 +57,15 @@ export default {
       },
     },
     {
+      types: ["symbol"],
+      style: {
+        color: "#1E88E5",
+      },
+    },
+    {
       types: ["class-name"],
       style: {
-        color: "#2E7D32",
+        color: "#36ACAA",
       },
     },
     {
