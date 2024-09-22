@@ -1,34 +1,41 @@
 (function (Prism) {
   const delimiter = "tag";
   Prism.languages.npl = {
-    // Template actions {{ ... }}
+    // Template actions {{ ... }} or {{- ... -}}
     "template-action": {
-      pattern: /\{\{[\s\S]+?\}\}/,
+      pattern: /\{(?:-\{\{|\{)[\s\S]*?(?:\}\}|-\}\})/,
       inside: {
-        // Delimiters {{ and }}
+        // Delimiters {{ and }} with optional -
         delimiter: {
-          pattern: /^\{\{|\}\}$/,
+          pattern: /^\{(?:-\{\{|\{)|\}(?:\}|-\}\})$/,
+          alias: delimiter,
+        },
+        // Trim operators - at start or end
+        trim: {
+          pattern: /^-|-$/,
           alias: delimiter,
         },
         // Comments within template actions
-        comment: {
-          pattern: /^\/\*[\s\S]*?\*\/$/,
-          alias: "comment",
-        },
+        comment: /\/\*[\s\S]*?\*\//,
         // Strings within template actions
         string: /"(?:\\.|[^"\\])*"/,
+        // Booleans within template actions
+        boolean: /\b(?:true|false)\b/,
+        // Numbers within template actions (including floats)
+        number: /\b\d+(?:\.\d+)?\b/,
         // Keywords within template actions
         keyword:
           /\b(?:if|else|range|with|end|block|define|template|and|or|not)\b/,
-        // Variables within template actions
-        variable: /\.(\w+(?:\.\w+)*)?/,
+        // Variables within template actions, including $ symbol
+        variable: {
+          pattern: /\.\w+(?:\.\w+)*|\$\w+/,
+          greedy: true,
+        },
         // Functions and variables within template actions
         function: {
-          //pattern: /\b\w+(?:\.\w+)*\b/,
-          pattern: /\b(?<!\.)(?!(?:\w+\.)+\w*\b)\w+(?!\.)\b/,
+          pattern:
+            /\b(?<!\.)(?!(?:\w+\.)+\w*\b)(?![0-9])(?!true\b)(?!false\b)\w+(?!\.)\b/,
         },
-        // Numbers within template actions
-        number: /\b\d+(?:\.\d+)?\b/,
         // Operators within template actions, including pipe '|'
         operator: /\||=|:?=/,
         // Punctuation within template actions
@@ -36,4 +43,5 @@
       },
     },
   };
+  Prism.languages.tmpl = Prism.languages.npl;
 })(Prism);

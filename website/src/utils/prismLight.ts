@@ -59,7 +59,7 @@ export default {
     {
       types: ["class-name"],
       style: {
-        color: "#116329",
+        color: "#2E7D32",
       },
     },
     {

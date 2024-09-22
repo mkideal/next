@@ -77,5 +77,11 @@ export default {
         color: "#4FC1FF",
       },
     },
+    {
+      types: ["symbol"],
+      style: {
+        color: "#64B5F6",
+      },
+    },
   ],
 } satisfies PrismTheme;
