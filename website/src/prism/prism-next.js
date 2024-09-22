@@ -1,6 +1,5 @@
 (function (Prism) {
   Prism.languages.next = {
-    // 基础标记
     comment: [
       {
         pattern: /\/\/.*$/m,
