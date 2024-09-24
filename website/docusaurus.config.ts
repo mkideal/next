@@ -58,9 +58,9 @@ const config: Config = {
       {
         fromExtensions: ["html"],
         createRedirects(routePath) {
-          // Redirect to /docs from /docs/overview (now docs root doc)
+          // Redirect to /docs from /docs/get-started (now docs root doc)
           if (routePath === "/docs" || routePath === "/docs/") {
-            return [`${routePath}/overview`];
+            return [`${routePath}/get-started`];
           }
           return [];
         },
@@ -133,7 +133,7 @@ const config: Config = {
         {
           type: "doc",
           position: "left",
-          docId: "overview",
+          docId: "get-started",
           label: "Docs",
         },
         {
@@ -165,7 +165,7 @@ const config: Config = {
           title: "Learn",
           items: [
             {
-              label: "Overview",
+              label: "Get Started",
               to: "docs",
             },
             {

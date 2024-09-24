@@ -1,3 +1,4 @@
+{{/* Define metadata for entrypoint template file */}}
 {{- define "meta/this"}}file{{end -}}
 {{- define "meta/path"}}{{this.Package.Name}}/{{this.Name}}.next.h{{end -}}
 
