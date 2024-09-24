@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"os"
 	"path/filepath"
 	"slices"
 	"sort"
@@ -31,6 +30,7 @@ type Compiler struct {
 		mappings  flags.Map
 		solvers   flags.MapSlice
 	}
+	platform Platform
 	// builtin builtin
 	builtin fs.FS
 
@@ -62,13 +62,14 @@ type Compiler struct {
 }
 
 // NewCompiler creates a new compiler with builtin language supports
-func NewCompiler(builtin fs.FS) *Compiler {
+func NewCompiler(platform Platform, builtin fs.FS) *Compiler {
 	c := &Compiler{
+		platform:            platform,
 		builtin:             builtin,
 		fset:                token.NewFileSet(),
 		files:               make(map[string]*File),
 		symbols:             make(map[string]Symbol),
-		searchDirs:          createSearchDirs(),
+		searchDirs:          createSearchDirs(platform),
 		annotations:         make(map[token.Pos]*linkedAnnotation),
 		annotationPositions: make(map[locatedAnnotation]token.Pos),
 	}
@@ -197,7 +198,7 @@ func (c *Compiler) AddFile(f *ast.File) (*File, error) {
 
 // Output returns the output writer for logging
 func (c *Compiler) Output() io.Writer {
-	return os.Stderr
+	return c.platform.Stderr()
 }
 
 // IsDebugEnabled returns true if debug logging is enabled

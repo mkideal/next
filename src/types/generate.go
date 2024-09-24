@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -34,15 +35,18 @@ const (
 //   - /Library/Application Support/next.d
 //   - ~/Library/Application Support/next.d
 //   - %APPDATA%/next.d
-func createSearchDirs() []string {
+func createSearchDirs(platform Platform) []string {
 	var dirs []string
 	dirs = append(dirs, ".")
-	homedir, err := os.UserHomeDir()
+	homedir, err := platform.UserHomeDir()
 	if err == nil {
 		dirs = append(dirs, filepath.Join(homedir, hiddenNextDir))
 	}
+	if runtime.GOOS == "js" {
+		return dirs
+	}
 	if runtime.GOOS == "windows" {
-		appData := os.Getenv("APPDATA")
+		appData := platform.Getenv("APPDATA")
 		if appData != "" {
 			dirs = append(dirs, filepath.Join(appData, nextDir))
 		}
@@ -79,11 +83,8 @@ func Generate(c *Compiler) error {
 	// Check whether the template directory or file exists for each language
 	for lang := range c.flags.outputs {
 		for _, tmplPath := range c.flags.templates[lang] {
-			if _, err := os.Stat(tmplPath); err != nil {
-				if os.IsNotExist(err) {
-					return fmt.Errorf("template path %q not found: %q", lang, tmplPath)
-				}
-				return fmt.Errorf("failed to check template path %q: %v", lang, err)
+			if c.platform.IsNotExist(tmplPath) {
+				return fmt.Errorf("template path %q not found: %q", lang, tmplPath)
 			}
 		}
 	}
@@ -141,29 +142,32 @@ func loadMap(c *Compiler, m flags.Map, lang string) error {
 	}
 	if f != nil {
 		defer f.Close()
-		if err := parseLangMap(m, lang, f); err != nil {
+		content, err := io.ReadAll(f)
+		if err != nil {
+			return fmt.Errorf("failed to read builtin %q: %v", lang+langMapExt, err)
+		}
+		if err := parseLangMap(m, lang, content); err != nil {
 			return fmt.Errorf("failed to parse builtin %q: %v", lang+langMapExt, err)
 		}
 	}
 	for _, dir := range c.searchDirs {
 		path := filepath.Join(dir, lang+langMapExt)
-		if err := loadMapFromFile(m, lang, path); err != nil {
+		if err := loadMapFromFile(c, m, lang, path); err != nil {
 			return fmt.Errorf("failed to load %q: %v", path, err)
 		}
 	}
 	return nil
 }
 
-func loadMapFromFile(m flags.Map, lang, path string) error {
-	f, err := os.Open(path)
+func loadMapFromFile(c *Compiler, m flags.Map, lang, path string) error {
+	content, err := c.platform.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil
 		}
 		return err
 	}
-	defer f.Close()
-	return parseLangMap(m, lang, f)
+	return parseLangMap(m, lang, content)
 }
 
 func generateForTemplatePath(c *Compiler, lang, ext, dir, tmplPath string) error {
@@ -182,7 +186,7 @@ func generateForTemplatePath(c *Compiler, lang, ext, dir, tmplPath string) error
 }
 
 func generateForTemplateFile(c *Compiler, lang, ext, dir, tmplFile string) error {
-	content, err := os.ReadFile(tmplFile)
+	content, err := c.platform.ReadFile(tmplFile)
 	if err != nil {
 		return fmt.Errorf("failed to read file %q: %w", tmplFile, err)
 	}
@@ -353,10 +357,7 @@ func gen[T Decl](tc *templateContext, t *template.Template, decl T) error {
 	if !filepath.IsAbs(path) {
 		path = filepath.Join(tc.dir, path)
 	}
-	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
-		return fmt.Errorf("failed to create directory %q: %v", tc.dir, err)
-	}
-	if err := os.WriteFile(path, []byte(tc.buf.String()), 0644); err != nil {
+	if err := tc.compiler.platform.WriteFile(path, []byte(tc.buf.String())); err != nil {
 		return fmt.Errorf("failed to write file %q: %v", path, err)
 	}
 

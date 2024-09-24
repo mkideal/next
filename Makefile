@@ -65,9 +65,16 @@ define release_windows
 	@cd ${BUILD_DIR} && zip ${dir}.zip -r ${dir} >/dev/null && rm -r ${dir}
 endef
 
+define release_js
+	$(eval filename := next.$(subst v,,${BUILD_VERSION}).wasm)
+	@echo "Building ${BUILD_DIR}/${filename}..."
+	@mkdir -p ${BUILD_DIR}/
+	@GOOS=js GOARCH=wasm go build -o ${BUILD_DIR}/${filename}
+endef
+
 .PHONY: release
 release: go/generate go/vet
-	@rm -f ${BUILD_DIR}/next.*.tar.gz ${BUILD_DIR}/next.*.zip
+	@rm -f ${BUILD_DIR}/next.*.tar.gz ${BUILD_DIR}/next.*.zip ${BUILD_DIR}/*.wasm
 	$(call release_unix,darwin,amd64)
 	$(call release_unix,darwin,arm64)
 	$(call release_unix,linux,amd64)
@@ -76,6 +83,7 @@ release: go/generate go/vet
 	$(call release_unix,windows,amd64)
 	$(call release_unix,windows,386)
 	$(call release_windows,amd64)
+	$(call release_js)
 
 .PHONY: test/src
 test/src: go/generate go/vet

@@ -34,16 +34,36 @@
     },
     builtin: {
       pattern:
-        /\b(?:iota|float|sprint|sprintf|sprintln|print|printf|assert(?:_eq|_ne|_lt|_le|_gt|_ge)?)\b/,
+        /\b(?:float|sprint|sprintf|sprintln|print|printf|assert(?:_eq|_ne|_lt|_le|_gt|_ge)?)\b/,
       alias: "keyword",
     },
   };
 
   Prism.languages.insertBefore("next", "keyword", {
+    "const-declaration": {
+      pattern: /\bconst\s+\w+\s*=/,
+      inside: {
+        keyword: /\bconst\b/,
+        "constant-name": {
+          pattern: /\b\w+\b(?=\s*=)/,
+          alias: "constant",
+        },
+        operator: /=/,
+      },
+    },
     "enum-declaration": {
-      pattern: /(\benum\s+)[a-zA-Z_][a-zA-Z0-9_]*/,
-      lookbehind: true,
-      alias: "class-name",
+      pattern: /\benum\s+\w+\s*\{[\s\S]*?\}/m,
+      inside: {
+        keyword: /\benum\b/,
+        "enum-name": {
+          pattern: /\b\w+\b(?=\s*\{)/,
+          alias: "class-name",
+        },
+        "enum-member": {
+          pattern: /\b\w+\b(?=\s*(?:=|,|;))/,
+          alias: "constant",
+        },
+      },
     },
     "struct-declaration": {
       pattern: /(\bstruct\s+)[a-zA-Z_][a-zA-Z0-9_]*/,

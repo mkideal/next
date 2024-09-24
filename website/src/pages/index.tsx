@@ -43,25 +43,27 @@ function TopBanner() {
     ?.announcedVersion as string;
 
   return (
-    <div className={styles.topBanner}>
-      <div className={styles.topBannerTitle}>
-        {"🎉\xa0"}
-        <Link
-          // FIXME:
-          //to={`/blog/releases/${announcedVersion}`}
-          to={`/`}
-          className={styles.topBannerTitleText}
-        >
-          <Translate
-            id="homepage.banner.launch.newVersion"
-            values={{ newVersion: announcedVersion }}
+    announcedVersion && (
+      <div className={styles.topBanner}>
+        <div className={styles.topBannerTitle}>
+          {"🎉\xa0"}
+          <Link
+            // FIXME:
+            //to={`/blog/releases/${announcedVersion}`}
+            to={`/`}
+            className={styles.topBannerTitleText}
           >
-            {"Next \xa0{newVersion} is\xa0out!️"}
-          </Translate>
-        </Link>
-        {"\xa0🥳"}
+            <Translate
+              id="homepage.banner.launch.newVersion"
+              values={{ newVersion: announcedVersion }}
+            >
+              {"Next \xa0{newVersion} is\xa0out!️"}
+            </Translate>
+          </Link>
+          {"\xa0🥳"}
+        </div>
       </div>
-    </div>
+    )
   );
 }
 

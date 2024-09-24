@@ -2,9 +2,9 @@ package types
 
 import (
 	"bufio"
+	"bytes"
 	"errors"
 	"fmt"
-	"io"
 	"regexp"
 	"strings"
 	"unicode"
@@ -65,8 +65,8 @@ func removeAllSpaces(s string) string {
 	}, s)
 }
 
-func parseLangMap[M ~map[string]string](m M, lang string, r io.Reader) error {
-	s := bufio.NewScanner(r)
+func parseLangMap[M ~map[string]string](m M, lang string, content []byte) error {
+	s := bufio.NewScanner(bytes.NewReader(content))
 	for s.Scan() {
 		line := strings.TrimSpace(s.Text())
 		if len(line) == 0 || line[0] == '#' {

@@ -28,7 +28,7 @@
           /\b(?:if|else|range|with|end|block|define|template|and|or|not)\b/,
         // Variables within template actions, including $ symbol
         variable: {
-          pattern: /\.\w+(?:\.\w+)*|\$\w+/,
+          pattern: /\.(?:\w+(?:\.\w+)*)?|\$(?:\w+)?/,
           greedy: true,
         },
         // Functions and variables within template actions

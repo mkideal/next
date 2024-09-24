@@ -457,17 +457,11 @@ func (tc *templateContext) pwd() (string, error) {
 	return tc.pwds[len(tc.pwds)-1], nil
 }
 
-func (tc *templateContext) exist(name string) (bool, error) {
+func (tc *templateContext) exist(name string) bool {
 	if name != "" && name[0] != '/' {
 		name = filepath.Join(tc.dir, name)
 	}
-	if _, err := os.Stat(name); err != nil {
-		if os.IsNotExist(err) {
-			return false, nil
-		}
-		return false, err
-	}
-	return true, nil
+	return tc.compiler.platform.IsExist(name)
 }
 
 func (tc *templateContext) load(path string) (string, error) {
@@ -635,7 +629,7 @@ func (tc *templateContext) loadTemplate(path string, fs fs.FS) (*template.Templa
 		if v, ok := tc.cache.templates.Load(path); ok {
 			return v.(*template.Template), nil
 		}
-		content, err = os.ReadFile(path)
+		content, err = tc.compiler.platform.ReadFile(path)
 	}
 	if err != nil {
 		return nil, err
