@@ -76,13 +76,6 @@ enum Color {
 }
 
 struct User {
-    int id;
-    @optional Color color;
-    @json(omitempty) @optional string name;
-    @message int timestamp;
-}
-
-struct User {
     int64 id;
     string username;
     vector<string> tags;
