@@ -19,10 +19,6 @@ Next includes built-in templates for various languages, including **C**, **C++**
 
 For detailed information on Next's syntax, features, and usage, please visit the official website at [https://next.as](https://next.as). The website provides comprehensive documentation, tutorials, and examples to help you get started with Next and make the most of its capabilities.
 
-## 📝 TODO
-
-- [ ] Support more built-in templates for additional programming languages
-
 ## 🤝 Contributing
 
 We welcome contributions to Next Language! Please see our [Contribution Guidelines](CONTRIBUTING.md) for more information on how to get started.
