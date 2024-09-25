@@ -2,9 +2,9 @@
 slug: /
 ---
 
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-import Admonition from '@theme/Admonition';
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+import Admonition from "@theme/Admonition";
 
 # Get Started
 
@@ -54,7 +54,7 @@ flowchart TD
     classDef input fill:#81ecec,stroke:#0984e3,stroke-width:2px,color:#2d3436
     classDef compiler fill:#6c5ce7,stroke:#5b4cc4,stroke-width:2px,color:#ffffff
     classDef output fill:#fab1a0,stroke:#e17055,stroke-width:2px,color:#2d3436
-    
+
     class B compiler
     linkStyle default stroke:#a29bfe,stroke-width:2px
 ```
@@ -74,32 +74,35 @@ Next streamlines development processes, reduces code duplication, and ensures co
   <TabItem value="unix">
   To install Next on Unix-like systems (`Linux`, `macOS`, `Git Bash for Windows`, etc.), you can use the following command:
 
-  ```sh
-  curl -fsSL https://getnext.sh | sh
-  ```
+```sh
+curl -fsSL https://getnext.sh | sh
+```
 
-  This script will download and install the latest version of Next on your system.
+This script will download and install the latest version of Next on your system.
+
   </TabItem>
 
   <TabItem value="windows">
   For Windows users, follow these steps:
 
-  1. Download the installation package from [Downloads](/docs/downloads) for windows.
-  2. Extract the downloaded ZIP file.
-  3. Right-click on the `install.bat` file in the extracted folder.
-  4. Select "Run as administrator" to execute the installation script.
+1. Download the installation package from [Downloads](/docs/downloads) for windows.
+2. Extract the downloaded ZIP file.
+3. Right-click on the `install.bat` file in the extracted folder.
+4. Select "Run as administrator" to execute the installation script.
 
-  This will install the Next on your Windows system.
+This will install the Next on your Windows system.
+
   </TabItem>
 
   <TabItem value="source">
   To install Next from source, use the following command:
 
-  ```sh
-  go install github.com/next/next@latest
-  ```
+```sh
+go install github.com/next/next@latest
+```
 
-  Make sure you have [Go](https://go.dev) `1.23+` installed on your system before running this command.
+Make sure you have [Go](https://go.dev) `1.23+` installed on your system before running this command.
+
   </TabItem>
 </Tabs>
 
@@ -115,9 +118,11 @@ Run `next -h` to show the command usage.
 ```sh
 next -h
 ```
+
 :::
 
 :::tip
+
 <details>
 <summary>Install Editor Extensions</summary>
 
@@ -129,7 +134,8 @@ next -h
   <TabItem value="vscode">
   Install Visual Studio Code Extension for Next from [marketplace](https://marketplace.visualstudio.com/items?itemName=nextlangorg.nextlang)
 
-  This extension provides syntax highlighting, and other helpful features for Next development in Visual Studio Code. You can install it directly from the provided link or search for `next lang` in the Visual Studio Code Extensions marketplace.
+This extension provides syntax highlighting, and other helpful features for Next development in Visual Studio Code. You can install it directly from the provided link or search for `next lang` in the Visual Studio Code Extensions marketplace.
+
   </TabItem>
 </Tabs>
 </details>
@@ -272,7 +278,7 @@ interface Reader {
     //
     // @next(mut) applies to the parameter buffer:
     // - For C++: The parameter is non-const, allowing modification
-    // - For other languages: This annotation may not have a direct effect, 
+    // - For other languages: This annotation may not have a direct effect,
     //   but indicates that the buffer content may be modified
     @next(error, mut)
     Read(@next(mut) bytes buffer) int;
@@ -308,6 +314,7 @@ interface HTTPClient {
     Post(string url, string body) string;
 }
 ```
+
 </details>
 
 ## Write a Next template file
@@ -318,28 +325,11 @@ Second, write a Next template file which has extension `.npl` used to constrol h
 <summary>example.cpp.npl</summary>
 
 ```npl
-{{/* Define metadata for entrypoint template file */}}
-{{- define "meta/this"}}file{{end -}}
-{{- define "meta/path"}}{{this.Package.Name}}/{{this.Name}}.next.h{{end -}}
-
-{{- /* Overrides "next/cpp/import" */ -}}
-{{- define "cpp/import" -}}
-#include "../{{.File.Package.Name}}/{{.File.Name}}.next.h"
-{{- end -}}
-
-{{- /* Overrides "next/cpp/struct.fields": add method 'message_type' for each message after fields */ -}}
-{{- define "cpp/struct.fields" -}}
-{{- super .}}
-{{- with .Decl.Annotations.message.type}}
-
-    static int message_type() { return {{.}}; }
-{{- end}}
-{{- end -}}
-
 {{head}}
 
 {{next this}}
 ```
+
 </details>
 
 ## Generate code
@@ -441,7 +431,7 @@ class User {
 public:
     User() = default;
     ~User() = default;
-    
+
     int64_t id;
     std::string username;
     std::vector<std::string> tags;
@@ -459,7 +449,7 @@ class Uint128 {
 public:
     Uint128() = default;
     ~Uint128() = default;
-    
+
     uint64_t low;
     uint64_t high;
 };
@@ -469,7 +459,7 @@ class Contract {
 public:
     Contract() = default;
     ~Contract() = default;
-    
+
     Uint128 address;
     std::any data;
 };
@@ -480,15 +470,13 @@ class LoginRequest {
 public:
     LoginRequest() = default;
     ~LoginRequest() = default;
-    
+
     std::string username;
     std::string password;
     // @optional annotation is a custom annotation that marks a field as optional.
     std::string device;
     OperatingSystem os;
     int64_t timestamp;
-
-    static int message_type() { return 101; }
 };
 
 // LoginResponse represents a login response message (type 102)
@@ -496,28 +484,26 @@ class LoginResponse {
 public:
     LoginResponse() = default;
     ~LoginResponse() = default;
-    
+
     std::string token;
     User user;
-
-    static int message_type() { return 102; }
 };
 
 // Reader provides reading functionality
 class Reader {
 public:
     virtual ~Reader() = default;
-    
+
     // Read reads data into the buffer
-    // 
+    //
     // @next(error) applies to the method:
     // - For Go: The method may return an error
     // - For C++/Java: The method throws an exception
-    // 
+    //
     // @next(mut) applies to the method:
     // - For C++: The method is non-const
     // - For other languages: This annotation may not have a direct effect
-    // 
+    //
     // @next(mut) applies to the parameter buffer:
     // - For C++: The parameter is non-const, allowing modification
     // - For other languages: This annotation may not have a direct effect,
@@ -529,7 +515,7 @@ public:
 class HTTPClient {
 public:
     virtual ~HTTPClient() = default;
-    
+
     // Available for all languages
     virtual std::string request(const std::string& url, const std::string& method, const std::string& body) const = 0;
     // Available for C++
@@ -538,8 +524,8 @@ public:
 
 } // namespace demo
 ```
-</details>
 
+</details>
 
 ## How to generate multi-language codes?
 
@@ -578,18 +564,20 @@ It's easy to generate many other langauge codes by writing template files. Here 
   {{next this}}
   ```
 
-  Example output:
-  ```java
-  // Code generated by "next v0.0.3"; DO NOT EDIT.
-  
-  package com.example.demo;
-  
-  public class Constants {
-      public static final String VERSION = "1.0.0"; // String constant
-      public static final long MAX_RETRIES = 3L; // Integer constant
-      public static final float TIMEOUT = 3000.0F; // Float constant expression
-  }
-  ```
+Example output:
+
+```java
+// Code generated by "next v0.0.3"; DO NOT EDIT.
+
+package com.example.demo;
+
+public class Constants {
+    public static final String VERSION = "1.0.0"; // String constant
+    public static final long MAX_RETRIES = 3L; // Integer constant
+    public static final float TIMEOUT = 3000.0F; // Float constant expression
+}
+```
+
   </TabItem>
 
   <TabItem value="enum">
@@ -608,33 +596,35 @@ It's easy to generate many other langauge codes by writing template files. Here 
   {{next this}}
   ```
 
-  Example output:
-  ```java
-  // Code generated by "next v0.0.3"; DO NOT EDIT.
-  
-  package com.example.demo;
-  
-  /**
-   * Color represents different color options
-   * Values: Red (1), Green (2), Blue (4), Yellow (8)
-   */
-  public enum Color {
-      Red((byte) 1),
-      Green((byte) 2),
-      Blue((byte) 4),
-      Yellow((byte) 8);
-  
-      private final byte value;
-  
-      Color(byte value) {
-          this.value = value;
-      }
-  
-      public byte getValue() {
-          return value;
-      }
-  }
-  ```
+Example output:
+
+```java
+// Code generated by "next v0.0.3"; DO NOT EDIT.
+
+package com.example.demo;
+
+/**
+ * Color represents different color options
+ * Values: Red (1), Green (2), Blue (4), Yellow (8)
+ */
+public enum Color {
+    Red((byte) 1),
+    Green((byte) 2),
+    Blue((byte) 4),
+    Yellow((byte) 8);
+
+    private final byte value;
+
+    Color(byte value) {
+        this.value = value;
+    }
+
+    public byte getValue() {
+        return value;
+    }
+}
+```
+
   </TabItem>
 
   <TabItem value="struct">
@@ -664,44 +654,45 @@ It's easy to generate many other langauge codes by writing template files. Here 
   {{next this}}
   ```
 
-  Example output:
+Example output:
 
-  ```java
-  // Code generated by "next v0.0.3"; DO NOT EDIT.
-  
-  package com.example.demo;
-  
-  import java.util.List;
-  import java.util.Map;
-  import java.util.Arrays;
-  
-  /**
-   * Contract represents a smart contract
-   */
-  public class Contract {
-      private Uint128 address;
-  
-      public Uint128 getAddress() {
-          return address;
-      }
-  
-      public void setAddress(Uint128 address) {
-          this.address = address;
-      }
-  
-      private Object data;
-  
-      public Object getData() {
-          return data;
-      }
-  
-      public void setData(Object data) {
-          this.data = data;
-      }
-  
-      public Contract() {}
-  }
-  ```
+```java
+// Code generated by "next v0.0.3"; DO NOT EDIT.
+
+package com.example.demo;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Arrays;
+
+/**
+ * Contract represents a smart contract
+ */
+public class Contract {
+    private Uint128 address;
+
+    public Uint128 getAddress() {
+        return address;
+    }
+
+    public void setAddress(Uint128 address) {
+        this.address = address;
+    }
+
+    private Object data;
+
+    public Object getData() {
+        return data;
+    }
+
+    public void setData(Object data) {
+        this.data = data;
+    }
+
+    public Contract() {}
+}
+```
+
   </TabItem>
 
   <TabItem value="interface">
@@ -722,39 +713,41 @@ It's easy to generate many other langauge codes by writing template files. Here 
   {{next this}}
   ```
 
-  Example output:
-  ```java
-  // Code generated by "next v0.0.3"; DO NOT EDIT.
-  
-  package com.example.demo;
-  
-  import java.util.List;
-  import java.util.Map;
-  import java.util.Arrays;
-  
-  /**
-   * Reader provides reading functionality
-   */
-  interface Reader {
-      /**
-       * Read reads data into the buffer
-       * 
-       * @next(error) applies to the method:
-       * - For Go: The method may return an error
-       * - For C++/Java: The method throws an exception
-       * 
-       * @next(mut) applies to the method:
-       * - For C++: The method is non-const
-       * - For other languages: This annotation may not have a direct effect
-       * 
-       * @next(mut) applies to the parameter buffer:
-       * - For C++: The parameter is non-const, allowing modification
-       * - For other languages: This annotation may not have a direct effect,
-       *   but indicates that the buffer content may be modified
-       */
-      int Read(byte[] buffer) throws Exception;
-  }
-  ```
+Example output:
+
+```java
+// Code generated by "next v0.0.3"; DO NOT EDIT.
+
+package com.example.demo;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Arrays;
+
+/**
+ * Reader provides reading functionality
+ */
+interface Reader {
+    /**
+     * Read reads data into the buffer
+     *
+     * @next(error) applies to the method:
+     * - For Go: The method may return an error
+     * - For C++/Java: The method throws an exception
+     *
+     * @next(mut) applies to the method:
+     * - For C++: The method is non-const
+     * - For other languages: This annotation may not have a direct effect
+     *
+     * @next(mut) applies to the parameter buffer:
+     * - For C++: The parameter is non-const, allowing modification
+     * - For other languages: This annotation may not have a direct effect,
+     *   but indicates that the buffer content may be modified
+     */
+    int Read(byte[] buffer) throws Exception;
+}
+```
+
   </TabItem>
 </Tabs>
 </details>
