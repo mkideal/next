@@ -143,7 +143,7 @@ First of all, You need write a Next source file which has extension `.next` used
 
 ```next
 @next(
-    go_package="github.com/next/next/testdata/gen/go/demo",
+    go_package="github.com/next/next/gen/go/demo",
     cpp_package="demo",
     c_package="DEMO_",
     java_package="com.example.demo",
@@ -754,3 +754,27 @@ Run `next` to generate multi-language codes as following(we assume `*.java.npl` 
 ```sh
 next -T cpp=example.cpp.npl -O cpp=gen/cpp/ -T java=java/ -O java=gen/java/ example.next
 ```
+
+:::tip
+You can generate many langauge codes as following:
+
+```sh
+next \
+    -O go=gen/go -T go=templates/go \
+    -O java=gen/java -T java=templates/java \
+    -O cpp=gen/cpp -T cpp=templates/cpp \
+    -O csharp=gen/csharp -T csharp=templates/csharp \
+    -O c=gen/c -T c=templates/c \
+    -O rust=gen/rust/src -T rust=templates/rust \
+    -O protobuf=gen/protobuf -T protobuf=templates/protobuf \
+    -O js=gen/js -T js=templates/js \
+    -O ts=gen/ts -T ts=templates/ts \
+    -O python=gen/python -T python=templates/python \
+    -O php=gen/php -T php=templates/php \
+    -O swift=gen/swift -T swift=templates/swift \
+    -O lua=gen/lua -T lua=templates/lua \
+    -M "c.vector=void*" -M "c.map=void*" \
+    next/source/dir/ # or source files
+```
+
+:::
