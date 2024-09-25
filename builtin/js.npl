@@ -1,0 +1,169 @@
+{{/* next/js/file: Generates the main structure for a JavaScript file */}}
+{{- define "next/js/file" -}}
+{{next .Imports -}}
+{{next .Decls -}}
+{{- end}}
+
+{{/* next/js/import: Generates an import statement for a module */}}
+{{- define "next/js/import" -}}
+import * as {{.File.Name}} from './{{.File.Name}}.js';
+{{- end}}
+
+{{/* next/js/doc: Generates documentation comments for JavaScript (uses C-like doc style) */}}
+{{- define "next/js/doc" -}}
+{{render "doc:clike" .}}
+{{- end}}
+
+{{/* next/js/used.type: Generates a fully qualified type name, including module name if necessary */}}
+{{- define "next/js/used.type" -}}
+{{- if ne .File .Type.Decl.File -}}
+{{- .Type.Decl.File.Name -}}.
+{{- end -}}
+{{- next .Type -}}
+{{- end}}
+
+{{/* next/js/const: Generates a constant declaration */}}
+{{- define "next/js/const" -}}
+{{next .Doc -}}
+export const {{render "const:name" .}} = {{.Value}};{{next .Comment}}
+{{- end}}
+
+{{/* next/js/enum: Generates an enum as a frozen object */}}
+{{- define "next/js/enum" -}}
+{{next .Doc -}}
+export const {{next .Type}} = Object.freeze({
+    {{- next .Members}}
+});
+{{- end}}
+
+{{/* next/js/enum.members: Generates enum members */}}
+{{- define "next/js/enum.members" -}}
+{{- $n := len .List -}}
+{{- range $i, $member := .List}}
+    {{next $member -}}
+{{end}}
+{{- end}}
+
+{{/* next/js/enum.member: Generates an individual enum member */}}
+{{- define "next/js/enum.member" -}}
+{{next .Doc -}}
+{{render "enum.member:name" .}}: {{.Value}}{{next .Comment}}{{if not .IsLast}},{{end}}
+{{- end}}
+
+{{/* next/js/struct: Generates a class declaration (struct in JavaScript is implemented as a class) */}}
+{{- define "next/js/struct" -}}
+{{next .Doc -}}
+export class {{next .Type}} {
+    constructor() {
+        {{- next .Fields}}
+    }
+}
+{{- end}}
+
+{{/* next/js/struct.fields: Generates field declarations for a class */}}
+{{- define "next/js/struct.fields" -}}
+{{range .List}}
+        {{next . | align}}
+{{- end}}
+{{- end}}
+
+{{/* next/js/struct.field: Generates a single field declaration with JSDoc */}}
+{{- define "next/js/struct.field" -}}
+{{- if .Doc.Text -}}
+/**
+{{.Doc.Format "" "" " *" -}}
+{{_}} * @type { {{render "type:doc" .Type}} }
+ */
+{{- else -}}
+/** @type { {{render "type:doc" .Type}} } */
+{{- end}}
+this.{{render "struct.field:name" .}} = {{render "type:zero" .Type}};{{next .Comment}}
+{{- end}}
+
+{{/* next/js/interface: Generates an interface as a class with unimplemented methods */}}
+{{- define "next/js/interface" -}}
+{{next .Doc}}export class {{next .Type}} {
+    {{- next .Methods}}
+}
+{{- end}}
+
+{{/* next/js/interface.methods: Generates method declarations for an interface */}}
+{{- define "next/js/interface.methods" -}}
+{{range .List}}
+    {{next . | align}}
+{{- end}}
+{{- end}}
+
+{{/* next/js/interface.method: Generates a single method declaration with JSDoc */}}
+{{- define "next/js/interface.method" -}}
+/**
+{{if .Doc.Text -}}
+{{.Doc.Format "" "" " *" -}}
+{{_}} *
+{{end}}
+{{- if .Params.List -}}
+{{- range .Params.List -}}
+{{_}} * @param { {{render "type:doc" .Type}} } {{render "interface.method.param:name" .}}
+{{- end}}
+{{- end}}
+{{- if .Result.Type}}
+ * @returns { {{render "type:doc" .Result.Type}} }
+{{- end}}
+ */
+{{render "interface.method:name" .}}({{next .Params}}) {
+    throw new Error('Method not implemented.');
+}
+{{- end}}
+
+{{/* next/js/interface.method.param: Generates a parameter for an interface method */}}
+{{- define "next/js/interface.method.param" -}}
+{{render "interface.method.param:name" .}}
+{{- end}}
+
+{{/* next/js/type:doc: Generates a JSDoc type annotation */}}
+{{- define "next/js/type:doc" -}}
+{{- if or (.Kind.IsNumeric) (.Kind.IsString) (.Kind.IsBool) -}}
+{{type .}}
+{{- else if .Kind.IsStruct -}}
+{{next .Decl.Type}}
+{{- else if .Kind.IsEnum -}}
+{{- if .Value.Decl.MemberType.Kind.IsString}}'string'{{else}}'number'{{end -}}
+{{- else if .Kind.IsArray -}}
+'Array<{{render "type:doc" .Value.ElemType}}>'
+{{- else if .Kind.IsMap -}}
+'Map<{{render "type:doc" .Value.KeyType}}, {{render "type:doc" .Value.ElemType}}>'
+{{- else if .Kind.IsVector -}}
+'Array<{{render "type:doc" .Value.ElemType}}>'
+{{- else if .Kind.IsBytes -}}
+'Uint8Array'
+{{- else -}}
+'Object'
+{{- end}}
+{{- end}}
+
+{{/* next/js/type:zero: Generates a zero value for a given type */}}
+{{- define "next/js/type:zero" -}}
+{{- if .Kind.IsNumeric -}}
+0
+{{- else if .Kind.IsString -}}
+""
+{{- else if .Kind.IsBool -}}
+false
+{{- else if .Kind.IsArray -}}
+[]
+{{- else if .Kind.IsMap -}}
+new Map()
+{{- else if .Kind.IsVector -}}
+[]
+{{- else if .Kind.IsBytes -}}
+new Uint8Array()
+{{- else if .Kind.IsAny -}}
+null
+{{- else if .Kind.IsStruct -}}
+new {{next .}}
+{{- else if .Kind.IsEnum -}}
+{{next .}}[Object.keys({{next .}})[0]]
+{{- else}}
+null
+{{- end}}
+{{- end}}

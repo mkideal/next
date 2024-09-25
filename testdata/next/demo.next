@@ -163,6 +163,7 @@ interface HTTPServer {
 interface HTTPClient {
     // Available for all languages
     Request(string url, string method, string body) string;
+    Request2(string url, string method, string body) string;
 
     // Available for Go and Java
     @next(error, available="go|java")

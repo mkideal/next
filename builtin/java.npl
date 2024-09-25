@@ -1,7 +1,9 @@
+{{/* next/java/file: Placeholder for file generation (currently not supported) */}}
 {{- define "next/java/file" -}}
 {{error "next/java/file not supported!"}}
 {{- end}}
 
+{{/* next/java/imports: Generates import statements for Java files */}}
 {{- define "next/java/imports" -}}
 import java.util.List;
 import java.util.Map;
@@ -13,35 +15,41 @@ import java.util.Arrays;
 {{end}}
 {{end}}
 
+{{/* next/java/doc: Generates documentation comments for Java (uses C-like doc style) */}}
 {{- define "next/java/doc" -}}
-{{.Format "" " * " "/**\n" " */" | align}}
+{{render "doc:clike" .}}
 {{- end}}
 
+{{/* next/java/package:name: Retrieves the Java package name from annotations */}}
 {{- define "next/java/package:name" -}}
 {{.Annotations.next.java_package}}
 {{- end}}
 
+{{/* next/java/import: Generates an import statement for a specific package */}}
 {{- define "next/java/import" -}}
 import {{render "package:name" .Target.Package}}.*;
 {{- end}}
 
+{{/* next/java/consts: Generates constant declarations */}}
 {{- define "next/java/consts" -}}
     {{- range .List}}
     {{next . -}}
     {{- end}}
 {{- end}}
 
+{{/* next/java/const: Generates a single constant declaration */}}
 {{- define "next/java/const" -}}
-{{next .Doc}}public static final {{next .Type}} {{render "const:name" . | snakeCase | upper}} = {{render "value:literal" .Value}};{{next .Comment}}
+{{next .Doc}}public static final {{next .Type}} {{render "const:name" . | snakeCase | upper}} = {{render "value" .Value}};{{next .Comment}}
 {{- end}}
 
+{{/* next/java/enums: Generates enum declarations */}}
 {{- define "next/java/enums" -}}
 {{- range .List}}
 {{next . -}}
-
 {{- end}}
 {{- end}}
 
+{{/* next/java/enum: Generates a single enum declaration */}}
 {{- define "next/java/enum" -}}
 {{next .Doc}}public enum {{next .Type}} {
     {{- next .Members}}
@@ -58,17 +66,21 @@ import {{render "package:name" .Target.Package}}.*;
 }
 {{- end}}
 
+{{/* next/java/enum.member: Generates an enum member */}}
 {{- define "next/java/enum.member" -}}
 {{next .Doc}}{{render "enum.member:name" .}}(({{render "enum:member.type" .Decl}}) {{.Value}}){{if not .IsLast}},{{else}};{{end}}{{next .Comment}}
 {{- end}}
 
+{{/* next/java/struct: Generates a class declaration (struct in Java is implemented as a class) */}}
 {{- define "next/java/struct" -}}
 {{next .Doc}}public class {{next .Type}} {
     {{- next .Fields}}
+
     public {{next .Type}}() {}
 }
 {{- end}}
 
+{{/* next/java/struct.field: Generates a field declaration with getter and setter */}}
 {{- define "next/java/struct.field" -}}
 {{- $type := (next .Type) -}}
 {{- $name := (render "struct.field:name" .) -}}
@@ -83,18 +95,22 @@ import {{render "package:name" .Target.Package}}.*;
     }
 {{end}}
 
+{{/* next/java/struct.field.name: Generates the name for a class field */}}
 {{- define "next/java/struct.field.name" -}}
 {{.}}
 {{- end}}
 
+{{/* next/java/interface.method: Generates a method declaration in an interface */}}
 {{- define "next/java/interface.method" -}}
 {{next .Doc}}{{next .Result}} {{render "interface.method:name" .}}({{next .Params}}){{if .Annotations.next.error}} throws Exception{{end}};{{next .Comment}}
 {{- end}}
 
+{{/* next/java/interface.method.result: Generates the return type for an interface method */}}
 {{- define "next/java/interface.method.result" -}}
 {{if .Type}}{{next .Type}}{{else}}void{{end}}
 {{- end}}
 
+{{/* next/java/decl.type:alias: Retrieves the Java type alias from annotations */}}
 {{- define "next/java/decl.type:alias" -}}
 {{- .Decl.Annotations.next.java_alias -}}
 {{- end}}

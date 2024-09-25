@@ -1,3 +1,4 @@
+{{/* next/cpp/file: Generates the main structure for a C++ header file */}}
 {{- define "next/cpp/file" -}}
 #pragma once
 
@@ -8,6 +9,7 @@
 {{render "file:namespace.end" . -}}
 {{- end}}
 
+{{/* next/cpp/imports: Generates standard C++ include statements and user-defined imports */}}
 {{- define "next/cpp/imports" -}}
 #include <any>
 #include <array>
@@ -23,10 +25,12 @@
 {{- end}}
 {{- end}}
 
+{{/* next/cpp/import: Generates an include statement for a user-defined header */}}
 {{- define "next/cpp/import" -}}
 #include "{{.File.Name}}.h"
 {{- end}}
 
+{{/* next/cpp/used.type: Generates a fully qualified type name, including namespace if necessary */}}
 {{- define "next/cpp/used.type" -}}
 {{if not (.File.Package.Contains .Type) -}}
 {{$ns := .Type.Decl.File.Package.Annotations.next.cpp_package -}}
@@ -37,6 +41,7 @@
 {{next .Type}}
 {{- end}}
 
+{{/* next/cpp/file:namespace.begin: Begins a namespace block if a C++ package is specified */}}
 {{- define "next/cpp/file:namespace.begin" -}}
 {{- $ns := .Annotations.next.cpp_package -}}
 {{- if $ns}}
@@ -45,6 +50,7 @@ namespace {{$ns}} {
 {{end}}
 {{- end}}
 
+{{/* next/cpp/file:namespace.end: Ends a namespace block if a C++ package is specified */}}
 {{- define "next/cpp/file:namespace.end" -}}
 {{- $ns := .Annotations.next.cpp_package -}}
 {{- if $ns}}
@@ -52,6 +58,7 @@ namespace {{$ns}} {
 {{- end}}
 {{- end}}
 
+{{/* next/cpp/file:forward.declarations: Generates forward declarations for enums and classes */}}
 {{- define "next/cpp/file:forward.declarations" -}}
 {{- if .Decls.Enums.List -}}
 // Enums forward declarations
@@ -78,10 +85,12 @@ class {{next .Type}};
 {{end}}
 {{- end}}
 
+{{/* next/cpp/const: Generates a constant declaration */}}
 {{- define "next/cpp/const" -}}
 {{next .Doc}}inline constexpr auto {{render "const:name" .}} = {{.Value}};{{next .Comment}}
 {{- end}}
 
+{{/* next/cpp/enum: Generates an enum class declaration */}}
 {{- define "next/cpp/enum" -}}
 {{- if not .Annotations.next.cpp_alias -}}
 {{- if .MemberType.Kind.IsInteger -}}
@@ -110,6 +119,7 @@ public:
 {{- end}}
 {{- end}}
 
+{{/* next/cpp/enum.member: Generates an enum member */}}
 {{- define "next/cpp/enum.member" -}}
 {{- if .Decl.MemberType.Kind.IsInteger -}}
 {{next .Doc}}{{render "enum.member:name" .}} = {{.Value}},{{next .Comment}}
@@ -122,6 +132,7 @@ static inline constexpr {{render "enum:member.type" .Decl}} {{render "enum.membe
 {{- end}}
 {{- end}}
 
+{{/* next/cpp/struct: Generates a class declaration (struct in C++ is typically implemented as a class) */}}
 {{- define "next/cpp/struct" -}}
 {{next .Doc}}class {{next .Type}} {
 public:
@@ -131,6 +142,7 @@ public:
 };
 {{- end}}
 
+{{/* next/cpp/struct.field: Generates a class member variable declaration */}}
 {{- define "next/cpp/struct.field" -}}
 {{- $zero := render "type:zero" .Type -}}
 {{- if $zero -}}
@@ -139,6 +151,7 @@ public:
 {{next .Doc}}{{next .Type}} {{render "struct.field:name" . | camelCase}}{{$zero}};{{next .Comment}}
 {{- end}}
 
+{{/* next/cpp/interface: Generates an abstract base class declaration (interface in C++ is typically implemented as an abstract class) */}}
 {{- define "next/cpp/interface" -}}
 {{next .Doc}}class {{next .Type}} {
 public:
@@ -147,18 +160,22 @@ public:
 };
 {{- end}}
 
+{{/* next/cpp/interface.method: Generates a pure virtual method declaration */}}
 {{- define "next/cpp/interface.method" -}}
 {{next .Doc}}virtual {{next .Result}} {{render "interface.method:name" .}}({{next .Params}}) {{if not .Annotations.next.mut}}const {{end}}= 0;{{next .Comment}}
 {{- end}}
 
+{{/* next/cpp/interface.method:name: Generates the name for an interface method */}}
 {{- define "next/cpp/interface.method:name" -}}
 {{snakeCase .Name}}
 {{- end}}
 
+{{/* next/cpp/interface.method.param: Generates a parameter for an interface method */}}
 {{- define "next/cpp/interface.method.param" -}}
 {{if not .Annotations.next.mut}}const {{end}}{{next .Type}}& {{render "interface.method.param:name" .}}
 {{- end}}
 
+{{/* next/cpp/interface.method.result: Generates the return type for an interface method */}}
 {{- define "next/cpp/interface.method.result" -}}
 {{if .Type -}}
 {{next .Type}}
@@ -167,7 +184,7 @@ void
 {{- end}}
 {{- end}}
 
-{{/* Overrides "next/type:zero" */}}
+{{/* next/cpp/type:zero: Generates a zero-initializer for a type */}}
 {{- define "next/cpp/type:zero" -}}
 {{- if .Kind.IsArray -}}
 {{- super .Value.ElemType -}}

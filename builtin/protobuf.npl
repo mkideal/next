@@ -1,3 +1,4 @@
+{{/* next/protobuf/file: Generates the main structure for a Protocol Buffers file */}}
 {{- define "next/protobuf/file" -}}
 syntax = "proto3";
 
@@ -7,7 +8,7 @@ package {{this.Package.Name}};
 {{next .Decls}}
 {{- end}}
 
-{{- /* Handle package-level options based on annotations */}}
+{{/* next/protobuf/package:options: Handles package-level options based on annotations */}}
 {{- define "next/protobuf/package:options"}}
 {{- if .Annotations.Contains "next" }}
 {{- range $key, $value := .Annotations.next }}
@@ -26,6 +27,7 @@ option csharp_namespace = "{{$value}}";
 {{- end }}
 {{- end }}
 
+{{/* next/protobuf/imports: Generates import statements for Protocol Buffers */}}
 {{- define "next/protobuf/imports" -}}
 {{- if this.UsedKinds.Contains "any"}}
 import "google/protobuf/any.proto";
@@ -36,15 +38,17 @@ import "google/protobuf/any.proto";
 {{- end}}
 {{- end}}
 
+{{/* next/protobuf/import: Generates an import statement for a specific .proto file */}}
 {{- define "next/protobuf/import" -}}
 import "{{.File.Name}}.proto";
 {{- end}}
 
-{{/* Skip constants */}}
+{{/* next/protobuf/consts: Skips constant declarations as they're not directly supported in Protocol Buffers */}}
 {{- define "next/protobuf/consts"}}
 // Constants Skipped.
 {{end -}}
 
+{{/* next/protobuf/enum: Generates an enum declaration */}}
 {{- define "next/protobuf/enum" -}}
 {{- if .MemberType.Kind.IsInteger -}}
 {{next .Doc}}enum {{next .Type}} {
@@ -65,35 +69,40 @@ import "{{.File.Name}}.proto";
 {{- end}}
 {{- end}}
 
+{{/* next/protobuf/enum.member: Generates an enum member */}}
 {{- define "next/protobuf/enum.member" -}}
 {{next .Doc}}{{render "enum.member:name" .}} = {{.Value}};
 {{- end}}
 
+{{/* next/protobuf/enum.member:name: Generates the name for an enum member */}}
 {{- define "next/protobuf/enum.member:name" -}}
 {{.Name | snakeCase | upper}}
 {{- end}}
 
+{{/* next/protobuf/struct: Generates a message declaration */}}
 {{- define "next/protobuf/struct" -}}
 {{next .Doc}}message {{next .Type}} {
     {{- next .Fields}}
 }
 {{- end}}
 
+{{/* next/protobuf/struct.field: Generates a field declaration within a message */}}
 {{- define "next/protobuf/struct.field" -}}
 {{next .Doc -}}
     {{render "struct.field:type" .}} {{render "struct.field:name" .}} = {{render "struct.field:tag" .}}{{render "struct.field:deprecated" .}};{{next .Comment}}
 {{- end}}
 
+{{/* next/protobuf/struct.field:deprecated: Adds the deprecated option to a field if necessary */}}
 {{- define "next/protobuf/struct.field:deprecated" -}}
 {{if .Annotations.Contains "deprecated"}} [deprecated = true]{{end}}
 {{- end -}}
 
-{{- /* Assign sequential tag number based on field index */ -}}
+{{/* next/protobuf/struct.field:tag: Assigns a sequential tag number based on field index */}}
 {{- define "next/protobuf/struct.field:tag" -}}
 {{add .Index 1}}
 {{- end -}}
 
-{{- /* Handle custom field type if specified */ -}}
+{{/* next/protobuf/struct.field:type: Handles custom field type if specified */}}
 {{- define "next/protobuf/struct.field:type" -}}
 {{- $type := "" -}}
 {{- if .Annotations.next.proto_type -}}
@@ -117,16 +126,19 @@ import "{{.File.Name}}.proto";
 {{- $type -}}
 {{- end -}}
 
+{{/* next/protobuf/interface: Generates a service declaration */}}
 {{- define "next/protobuf/interface" -}}
 {{next .Doc}}service {{next .Type}} {
     {{- next .Methods}}
 }
 {{- end}}
 
+{{/* next/protobuf/interface.method: Generates an RPC method declaration within a service */}}
 {{- define "next/protobuf/interface.method" -}}
 {{next .Doc}}rpc {{render "interface.method:name" .}} ({{render "interface.method:param.type" .}}) returns ({{next .Result}});
 {{- end}}
 
+{{/* next/protobuf/interface.method:param.type: Determines the input type for an RPC method */}}
 {{- define "next/protobuf/interface.method:param.type" -}}
 {{- if .Params.List -}}
 {{- if eq (len .Params.List) 1 -}}
@@ -139,6 +151,7 @@ google.protobuf.Empty
 {{- end}}
 {{- end}}
 
+{{/* next/protobuf/interface.method.result: Determines the return type for an RPC method */}}
 {{- define "next/protobuf/interface.method.result" -}}
 {{- if .Type -}}
 {{- next .Type -}}
@@ -147,6 +160,7 @@ google.protobuf.Empty
 {{- end}}
 {{- end}}
 
+{{/* next/protobuf/used.type: Generates a fully qualified type name, including package name if necessary */}}
 {{- define "next/protobuf/used.type" -}}
 {{- if not (.File.Package.Contains .Type) -}}
     {{.Type.File.Package.Name}}.

@@ -1,3 +1,4 @@
+{{/* next/c/file: Generates the header guard, includes, and content for a C header file */}}
 {{- define "next/c/file" -}}
 #ifndef {{render "this:file.header.macro" .}}
 #define {{render "this:file.header.macro" .}}
@@ -20,6 +21,7 @@ typedef unsigned char _Bool;
 #endif /* {{render "this:file.header.macro" .}} */
 {{- end}}
 
+{{/* next/c/file:forward.declarations: Generates forward declarations for enums and structs */}}
 {{- define "next/c/file:forward.declarations" -}}
 {{- if .Decls.Enums.List}}
 // Enums forward declarations
@@ -44,42 +46,51 @@ typedef struct {{next .Type}} {{next .Type}};
 {{end -}}
 {{- end}}
 
+{{/* next/c/decl.name: Generates a declaration name with the C package prefix */}}
 {{- define "next/c/decl.name" -}}
 {{this.File.Annotations.next.c_package | upper}}{{.}}
 {{- end}}
 
+{{/* next/c/this:file.header.macro: Generates the header guard macro name */}}
 {{- define "next/c/this:file.header.macro" -}}
 {{render "decl.name" this.Name | upper}}_H
 {{- end}}
 
+{{/* next/c/doc: Generates formatted documentation comments */}}
 {{- define "next/c/doc" -}}
-{{.Format "" " * " "/**\n" " */" | align}}
+{{render "doc:clike" .}}
 {{- end}}
 
+{{/* next/c/comment: Generates inline comments */}}
 {{- define "next/c/comment" -}}
 {{- with .Text | trim -}}
 {{_}} /* {{.}} */
 {{- end}}
 {{- end}}
 
+{{/* next/c/imports: Generates include statements for imported files */}}
 {{- define "next/c/imports" -}}
 {{- range .List}}
 {{next .}}
 {{- end}}
 {{- end}}
 
+{{/* next/c/import: Generates an include statement for a specific imported file */}}
 {{- define "next/c/import" -}}
 #include "{{.File.Name}}.h"
 {{- end}}
 
+{{/* next/c/const: Generates a constant definition using #define */}}
 {{- define "next/c/const" -}}
 {{next .Doc}}#define {{render "const:name" .}} {{.Value}}{{next .Comment}}
 {{- end}}
 
+{{/* next/c/const:name: Generates the name for a constant */}}
 {{- define "next/c/const:name" -}}
 {{render "decl.name" (.Name | snakeCase) | upper}}
 {{- end}}
 
+{{/* next/c/enum: Generates an enum type declaration */}}
 {{- define "next/c/enum" -}}
 {{- if .MemberType.Kind.IsInteger -}}
 {{next .Doc}}typedef enum {{next .Type}} {
@@ -101,6 +112,7 @@ typedef struct {{next .Type}} {{next .Type}};
 {{- end -}}
 {{end}}
 
+{{/* next/c/enum.member: Generates an enum member */}}
 {{- define "next/c/enum.member" -}}
 {{- if .Decl.MemberType.Kind.IsInteger -}}
 {{next .Doc}}{{next .Decl.Type}}_{{render "enum.member:name" .}} = {{.Value}},{{next .Comment}}
@@ -109,12 +121,14 @@ typedef struct {{next .Type}} {{next .Type}};
 {{- end}}
 {{- end}}
 
+{{/* next/c/struct: Generates a struct type declaration */}}
 {{- define "next/c/struct" -}}
 {{next .Doc}}typedef struct {{next .Type}} {
     {{- next .Fields}}
 } {{next .Type}};
 {{- end}}
 
+{{/* next/c/struct.field: Generates a struct field declaration */}}
 {{- define "next/c/struct.field" -}}
 {{- $type := .Type.Value -}}
 {{- if $type.Kind.IsArray -}}
@@ -124,6 +138,7 @@ typedef struct {{next .Type}} {{next .Type}};
 {{- end}}
 {{- end}}
 
+{{/* next/c/interface: Generates an interface declaration as a struct with function pointers */}}
 {{- define "next/c/interface" -}}
 {{next .Doc}}typedef struct {{next .Type}} {{next .Type}};
 
@@ -141,34 +156,41 @@ struct {{next .Type}} {
 {{- end}}
 {{- end}}
 
+{{/* next/c/interface.method:name: Generates the name for an interface method */}}
 {{- define "next/c/interface.method:name" -}}
 {{snakeCase .Name}}
 {{- end}}
 
+{{/* next/c/interface.method.param: Generates a parameter declaration for an interface method */}}
 {{- define "next/c/interface.method.param" -}}
 {{next .Type}} {{render "interface.method.param:name" .}}
 {{- end}}
 
+{{/* next/c/interface.method.param:name: Generates the name for an interface method parameter */}}
 {{- define "next/c/interface.method.param:name" -}}
 {{.Name}}
 {{- end}}
 
+{{/* next/c/interface.method.result: Generates the return type for an interface method */}}
 {{- define "next/c/interface.method.result" -}}
 {{- if .Type}}{{next .Type}}{{else}}void{{end -}}
 {{- end}}
 
+{{/* next/c/interface.method.params: Generates parameter declarations for an interface method */}}
 {{- define "next/c/interface.method.params" -}}
 {{- range $i, $p := .List -}}
     {{if $i}}, {{end}}{{next $p -}}
 {{- end -}}
 {{- end}}
 
+{{/* next/c/interface.method.params:names: Generates parameter names for an interface method call */}}
 {{- define "next/c/interface.method.params:names" -}}
 {{- range $i, $p := .List -}}
     {{if $i}}, {{end}}{{render "interface.method.param:name" $p -}}
 {{- end -}}
 {{- end}}
 
+{{/* next/c/decl.type: Generates a declaration type name */}}
 {{- define "next/c/decl.type" -}}
 {{super . | render "decl.name"}}
 {{- end}}

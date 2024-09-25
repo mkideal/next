@@ -30,6 +30,10 @@
 {{align .String}}
 {{- end}}
 
+{{- define "next/doc:clike" -}}
+{{.Format "" " * " "/**\n" " */" | align}}
+{{- end}}
+
 {{/* next/imports: Generates code for all import statements in a file */}}
 {{- define "next/imports" -}}
 {{- range .List}}
@@ -227,14 +231,21 @@ enum {{next .Type}} {
 {{- next .Type -}}
 {{- end}}
 
-{{/* next/value:literal: Generates a literal value with optional suffix for some languages */}}
-{{- define "next/value:literal" -}}
-{{.}}
-{{- $kind := .Type.Kind.String | lower -}}
-{{- if eq $kind "int64" -}}
-L{{- if or (eq "c" lang) (eq "cpp" lang)}}L{{- end -}}
+{{/* next/value: Generates a value */}}
+{{- define "next/value" -}}
+{{.}}{{render "type:literal.suffix" .Type}}
+{{- end}}
+
+{{- define "next/type:literal.suffix" -}}
+{{- $kind := .Kind.String | lower -}}
+{{- if eq "ts" lang -}}
+    {{- if eq $kind "int64" -}}
+        n
+    {{- end -}}
+{{- else if eq $kind "int64" -}}
+    L{{- if or (eq "c" lang) (eq "cpp" lang)}}L{{- end -}}
 {{- else if eq $kind "float32" -}}
-F
+    F
 {{- end -}}
 {{- end}}
 
@@ -263,7 +274,7 @@ false
 {{/* next/zero: Generates a zero value for a given type */}}
 {{- define "next/type:zero" -}}
 {{- if .Kind.IsNumeric -}}
-0
+0{{render "next/type:literal.suffix" .}}
 {{- else if .Kind.IsString -}}
 ""
 {{- else if .Kind.IsBool -}}

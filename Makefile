@@ -104,6 +104,8 @@ test/template: install
 		-O c=testdata/gen/c -T c=testdata/templates/c \
 		-O rust=testdata/gen/rust/src -T rust=testdata/templates/rust \
 		-O protobuf=testdata/gen/protobuf -T protobuf=testdata/templates/protobuf \
+		-O js=testdata/gen/js -T js=testdata/templates/js \
+		-O ts=testdata/gen/ts -T ts=testdata/templates/ts \
 		-M "c.vector=void*" -M "c.map=void*" \
 		testdata/next/
 	@cd testdata/gen/rust && cargo init --vcs none

@@ -3,6 +3,7 @@ package types
 import (
 	"cmp"
 	"fmt"
+	"math"
 	"path/filepath"
 	"slices"
 	"strconv"
@@ -272,6 +273,8 @@ func (v *Value) File() *File {
 func (v *Value) resolve(c *Compiler, file *File, scope Scope) {
 	v.val = v.resolveValue(c, file, scope, make([]*Value, 0, 16))
 	switch v.Any().(type) {
+	case int32:
+		v.typ = primitiveTypes["int32"]
 	case int64:
 		v.typ = primitiveTypes["int64"]
 	case float32:
@@ -350,6 +353,9 @@ func (v *Value) Any() any {
 	switch v.val.Kind() {
 	case constant.Int:
 		if i, exactly := constant.Int64Val(v.val); exactly {
+			if i >= math.MinInt32 && i <= math.MaxInt32 {
+				return int32(i)
+			}
 			return i
 		}
 	case constant.Float:
