@@ -99,7 +99,6 @@ enum OperatingSystem {
 @message(type=101, req)
 struct LoginRequest {
     string username;
-    // password is a required field
     string password;
     // @optional annotation is a custom annotation that marks a field as optional.
     @optional string device;

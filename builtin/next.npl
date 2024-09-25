@@ -237,3 +237,36 @@ L{{- if or (eq "c" lang) (eq "cpp" lang)}}L{{- end -}}
 F
 {{- end -}}
 {{- end}}
+
+{{/* next/true: Generates a boolean true value */}}
+{{- define "next/true" -}}
+{{- if eq "c" lang -}}
+1
+{{- else if eq "python" lang -}}
+True
+{{- else -}}
+true
+{{- end}}
+{{- end}}
+
+{{/* next/false: Generates a boolean false value */}}
+{{- define "next/false" -}}
+{{- if eq "c" lang -}}
+0
+{{- else if eq "python" lang -}}
+False
+{{- else -}}
+false
+{{- end}}
+{{- end}}
+
+{{/* next/zero: Generates a zero value for a given type */}}
+{{- define "next/type:zero" -}}
+{{- if .Kind.IsNumeric -}}
+0
+{{- else if .Kind.IsString -}}
+""
+{{- else if .Kind.IsBool -}}
+{{render "false" .}}
+{{- end}}
+{{- end}}

@@ -739,6 +739,9 @@ func parseEnumType(p *parser) *ast.EnumType {
 
 	lbrace := p.expect(token.LBRACE)
 	var values []*ast.EnumMember
+	if p.tok == token.RBRACE {
+		p.error(lbrace, "enum must have at least one member")
+	}
 	for p.tok != token.RBRACE && p.tok != token.EOF {
 		values = append(values, p.parseMember())
 	}

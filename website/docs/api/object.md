@@ -529,9 +529,17 @@ Currently, the following types are supported:
 
 `.IsBool` reports whether the type is a boolean.
 
+###### .IsByte {#user-content-Object_Common_Type_Kind_-IsByte}
+
+`.IsByte` reports whether the type is a byte.
+
 ###### .IsBytes {#user-content-Object_Common_Type_Kind_-IsBytes}
 
 `.IsBytes` reports whether the type is a byte slice.
+
+###### .IsEnum {#user-content-Object_Common_Type_Kind_-IsEnum}
+
+`.IsEnum` reports whether the type is an enumeration.
 
 ###### .IsFloat {#user-content-Object_Common_Type_Kind_-IsFloat}
 
@@ -540,6 +548,10 @@ Currently, the following types are supported:
 ###### .IsInteger {#user-content-Object_Common_Type_Kind_-IsInteger}
 
 `.IsInteger` reports whether the type is an integer.
+
+###### .IsInterface {#user-content-Object_Common_Type_Kind_-IsInterface}
+
+`.IsInterface` reports whether the type is an interface.
 
 ###### .IsMap {#user-content-Object_Common_Type_Kind_-IsMap}
 
@@ -552,6 +564,10 @@ Currently, the following types are supported:
 ###### .IsString {#user-content-Object_Common_Type_Kind_-IsString}
 
 `.IsString` reports whether the type is a string.
+
+###### .IsStruct {#user-content-Object_Common_Type_Kind_-IsStruct}
+
+`.IsStruct` reports whether the type is a structure.
 
 ###### .IsVector {#user-content-Object_Common_Type_Kind_-IsVector}
 
