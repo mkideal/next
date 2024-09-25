@@ -75,7 +75,7 @@ func exec(platform types.Platform, args []string) {
 
 	var files []string
 	var source io.Reader
-	if flag.NArg() == 0 {
+	if flagSet.NArg() == 0 {
 		if osStdin, ok := stdin.(*os.File); ok {
 			if stat, err := osStdin.Stat(); err == nil && (stat.Mode()&os.ModeCharDevice) == 0 {
 				source = osStdin
@@ -89,7 +89,7 @@ func exec(platform types.Platform, args []string) {
 			files = append(files, "<input>")
 		}
 	} else {
-		for _, arg := range flag.Args() {
+		for _, arg := range flagSet.Args() {
 			if arg == "-" {
 				usage(flagSet, stderr, "invalid argument: -")
 			}
@@ -97,7 +97,7 @@ func exec(platform types.Platform, args []string) {
 				usage(flagSet, stderr, "flag %q not allowed after non-flag argument", arg)
 			}
 		}
-		for _, arg := range flag.Args() {
+		for _, arg := range flagSet.Args() {
 			v, e := fsutil.AppendFiles(files, arg, nextExt, false)
 			files = result(stderr, v, e)
 		}
@@ -127,6 +127,7 @@ func exec(platform types.Platform, args []string) {
 			source = bytes.NewReader(result(stderr, v, e))
 		}
 		v, e := parser.ParseFile(compiler.FileSet(), file, source, parser.ParseComments)
+		source = nil
 		f := result(stderr, v, e)
 		v2, e2 := compiler.AddFile(f)
 		result(stderr, v2, e2)

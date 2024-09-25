@@ -382,9 +382,9 @@ class Contract;
 class LoginRequest;
 class LoginResponse;
 
-static constexpr auto Version = "1.0.0"; // String constant
-static constexpr auto MaxRetries = 3; // Integer constant
-static constexpr auto Timeout = 3000; // Float constant expression
+inline constexpr auto Version = "1.0.0"; // String constant
+inline constexpr auto MaxRetries = 3; // Integer constant
+inline constexpr auto Timeout = 3000.0; // Float constant expression
 
 // Color represents different color options
 // Values: Red (1), Green (2), Blue (4), Yellow (8)
@@ -586,8 +586,8 @@ It's easy to generate many other langauge codes by writing template files. Here 
   
   public class Constants {
       public static final String VERSION = "1.0.0"; // String constant
-      public static final long MAXRETRIES = 3l; // Integer constant
-      public static final long TIMEOUT = 3000l; // Float constant expression
+      public static final long MAX_RETRIES = 3L; // Integer constant
+      public static final float TIMEOUT = 3000.0F; // Float constant expression
   }
   ```
   </TabItem>

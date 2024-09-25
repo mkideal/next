@@ -17,9 +17,9 @@
 )
 package demo;
 
-const Version = "1.0.0";
-const MaxRetries = 3;
-const Timeout = MaxRetries * 1000; // Constant expression
+const Version = "1.0.0"; // String constant
+const MaxRetries = 3; // Integer constant
+const Timeout = MaxRetries * 1000.0; // Float constant expression
 
 // Color represents different color options
 // Values: Red (1), Green (2), Blue (4), Yellow (8)

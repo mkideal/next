@@ -53,7 +53,7 @@ namespace {{$ns}} {
 {{- end}}
 
 {{- define "next/cpp/file:forward.declarations" -}}
-{{- if .Decls.Enums.List}}
+{{- if .Decls.Enums.List -}}
 // Enums forward declarations
 {{- range .Decls.Enums.List}}
 {{- if not .Annotations.next.cpp_alias}}
@@ -64,20 +64,22 @@ enum class {{next .Type}};
 {{- end}}
 {{- end}}
 {{- end}}
+
 {{end -}}
 
-{{- if .Decls.Structs.List}}
+{{- if .Decls.Structs.List -}}
 // Classes forward declarations
 {{- range .Decls.Structs.List}}
 {{- if not .Annotations.next.cpp_alias}}
 class {{next .Type}};
 {{- end}}
 {{- end}}
-{{end -}}
+
+{{end}}
 {{- end}}
 
 {{- define "next/cpp/const" -}}
-{{next .Doc}}static constexpr auto {{render "const:name" .}} = {{.Value}};{{next .Comment}}
+{{next .Doc}}inline constexpr auto {{render "const:name" .}} = {{.Value}};{{next .Comment}}
 {{- end}}
 
 {{- define "next/cpp/enum" -}}

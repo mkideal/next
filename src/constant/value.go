@@ -153,11 +153,6 @@ func (x floatVal) String() string {
 		return "0"
 	}
 
-	// If the number is an integer, ensure it's formatted as such
-	if !strings.ContainsAny(s, ".eE") {
-		return s
-	}
-
 	// For numbers in scientific notation
 	if strings.ContainsAny(s, "eE") {
 		parts := strings.Split(strings.ToLower(s), "e")
@@ -176,9 +171,16 @@ func (x floatVal) String() string {
 	}
 
 	// For regular numbers, remove trailing zeros
-	s = strings.TrimRight(s, "0")
-	if strings.HasSuffix(s, ".") {
-		s = s[:len(s)-1]
+	if strings.Contains(s, ".") {
+		s = strings.TrimRight(s, "0")
+		if strings.HasSuffix(s, ".") {
+			s = s[:len(s)-1]
+		}
+	}
+
+	// If the number is an integer, add a trailing ".0"
+	if !strings.Contains(s, ".") {
+		s += ".0"
 	}
 
 	return s

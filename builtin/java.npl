@@ -32,7 +32,7 @@ import {{render "package:name" .Target.Package}}.*;
 {{- end}}
 
 {{- define "next/java/const" -}}
-{{next .Doc}}public static final {{next .Type}} {{render "const:name" . | upper}} = {{.Value}}{{if eq "long" ((next .Type))}}l{{end}};{{next .Comment}}
+{{next .Doc}}public static final {{next .Type}} {{render "const:name" . | snakeCase | upper}} = {{render "value:literal" .Value}};{{next .Comment}}
 {{- end}}
 
 {{- define "next/java/enums" -}}
