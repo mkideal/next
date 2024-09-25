@@ -51,7 +51,7 @@ define release_unix
 	@echo "Building ${BUILD_DIR}/${dir}/next..."
 	@mkdir -p ${BUILD_DIR}/${dir}/bin
 	@cp README.md ${BUILD_DIR}/${dir}/
-	@GOOS=$(1) GOARCH=$(2) ${GOBUILD} -o ${BUILD_DIR}/${dir}/bin/
+	@GOOS=$(if $(filter mingw,$(1)),windows,$(1)) GOARCH=$(2) ${GOBUILD} -o ${BUILD_DIR}/${dir}/bin/
 	@cd ${BUILD_DIR} && tar zcf ${dir}.tar.gz ${dir} && rm -r ${dir}
 endef
 
@@ -80,8 +80,8 @@ release: go/generate go/vet
 	$(call release_unix,linux,amd64)
 	$(call release_unix,linux,arm64)
 	$(call release_unix,linux,386)
-	$(call release_unix,windows,amd64)
-	$(call release_unix,windows,386)
+	$(call release_unix,mingw,amd64)
+	$(call release_unix,mingw,386)
 	$(call release_windows,amd64)
 	$(call release_js)
 

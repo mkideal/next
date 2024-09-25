@@ -96,11 +96,14 @@ info() {
 detect_os_arch() {
     print_step "Detecting system information"
     OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+    if [[ "$OS" == "mingw"* ]]; then
+        OS="mingw"
+    fi
     ARCH=$(uname -m)
     case $ARCH in
         x86_64|amd64) ARCH="amd64" ;;
         aarch64|arm64) ARCH="arm64" ;;
-        i386|x86) ARCH="386" ;;
+        i386|i486|i586|i686|x86) ARCH="386" ;;
         *) die "Unsupported architecture: $ARCH" ;;
     esac
     case $OS in
