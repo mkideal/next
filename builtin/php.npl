@@ -1,0 +1,148 @@
+{{/* next/php/file: Generates the main structure for a PHP file */}}
+{{- define "next/php/file" -}}
+<?php
+namespace {{render "package:name" .File.Package}};
+
+{{next .Imports -}}
+{{next .Decls -}}
+{{- end}}
+
+{{- define "next/php/package:name" -}}
+{{.File.Package.Name}}
+{{- end}}
+
+{{/* next/php/imports: Generates use statements for PHP */}}
+{{- define "next/php/imports" -}}
+{{- if .TrimmedList}}
+{{- range .TrimmedList}}
+{{next .}}
+{{- end}}
+{{end}}
+{{- end}}
+
+{{/* next/php/import: Generates a use statement for a specific namespace */}}
+{{- define "next/php/import" -}}
+use {{render "package:name" .Target.Package}};
+{{- end}}
+
+{{/* next/php/doc: Generates documentation comments for PHP */}}
+{{- define "next/php/doc" -}}
+{{render "doc:clike" .}}
+{{- end}}
+
+{{/* next/php/const: Generates a constant declaration */}}
+{{- define "next/php/const" -}}
+{{next .Doc}}const {{render "const:name" . | snakeCase | upper}} = {{.Value}};{{next .Comment}}
+{{- end}}
+
+{{/* next/php/enum: Generates an enum class declaration */}}
+{{- define "next/php/enum" -}}
+{{next .Doc}}enum {{next .Type}} : {{if .MemberType.Kind.IsInteger -}}
+int
+{{- else if .MemberType.Kind.IsString -}}
+string
+{{- else -}}
+{{- error "%s: unsupported enum member type: %s" .Pos .MemberType.Kind -}}
+{{- end}}
+{
+    {{- next .Members}}
+}
+{{- end}}
+
+{{/* next/php/enum.member: Generates an enum member */}}
+{{- define "next/php/enum.member" -}}
+{{next .Doc}}case {{render "enum.member:name" .}} = {{.Value}};{{next .Comment}}
+{{- end}}
+
+{{/* next/php/enum.member:name: Generates the name for an enum member */}}
+{{- define "next/php/enum.member:name" -}}
+{{.Name | snakeCase | upper}}
+{{- end}}
+
+{{/* next/php/struct: Generates a class declaration */}}
+{{- define "next/php/struct" -}}
+{{next .Doc}}class {{next .Type}}
+{
+    {{- next .Fields}}
+
+    public function __construct()
+    {
+        {{- range .Fields.List}}
+        $this->{{render "struct.field:name" .}} = {{render "type:zero" .Type}};
+        {{- end}}
+    }
+}
+{{- end}}
+
+{{/* next/php/struct.field: Generates a class field declaration */}}
+{{- define "next/php/struct.field" -}}
+{{next .Doc}}public {{next .Type}} ${{render "struct.field:name" .}};{{next .Comment}}
+{{- end}}
+
+{{/* next/php/struct.field:name: Generates the name for a class field */}}
+{{- define "next/php/struct.field:name" -}}
+{{.Name | camelCase}}
+{{- end}}
+
+{{/* next/php/interface: Generates an interface declaration */}}
+{{- define "next/php/interface" -}}
+{{next .Doc}}interface {{next .Type}}
+{
+    {{- next .Methods}}
+}
+{{- end}}
+
+{{/* next/php/interface.method: Generates a method declaration in an interface */}}
+{{- define "next/php/interface.method" -}}
+{{next .Doc}}public function {{render "interface.method:name" .}}({{next .Params}}){{next .Result}};{{next .Comment}}
+{{- end}}
+
+{{/* next/php/interface.method:name: Generates the name for an interface method */}}
+{{- define "next/php/interface.method:name" -}}
+{{camelCase .Name}}
+{{- end}}
+
+{{/* next/php/interface.method.param: Generates a parameter for an interface method */}}
+{{- define "next/php/interface.method.param" -}}
+{{next .Type}} ${{render "interface.method.param:name" .}}
+{{- end}}
+
+{{/* next/php/interface.method.result: Generates the return type for an interface method */}}
+{{- define "next/php/interface.method.result" -}}
+{{- if .Type}}: {{next .Type}}{{end -}}
+{{- end}}
+
+{{/* next/php/used.type: Generates a fully qualified type name */}}
+{{- define "next/php/used.type" -}}
+{{- if and (not (.File.Package.Contains .Type)) (.Type.Decl.File) -}}
+\{{render "package:name" .Type.Decl.File.Package}}\
+{{- end -}}
+{{next .Type -}}
+{{- end}}
+
+{{/* next/php/type:zero: Generates a zero value for a given type */}}
+{{- define "next/php/type:zero" -}}
+{{- if .Kind.IsNumeric -}}
+0
+{{- else if .Kind.IsString -}}
+""
+{{- else if .Kind.IsBool -}}
+false
+{{- else if .Kind.IsArray -}}
+[]
+{{- else if .Kind.IsMap -}}
+[]
+{{- else if .Kind.IsVector -}}
+[]
+{{- else if .Kind.IsBytes -}}
+""
+{{- else if .Kind.IsAny -}}
+null
+{{- else if .Kind.IsStruct -}}
+new {{next .}}()
+{{- else if .Kind.IsEnum -}}
+{{next .}}::{{render "enum.member:name" (index .Value.Decl.Members.List 0)}}
+{{- else -}}
+null
+{{- end -}}
+{{- end}}

@@ -618,6 +618,16 @@ func (f *StructField) Index() int {
 	return f.index
 }
 
+// @api(Object/StructField.IsFirst) reports whether the field is the first field in the struct type.
+func (f *StructField) IsFirst() bool {
+	return f.index == 0
+}
+
+// @api(Object/StructField.IsLast) reports whether the field is the last field in the struct type.
+func (f *StructField) IsLast() bool {
+	return f.index == len(f.Decl.Fields().List)-1
+}
+
 // @api(Object/Interface) (extends [Decl](#Object/Common/Decl)) represents an interface declaration.
 type Interface struct {
 	*commonNode[*Interface]
@@ -705,6 +715,16 @@ func (m *InterfaceMethod) Index() int {
 	return m.index
 }
 
+// @api(Object/InterfaceMethod.IsFirst) reports whether the method is the first method in the interface type.
+func (m *InterfaceMethod) IsFirst() bool {
+	return m.index == 0
+}
+
+// @api(Object/InterfaceMethod.IsLast) reports whether the method is the last method in the interface type.
+func (m *InterfaceMethod) IsLast() bool {
+	return m.index == len(m.Decl.Methods().List)-1
+}
+
 // @api(Object/InterfaceMethodParam) (extends [Node](#Object/Common/Node)) represents an interface method parameter declaration.
 type InterfaceMethodParam struct {
 	*commonNode[*InterfaceMethodParam]
@@ -740,6 +760,16 @@ func (p *InterfaceMethodParam) resolve(c *Compiler, file *File, scope Scope) {
 // @api(Object/InterfaceMethodParam.Index) represents the index of the interface method parameter in the method.
 func (p *InterfaceMethodParam) Index() int {
 	return p.index
+}
+
+// @api(Object/InterfaceMethodParam.IsFirst) reports whether the parameter is the first parameter in the method.
+func (p *InterfaceMethodParam) IsFirst() bool {
+	return p.index == 0
+}
+
+// @api(Object/InterfaceMethodParam.IsLast) reports whether the parameter is the last parameter in the method.
+func (p *InterfaceMethodParam) IsLast() bool {
+	return p.index == len(p.Method.Params.List)-1
 }
 
 // @api(Object/InterfaceMethodResult) represents an interface method result.

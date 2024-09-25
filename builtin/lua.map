@@ -1,0 +1,18 @@
+ext=.lua
+comment=-- %T%
+
+int=number
+int8=number
+int16=number
+int32=number
+int64=number
+float32=number
+float64=number
+bool=boolean
+string=string
+byte=number
+bytes=string
+any=any
+map=table
+vector=table
+array=table

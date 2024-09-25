@@ -442,11 +442,10 @@ func (tc *templateContext) env() flags.Map {
 	return tc.compiler.flags.envs
 }
 
-func (tc *templateContext) error(msg string) (string, error) {
-	return "", errors.New(msg)
-}
-
-func (tc *templateContext) errorf(format string, args ...any) (string, error) {
+func (tc *templateContext) error(format string, args ...any) (string, error) {
+	if len(args) == 0 {
+		return "", errors.New(format)
+	}
 	return "", fmt.Errorf(format, args...)
 }
 

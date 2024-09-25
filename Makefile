@@ -106,6 +106,10 @@ test/template: install
 		-O protobuf=testdata/gen/protobuf -T protobuf=testdata/templates/protobuf \
 		-O js=testdata/gen/js -T js=testdata/templates/js \
 		-O ts=testdata/gen/ts -T ts=testdata/templates/ts \
+		-O python=testdata/gen/python -T python=testdata/templates/python \
+		-O php=testdata/gen/php -T php=testdata/templates/php \
+		-O swift=testdata/gen/swift -T swift=testdata/templates/swift \
+		-O lua=testdata/gen/lua -T lua=testdata/templates/lua \
 		-M "c.vector=void*" -M "c.map=void*" \
 		testdata/next/
 	@cd testdata/gen/rust && cargo init --vcs none

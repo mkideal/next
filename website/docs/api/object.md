@@ -812,6 +812,14 @@ Usage in templates:
 
 `.Index` represents the index of the interface method in the interface type.
 
+###### .IsFirst {#user-content-Object_InterfaceMethod_-IsFirst}
+
+`.IsFirst` reports whether the method is the first method in the interface type.
+
+###### .IsLast {#user-content-Object_InterfaceMethod_-IsLast}
+
+`.IsLast` reports whether the method is the last method in the interface type.
+
 ###### .Params {#user-content-Object_InterfaceMethod_-Params}
 
 `.Params` represents the list of method parameters.
@@ -827,6 +835,14 @@ Usage in templates:
 ###### .Index {#user-content-Object_InterfaceMethodParam_-Index}
 
 `.Index` represents the index of the interface method parameter in the method.
+
+###### .IsFirst {#user-content-Object_InterfaceMethodParam_-IsFirst}
+
+`.IsFirst` reports whether the parameter is the first parameter in the method.
+
+###### .IsLast {#user-content-Object_InterfaceMethodParam_-IsLast}
+
+`.IsLast` reports whether the parameter is the last parameter in the method.
 
 ###### .Method {#user-content-Object_InterfaceMethodParam_-Method}
 
@@ -937,6 +953,14 @@ Example:
 ###### .Index {#user-content-Object_StructField_-Index}
 
 `.Index` represents the index of the struct field in the struct type.
+
+###### .IsFirst {#user-content-Object_StructField_-IsFirst}
+
+`.IsFirst` reports whether the field is the first field in the struct type.
+
+###### .IsLast {#user-content-Object_StructField_-IsLast}
+
+`.IsLast` reports whether the field is the last field in the struct type.
 
 ###### .Type {#user-content-Object_StructField_-Type}
 

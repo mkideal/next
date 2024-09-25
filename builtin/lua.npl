@@ -1,0 +1,171 @@
+{{/* next/lua/file: Generates the main structure for a Lua file */}}
+{{- define "next/lua/file" -}}
+-- Package: {{render "package:name" .Package}}
+
+{{next .Imports -}}
+
+local _M_ = {}
+{{next .Decls -}}
+return _M_
+{{- end}}
+
+{{/* next/lua/imports: Generates require statements for Lua files */}}
+{{- define "next/lua/imports" -}}
+{{- if .TrimmedList}}
+{{- range .TrimmedList}}
+{{next .}}
+{{- end}}
+{{end}}
+{{end}}
+
+{{/* next/lua/import: Generates a require statement for a specific module */}}
+{{- define "next/lua/import" -}}
+local {{render "package:name" .Target.Package}}_{{.Target.Name}} = require("{{render "package:name" .Target.Package}}.{{.Target.Name}}")
+{{- end}}
+
+{{/* next/lua/comment: Generates line comments for Python */}}
+{{- define "next/lua/comment" -}}
+{{- if .Text -}}
+{{_}} -- {{.Text}}
+{{- end}}
+{{- end}}
+
+{{/* next/lua/doc: Generates documentation comments for Lua */}}
+{{- define "next/lua/doc" -}}
+{{render "doc:origin" . | align}}
+{{- end}}
+
+{{- define "next/lua/doc:origin" -}}
+{{.Format "" "-- " "--[[\n" "--]]" }}
+{{- end}}
+
+{{/* next/lua/package:name: Retrieves the Lua module name from annotations */}}
+{{- define "next/lua/package:name" -}}
+{{.Package.Name}}
+{{- end}}
+
+{{/* next/lua/const: Generates a constant declaration */}}
+{{- define "next/lua/const" -}}
+{{next .Doc}}_M_.{{render "const:name" .}} = {{.Value}}{{next .Comment}}
+{{- end}}
+
+{{/* next/lua/enum: Generates an enum-like table declaration */}}
+{{- define "next/lua/enum" -}}
+{{next .Doc}}_M_.{{next .Type}} = {
+    {{- next .Members}}
+}
+{{- end}}
+
+{{/* next/lua/enum.member: Generates an enum member */}}
+{{- define "next/lua/enum.member" -}}
+{{next .Doc}}{{render "enum.member:name" .}} = {{.Value}}{{if not .IsLast}},{{end}}{{next .Comment}}
+{{- end}}
+
+{{/* next/lua/enum.member:name: Generates the name for an enum member */}}
+{{- define "next/lua/enum.member:name" -}}
+{{.Name | snakeCase | upper}}
+{{- end}}
+
+{{/* next/lua/struct: Generates a table-based class declaration */}}
+{{- define "next/lua/struct" -}}
+{{next .Doc}}local {{next .Type}} = {}
+_M_.{{next .Type}} = {{next .Type}}
+{{next .Type}}.__index = {{next .Type}}
+
+function {{next .Type}}:new()
+    local obj = {
+        {{- next .Fields}}
+    }
+    setmetatable(obj, self)
+    return obj
+end
+{{- end}}
+
+{{/* next/lua/struct.fields: Generates field declarations for a class */}}
+{{- define "next/lua/struct.fields" -}}
+{{range .List}}
+        {{next . | align}}
+{{- end}}
+{{- end}}
+
+{{/* next/lua/struct.field: Generates a field declaration within a class */}}
+{{- define "next/lua/struct.field" -}}
+{{render "doc:origin" .Doc}}{{render "struct.field:name" .}} = {{render "type:zero" .Type}}{{if not .IsLast}},{{end}}{{next .Comment}}
+{{- end}}
+
+{{/* next/lua/struct.field:name: Generates the name for a class field */}}
+{{- define "next/lua/struct.field:name" -}}
+{{.Name | camelCase}}
+{{- end}}
+
+{{/* next/lua/interface: Generates an interface-like table declaration */}}
+{{- define "next/lua/interface" -}}
+{{next .Doc}}local {{next .Type}} = {}
+_M_.{{next .Type}} = {{next .Type}}
+{{next .Type}}.__index = {{next .Type}}
+
+{{- next .Methods}}
+{{- end}}
+
+{{- define "next/lua/interface.methods"}}
+{{range .List}}
+{{next .}}
+{{end}}
+{{- end}}
+
+{{/* next/lua/interface.method: Generates a method declaration in an interface */}}
+{{- define "next/lua/interface.method" -}}
+{{next .Doc}}function {{next $.Decl.Type}}:{{render "interface.method:name" .}}({{next .Params}})
+    error("Method not implemented")
+end{{next .Comment}}
+{{- end}}
+
+{{/* next/lua/interface.method:name: Generates the name for an interface method */}}
+{{- define "next/lua/interface.method:name" -}}
+{{.Name | camelCase}}
+{{- end}}
+
+{{/* next/lua/interface.method.param: Generates a parameter for an interface method */}}
+{{- define "next/lua/interface.method.param" -}}
+{{render "interface.method.param:name" .}}
+{{- end}}
+
+{{/* next/lua/used.type: Generates a type name, which in Lua is typically just the name itself */}}
+{{- define "next/lua/used.type" -}}
+{{- if and (ne .File .Type.Decl.File) (.Type.Decl.File) -}}
+{{render "package:name" .Type.Decl.File.Package}}_{{.Type.Decl.File.Name}}.
+{{- end -}}
+{{next .Type}}
+{{- end}}
+
+{{/* next/lua/decl.type:alias: Retrieves the Lua type alias from annotations */}}
+{{- define "next/lua/decl.type:alias" -}}
+{{- .Decl.Annotations.next.lua_alias -}}
+{{- end}}
+
+{{/* next/lua/type:zero: Generates a zero value for a given type */}}
+{{- define "next/lua/type:zero" -}}
+{{- if .Kind.IsNumeric -}}
+0
+{{- else if .Kind.IsString -}}
+""
+{{- else if .Kind.IsBool -}}
+false
+{{- else if .Kind.IsArray -}}
+{}
+{{- else if .Kind.IsMap -}}
+{}
+{{- else if .Kind.IsVector -}}
+{}
+{{- else if .Kind.IsBytes -}}
+""
+{{- else if .Kind.IsAny -}}
+nil
+{{- else if .Kind.IsStruct -}}
+{{next .}}:new()
+{{- else if .Kind.IsEnum -}}
+nil
+{{- else -}}
+nil
+{{- end -}}
+{{- end}}
