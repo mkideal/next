@@ -9,15 +9,44 @@ type FeatureItem = {
 };
 
 const FeatureList: FeatureItem[] = [
-  //{
-  //  title: 'Easy to Use',
-  //  Svg: require('@site/static/img/feature.svg').default,
-  //  description: (
-  //    <>
-  //    feature description
-  //    </>
-  //  ),
-  //},
+  {
+    title: "Multi-Language Code Generation",
+    Svg: require("@site/static/img/feature_multilang.svg").default,
+    description: (
+      <>
+        Generate code for multiple programming languages from a single source
+        definition. This feature allows developers to define constants, enums,
+        structures, and interfaces in a language-agnostic way. It ensures
+        consistency across different programming environments and reduces the
+        need for manual code maintenance in multiple languages.
+      </>
+    ),
+  },
+  {
+    title: "Flexible customization",
+    Svg: require("@site/static/img/feature_customization.svg").default,
+    description: (
+      <>
+        Use a powerful template system that supports inheritance and overloading
+        for flexible code output. Developers can create or customize templates
+        for target languages, modifying the code generation process to meet
+        specific project requirements without starting from scratch.
+      </>
+    ),
+  },
+  {
+    title: "Annotation support",
+    Svg: require("@site/static/img/feature_annotations.svg").default,
+    description: (
+      <>
+        Provide additional metadata or instructions for code generation through
+        annotations. Annotations allow developers to embed language-specific
+        details or control the behavior of the code generator, enabling
+        fine-grained customization and enhancing the flexibility of the
+        generated code.
+      </>
+    ),
+  },
 ];
 
 function Feature({ title, Svg, description }: FeatureItem) {

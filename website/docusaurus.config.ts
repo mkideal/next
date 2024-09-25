@@ -162,51 +162,8 @@ const config: Config = {
       style: "dark",
       links: [
         {
-          title: "Learn",
-          items: [
-            {
-              label: "Get Started",
-              to: "docs",
-            },
-            {
-              label: "Installation",
-              to: "docs/installation",
-            },
-            {
-              label: "API",
-              to: "docs/api",
-            },
-          ],
-        },
-        {
-          title: "Community",
-          items: [
-            {
-              label: "Stack Overflow",
-              href: "https://stackoverflow.com/questions/tagged/docusaurus",
-            },
-            {
-              label: "Discord",
-              href: "https://discordapp.com/invite/docusaurus",
-            },
-            {
-              label: "Twitter",
-              href: "https://twitter.com/docusaurus",
-            },
-          ],
-        },
-        {
-          title: "More",
-          items: [
-            //{
-            //  label: "Blog",
-            //  to: "/blog",
-            //},
-            {
-              label: "GitHub",
-              href: REPO,
-            },
-          ],
+          label: "Feature Images Designed by Freepik",
+          href: "https://www.freepik.com",
         },
       ],
       copyright: `Copyright © ${new Date().getFullYear()} Next, Inc. Built with Docusaurus.`,

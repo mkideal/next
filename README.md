@@ -7,7 +7,6 @@ Next is a powerful Generic **Interface Definition Language (IDL)** designed to c
 ## ✨ Key Features
 
 - 🌐 Multi-language code generation from a single source
-- 📝 Powerful templating system based on Go's text/template
 - 🧩 Flexible customization through template inheritance and overloading
 - 🏷️ Annotation support for metadata and customization
 

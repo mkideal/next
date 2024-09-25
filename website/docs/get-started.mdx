@@ -14,13 +14,6 @@ Next is an advanced Interface Definition Language (IDL) designed for efficient a
 
 Next allows developers to define constants, enums, structures, interfaces, and more in a language-agnostic manner. It then uses a powerful template system to generate code for various target languages, making it an ideal choice for projects that need to maintain consistency across different programming environments.
 
-## Key Features
-
-1. **Multi-Language Support**: Generate code for various programming languages from a single definition.
-2. **Declarative Syntax**: Clear syntax for defining constants, enums, structures, and interfaces.
-3. **Annotations**: Provide additional metadata or instructions for code generation.
-4. **Template-Based Generation**: Use customizable templates for flexible code output.
-
 ## How It Works
 
 1. **Define Once**: Write your data structures, enums, and interfaces in Next.
@@ -321,7 +314,7 @@ interface HTTPClient {
 
 Second, write a Next template file which has extension `.npl` used to constrol how to generate code for specified language. Here is an example template file used to generate `c++` code.
 
-<details>
+<details open>
 <summary>example.cpp.npl</summary>
 
 ```npl
