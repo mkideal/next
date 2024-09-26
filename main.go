@@ -5,9 +5,9 @@ package main
 import (
 	"os"
 
-	"github.com/next/next/src/types"
+	"github.com/next/next/src/compile"
 )
 
 func main() {
-	exec(types.StandardPlatform(), os.Args)
+	exec(compile.StandardPlatform(), os.Args)
 }

@@ -1,5 +1,5 @@
 //go:generate go run github.com/gopherd/tools/cmd/docgen@v0.0.2 -I ./ -o ../../website/docs/api -level 0
-package types
+package compile
 
 import (
 	"fmt"

@@ -1,4 +1,4 @@
-package types
+package compile
 
 import (
 	"github.com/next/next/src/ast"

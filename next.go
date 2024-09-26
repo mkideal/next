@@ -17,10 +17,10 @@ import (
 	"github.com/gopherd/core/builder"
 	"github.com/gopherd/core/flags"
 	"github.com/gopherd/core/term"
+	"github.com/next/next/src/compile"
 	"github.com/next/next/src/fsutil"
 	"github.com/next/next/src/parser"
 	"github.com/next/next/src/scanner"
-	"github.com/next/next/src/types"
 )
 
 //go:embed builtin/*
@@ -31,7 +31,7 @@ const nextExt = ".next"
 const website = "https://next.as"
 const repository = "https://github.com/next/next"
 
-func exec(platform types.Platform, args []string) {
+func exec(platform compile.Platform, args []string) {
 	stdin, stderr := platform.Stdin(), platform.Stderr()
 	if len(args) == 2 && args[1] == "version" {
 		builder.PrintInfo()
@@ -41,7 +41,7 @@ func exec(platform types.Platform, args []string) {
 	flagSet := flag.NewFlagSet(args[0], flag.ContinueOnError)
 	flagSet.Usage = func() {}
 
-	compiler := types.NewCompiler(platform, builtin)
+	compiler := compile.NewCompiler(platform, builtin)
 	compiler.SetupCommandFlags(flagSet, flags.UseUsage(flagSet.Output(), flags.NameColor(term.Bold)))
 
 	// set output color for error messages
@@ -135,7 +135,7 @@ func exec(platform types.Platform, args []string) {
 	unwrap(stderr, compiler.Resolve())
 
 	// generate files
-	unwrap(stderr, types.Generate(compiler))
+	unwrap(stderr, compile.Generate(compiler))
 }
 
 // exit exits the program. It is a variable for overriding.
@@ -208,7 +208,7 @@ func printError(stderr io.Writer, err error) {
 		s := strings.TrimSpace(errs[i])
 		s = strings.TrimPrefix(s, "template: ")
 		s = strings.TrimSuffix(s, ":")
-		if s == "" || strings.HasPrefix(parseFilename(s), types.StubPrefix) {
+		if s == "" || strings.HasPrefix(parseFilename(s), compile.StubPrefix) {
 			errs = append(errs[:i], errs[i+1:]...)
 		} else {
 			errs[i] = s
