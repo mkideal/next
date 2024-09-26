@@ -103,10 +103,11 @@ FieldDecl      = { Annotation } Type identifier .
 Annotations can be added to packages, declarations, constants, enums (and their fields), structs (and their fields), and interfaces (and their methods). Multiple annotations can be used for each element:
 
 ```ebnf
-Annotations   = { Annotation } .
-Annotation    = "@" identifier [ "(" [ Parameters ] ")" ] .
-Parameters    = NamedParam { "," NamedParam } .
-NamedParam    = identifier [ "=" ConstantExpression ] .
+Annotations             = { Annotation } .
+Annotation              = "@" identifier [ "(" [ AnnotationParameters ] ")" ] .
+AnnotationParameters    = AnnotationParameter { "," AnnotationParameter } .
+AnnotationParameter     = identifier [ "=" AnnotationValue ] .
+AnnotationValue         = Expression | Type .
 ```
 
 Annotation parameters can only be constant expressions, which include literals, constant identifiers, and expressions composed of these.
@@ -259,9 +260,10 @@ binary_op = "+" | "-" | "*" | "/" | "%" |
 unary_op = "+" | "-" | "!" | "^" .
 
 (* Annotations *)
-Annotation = "@" identifier ["(" [Parameters] ")"] .
-Parameters = NamedParam {"," NamedParam} .
-NamedParam = identifier ["=" ConstantExpression] .
+Annotation = "@" identifier [ "(" [ AnnotationParameters ] ")" ] .
+AnnotationParameters = AnnotationParameter { "," AnnotationParameter } .
+AnnotationParameter = identifier [ "=" AnnotationValue ] .
+AnnotationValue = Expression | Type .
 
 (* Lexical elements *)
 identifier = ( letter | "_" ) { letter | unicode_digit | "_" } .
