@@ -184,14 +184,16 @@ func printError(stderr io.Writer, err error) {
 		return
 	}
 	var errs []string
+	origin := err
 	for err != nil {
 		if e, ok := err.(template.ExecError); ok {
 			errs = append(errs, err.Error())
 			err = e.Err
+			origin = err
 		} else if e := errors.Unwrap(err); e != nil {
 			err = e
 		} else {
-			errs = append(errs, err.Error())
+			errs = append(errs, origin.Error())
 			break
 		}
 	}

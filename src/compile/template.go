@@ -19,6 +19,7 @@ import (
 	"github.com/gopherd/core/container/pair"
 	"github.com/gopherd/core/flags"
 	"github.com/gopherd/core/op"
+	"github.com/gopherd/core/text/document"
 	"github.com/gopherd/core/text/templates"
 
 	"github.com/next/next/src/fsutil"
@@ -38,9 +39,51 @@ func (m Meta) lookup(key string) pair.Pair[string, bool] {
 	return pair.New(v, ok)
 }
 
-// ResolveMeta resolves the metadata of the given template for the given keys.
+func isIdentifer(s string) bool {
+	if len(s) == 0 {
+		return false
+	}
+	for i, r := range s {
+		if i == 0 {
+			if !('a' <= r && r <= 'z' || 'A' <= r && r <= 'Z' || r == '_') {
+				return false
+			}
+		} else {
+			if !('a' <= r && r <= 'z' || 'A' <= r && r <= 'Z' || '0' <= r && r <= '9' || r == '_') {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func validMetaKey(key string) error {
+	if !isIdentifer(key) {
+		return fmt.Errorf("must be a valid identifier")
+	}
+	if strings.HasPrefix(key, "_") || key == "this" || key == "path" || key == "skip" {
+		return nil
+	}
+	return fmt.Errorf("must be %q, %q, %q, or starts with %q for custom key (e.g., %q)", "this", "path", "skip", "_", "_"+key)
+}
+
+func templatePos(content string, pos int, lookahead string) document.Position {
+	if lookahead != "" {
+		index := strings.LastIndex(content[:pos], lookahead)
+		if index >= 0 {
+			pos = index + len(lookahead)
+		}
+	}
+	p := document.PositionFor(content, pos)
+	if p.IsValid() {
+		p.Character--
+	}
+	return p
+}
+
+// resolveMeta resolves the metadata of the given template for the given keys.
 // If no key is given, it resolves all metadata except "this".
-func ResolveMeta(tc *templateContext, t *template.Template, keys ...string) (Meta, error) {
+func resolveMeta(tc *templateContext, t *template.Template, content string, keys ...string) (Meta, error) {
 	meta := make(Meta)
 	if tc.meta == nil {
 		tc.meta = make(Meta)
@@ -54,6 +97,10 @@ func ResolveMeta(tc *templateContext, t *template.Template, keys ...string) (Met
 			key := tt.Name()
 			if strings.HasPrefix(key, "meta/") && key != "meta/this" {
 				key = strings.TrimPrefix(key, "meta/")
+				if err := validMetaKey(key); err != nil {
+					pos := templatePos(content, int(tt.Root.Pos), "meta/")
+					return meta, fmt.Errorf("%s: invalid meta key %q: %w", document.FormatPosition(t.ParseName, pos), key, err)
+				}
 				var buf bytes.Buffer
 				if err := tt.Execute(&buf, tc); err != nil {
 					return meta, err
@@ -192,18 +239,20 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		// To define a meta, you should define a template with the name `meta/<key>`.
 		// Currently, the following meta keys are used by the code generator:
 		//
-		// - `meta/this`: the current object to be rendered. See [this](#Context/this) for more details.
+		// - `meta/this`: the current object to be rendered. See [this](#Context/this) for details.
 		// - `meta/path`: the output path for the current object. If the path is not absolute, it will be resolved relative to the current output directory for the current language by command line flag `-O`.
 		// - `meta/skip`: whether to skip the current object.
 		//
-		// Any other meta keys are user-defined. You can use them in the templates like `{{meta.<key>}}`.
+		// User-defined metq keys **MUST** prefixed with `_`. You can use them in the templates like `{{meta.<key>}}`.
 		//
 		// Example:
 		// ```npl
 		// {{- define "meta/this" -}}file{{- end -}}
 		// {{- define "meta/path" -}}path/to/file{{- end -}}
 		// {{- define "meta/skip" -}}{{exist meta.path}}{{- end -}}
-		// {{- define "meta/custom" -}}custom value{{- end -}}
+		// {{- define "meta/_custom_key" -}}custom value{{- end -}}
+		//
+		// {{meta._custom_key}}
 		// ```
 		//
 		// **The metadata will be resolved in the order of the template definition

@@ -41,7 +41,7 @@ Metadata is crucial for controlling the template behavior. Common metadata inclu
 {{- define "meta/skip"}}{{exist meta.path}}{{end -}}
 ```
 
-- `meta/this`: Specifies the type of entity being generated (e.g., "file", "struct", "enum", see [@API/Context/this](/docs/api/context#user-content-Context_this) for details)
+- `meta/this`: Specifies the type of entity being generated (e.g., "file", "struct", "enum", see [API/Context/this](/docs/api/context#user-content-Context_this) for details)
 - `meta/path`: Defines the output path for the generated file
 - `meta/skip`: Provides a condition to skip generation
 

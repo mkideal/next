@@ -106,17 +106,19 @@ Example:
 ## meta {#user-content-Context_meta}
 
 `meta` represents the metadata of a entrypoint template file by flag `-T`. To define a meta, you should define a template with the name `meta/<key>`. Currently, the following meta keys are used by the code generator: 
-- `meta/this`: the current object to be rendered. See [this](#user-content-Context_this) for more details.
+- `meta/this`: the current object to be rendered. See [this](#user-content-Context_this) for details.
 - `meta/path`: the output path for the current object. If the path is not absolute, it will be resolved relative to the current output directory for the current language by command line flag `-O`.
 - `meta/skip`: whether to skip the current object.
 
-Any other meta keys are user-defined. You can use them in the templates like `{{meta.<key>}}`. 
+User-defined metq keys **MUST** prefixed with `_`. You can use them in the templates like `{{meta.<key>}}`. 
 Example: 
 ```npl
 {{- define "meta/this" -}}file{{- end -}}
 {{- define "meta/path" -}}path/to/file{{- end -}}
 {{- define "meta/skip" -}}{{exist meta.path}}{{- end -}}
-{{- define "meta/custom" -}}custom value{{- end -}}
+{{- define "meta/_custom_key" -}}custom value{{- end -}}
+
+{{meta._custom_key}}
 ```
 
 **The metadata will be resolved in the order of the template definition before rendering the entrypoint template.**

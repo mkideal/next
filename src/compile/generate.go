@@ -202,7 +202,7 @@ func generateForTemplateFile(c *Compiler, lang, ext, dir, tmplFile string) error
 		return err
 	}
 	this := "file"
-	if values, err := ResolveMeta(tc, t, "this"); err != nil {
+	if values, err := resolveMeta(tc, t, string(content), "this"); err != nil {
 		return err
 	} else if m := values.lookup("this"); m.Second {
 		this = m.First
@@ -210,53 +210,53 @@ func generateForTemplateFile(c *Compiler, lang, ext, dir, tmplFile string) error
 
 	switch strings.ToLower(this) {
 	case "package":
-		return generateForPackage(tc, t)
+		return generateForPackage(tc, t, content)
 
 	case "file":
-		return generateForFile(tc, t)
+		return generateForFile(tc, t, content)
 
 	case "const":
-		return generateForConst(tc, t)
+		return generateForConst(tc, t, content)
 
 	case "enum":
-		return generateForEnum(tc, t)
+		return generateForEnum(tc, t, content)
 
 	case "struct":
-		return generateForStruct(tc, t)
+		return generateForStruct(tc, t, content)
 
 	case "interface":
-		return generateForInterface(tc, t)
+		return generateForInterface(tc, t, content)
 
 	default:
 		return fmt.Errorf(`unknown value for 'this': %q, expected "package", "file", "const", "enum", "struct" or "interface"`, this)
 	}
 }
 
-func generateForPackage(tc *templateContext, t *template.Template) error {
+func generateForPackage(tc *templateContext, t *template.Template, content []byte) error {
 	for _, pkg := range tc.compiler.packages {
-		if err := gen(tc, t, pkg); err != nil {
+		if err := gen(tc, t, pkg, content); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func generateForFile(tc *templateContext, t *template.Template) error {
+func generateForFile(tc *templateContext, t *template.Template, content []byte) error {
 	for _, f := range tc.compiler.files {
-		if err := gen(tc, t, f); err != nil {
+		if err := gen(tc, t, f, content); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func generateForConst(tc *templateContext, t *template.Template) error {
+func generateForConst(tc *templateContext, t *template.Template, content []byte) error {
 	for _, file := range tc.compiler.files {
 		if file.decls == nil {
 			continue
 		}
 		for _, d := range file.decls.consts {
-			if err := gen(tc, t, d); err != nil {
+			if err := gen(tc, t, d, content); err != nil {
 				return err
 			}
 		}
@@ -264,13 +264,13 @@ func generateForConst(tc *templateContext, t *template.Template) error {
 	return nil
 }
 
-func generateForEnum(tc *templateContext, t *template.Template) error {
+func generateForEnum(tc *templateContext, t *template.Template, content []byte) error {
 	for _, file := range tc.compiler.files {
 		if file.decls == nil {
 			continue
 		}
 		for _, d := range file.decls.enums {
-			if err := gen(tc, t, d); err != nil {
+			if err := gen(tc, t, d, content); err != nil {
 				return err
 			}
 		}
@@ -278,13 +278,13 @@ func generateForEnum(tc *templateContext, t *template.Template) error {
 	return nil
 }
 
-func generateForStruct(tc *templateContext, t *template.Template) error {
+func generateForStruct(tc *templateContext, t *template.Template, content []byte) error {
 	for _, file := range tc.compiler.files {
 		if file.decls == nil {
 			continue
 		}
 		for _, d := range file.decls.structs {
-			if err := gen(tc, t, d); err != nil {
+			if err := gen(tc, t, d, content); err != nil {
 				return err
 			}
 		}
@@ -292,13 +292,13 @@ func generateForStruct(tc *templateContext, t *template.Template) error {
 	return nil
 }
 
-func generateForInterface(tc *templateContext, t *template.Template) error {
+func generateForInterface(tc *templateContext, t *template.Template, content []byte) error {
 	for _, file := range tc.compiler.files {
 		if file.decls == nil {
 			continue
 		}
 		for _, d := range file.decls.interfaces {
-			if err := gen(tc, t, d); err != nil {
+			if err := gen(tc, t, d, content); err != nil {
 				return err
 			}
 		}
@@ -308,7 +308,7 @@ func generateForInterface(tc *templateContext, t *template.Template) error {
 
 // gen generates a file using the given template, meta data, and object which may be a
 // file, const, enum or struct.
-func gen[T Decl](tc *templateContext, t *template.Template, decl T) error {
+func gen[T Decl](tc *templateContext, t *template.Template, decl T, content []byte) error {
 	// skip if the declaration is an alias
 	if decl.Annotations().get("next").get(tc.lang+"_alias") != nil {
 		return nil
@@ -326,7 +326,7 @@ func gen[T Decl](tc *templateContext, t *template.Template, decl T) error {
 	}
 
 	// resolve meta data
-	meta, err := ResolveMeta(tc, t)
+	meta, err := resolveMeta(tc, t, string(content))
 	if err != nil {
 		return err
 	}
