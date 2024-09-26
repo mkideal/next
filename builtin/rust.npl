@@ -35,8 +35,8 @@ use crate::utils::helper_function;
 ```
 */}}
 {{- define "next/rust/imports:decl" -}}
-{{- if .File.Annotations.next.rust_imports}}
-{{- range (.File.Annotations.next.rust_imports | split "," | map (trim) | sort | uniq)}}
+{{- if .Decl.Annotations.next.rust_imports}}
+{{- range (.Decl.Annotations.next.rust_imports | split "," | map (trim) | sort | uniq)}}
 use {{.}};
 {{- end}}
 {{- end}}

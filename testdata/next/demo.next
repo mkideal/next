@@ -127,8 +127,6 @@ struct LoginResponse {
 
 // Reader provides reading functionality
 interface Reader {
-    // Read reads data into the buffer
-    //
     // @next(error) applies to the method:
     // - For Go: The method may return an error
     // - For C++/Java: The method throws an exception
@@ -142,7 +140,7 @@ interface Reader {
     // - For other languages: This annotation may not have a direct effect, 
     //   but indicates that the buffer content may be modified
     @next(error, mut)
-    Read(@next(mut) bytes buffer) int;
+    read(@next(mut) bytes buffer) int;
 }
 
 @next(
@@ -158,20 +156,20 @@ interface HTTPServer {
     // - For Go: The method returns (LoginResponse, error)
     // - For C++/Java: The method throws an exception
     @next(error)
-    Handle(string path, HTTPHandler handler);
+    handle(string path, HTTPHandler handler);
 }
 
 // HTTPClient provides HTTP request functionality
 interface HTTPClient {
     // Available for all languages
-    Request(string url, string method, string body) string;
-    Request2(string url, string method, string body) string;
+    request(string url, string method, string body) string;
+    request2(string url, string method, string body) string;
 
     // Available for Go and Java
     @next(error, available="go|java")
-    Get(string url) string;
+    get(string url) string;
 
     // Available for C++
     @next(error, available="cpp")
-    Post(string url, string body) string;
+    post(string url, string body) string;
 }

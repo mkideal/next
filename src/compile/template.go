@@ -194,7 +194,7 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		templateContextInfo: info,
 		maxStack:            100,
 	}
-	if x := os.Getenv("NEXT_MAX_STACK"); x != "" {
+	if x := os.Getenv(ENV_NEXT_MAX_STACK); x != "" {
 		maxStack, err := strconv.Atoi(x)
 		if err == nil && maxStack > 0 {
 			tc.maxStack = maxStack

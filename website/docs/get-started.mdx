@@ -99,13 +99,13 @@ Make sure you have [Go](https://go.dev) `1.23+` installed on your system before 
   </TabItem>
 </Tabs>
 
-:::tip
-After you installed `next`, run `next version` to show the version informarion
+After installing `next`, run `next version` to show the version informarion
 
 ```sh
 next version
 ```
 
+:::tip
 Run `next -h` to show the command usage.
 
 ```sh
@@ -135,13 +135,13 @@ This extension provides syntax highlighting, and other helpful features for Next
 
 First of all, You need write a Next source file which has extension `.next` used to define constants, enums, structures and interfaces. Here is an example Next file:
 
-```next title="example.next"
+```next title="example.next" showLineNumbers
 @next(
-    go_package="github.com/next/next/gen/go/demo",
-    cpp_package="demo",
     c_package="DEMO_",
-    java_package="com.example.demo",
+    cpp_package="demo",
     csharp_package="Demo",
+    go_package="github.com/next/next/gen/go/demo",
+    java_package="com.example.demo",
 )
 package demo;
 
@@ -187,12 +187,12 @@ struct User {
 // - In Protobuf, it is represented as uint64
 // - In other languages, it is represented as a struct with low and high 32-bit integers.
 @next(
-    go_alias="uint64",
     cpp_alias="uint64_t",
-    java_alias="long",
-    rust_alias="u64",
     csharp_alias="ulong",
+    go_alias="uint64",
+    java_alias="long",
     protobuf_alias="uint64",
+    rust_alias="u64",
 )
 struct uint64 {
     int32 low;
@@ -255,8 +255,6 @@ struct LoginResponse {
 
 // Reader provides reading functionality
 interface Reader {
-    // Read reads data into the buffer
-    //
     // @next(error) applies to the method:
     // - For Go: The method may return an error
     // - For C++/Java: The method throws an exception
@@ -270,7 +268,7 @@ interface Reader {
     // - For other languages: This annotation may not have a direct effect,
     //   but indicates that the buffer content may be modified
     @next(error, mut)
-    Read(@next(mut) bytes buffer) int;
+    read(@next(mut) bytes buffer) int;
 }
 
 @next(
@@ -286,21 +284,21 @@ interface HTTPServer {
     // - For Go: The method returns (LoginResponse, error)
     // - For C++/Java: The method throws an exception
     @next(error)
-    Handle(string path, HTTPHandler handler);
+    handle(string path, HTTPHandler handler);
 }
 
 // HTTPClient provides HTTP request functionality
 interface HTTPClient {
     // Available for all languages
-    Request(string url, string method, string body) string;
+    request(string url, string method, string body) string;
 
     // Available for Go and Java
     @next(error, available="!go & !java")
-    Get(string url) string;
+    get(string url) string;
 
     // Available for C++
     @next(error, available="cpp")
-    Post(string url, string body) string;
+    post(string url, string body) string;
 }
 ```
 
@@ -487,8 +485,6 @@ class Reader {
 public:
     virtual ~Reader() = default;
 
-    // Read reads data into the buffer
-    //
     // @next(error) applies to the method:
     // - For Go: The method may return an error
     // - For C++/Java: The method throws an exception
@@ -534,23 +530,25 @@ It's easy to generate many other langauge codes by writing template files. Here 
   ]}>
 
   <TabItem value="constants">
-  This template file is used to generate all constants in a file `Constants.java` which define a `Constants` class to holds all constants.
+  This template file is used to generate all constants in a file `Constants.java` which define a `Constants` class to holds all constants of a package.
+  We add some metadata and override `next/java/file` by defining `java/file`.
   ```npl
-  {{- define "meta/this"}}file{{end -}}
+  // highlight-start
+  {{- define "meta/this"}}package{{end -}}
   {{- define "meta/_class"}}Constants{{end -}}
   {{- define "meta/path"}}{{render "package:name" this.Package | replace "." "/"}}/{{meta._class}}.java{{end -}}
   {{- define "meta/skip"}}{{eq 0 (len this.Decls.Consts.List)}}{{end -}}
-  
-  {{- define "java/file" -}}
-  package {{render "package:name" .Package}};
-  
-  public class {{meta.class}} {
+
+  {{- define "java/package" -}}
+  package {{render "package:name" .}};
+
+  public class {{meta._class}} {
   {{- next .Decls.Consts}}
   }
   {{- end -}}
-  
+
   {{head}}
-  
+
   {{next this}}
   ```
 
@@ -573,6 +571,7 @@ public class Constants {
   <TabItem value="enum">
   This template file is used to generate java file for each `enum` declaration. We need define `meta/this` with `enum`.
   ```npl
+  // highlight-next-line
   {{- define "meta/this"}}enum{{end -}}
   {{- define "meta/path"}}{{render "package:name" this.Package | replace "." "/"}}/{{next this.Type}}.java{{end -}}
   
@@ -621,6 +620,7 @@ public enum Color {
   <TabItem value="struct">
   This template file is used to generate java file for each `struct` declaration. We need define `meta/this` with `struct`.
   ```npl
+  // highlight-next-line
   {{- define "meta/this"}}struct{{end -}}
   {{- define "meta/path"}}{{render "package:name" this.Package | replace "." "/"}}/{{next this.Type}}.java{{end -}}
   
@@ -690,6 +690,7 @@ public class Contract {
   <TabItem value="interface">
   This template file is used to generate java file for each `interface` declaration. We need define `meta/this` with `interface`.
   ```npl
+  // highlight-next-line
   {{- define "meta/this"}}interface{{end -}}
   {{- define "meta/path"}}{{render "package:name" this.Package | replace "." "/"}}/{{next this.Type}}.java{{end -}}
   
@@ -722,8 +723,6 @@ import java.util.Arrays;
  */
 interface Reader {
     /**
-     * Read reads data into the buffer
-     *
      * @next(error) applies to the method:
      * - For Go: The method may return an error
      * - For C++/Java: The method throws an exception
@@ -737,7 +736,7 @@ interface Reader {
      * - For other languages: This annotation may not have a direct effect,
      *   but indicates that the buffer content may be modified
      */
-    int Read(byte[] buffer) throws Exception;
+    int read(byte[] buffer) throws Exception;
 }
 ```
 

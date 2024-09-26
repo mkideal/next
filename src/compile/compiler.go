@@ -181,16 +181,12 @@ func (c *Compiler) AddFile(f *ast.File) (*File, error) {
 	c.files[path] = file
 	for _, pkg := range c.packages {
 		if pkg.name == f.Name.Name {
-			file.pkg = pkg
-			pkg.files = append(pkg.files, file)
+			pkg.addFile(file)
 			return file, nil
 		}
 	}
-	pkg := &Package{
-		name:  f.Name.Name,
-		files: []*File{file},
-	}
-	file.pkg = pkg
+	pkg := newPackage(c, f.Name.Name)
+	pkg.addFile(file)
 	c.packages = append(c.packages, pkg)
 	return file, nil
 }

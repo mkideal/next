@@ -95,11 +95,6 @@ import {{render "package:name" .Target.Package}}.*;
     }
 {{end}}
 
-{{/* next/java/struct.field.name: Generates the name for a class field */}}
-{{- define "next/java/struct.field.name" -}}
-{{.}}
-{{- end}}
-
 {{/* next/java/interface.method: Generates a method declaration in an interface */}}
 {{- define "next/java/interface.method" -}}
 {{next .Doc}}{{next .Result}} {{render "interface.method:name" .}}({{next .Params}}){{if .Annotations.next.error}} throws Exception{{end}};{{next .Comment}}

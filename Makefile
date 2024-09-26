@@ -94,7 +94,7 @@ test/src: go/generate go/vet
 test/template: install
 	@echo "Running template tests..."
 	@rm -rf testdata/gen
-	@next \
+	@NEXT_NO_COPY_BUILTIN=1 next \
 		-v 1 \
 		-D PROJECT_NAME=demo \
 		-O go=testdata/gen/go -T go=testdata/templates/go \

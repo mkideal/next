@@ -77,7 +77,7 @@ var _ Object = (*InterfaceMethodParams)(nil)
 var _ Object = (*File)(nil)
 var _ Object = (*Doc)(nil)
 var _ Object = (*Comment)(nil)
-var _ Object = (*Imports)(nil)
+var _ Object = (*Imports[Decl])(nil)
 var _ Object = (*Import)(nil)
 var _ Object = (*Decls)(nil)
 var _ Object = (*Value)(nil)
@@ -114,13 +114,13 @@ func (x *Fields[D, F]) Typeof() string {
 	return zero.Typeof() + "s"
 }
 
-func (*Package) Typeof() string { return "package" }
-func (*File) Typeof() string    { return "file" }
-func (*Doc) Typeof() string     { return "doc" }
-func (*Comment) Typeof() string { return "comment" }
-func (*Imports) Typeof() string { return "imports" }
-func (*Import) Typeof() string  { return "import" }
-func (*Decls) Typeof() string   { return "decls" }
+func (*Package) Typeof() string    { return "package" }
+func (*File) Typeof() string       { return "file" }
+func (*Doc) Typeof() string        { return "doc" }
+func (*Comment) Typeof() string    { return "comment" }
+func (*Imports[T]) Typeof() string { return "imports" }
+func (*Import) Typeof() string     { return "import" }
+func (*Decls) Typeof() string      { return "decls" }
 func (x *Value) Typeof() string {
 	if x.enum.typ == nil {
 		return "const.value"

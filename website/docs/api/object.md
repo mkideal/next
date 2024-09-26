@@ -120,6 +120,7 @@ true
 Login
 Login
 100
+int8
 ```
 
 The `next` annotation is used to pass information to the next compiler. It's a reserved annotation and should not be used for other purposes. The `next` annotation can be annotated to `package` statements, `const` declarations, `enum` declarations, `struct` declarations, `field` declarations, `interface` declarations, `method` declarations, and `parameter` declarations.
@@ -720,6 +721,10 @@ Usage in templates:
 
 `.Decls` returns the file's all top-level declarations.
 
+###### .Imports {#user-content-Object_File_-Imports}
+
+`.Imports` represents the file's import declarations.
+
 ###### .LookupLocalType {#user-content-Object_File_-LookupLocalType}
 
 `.LookupLocalType` looks up a type by name in the file's symbol table. If the type is not found, it returns an error. If the symbol is found but it is not a type, it returns an error.
@@ -731,10 +736,6 @@ Usage in templates:
 ###### .Name {#user-content-Object_File_-Name}
 
 `.Name` represents the file name without the ".next" extension.
-
-###### .Package {#user-content-Object_File_-Package}
-
-`.Package` represents the file's import declarations.
 
 ###### .Path {#user-content-Object_File_-Path}
 
@@ -910,9 +911,17 @@ Example:
 {{- end}}
 ```
 
+###### .Decls {#user-content-Object_Package_-Decls}
+
+`.Decls` represents the top-level declarations in the package.
+
 ###### .Files {#user-content-Object_Package_-Files}
 
 `.Files` represents the all declared files in the package.
+
+###### .Imports {#user-content-Object_Package_-Imports}
+
+`.Imports` represents the package's import declarations.
 
 ###### .Name {#user-content-Object_Package_-Name}
 

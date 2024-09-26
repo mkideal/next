@@ -37,8 +37,8 @@ import "time"
 {{- define "next/go/imports:decl" -}}
 {{_}}
 import "strconv"
-{{- if .File.Annotations.next.go_imports}}
-{{- range (.File.Annotations.next.go_imports | split "," | map (trim | split "." | first | trimPrefix "*") | sort | uniq)}}
+{{- if .Decl.Annotations.next.go_imports}}
+{{- range (.Decl.Annotations.next.go_imports | split "," | map (trim | split "." | first | trimPrefix "*") | sort | uniq)}}
 import "{{.}}"
 {{- end}}
 {{- end}}
@@ -76,8 +76,8 @@ var _ = time.Now
 {{- define "next/go/imports:unused" -}}
 {{_}}
 var _ = strconv.FormatInt
-{{- if .File.Annotations.next.go_imports}}
-{{- range (.File.Annotations.next.go_imports | split "," | sort | uniq)}}
+{{- if .Decl.Annotations.next.go_imports}}
+{{- range (.Decl.Annotations.next.go_imports | split "," | sort | uniq)}}
 {{- $pkg := . | split "." | first}}
 {{- $ptr := (hasPrefix "*" $pkg)}}
 {{- $val := . | split "." | last}}

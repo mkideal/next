@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/next/next/src/compile"
 )
@@ -17,7 +18,7 @@ type embedFS struct {
 }
 
 func (e embedFS) Abs(name string) (string, error) {
-	return "<" + name + ">", nil
+	return name, nil
 }
 
 type dirFS struct {
@@ -31,6 +32,9 @@ func (d dirFS) Abs(name string) (string, error) {
 
 func copyBuiltin() compile.FileSystem {
 	builtin := embedFS{FS: builtin}
+	if x := strings.ToLower(os.Getenv(compile.ENV_NEXT_NO_COPY_BUILTIN)); x == "1" || x == "true" || x == "on" || x == "yes" {
+		return builtin
+	}
 
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -57,6 +61,7 @@ func copyBuiltin() compile.FileSystem {
 		if content, err := os.ReadFile(path); err == nil && string(content) == string(data) {
 			continue
 		}
+		os.Chmod(path, 0644)
 		if err := os.WriteFile(path, data, 0644); err != nil {
 			return builtin
 		}

@@ -83,6 +83,7 @@ func (a Annotations) Contains(name string) bool {
 // Login
 // Login
 // 100
+// int8
 // ```
 //
 // The `next` annotation is used to pass information to the next compiler. It's a reserved

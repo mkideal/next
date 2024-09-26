@@ -15,25 +15,31 @@ import (
 )
 
 // @api(Object/Imports) holds a list of imports.
-type Imports struct {
+type Imports[T Decl] struct {
 	// @api(Object/Imports.File) represents the file containing the imports.
-	File *File
+	Decl Node
 
 	// @api(Object/Imports.List) represents the list of [imports](#Object/Import).
 	List []*Import
 }
 
-func (i *Imports) resolve(c *Compiler, file *File) {
+func (i *Imports[T]) resolve(c *Compiler, file *File) {
 	for _, spec := range i.List {
-		spec.target = c.lookupFile(file.Path, spec.Path)
-		if spec.target == nil {
-			c.addErrorf(spec.pos, "import file not found: %s", spec.Path)
-		}
+		spec.resolve(c, file, file)
 	}
 }
 
+func (i *Imports[T]) add(x *Import) {
+	for _, spec := range i.List {
+		if spec.FullPath == x.FullPath {
+			return
+		}
+	}
+	i.List = append(i.List, x)
+}
+
 // @api(Object/Imports.TrimmedList) represents a list of unique imports sorted by package name.
-func (i *Imports) TrimmedList() []*Import {
+func (i *Imports[T]) TrimmedList() []*Import {
 	var seen = make(map[string]bool)
 	var pkgs []*Import
 	for _, spec := range i.List {
@@ -100,7 +106,12 @@ func (i *Import) Target() *File { return i.target }
 // @api(Object/Import.File) represents the file containing the import declaration.
 func (i *Import) File() *File { return i.file }
 
-func (i *Import) resolve(c *Compiler, file *File, _ Scope) {}
+func (i *Import) resolve(c *Compiler, file *File, _ Scope) {
+	i.target = c.lookupFile(file.Path, i.Path)
+	if i.target == nil {
+		c.addErrorf(i.pos, "import file not found: %s", i.Path)
+	}
+}
 
 // @api(Object/Common/List) represents a list of objects.
 type List[T Object] []T
@@ -854,6 +865,8 @@ func available[T Node](c *Compiler, obj T, lang string) (T, bool) {
 		return obj, false
 	}
 	switch decl := any(obj).(type) {
+	case *Package:
+		decl.decls.lang = lang
 	case *File:
 		decl.decls.lang = lang
 	case *Struct:
