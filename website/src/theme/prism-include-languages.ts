@@ -29,6 +29,7 @@ export default function prismIncludeLanguages(
 
   require("../prism/prism-next");
   require("../prism/prism-npl");
+  require("../prism/prism-ebnf");
 
   delete (globalThis as Optional<typeof globalThis, "Prism">).Prism;
 }

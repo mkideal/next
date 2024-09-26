@@ -14,7 +14,7 @@
       pattern: /"(?:\\.|[^\\\"\r\n])*"/,
       greedy: true,
     },
-    keyword: /\b(?:package|import|const|enum|struct|interface)\b/,
+    keyword: /\b(?:package|iota|import|const|enum|struct|interface)\b/,
     boolean: /\b(?:true|false)\b/,
     number: /\b0x[\da-f]+\b|(?:\b\d+(?:\.\d*)?|\B\.\d+)(?:e[+-]?\d+)?/i,
     operator: /[<>]=?|[!=]=?=?|--?|\+\+?|&&?|\|\|?|[?*/~^%]/,
@@ -56,13 +56,18 @@
       inside: {
         keyword: /\benum\b/,
         "enum-name": {
-          pattern: /\b\w+\b(?=\s*\{)/,
+          pattern: /(\benum\s+)\w+/,
+          lookbehind: true,
           alias: "class-name",
         },
+        punctuation: /[{};]/,
         "enum-member": {
-          pattern: /\b\w+\b(?=\s*(?:=|,|;))/,
+          pattern: /^\s*\w+\b(?=\s*(?:=|,|;))/m,
           alias: "constant",
+          greedy: true,
         },
+        // rest 放在最后，确保其他部分按照全局规则高亮
+        rest: Prism.languages.next,
       },
     },
     "struct-declaration": {

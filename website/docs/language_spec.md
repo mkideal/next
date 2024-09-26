@@ -1,4 +1,4 @@
-# Language Specification
+# Next Language Specification
 
 ## 1. Introduction
 
@@ -15,10 +15,10 @@ Next supports two forms of comments:
 
 ### 2.2 Identifiers
 
-Identifiers name program entities such as variables and types. An identifier is a sequence of one or more letters and digits. The first character in an identifier must be a letter.
+Identifiers name program entities such as variables and types. An identifier is a sequence of one or more letters, digits, and underscores. The first character in an identifier must be a letter or an underscore.
 
-```
-identifier = letter { letter | unicode_digit } .
+```ebnf
+identifier = ( letter | "_" ) { letter | unicode_digit | "_" } .
 ```
 
 ### 2.3 Keywords
@@ -39,8 +39,6 @@ package   import    const     enum      struct    interface
 %    .    &^
 ```
 
-**Note**: Square brackets `[]` are currently unused but reserved for potential future syntax extensions.
-
 ## 3. Source Code Representation
 
 ### 3.1 Source Files
@@ -51,32 +49,19 @@ Source files are encoded in UTF-8. The file extension is `.next`.
 
 Every Next source file begins with a package declaration:
 
-```
-PackageClause = "package" PackageName ";" .
+```ebnf
+PackageClause = { Annotation } "package" PackageName ";" .
 PackageName    = identifier .
-```
-
-Example:
-```next
-package demo;
 ```
 
 ### 3.3 Import Declaration
 
 Import declarations are used to include other files:
 
-```
+```ebnf
 ImportDecl       = "import" ImportSpec ";" .
 ImportSpec       = string_lit .
 ```
-
-Example:
-
-```next
-import "./a.next";
-```
-
-After importing a file, you can use constants, enums, structs, protocols, etc., defined in that file's package.
 
 ## 4. Declarations and Scope
 
@@ -84,26 +69,11 @@ After importing a file, you can use constants, enums, structs, protocols, etc., 
 
 Constant declarations use the `const` keyword:
 
+```ebnf
+ConstDecl      = { Annotation } "const" identifier "=" Expression ";" .
 ```
-ConstDecl      = "const" identifier "=" Expression ";" .
-```
 
-Constants can be numbers, strings, booleans, or any constant expressions.
-
-Example:
-
-```next
-const V0 = 1;
-const V1 = 100.5;
-const V2 = 1000_000; // equivalent to 1000000
-const V3 = V1 + V2; // expression referencing other constants
-
-enum Errno {
-    OK = 0,
-}
-
-const A = Errno.OK;  // enum field reference
-```
+Constants can be numbers, strings, booleans, or any constant expressions, including built-in function calls.
 
 ### 4.2 Types
 
@@ -111,96 +81,35 @@ const A = Errno.OK;  // enum field reference
 
 Enum declarations use the `enum` keyword:
 
-```
-EnumDecl     = "enum" EnumSpec .
-EnumSpec     = identifier "{" { identifier [ "=" Expression ] ";" } "}" .
-```
-
-Enums can use expressions containing `iota` for derivation. **Note that only enums can use iota derivation; const definitions cannot.**
-
-Example:
-
-```next
-enum Color {
-    Red = 1;
-    Green = 2;
-    Blue = 3;
-}
-
-enum Errno {
-    OK = iotal;  // 0
-    Internal;   // 1
-    BadRequest; // 2
-
-    UserNotFound = iota + 100; // 100
-    ProviderNotFound;          // 101
-}
+```ebnf
+EnumDecl     = { Annotation } "enum" EnumSpec .
+EnumSpec     = identifier "{" { { Annotation } identifier [ "=" Expression ] ";" } "}" .
 ```
 
-Enum fields can be referenced using `EnumName.FieldName` syntax and can be used in constant definitions and constant expressions.
+Enums can use expressions containing `iota` for derivation, as well as bitwise operations and other complex expressions.
 
 #### 4.2.2 Struct Types
 
 Struct declarations use the `struct` keyword:
 
-```
-StructDecl     = "struct" StructSpec .
+```ebnf
+StructDecl     = { Annotation } "struct" StructSpec .
 StructSpec     = identifier "{" { FieldDecl ";" } "}" .
-FieldDecl      = Type identifier .
-```
-
-Example:
-
-```next
-struct Location {
-    string country;
-    string city;
-    int zipCode;
-}
+FieldDecl      = { Annotation } Type identifier .
 ```
 
 ### 4.3 Annotations
 
-Annotations can be added to packages, any declarations, constants, enums (and their fields), structs (and their fields), and protocols (and their fields). Annotations start with the `@` symbol:
+Annotations can be added to packages, declarations, constants, enums (and their fields), structs (and their fields), and interfaces (and their methods). Multiple annotations can be used for each element:
 
-```
-Annotation     = "@" identifier [ "(" [ Parameters ] ")" ] .
-Parameters     = NamedParam { "," NamedParam } .
-NamedParam     = identifier [ "=" Expression ] .
-```
-
-Annotations support forms with no parameters, with parameters (including named and anonymous parameters).
-
-Example:
-
-```next
-@next(
-    go_package = "github.com/username/repo/a",
-    cpp_package = "repo::a", // trailing comma is optional
-)
-package demo;
-
-@protocol(type=100)
-struct LoginRequest {
-    @required
-    string token;
-    string ip;
-}
-
-@json(omitempty)
-struct User {
-    @key
-    int id;
-
-    @json(name="nick_name")
-    string nickname;
-
-    @json(ignore)
-    string password;
-}
+```ebnf
+Annotations   = { Annotation } .
+Annotation    = "@" identifier [ "(" [ Parameters ] ")" ] .
+Parameters    = NamedParam { "," NamedParam } .
+NamedParam    = identifier [ "=" ConstantExpression ] .
 ```
 
-**@next is a built-in annotation in Next. Its usage follows specific parameter definitions, and its effects are interpreted internally by Next. @next should not be used as a custom annotation.**
+Annotation parameters can only be constant expressions, which include literals, constant identifiers, and expressions composed of these.
 
 ## 5. Types
 
@@ -212,68 +121,48 @@ struct User {
 - String types: `string`, `byte`, `bytes`
 - Any: `any`
 
-**Note: Unsigned integer types are not supported.**
-
 ### 5.2 Composite Types
 
 - Array type: `array<T, N>`, where T is the element type and N is the array length
 - Vector type: `vector<T>`, where T is the element type
 - Map type: `map<K, V>`, where K is the key type and V is the value type
 
+```ebnf
+Type = PrimitiveType | CompositeType .
+PrimitiveType = "bool" | "int" | "int8" | "int16" | "int32" | "int64" |
+                "float32" | "float64" | "string" | "byte" | "bytes" | "any" .
+CompositeType = ArrayType | VectorType | MapType .
+ArrayType = "array" "<" Type "," int_lit ">" .
+VectorType = "vector" "<" Type ">" .
+MapType = "map" "<" Type "," Type ">" .
+```
+
 ## 6. Expressions
 
-In the Next language, all expressions are constant expressions evaluated at compile-time. Expressions are used to compute values and follow this syntax:
+Expressions in Next are constant expressions evaluated at compile-time:
 
-```
+```ebnf
 Expression     = UnaryExpr | Expression binary_op Expression | FunctionCall .
 UnaryExpr      = PrimaryExpr | unary_op UnaryExpr .
 PrimaryExpr    = Operand | PrimaryExpr Selector .
-Operand        = Literal | identifier | EnumFieldRef | "(" Expression ")" .
+Operand        = Literal | QualifiedIdent | "(" Expression ")" .
+QualifiedIdent = [ PackageName "." ] identifier .
 Selector       = "." identifier .
-EnumFieldRef   = identifier "." identifier .
 FunctionCall   = identifier "(" [ ArgumentList ] ")" .
 ArgumentList   = Expression { "," Expression } .
 
-binary_op     = "+" | "-" | "*" | "/" | "%" |
-                "&" | "|" | "^" | ">>" | "<<" | "&^" |
-                "<" | ">" | "<=" | ">=" | "==" | "!=" | "&&" | "||" .
-unary_op      = "+" | "-" | "!" | "^" .
+PackageName    = identifier .
+binary_op      = "+" | "-" | "*" | "/" | "%" |
+                 "&" | "|" | "^" | ">>" | "<<" | "&^" |
+                 "<" | ">" | "<=" | ">=" | "==" | "!=" | "&&" | "||" .
+unary_op       = "+" | "-" | "!" | "^" .
 ```
 
-Expressions can include:
-
-1. Literals (numbers, strings, booleans)
-2. Identifiers (constant names, enum names, etc.)
-3. Enum field references
-4. Binary operations (arithmetic, bitwise, logical, comparison operations, etc.)
-5. Unary operations (plus/minus signs, logical not, bitwise not, etc.)
-6. Parenthesized grouping
-7. Field selection
-8. Function calls (currently only built-in functions are supported)
-
-All expressions are constant expressions evaluated at compile-time. They can contain literals, constant identifiers, enum field references, and operations on these.
-
-The Next language's expressions do not support indexing operations.
-
-Example:
-
-```next
-42                  // Numeric literal
-"hello"             // String literal
-true                // Boolean literal
-X                   // Constant identifier
-Color.Red           // Enum field reference
-x + y               // Binary addition
--z                  // Unary minus
-(x + y) * z         // Parenthesized expression
-min(x, y, z)        // Function call
-max(a, b)           // Function call
-len("hello")        // Function call
-```
-
-All expressions used in constant declarations must be valid constant expressions that can be evaluated at compile-time.
+This expression syntax allows for package-qualified identifiers (e.g., `demo.X`, `demo.Color.Red`).
 
 ## 7. Built-in Variables and Functions
+
+Next provides several built-in variables and functions:
 
 | Function or Variable | Usage Description |
 |----------------------|-------------------|
@@ -299,7 +188,103 @@ All expressions used in constant declarations must be valid constant expressions
 | **assert_gt**(`x, y, args...`) | Assert if `x` is greater than `y` |
 | **assert_ge**(`x, y, args...`) | Assert if `x` is greater than or equal to `y` |
 
-## 8. Lexical Conventions
+## 8. Interfaces
+
+Interfaces define a set of method signatures:
+
+```ebnf
+InterfaceDecl     = { Annotation } "interface" InterfaceSpec .
+InterfaceSpec     = identifier "{" { MethodDecl ";" } "}" .
+MethodDecl        = { Annotation } identifier "(" [ ParameterList ] ")" [ Type ] .
+ParameterList     = ParameterDecl { "," ParameterDecl } .
+ParameterDecl     = { Annotation } Type identifier .
+```
+
+## 9. Lexical Conventions
 
 - Package names use lower camel case (all lowercase is recommended).
-- Constants, enum members, and type names (structs, enums, protocols) use upper camel case.
+- Constants, enum members, and type names (structs, enums, interfaces) use upper camel case.
+
+## 10. EBNF Syntax Specification
+
+```ebnf
+(* Top-level constructs *)
+SourceFile = PackageClause {ImportDecl} {TopLevelDecl} .
+
+PackageClause = {Annotation} "package" PackageName ";" .
+PackageName = identifier .
+
+ImportDecl = "import" ImportSpec ";" .
+ImportSpec = string_lit .
+
+TopLevelDecl = ConstDecl | EnumDecl | StructDecl | InterfaceDecl .
+
+(* Declarations *)
+ConstDecl = {Annotation} "const" identifier "=" Expression ";" .
+
+EnumDecl = {Annotation} "enum" identifier "{" {EnumMember} "}" .
+EnumMember = {Annotation} identifier ["=" Expression] ";" .
+
+StructDecl = {Annotation} "struct" identifier "{" {FieldDecl} "}" .
+FieldDecl = {Annotation} Type identifier ";" .
+
+InterfaceDecl = {Annotation} "interface" identifier "{" {MethodDecl} "}" .
+MethodDecl = {Annotation} identifier "(" [ParameterList] ")" [Type] ";" .
+ParameterList = ParameterDecl {"," ParameterDecl} .
+ParameterDecl = {Annotation} Type identifier .
+
+(* Types *)
+Type = PrimitiveType | CompositeType .
+PrimitiveType = "bool" | "int" | "int8" | "int16" | "int32" | "int64" |
+                "float32" | "float64" | "string" | "byte" | "bytes" | "any" .
+CompositeType = ArrayType | VectorType | MapType .
+ArrayType = "array" "<" Type "," int_lit ">" .
+VectorType = "vector" "<" Type ">" .
+MapType = "map" "<" Type "," Type ">" .
+
+(* Expressions *)
+Expression = UnaryExpr | Expression binary_op Expression | FunctionCall .
+UnaryExpr = PrimaryExpr | unary_op UnaryExpr .
+PrimaryExpr = Operand | PrimaryExpr Selector .
+Operand = Literal | QualifiedIdent | "(" Expression ")" .
+QualifiedIdent = [PackageName "."] identifier .
+Selector = "." identifier .
+FunctionCall = identifier "(" [ArgumentList] ")" .
+ArgumentList = Expression {"," Expression} .
+
+binary_op = "+" | "-" | "*" | "/" | "%" |
+            "&" | "|" | "^" | "<<" | ">>" | "&^" |
+            "==" | "!=" | "<" | "<=" | ">" | ">=" |
+            "&&" | "||" .
+unary_op = "+" | "-" | "!" | "^" .
+
+(* Annotations *)
+Annotation = "@" identifier ["(" [Parameters] ")"] .
+Parameters = NamedParam {"," NamedParam} .
+NamedParam = identifier ["=" ConstantExpression] .
+
+(* Lexical elements *)
+identifier = ( letter | "_" ) { letter | unicode_digit | "_" } .
+
+int_lit = decimal_lit | octal_lit | hex_lit .
+decimal_lit = "0" | (non_zero_digit {decimal_digit}) .
+octal_lit = "0" {octal_digit} .
+hex_lit = "0" ("x" | "X") hex_digit {hex_digit} .
+
+float_lit = decimals "." [decimals] [exponent] |
+            decimals exponent |
+            "." decimals [exponent] .
+decimals = decimal_digit {decimal_digit} .
+exponent = ("e" | "E") ["+" | "-"] decimals .
+
+string_lit = raw_string_lit | interpreted_string_lit .
+raw_string_lit = "`" {unicode_char} "`" .
+interpreted_string_lit = '"' {unicode_value | byte_value} '"' .
+
+(* Built-in functions and variables *)
+BuiltInFunction = "int" | "float" | "bool" | "min" | "max" | "abs" | "len" |
+                  "sprint" | "sprintf" | "sprintln" | "print" | "printf" |
+                  "error" | "assert" | "assert_eq" | "assert_ne" |
+                  "assert_lt" | "assert_le" | "assert_gt" | "assert_ge" .
+BuiltInVariable = "iota" .
+```

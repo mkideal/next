@@ -87,6 +87,7 @@ struct Contract {
 }
 
 // OperatingSystem represents different operating systems
+@next(available="!protobuf")
 enum OperatingSystem {
     Windows = "windows";
     Linux = "linux";

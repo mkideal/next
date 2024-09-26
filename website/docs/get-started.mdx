@@ -166,6 +166,7 @@ enum Color {
 }
 
 // MathConstants represents mathematical constants
+@next(available="!protobuf & !php")
 enum MathConstants {
     Pi = 3.14159265358979323846;
     E = 2.71828182845904523536;
@@ -220,6 +221,7 @@ struct Contract {
 }
 
 // OperatingSystem represents different operating systems
+@next(available="!protobuf")
 enum OperatingSystem {
     Windows = "windows";
     Linux = "linux";
@@ -760,19 +762,19 @@ You can generate many langauge codes as following:
 
 ```sh
 next \
-    -O go=gen/go -T go=templates/go \
-    -O java=gen/java -T java=templates/java \
+    -O c=gen/c -T c=templates/c \
     -O cpp=gen/cpp -T cpp=templates/cpp \
     -O csharp=gen/csharp -T csharp=templates/csharp \
-    -O c=gen/c -T c=templates/c \
-    -O rust=gen/rust/src -T rust=templates/rust \
-    -O protobuf=gen/protobuf -T protobuf=templates/protobuf \
+    -O go=gen/go -T go=templates/go \
+    -O java=gen/java -T java=templates/java \
     -O js=gen/js -T js=templates/js \
-    -O ts=gen/ts -T ts=templates/ts \
+    -O lua=gen/lua -T lua=templates/lua \
+    -O protobuf=gen/protobuf -T protobuf=templates/protobuf \
     -O python=gen/python -T python=templates/python \
     -O php=gen/php -T php=templates/php \
+    -O rust=gen/rust/src -T rust=templates/rust \
     -O swift=gen/swift -T swift=templates/swift \
-    -O lua=gen/lua -T lua=templates/lua \
+    -O ts=gen/ts -T ts=templates/ts \
     -M "c.vector=void*" -M "c.map=void*" \
     next/source/dir/ # or source files
 ```
