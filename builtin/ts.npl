@@ -69,7 +69,7 @@ export class {{next .Type}} {
 {{- define "next/ts/struct.field" -}}
 {{- if .Doc.Text -}}
 /**
-{{.Doc.Format "" "" " *" -}}
+{{.Doc.Format " * " -}}
 {{_}} * @type { {{next .Type}} }
  */
 {{end -}}
@@ -95,7 +95,7 @@ export interface {{next .Type}} {
 {{- define "next/ts/interface.method" -}}
 {{- if .Doc.Text -}}
 /**
-{{.Doc.Format "" "" " *" -}}
+{{.Doc.Format " * " -}}
 {{_}} *
 {{- if .Params.List -}}
 {{- range .Params.List}}

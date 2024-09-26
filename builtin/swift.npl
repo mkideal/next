@@ -21,7 +21,7 @@ import {{.File.Package.Name}}
 
 {{/* next/swift/doc: Generates documentation comments for Swift */}}
 {{- define "next/swift/doc" -}}
-{{.Format "" "" "///" | align}}
+{{.Format "/// " | align}}
 {{- end}}
 
 {{/* next/swift/const: Generates a constant declaration */}}

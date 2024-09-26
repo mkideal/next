@@ -418,18 +418,18 @@ Annotations can be accessed and used within templates to customize code generati
 ```npl
 {{- if .Doc -}}
 /**
- {{.Doc.Format "" "" "*" | align}}
- {{- if .Annotations.Contains "deprecated"}}
+{{.Doc.Format " * " | align}}
+{{- if .Annotations.Contains "deprecated"}}
  * @deprecated {{.Annotations.deprecated}}
- {{- end}}
- {{- if .Annotations.Contains "param"}}
- {{- range $name, $desc := .Annotations.param}}
+{{- end}}
+{{- if .Annotations.Contains "param"}}
+{{- range $name, $desc := .Annotations.param}}
  * @param {{$name}} {{$desc}}
- {{- end}}
- {{- end}}
- {{- if .Annotations.Contains "return"}}
+{{- end}}
+{{- end}}
+{{- if .Annotations.Contains "return"}}
  * @return {{.Annotations.return}}
- {{- end}}
+{{- end}}
  */
 {{- end -}}
 ```

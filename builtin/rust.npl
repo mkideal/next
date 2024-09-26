@@ -44,7 +44,7 @@ use {{.}};
 
 {{/* next/rust/doc: Generates formatted documentation comments */}}
 {{- define "next/rust/doc" -}}
-{{.Format "" "" "///" "" | align}}
+{{.Format "/// " | align}}
 {{- end}}
 
 {{/* next/rust/const: Generates a constant declaration */}}

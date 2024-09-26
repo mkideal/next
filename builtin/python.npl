@@ -29,7 +29,7 @@ from {{.File.Package.Name}} import *
 
 {{/* next/python/doc: Generates documentation comments for Python */}}
 {{- define "next/python/doc" -}}
-{{.Format "" "" "\"\"\"\n" "\"\"\""}}
+{{.Format "" "\"\"\"\n" "\"\"\""}}
 {{- end}}
 
 {{/* next/python/const: Generates a constant declaration */}}

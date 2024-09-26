@@ -633,16 +633,20 @@ Currently, the following types are supported:
 ###### .Format {#user-content-Object_Doc_-Format}
 
 `.Format` formats the documentation comment for various output styles. 
+Parameters: (_indent_ string[, _begin_ string[, _end_ string]]) 
 Usage in templates: 
 
 ```npl
-{{.Doc.Format "" " * " "/**\n" " */"}}
+{{.Doc.Format "/// "}}
+{{.Doc.Format " * " "/**\n" " */"}}
 ```
 
 Example output: 
 
 ```c
 
+/// This is a documentation comment.
+/// It can be multiple lines.
 /**
  * This is a documentation comment.
  * It can be multiple lines.

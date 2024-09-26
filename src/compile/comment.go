@@ -47,7 +47,7 @@ func (c *Comment) String() string {
 	if c == nil || len(c.list) == 0 {
 		return ""
 	}
-	return formatComments(c.list, false, "", " ")
+	return formatComments(c.list, false, " // ")
 }
 
 // @api(Object/Doc) represents a documentation comment for a declaration in Next source code.
@@ -90,32 +90,37 @@ func (d *Doc) String() string {
 	if d == nil || len(d.list) == 0 {
 		return ""
 	}
-	return formatComments(d.list, true, "", "")
+	return formatComments(d.list, true, "// ", "")
 }
 
 // @api(Object/Doc.Format) formats the documentation comment for various output styles.
 //
+// Parameters: (_indent_ string[, _begin_ string[, _end_ string]])
+//
 // Usage in templates:
 //
 // ```npl
-// {{.Doc.Format "" " * " "/**\n" " */"}}
+// {{.Doc.Format "/// "}}
+// {{.Doc.Format " * " "/**\n" " */"}}
 // ```
 //
 // Example output:
 //
 // ```c
 //
+//	/// This is a documentation comment.
+//	/// It can be multiple lines.
 //	/**
 //	 * This is a documentation comment.
 //	 * It can be multiple lines.
 //	 */
 //
 // ```
-func (d *Doc) Format(prefix, indent string, beginAndEnd ...string) string {
+func (d *Doc) Format(indent string, beginAndEnd ...string) string {
 	if d == nil || len(d.list) == 0 {
 		return ""
 	}
-	return formatComments(d.list, true, prefix, indent, beginAndEnd...)
+	return formatComments(d.list, true, indent, beginAndEnd...)
 }
 
 // makeCommentList returns a list of comments from the comment group.
@@ -131,7 +136,7 @@ func makeCommentList(cg *ast.CommentGroup) []string {
 }
 
 // formatComments formats the comment group with the given prefix, ident, and begin and end strings.
-func formatComments(list []string, appendNewline bool, prefix, indent string, beginAndEnd ...string) string {
+func formatComments(list []string, appendNewline bool, indent string, beginAndEnd ...string) string {
 	if len(list) == 0 {
 		return ""
 	}
@@ -140,7 +145,7 @@ func formatComments(list []string, appendNewline bool, prefix, indent string, be
 		return ""
 	}
 	isLastEmpty := lines[len(lines)-1] == ""
-	begin, end := "//", ""
+	begin, end := "", ""
 	if len(beginAndEnd) > 0 && beginAndEnd[0] != "" {
 		begin = beginAndEnd[0]
 		if len(beginAndEnd) > 1 && beginAndEnd[1] != "" {
@@ -154,17 +159,17 @@ func formatComments(list []string, appendNewline bool, prefix, indent string, be
 	}
 	if end == "" {
 		for i, line := range lines {
-			lines[i] = prefix + indent + begin + " " + line
+			lines[i] = indent + begin + line
 		}
 	} else {
-		lines = append([]string{prefix + begin + lines[0]}, lines[1:]...)
+		lines = append([]string{begin + lines[0]}, lines[1:]...)
 		for i := 1; i < len(lines); i++ {
-			lines[i] = prefix + indent + lines[i]
+			lines[i] = indent + lines[i]
 		}
-		lines = append(lines, prefix+end)
+		lines = append(lines, end)
 	}
 	if !isLastEmpty && appendNewline {
-		lines = append(lines, prefix)
+		lines = append(lines, "")
 	}
 	return strings.Join(lines, "\n")
 }

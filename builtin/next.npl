@@ -31,7 +31,7 @@
 {{- end}}
 
 {{- define "next/doc:clike" -}}
-{{.Format "" " * " "/**\n" " */" | align}}
+{{.Format " * " "/**\n" " */" | align}}
 {{- end}}
 
 {{/* next/imports: Generates code for all import statements in a file */}}

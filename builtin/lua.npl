@@ -36,7 +36,7 @@ local {{render "package:name" .Target.Package}}_{{.Target.Name}} = require("{{re
 {{- end}}
 
 {{- define "next/lua/doc:origin" -}}
-{{.Format "" "-- " "--[[\n" "--]]" }}
+{{.Format "-- " "--[[\n" "--]]" }}
 {{- end}}
 
 {{/* next/lua/package:name: Retrieves the Lua module name from annotations */}}

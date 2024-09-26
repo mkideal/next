@@ -71,7 +71,7 @@ export class {{next .Type}} {
 {{- define "next/js/struct.field" -}}
 {{- if .Doc.Text -}}
 /**
-{{.Doc.Format "" "" " *" -}}
+{{.Doc.Format " * " -}}
 {{_}} * @type { {{render "type:doc" .Type}} }
  */
 {{- else -}}
@@ -98,7 +98,7 @@ this.{{render "struct.field:name" .}} = {{render "type:zero" .Type}};{{next .Com
 {{- define "next/js/interface.method" -}}
 /**
 {{if .Doc.Text -}}
-{{.Doc.Format "" "" " *" -}}
+{{.Doc.Format " * " -}}
 {{_}} *
 {{end}}
 {{- if .Params.List -}}
