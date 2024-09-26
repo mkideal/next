@@ -1,4 +1,6 @@
 (function (Prism) {
+  const identifier = /[a-zA-Z_]\w*/;
+
   Prism.languages.next = {
     comment: [
       {
@@ -14,13 +16,13 @@
       pattern: /"(?:\\.|[^\\\"\r\n])*"/,
       greedy: true,
     },
-    keyword: /\b(?:package|iota|import|const|enum|struct|interface)\b/,
+    keyword: /\b(?:package|iota|const|enum|struct|interface)\b/,
     boolean: /\b(?:true|false)\b/,
     number: /\b0x[\da-f]+\b|(?:\b\d+(?:\.\d*)?|\B\.\d+)(?:e[+-]?\d+)?/i,
     operator: /[<>]=?|[!=]=?=?|--?|\+\+?|&&?|\|\|?|[?*/~^%]/,
     punctuation: /[{}[\];(),.:]/,
     annotation: {
-      pattern: /\B@\w+(?:\([^)]*\))?/,
+      pattern: RegExp(`(@)${identifier.source}`),
       alias: "symbol",
     },
     type: {
@@ -29,7 +31,7 @@
       alias: "class-name",
     },
     function: {
-      pattern: /(?<!\B@)\b[a-zA-Z_]\w*(?=\s*\()/,
+      pattern: RegExp(`(?<!\B@)${identifier.source}(?=\\s*\\()`),
       greedy: true,
     },
     builtin: {
@@ -40,43 +42,41 @@
   };
 
   Prism.languages.insertBefore("next", "keyword", {
+    "package-declaration": {
+      pattern: RegExp(`(\\bpackage\\s+)${identifier.source}`),
+      lookbehind: true,
+      alias: "namespace",
+    },
     "const-declaration": {
-      pattern: /\bconst\s+\w+\s*=/,
-      inside: {
-        keyword: /\bconst\b/,
-        "constant-name": {
-          pattern: /\b\w+\b(?=\s*=)/,
-          alias: "constant",
-        },
-        operator: /=/,
-      },
+      pattern: RegExp(`(\\bconst\\s+)${identifier.source}\\s*=`),
+      lookbehind: true,
+      alias: "constant",
     },
     "enum-declaration": {
       pattern: /\benum\s+\w+\s*\{[\s\S]*?\}/m,
       inside: {
         keyword: /\benum\b/,
         "enum-name": {
-          pattern: /(\benum\s+)\w+/,
+          pattern: /\b\w+\b(?=\s*\{)/,
           lookbehind: true,
           alias: "class-name",
         },
         punctuation: /[{};]/,
         "enum-member": {
-          pattern: /^\s*\w+\b(?=\s*(?:=|,|;))/m,
+          pattern: /^\s*\w+\b(?=\s*(?:=\s*(?:"[^"]*"|'[^']*'|[^,;]+)|,|;))/m,
           alias: "constant",
           greedy: true,
         },
-        // rest 放在最后，确保其他部分按照全局规则高亮
         rest: Prism.languages.next,
       },
     },
     "struct-declaration": {
-      pattern: /(\bstruct\s+)[a-zA-Z_][a-zA-Z0-9_]*/,
+      pattern: RegExp(`(\\bstruct\\s+)${identifier.source}(?=\\s*\\{)`),
       lookbehind: true,
       alias: "class-name",
     },
     "interface-declaration": {
-      pattern: /(\binterface\s+)[a-zA-Z_][a-zA-Z0-9_]*/,
+      pattern: RegExp(`(\\binterface\\s+)${identifier.source}(?=\\s*\\{)`),
       lookbehind: true,
       alias: "class-name",
     },

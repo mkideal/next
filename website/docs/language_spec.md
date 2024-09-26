@@ -1,4 +1,4 @@
-# Next Language Specification
+# Language Specification
 
 ## 1. Introduction
 
