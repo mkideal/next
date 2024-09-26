@@ -2,9 +2,16 @@ package compile
 
 import (
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 )
+
+// FileSystem is an interface that abstracts the file system functions.
+type FileSystem interface {
+	fs.FS
+	Abs(name string) (string, error)
+}
 
 // Platform is an interface that abstracts the platform-specific functions.
 type Platform interface {

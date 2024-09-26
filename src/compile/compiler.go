@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/fs"
 	"path/filepath"
 	"slices"
 	"sort"
@@ -32,7 +31,7 @@ type Compiler struct {
 	}
 	platform Platform
 	// builtin builtin
-	builtin fs.FS
+	builtin FileSystem
 
 	// fset is the file set used to track file positions
 	fset *token.FileSet
@@ -62,7 +61,7 @@ type Compiler struct {
 }
 
 // NewCompiler creates a new compiler with builtin language supports
-func NewCompiler(platform Platform, builtin fs.FS) *Compiler {
+func NewCompiler(platform Platform, builtin FileSystem) *Compiler {
 	c := &Compiler{
 		platform:            platform,
 		builtin:             builtin,

@@ -1,8 +1,7 @@
-package main
+package compile
 
 import (
 	"bytes"
-	"embed"
 	"errors"
 	"flag"
 	"fmt"
@@ -17,21 +16,17 @@ import (
 	"github.com/gopherd/core/builder"
 	"github.com/gopherd/core/flags"
 	"github.com/gopherd/core/term"
-	"github.com/next/next/src/compile"
 	"github.com/next/next/src/fsutil"
 	"github.com/next/next/src/parser"
 	"github.com/next/next/src/scanner"
 )
 
-//go:embed builtin/*
-var builtin embed.FS
-
-const currentDir = "."
 const nextExt = ".next"
 const website = "https://next.as"
 const repository = "https://github.com/next/next"
 
-func exec(platform compile.Platform, args []string) {
+// Compile compiles the next files.
+func Compile(platform Platform, builtin FileSystem, args []string) {
 	stdin, stderr := platform.Stdin(), platform.Stderr()
 	if len(args) == 2 && args[1] == "version" {
 		builder.PrintInfo()
@@ -41,7 +36,7 @@ func exec(platform compile.Platform, args []string) {
 	flagSet := flag.NewFlagSet(args[0], flag.ContinueOnError)
 	flagSet.Usage = func() {}
 
-	compiler := compile.NewCompiler(platform, builtin)
+	compiler := NewCompiler(platform, builtin)
 	compiler.SetupCommandFlags(flagSet, flags.UseUsage(flagSet.Output(), flags.NameColor(term.Bold)))
 
 	// set output color for error messages
@@ -81,7 +76,7 @@ func exec(platform compile.Platform, args []string) {
 				source = osStdin
 				files = append(files, "<stdin>")
 			} else {
-				v, e := fsutil.AppendFiles(files, currentDir, nextExt, false)
+				v, e := fsutil.AppendFiles(files, ".", nextExt, false)
 				files = result(stderr, v, e)
 			}
 		} else if stdin != nil {
@@ -135,7 +130,7 @@ func exec(platform compile.Platform, args []string) {
 	unwrap(stderr, compiler.Resolve())
 
 	// generate files
-	unwrap(stderr, compile.Generate(compiler))
+	unwrap(stderr, Generate(compiler))
 }
 
 // exit exits the program. It is a variable for overriding.
@@ -208,7 +203,7 @@ func printError(stderr io.Writer, err error) {
 		s := strings.TrimSpace(errs[i])
 		s = strings.TrimPrefix(s, "template: ")
 		s = strings.TrimSuffix(s, ":")
-		if s == "" || strings.HasPrefix(parseFilename(s), compile.StubPrefix) {
+		if s == "" || strings.HasPrefix(parseFilename(s), StubPrefix) {
 			errs = append(errs[:i], errs[i+1:]...)
 		} else {
 			errs[i] = s
@@ -255,7 +250,7 @@ func printErrorWithPosition(stderr io.Writer, err string) {
 	}
 	filename := parts[0]
 	if wd, err := os.Getwd(); err == nil {
-		if rel, err := filepath.Rel(wd, filename); err == nil {
+		if rel, err := filepath.Rel(wd, filename); err == nil && !strings.HasPrefix(rel, "..") {
 			filename = rel
 		}
 	}
