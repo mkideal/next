@@ -41,7 +41,7 @@ type Object interface {
 	//
 	//	```npl
 	//	{{- define "go/enum.member" -}}
-	//	const {{next .Name}} = {{.Value}}
+	//	const {{render "enum.member:name" .Name}} = {{.Value}}
 	//	{{- end}}
 	//
 	//	{{- define "go/enum.member:name" -}}
@@ -61,7 +61,7 @@ type Object interface {
 	//	const Color_Blue = 3
 	//	```
 	//
-	// These two definitions will override the built-in template functions `next/go/enum.member` and `next/go/enum.member.name`.
+	// These two definitions will override the built-in template functions `next/go/enum.member` and `next/go/enum.member:name`.
 	Typeof() string
 }
 

@@ -1,6 +1,4 @@
-// --go:generate go run github.com/gopherd/tools/cmd/docgen@v0.0.3 -I ./ -o ../../website/docs/api/latest -level 0
-//
-//go:generate docgen -I ./ -o ../../website/docs/api/latest -level 0
+//go:generate go run github.com/gopherd/tools/cmd/docgen@v0.0.4 -I ./ -o ../../website/docs/api/latest -level 0
 package compile
 
 import (
