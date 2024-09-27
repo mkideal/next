@@ -6,6 +6,28 @@ import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 import Admonition from "@theme/Admonition";
 
+import CodeBlock from "@theme/CodeBlock";
+
+import NextDemoSource from "!!raw-loader!@site/testdata/next/demo.next";
+import CppDemoNplSource from "!!raw-loader!@site/testdata/templates/cpp/file.cpp.npl";
+import CppDemoHeaderSource from "!!raw-loader!@site/testdata/gen/cpp/demo.h";
+import JavaDemoConstantsNplSource from "!!raw-loader!@site/testdata/templates/java/constants.java.npl";
+import JavaDemoEnumNplSource from "!!raw-loader!@site/testdata/templates/java/enum.java.npl";
+import JavaDemoInterfaceNplSource from "!!raw-loader!@site/testdata/templates/java/interface.java.npl";
+import JavaDemoStructNplSource from "!!raw-loader!@site/testdata/templates/java/struct.java.npl";
+import JavaDemoColorSource from "!!raw-loader!@site/testdata/gen/java/com/example/demo/Color.java";
+import JavaDemoConstantsSource from "!!raw-loader!@site/testdata/gen/java/com/example/demo/Constants.java";
+import JavaDemoContractSource from "!!raw-loader!@site/testdata/gen/java/com/example/demo/Contract.java";
+import JavaDemoHTTPClientSource from "!!raw-loader!@site/testdata/gen/java/com/example/demo/HTTPClient.java";
+import JavaDemoHTTPServerSource from "!!raw-loader!@site/testdata/gen/java/com/example/demo/HTTPServer.java";
+import JavaDemoLoginRequestSource from "!!raw-loader!@site/testdata/gen/java/com/example/demo/LoginRequest.java";
+import JavaDemoLoginResponseSource from "!!raw-loader!@site/testdata/gen/java/com/example/demo/LoginResponse.java";
+import JavaDemoMathConstantsSource from "!!raw-loader!@site/testdata/gen/java/com/example/demo/MathConstants.java";
+import JavaDemoOperatingSystemSource from "!!raw-loader!@site/testdata/gen/java/com/example/demo/OperatingSystem.java";
+import JavaDemoReaderSource from "!!raw-loader!@site/testdata/gen/java/com/example/demo/Reader.java";
+import JavaDemoUint128Source from "!!raw-loader!@site/testdata/gen/java/com/example/demo/Uint128.java";
+import JavaDemoUserSource from "!!raw-loader!@site/testdata/gen/java/com/example/demo/User.java";
+
 # Get Started
 
 ## Introduction
@@ -51,8 +73,6 @@ flowchart TD
     class B compiler
     linkStyle default stroke:#a29bfe,stroke-width:2px
 ```
-
-Next streamlines development processes, reduces code duplication, and ensures consistency across polyglot projects. Whether you're working on a small script or a large-scale distributed system, Next provides the tools to make your development process more efficient and less error-prone.
 
 ## Installation
 
@@ -135,172 +155,9 @@ This extension provides syntax highlighting, and other helpful features for Next
 
 First of all, You need write a Next source file which has extension `.next` used to define constants, enums, structures and interfaces. Here is an example Next file:
 
-```next title="example.next" showLineNumbers
-@next(
-    c_package="DEMO_",
-    cpp_package="demo",
-    csharp_package="Demo",
-    go_package="github.com/next/next/gen/go/demo",
-    java_package="com.example.demo",
-)
-package demo;
-
-const Version = "1.0.0"; // String constant
-const MaxRetries = 3; // Integer constant
-const Timeout = MaxRetries * 1000.0; // Float constant expression
-
-// Color represents different color options
-// Values: Red (1), Green (2), Blue (4), Yellow (8)
-@next(type=int8)
-enum Color {
-    Red = 1 << iota;
-    Green;
-    Blue;
-    Yellow;
-}
-
-// MathConstants represents mathematical constants
-@next(available="!protobuf & !php")
-enum MathConstants {
-    Pi = 3.14159265358979323846;
-    E = 2.71828182845904523536;
-}
-
-// User represents a user in the system
-struct User {
-    int64 id;
-    string username;
-    vector<string> tags;
-    map<string, int> scores;
-    array<float64, 3> coordinates;
-    Color favoriteColor;
-    @deprecated string email;
-    any extra;
-}
-
-// uint64 represents a 64-bit unsigned integer.
-// - In Go, it is aliased as uint64
-// - In C++, it is aliased as uint64_t
-// - In Java, it is aliased as long
-// - In Rust, it is aliased as u64
-// - In C#, it is aliased as ulong
-// - In Protobuf, it is represented as uint64
-// - In other languages, it is represented as a struct with low and high 32-bit integers.
-@next(
-    cpp_alias="uint64_t",
-    csharp_alias="ulong",
-    go_alias="uint64",
-    java_alias="long",
-    protobuf_alias="uint64",
-    rust_alias="u64",
-)
-struct uint64 {
-    int32 low;
-    int32 high;
-}
-
-// uint128 represents a 128-bit unsigned integer.
-// - In rust, it is aliased as u128
-// - In other languages, it is represented as a struct with low and high 64-bit integers.
-@next(rust_alias="u128")
-struct uint128 {
-    uint64 low;
-    uint64 high;
-}
-
-// Contract represents a smart contract
-struct Contract {
-    uint128 address;
-    any data;
-}
-
-// OperatingSystem represents different operating systems
-@next(available="!protobuf")
-enum OperatingSystem {
-    Windows = "windows";
-    Linux = "linux";
-    MacOS = "macos";
-    Android = "android";
-    IOS = "ios";
-}
-
-// LoginRequest represents a login request message (type 101)
-// @message annotation is a custom annotation that generates message types.
-@message(type=101, req)
-struct LoginRequest {
-    string username;
-    string password;
-    // @optional annotation is a custom annotation that marks a field as optional.
-    @optional string device;
-    @next(available="!protobuf")
-    @optional(default=OperatingSystem.IOS) OperatingSystem os;
-
-    // @optional is not supported for array, vector, and map fields:
-    //
-    // Bad example:
-    //  @optional array<float64, 3> coordinates;
-    //  @optional vector<string> tags;
-    //  @optional map<string, int> scores;
-
-    @next(proto_type="fixed64")
-    int64 timestamp;
-}
-
-// LoginResponse represents a login response message (type 102)
-@message(type=102)
-struct LoginResponse {
-    string token;
-    User user;
-}
-
-// Reader provides reading functionality
-interface Reader {
-    // @next(error) applies to the method:
-    // - For Go: The method may return an error
-    // - For C++/Java: The method throws an exception
-    //
-    // @next(mut) applies to the method:
-    // - For C++: The method is non-const
-    // - For other languages: This annotation may not have a direct effect
-    //
-    // @next(mut) applies to the parameter buffer:
-    // - For C++: The parameter is non-const, allowing modification
-    // - For other languages: This annotation may not have a direct effect,
-    //   but indicates that the buffer content may be modified
-    @next(error, mut)
-    read(@next(mut) bytes buffer) int;
-}
-
-@next(
-    available="go|java",
-    go_alias="net/http.Handler",
-    java_alias="java.util.function.Function<com.sun.net.httpserver.HttpExchange, String>",
-)
-interface HTTPHandler {}
-
-@next(available="go|java")
-interface HTTPServer {
-    // @next(error) indicates that the method may return an error:
-    // - For Go: The method returns (LoginResponse, error)
-    // - For C++/Java: The method throws an exception
-    @next(error)
-    handle(string path, HTTPHandler handler);
-}
-
-// HTTPClient provides HTTP request functionality
-interface HTTPClient {
-    // Available for all languages
-    request(string url, string method, string body) string;
-
-    // Available for Go and Java
-    @next(error, available="!go & !java")
-    get(string url) string;
-
-    // Available for C++
-    @next(error, available="cpp")
-    post(string url, string body) string;
-}
-```
+<CodeBlock language="next" title="demo.next" showLineNumbers>
+  {NextDemoSource}
+</CodeBlock>
 
 :::tip
 See [Language Specification](/docs/language_spec) for details about `next` language specification.
@@ -310,13 +167,11 @@ See [Language Specification](/docs/language_spec) for details about `next` langu
 
 Second, write a Next template file which has extension `.npl` used to constrol how to generate code for specified language. Here is an example template file used to generate `c++` code.
 
-```npl title="example.cpp.npl"
-{{head}}
+<CodeBlock language="npl" title="file.cpp.npl">
+  {CppDemoNplSource}
+</CodeBlock>
 
-{{next this}}
-```
-
-- **`{{head}}`**: Generate a header like this: `// Code generated by "next v0.0.3"; DO NOT EDIT.`
+- **`{{head}}`**: Generate a header like this: `// Code generated by "next v0.0.4"; DO NOT EDIT.`
 - **`{{next this}}`**: Generate `this` declaration. By default, `this` is a file if the `meta/this` not specified.
 
 :::tip
@@ -325,195 +180,16 @@ See [API/Context/meta](/docs/api/latest/context#user-content-Context_meta) for d
 
 ## Generate code
 
-Finally, run `next` command to generate code using `example.next` and `example.cpp.npl`:
+Finally, run `next` command to generate code using `demo.next` and `demo.cpp.npl`:
 
 ```sh
-next -T cpp=example.cpp.npl -O cpp=gen/cpp/ example.next
+next -T cpp=file.cpp.npl -O cpp=gen/cpp/ demo.next
 ```
-
-This will generated a file as following:
 
 <details>
-<summary>example.h</summary>
+<summary>Output</summary>
 
-```cpp
-// Code generated by "next v0.0.3"; DO NOT EDIT.
-
-#pragma once
-
-#include <any>
-#include <array>
-#include <cstdint>
-#include <map>
-#include <string>
-#include <unordered_map>
-#include <vector>
-
-namespace demo {
-
-// Enums forward declarations
-enum class Color;
-/* enum */ class MathConstants;
-/* enum */ class OperatingSystem;
-
-// Classes forward declarations
-class User;
-class Uint128;
-class Contract;
-class LoginRequest;
-class LoginResponse;
-
-inline constexpr auto Version = "1.0.0"; // String constant
-inline constexpr auto MaxRetries = 3; // Integer constant
-inline constexpr auto Timeout = 3000.0; // Float constant expression
-
-// Color represents different color options
-// Values: Red (1), Green (2), Blue (4), Yellow (8)
-enum class Color : int8_t {
-    Red = 1,
-    Green = 2,
-    Blue = 4,
-    Yellow = 8,
-};
-
-/* enum */ class MathConstants {
-private:
-    double value;
-
-public:
-    static inline constexpr double Pi = 3.14159265358979323846;
-    static inline constexpr double E = 2.71828182845904523536;
-
-    MathConstants(const double& v) : value(v) {}
-
-    bool operator==(const MathConstants& other) const {
-        return value == other.value;
-    }
-
-    operator double() const {
-        return value;
-    }
-};
-
-/* enum */ class OperatingSystem {
-private:
-    std::string value;
-
-public:
-    static inline const std::string Windows = "windows";
-    static inline const std::string Linux = "linux";
-    static inline const std::string MacOS = "macos";
-    static inline const std::string Android = "android";
-    static inline const std::string IOS = "ios";
-
-    OperatingSystem(const std::string& v) : value(v) {}
-
-    bool operator==(const OperatingSystem& other) const {
-        return value == other.value;
-    }
-
-    operator std::string() const {
-        return value;
-    }
-};
-
-// User represents a user in the system
-class User {
-public:
-    User() = default;
-    ~User() = default;
-
-    int64_t id;
-    std::string username;
-    std::vector<std::string> tags;
-    std::unordered_map<std::string,int> scores;
-    std::array<double,3> coordinates;
-    Color favoriteColor;
-    std::string email;
-    std::any extra;
-};
-
-// uint128 represents a 128-bit unsigned integer.
-// - In rust, it is aliased as u128
-// - In other languages, it is represented as a struct with low and high 64-bit integers.
-class Uint128 {
-public:
-    Uint128() = default;
-    ~Uint128() = default;
-
-    uint64_t low;
-    uint64_t high;
-};
-
-// Contract represents a smart contract
-class Contract {
-public:
-    Contract() = default;
-    ~Contract() = default;
-
-    Uint128 address;
-    std::any data;
-};
-
-// LoginRequest represents a login request message (type 101)
-// @message annotation is a custom annotation that generates message types.
-class LoginRequest {
-public:
-    LoginRequest() = default;
-    ~LoginRequest() = default;
-
-    std::string username;
-    std::string password;
-    // @optional annotation is a custom annotation that marks a field as optional.
-    std::string device;
-    OperatingSystem os;
-    int64_t timestamp;
-};
-
-// LoginResponse represents a login response message (type 102)
-class LoginResponse {
-public:
-    LoginResponse() = default;
-    ~LoginResponse() = default;
-
-    std::string token;
-    User user;
-};
-
-// Reader provides reading functionality
-class Reader {
-public:
-    virtual ~Reader() = default;
-
-    // @next(error) applies to the method:
-    // - For Go: The method may return an error
-    // - For C++/Java: The method throws an exception
-    //
-    // @next(mut) applies to the method:
-    // - For C++: The method is non-const
-    // - For other languages: This annotation may not have a direct effect
-    //
-    // @next(mut) applies to the parameter buffer:
-    // - For C++: The parameter is non-const, allowing modification
-    // - For other languages: This annotation may not have a direct effect,
-    //   but indicates that the buffer content may be modified
-    virtual int read(std::vector<unsigned char>& buffer) = 0;
-};
-
-// HTTPClient provides HTTP request functionality
-class HTTPClient {
-public:
-    virtual ~HTTPClient() = default;
-
-    // Available for all languages
-    virtual std::string request(const std::string& url, const std::string& method, const std::string& body) const = 0;
-    // Available for C++
-    virtual std::string post(const std::string& url, const std::string& body) const = 0;
-};
-
-} // namespace demo
-```
-
+<CodeBlock language="cpp" title="demo.h" showLineNumbers>{CppDemoHeaderSource}</CodeBlock>
 </details>
 
 ## How to generate multi-language codes?
@@ -529,218 +205,119 @@ It's easy to generate many other langauge codes by writing template files. Here 
     { label: 'interface.java.npl', value: 'interface' },
   ]}>
 
-  <TabItem value="constants">
-  This template file is used to generate all constants in a file `Constants.java` which define a `Constants` class to holds all constants of a package.
-  We add some metadata and override `next/java/file` by defining `java/file`.
-  ```npl
-  // highlight-start
-  {{- define "meta/this"}}package{{end -}}
-  {{- define "meta/_class"}}Constants{{end -}}
-  {{- define "meta/path"}}{{render "package:name" this.Package | replace "." "/"}}/{{meta._class}}.java{{end -}}
-  {{- define "meta/skip"}}{{eq 0 (len this.Decls.Consts.List)}}{{end -}}
+    <TabItem value="constants">
+        This template file is used to generate all constants in a file `Constants.java` which define a `Constants` class to holds all constants of a package.
+        We add some metadata and override `next/java/file` by defining `java/file`.
 
-  {{- define "java/package" -}}
-  package {{render "package:name" .}};
+        <CodeBlock language="npl">{JavaDemoConstantsNplSource}</CodeBlock>
 
-  public class {{meta._class}} {
-  {{- next .Decls.Consts}}
-  }
-  {{- end -}}
+        <details>
+            <summary>Output</summary>
 
-  {{head}}
+            <Tabs
+            defaultValue="Constants"
+            values={[
+                { label: 'Constants.java', value: 'Constants' },
+            ]}>
+                <TabItem value="Constants">
+                    <CodeBlock language="java">{JavaDemoConstantsSource}</CodeBlock>
+                </TabItem>
+            </Tabs>
+        </details>
+    </TabItem>
 
-  {{next this}}
-  ```
+    <TabItem value="enum">
+        This template file is used to generate java file for each `enum` declaration. We need define `meta/this` with `enum`.
 
-Example output:
+        <CodeBlock language="npl">{JavaDemoEnumNplSource}</CodeBlock>
 
-```java
-// Code generated by "next v0.0.3"; DO NOT EDIT.
+        <details>
+            <summary>Output</summary>
 
-package com.example.demo;
+            <Tabs
+            defaultValue="Color"
+            values={[
+                { label: 'Color.java', value: 'Color' },
+                { label: 'MathConstants.java', value: 'MathConstants' },
+                { label: 'OperatingSystem.java', value: 'OperatingSystem' },
+            ]}>
+                <TabItem value="Color">
+                <CodeBlock language="java">{JavaDemoColorSource}</CodeBlock>
+                </TabItem>
+                <TabItem value="MathConstants">
+                <CodeBlock language="java">{JavaDemoMathConstantsSource}</CodeBlock>
+                </TabItem>
+                <TabItem value="OperatingSystem">
+                <CodeBlock language="java">{JavaDemoOperatingSystemSource}</CodeBlock>
+                </TabItem>
+            </Tabs>
+        </details>
+    </TabItem>
 
-public class Constants {
-    public static final String VERSION = "1.0.0"; // String constant
-    public static final long MAX_RETRIES = 3L; // Integer constant
-    public static final float TIMEOUT = 3000.0F; // Float constant expression
-}
-```
+    <TabItem value="struct">
+        This template file is used to generate java file for each `struct` declaration. We need define `meta/this` with `struct`.
 
-  </TabItem>
+        <CodeBlock language="npl">{JavaDemoStructNplSource}</CodeBlock>
 
-  <TabItem value="enum">
-  This template file is used to generate java file for each `enum` declaration. We need define `meta/this` with `enum`.
-  ```npl
-  // highlight-next-line
-  {{- define "meta/this"}}enum{{end -}}
-  {{- define "meta/path"}}{{render "package:name" this.Package | replace "." "/"}}/{{next this.Type}}.java{{end -}}
-  
-  {{- define "java/enum" -}}
-  package {{render "package:name" .Package}};
-  
-  {{super .}}
-  {{- end -}}
-  
-  {{head}}
-  
-  {{next this}}
-  ```
+        <details>
+            <summary>Output</summary>
 
-Example output:
+            <Tabs
+            defaultValue="Contract"
+            values={[
+                { label: 'Contract.java', value: 'Contract' },
+                { label: 'LoginRequest.java', value: 'LoginRequest' },
+                { label: 'LoginResponse.java', value: 'LoginResponse' },
+                { label: 'Uint128.java', value: 'Uint128' },
+                { label: 'User.java', value: 'User' },
+            ]}>
+                <TabItem value="Contract">
+                    <CodeBlock language="java">{JavaDemoContractSource}</CodeBlock>
+                </TabItem>
+                <TabItem value="LoginRequest">
+                    <CodeBlock language="java">{JavaDemoLoginRequestSource}</CodeBlock>
+                </TabItem>
+                <TabItem value="LoginResponse">
+                    <CodeBlock language="java">{JavaDemoLoginResponseSource}</CodeBlock>
+                </TabItem>
+                <TabItem value="Uint128">
+                    <CodeBlock language="java">{JavaDemoUint128Source}</CodeBlock>
+                </TabItem>
+                <TabItem value="User">
+                    <CodeBlock language="java">{JavaDemoUserSource}</CodeBlock>
+                </TabItem>
+            </Tabs>
+        </details>
+    </TabItem>
 
-```java
-// Code generated by "next v0.0.3"; DO NOT EDIT.
+    <TabItem value="interface">
+        This template file is used to generate java file for each `interface` declaration. We need define `meta/this` with `interface`.
 
-package com.example.demo;
+        <CodeBlock language="npl">{JavaDemoInterfaceNplSource}</CodeBlock>
 
-/**
- * Color represents different color options
- * Values: Red (1), Green (2), Blue (4), Yellow (8)
- */
-public enum Color {
-    Red((byte) 1),
-    Green((byte) 2),
-    Blue((byte) 4),
-    Yellow((byte) 8);
+        <details>
+            <summary>Output</summary>
 
-    private final byte value;
+            <Tabs
+            defaultValue="HTTPClient"
+            values={[
+                { label: 'HTTPClient.java', value: 'HTTPClient' },
+                { label: 'HTTPServer.java', value: 'HTTPServer' },
+                { label: 'Reader.java', value: 'Reader' },
+            ]}>
+                <TabItem value="HTTPClient">
+                    <CodeBlock language="java">{JavaDemoHTTPClientSource}</CodeBlock>
+                </TabItem>
+                <TabItem value="HTTPServer">
+                    <CodeBlock language="java">{JavaDemoHTTPServerSource}</CodeBlock>
+                </TabItem>
+                <TabItem value="Reader">
+                    <CodeBlock language="java">{JavaDemoReaderSource}</CodeBlock>
+                </TabItem>
+            </Tabs>
+        </details>
+    </TabItem>
 
-    Color(byte value) {
-        this.value = value;
-    }
-
-    public byte getValue() {
-        return value;
-    }
-}
-```
-
-  </TabItem>
-
-  <TabItem value="struct">
-  This template file is used to generate java file for each `struct` declaration. We need define `meta/this` with `struct`.
-  ```npl
-  // highlight-next-line
-  {{- define "meta/this"}}struct{{end -}}
-  {{- define "meta/path"}}{{render "package:name" this.Package | replace "." "/"}}/{{next this.Type}}.java{{end -}}
-  
-  {{- /* Overrides "next/java/struct": add package and imports before struct */ -}}
-  {{- define "java/struct" -}}
-  package {{render "package:name" .Package}};
-  
-  {{next .File.Imports}}
-  {{super .}}
-  {{- end -}}
-  
-  {{- /* Overrides "next/java/struct.fields": add method 'MessageType' for each message after fields */ -}}
-  {{- define "java/struct.fields" -}}
-  {{- super .}}
-  {{- with .Decl.Annotations.message.type}}
-  
-      public static int MessageType() { return {{.}}; }
-  {{- end}}
-  {{- end -}}
-  
-  {{head}}
-  
-  {{next this}}
-  ```
-
-Example output:
-
-```java
-// Code generated by "next v0.0.3"; DO NOT EDIT.
-
-package com.example.demo;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Arrays;
-
-/**
- * Contract represents a smart contract
- */
-public class Contract {
-    private Uint128 address;
-
-    public Uint128 getAddress() {
-        return address;
-    }
-
-    public void setAddress(Uint128 address) {
-        this.address = address;
-    }
-
-    private Object data;
-
-    public Object getData() {
-        return data;
-    }
-
-    public void setData(Object data) {
-        this.data = data;
-    }
-
-    public Contract() {}
-}
-```
-
-  </TabItem>
-
-  <TabItem value="interface">
-  This template file is used to generate java file for each `interface` declaration. We need define `meta/this` with `interface`.
-  ```npl
-  // highlight-next-line
-  {{- define "meta/this"}}interface{{end -}}
-  {{- define "meta/path"}}{{render "package:name" this.Package | replace "." "/"}}/{{next this.Type}}.java{{end -}}
-  
-  {{- /* Overrides "next/java/interface": add package and imports before interface */ -}}
-  {{- define "java/interface" -}}
-  package {{render "package:name" .Package}};
-  
-  {{next .File.Imports}}
-  {{super .}}
-  {{- end -}}
-  
-  {{head}}
-  
-  {{next this}}
-  ```
-
-Example output:
-
-```java
-// Code generated by "next v0.0.3"; DO NOT EDIT.
-
-package com.example.demo;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Arrays;
-
-/**
- * Reader provides reading functionality
- */
-interface Reader {
-    /**
-     * @next(error) applies to the method:
-     * - For Go: The method may return an error
-     * - For C++/Java: The method throws an exception
-     *
-     * @next(mut) applies to the method:
-     * - For C++: The method is non-const
-     * - For other languages: This annotation may not have a direct effect
-     *
-     * @next(mut) applies to the parameter buffer:
-     * - For C++: The parameter is non-const, allowing modification
-     * - For other languages: This annotation may not have a direct effect,
-     *   but indicates that the buffer content may be modified
-     */
-    int read(byte[] buffer) throws Exception;
-}
-```
-
-  </TabItem>
 </Tabs>
 
 :::note
@@ -750,7 +327,7 @@ To generate `java` code, we need write templates for each declaration types: `en
 Run `next` to generate multi-language codes as following(we assume `*.java.npl` files placed in dir `java`):
 
 ```sh
-next -T cpp=example.cpp.npl -O cpp=gen/cpp/ -T java=java/ -O java=gen/java/ example.next
+next -T cpp=example.cpp.npl -O cpp=gen/cpp/ -T java=java/ -O java=gen/java/ demo.next
 ```
 
 :::tip

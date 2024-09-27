@@ -13,6 +13,7 @@ GOBUILD = go build -ldflags " \
 
 BUILD_DIR = ./build
 BUILD_BIN_DIR=${BUILD_DIR}/bin
+TESTDATA_DIR = ./website/testdata
 
 .PHONY: all
 all: build
@@ -93,25 +94,25 @@ test/src: go/generate go/vet
 .PHONY: test/template
 test/template: install
 	@echo "Running template tests..."
-	@rm -rf testdata/gen
+	@rm -rf ${TESTDATA_DIR}/gen
 	@NEXTNOCOPYBUILTIN=1 next \
 		-D PROJECT_NAME=demo \
-		-O go=testdata/gen/go -T go=testdata/templates/go \
-		-O java=testdata/gen/java -T java=testdata/templates/java \
-		-O cpp=testdata/gen/cpp -T cpp=testdata/templates/cpp \
-		-O csharp=testdata/gen/csharp -T csharp=testdata/templates/csharp \
-		-O c=testdata/gen/c -T c=testdata/templates/c \
-		-O rust=testdata/gen/rust/src -T rust=testdata/templates/rust \
-		-O protobuf=testdata/gen/protobuf -T protobuf=testdata/templates/protobuf \
-		-O js=testdata/gen/js -T js=testdata/templates/js \
-		-O ts=testdata/gen/ts -T ts=testdata/templates/ts \
-		-O python=testdata/gen/python -T python=testdata/templates/python \
-		-O php=testdata/gen/php -T php=testdata/templates/php \
-		-O swift=testdata/gen/swift -T swift=testdata/templates/swift \
-		-O lua=testdata/gen/lua -T lua=testdata/templates/lua \
+		-O go=${TESTDATA_DIR}/gen/go -T go=${TESTDATA_DIR}/templates/go \
+		-O java=${TESTDATA_DIR}/gen/java -T java=${TESTDATA_DIR}/templates/java \
+		-O cpp=${TESTDATA_DIR}/gen/cpp -T cpp=${TESTDATA_DIR}/templates/cpp \
+		-O csharp=${TESTDATA_DIR}/gen/csharp -T csharp=${TESTDATA_DIR}/templates/csharp \
+		-O c=${TESTDATA_DIR}/gen/c -T c=${TESTDATA_DIR}/templates/c \
+		-O rust=${TESTDATA_DIR}/gen/rust/src -T rust=${TESTDATA_DIR}/templates/rust \
+		-O protobuf=${TESTDATA_DIR}/gen/protobuf -T protobuf=${TESTDATA_DIR}/templates/protobuf \
+		-O js=${TESTDATA_DIR}/gen/js -T js=${TESTDATA_DIR}/templates/js \
+		-O ts=${TESTDATA_DIR}/gen/ts -T ts=${TESTDATA_DIR}/templates/ts \
+		-O python=${TESTDATA_DIR}/gen/python -T python=${TESTDATA_DIR}/templates/python \
+		-O php=${TESTDATA_DIR}/gen/php -T php=${TESTDATA_DIR}/templates/php \
+		-O swift=${TESTDATA_DIR}/gen/swift -T swift=${TESTDATA_DIR}/templates/swift \
+		-O lua=${TESTDATA_DIR}/gen/lua -T lua=${TESTDATA_DIR}/templates/lua \
 		-M "c.vector=void*" -M "c.map=void*" \
-		testdata/next/
-	@cd testdata/gen/rust && cargo init --vcs none
+		${TESTDATA_DIR}/next/
+	@cd ${TESTDATA_DIR}/gen/rust && cargo init --vcs none
 
 .PHONY: clean
 clean:

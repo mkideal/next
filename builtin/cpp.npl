@@ -27,7 +27,7 @@
 
 {{/* next/cpp/import: Generates an include statement for a user-defined header */}}
 {{- define "next/cpp/import" -}}
-#include "{{.File.Name}}.h"
+#include "{{.Target.Name}}.h"
 {{- end}}
 
 {{/* next/cpp/used.type: Generates a fully qualified type name, including namespace if necessary */}}

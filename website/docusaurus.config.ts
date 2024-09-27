@@ -12,7 +12,7 @@ const URL = "https://gopherd.com";
 const REPO = "https://github.com/gopherd/next";
 
 const customFields = {
-  announcedVersion: "0.0.3",
+  announcedVersion: "0.0.4",
   repo: REPO,
 };
 
