@@ -187,7 +187,7 @@ The metadata will be resolved in the order of the template definition before ren
 
 ## next {#user-content-Context_next}
 
-`next` executes the next template with the given [object](#user-content-Object). `{{next object}}` is equivalent to `{{render (object.Typeof) object}}`.
+`next` executes the next template with the given [Object](#user-content-Object). `{{next object}}` is equivalent to `{{render (object.Typeof) object}}`.
 
 Example:
 
@@ -233,7 +233,7 @@ Example:
 
 ## super {#user-content-Context_super}
 
-`super` executes the super template with the given [object](#user-content-Object). super is used to call the parent template in the current template. It's useful when you want to extend the parent template. The super template looks up the template with the following priority:
+`super` executes the super template with the given [Object](#user-content-Object). super is used to call the parent template in the current template. It's useful when you want to extend the parent template. The super template looks up the template with the following priority:
 
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#f0f8ff', 'primaryBorderColor': '#7eb0d5', 'lineColor': '#5a9bcf', 'primaryTextColor': '#333333' }}}%%
@@ -266,18 +266,18 @@ func ({{next $.Type}}) MessageType() int { return {{.}} }
 
 ## this {#user-content-Context_this}
 
-`this` represents the current [declaration](#user-content-Object_Common_Decl) object to be rendered. this defined in the template [meta](#user-content-meta) `meta/this`. Supported types are:
+`this` represents the current [Decl](#user-content-Object_Common_Decl) object to be rendered. this defined in the template [meta](#user-content-meta) `meta/this`. Supported types are:
 
-- [package](#user-content-Object_Package)
-- [file](#user-content-Object_File)
-- [const](#user-content-Object_Const)
-- [enum](#user-content-Object_Enum)
-- [struct](#user-content-Object_Struct)
-- [interface](#user-content-Object_Interface)
+- [Package](#user-content-Object_Package)
+- [File](#user-content-Object_File)
+- [Const](#user-content-Object_Const)
+- [Enum](#user-content-Object_Enum)
+- [Struct](#user-content-Object_Struct)
+- [Interface](#user-content-Object_Interface)
 
 It's "file" by default.
 
 ## type {#user-content-Context_type}
 
-`type` outputs the string representation of the given [type](#user-content-Object_Common_Type) for the current language. The type function will lookup the type mapping in the command line flag `-M` and return the corresponding type. If the type is not found, it will lookup LANG.map file (e.g., cpp.map) for the type mapping. If the type is still not found, it will return an error.
+`type` outputs the string representation of the given [Type](#user-content-Object_Common_Type) for the current language. The type function will lookup the type mapping in the command line flag `-M` and return the corresponding type. If the type is not found, it will lookup LANG.map file (e.g., cpp.map) for the type mapping. If the type is still not found, it will return an error.
 

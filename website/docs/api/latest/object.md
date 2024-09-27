@@ -47,12 +47,12 @@ These two definitions will override the built-in template functions `next/go/enu
 
 ## ArrayType {#user-content-Object_ArrayType}
 
-`ArrayType` represents an array [type](#user-content-Object_Common_Type).
+`ArrayType` represents an fixed-size array [Type](#user-content-Object_Common_Type).
 
 ###### .ElemType {#user-content-Object_ArrayType__ElemType}
 <div className="property-container">
 
-`.ElemType` represents the element [type](#user-content-Object_Common_Type) of the array.
+`.ElemType` represents the element [Type](#user-content-Object_Common_Type) of the array.
 
 </div>
 
@@ -115,13 +115,13 @@ This is a comment.
 
 ## Common {#user-content-Object_Common}
 
-`Common` contains some general types, including a generic type. Unless specifically stated, these objects cannot be directly called using the `Context/next` function. The [Value](#user-content-Object_Common_Value) object represents a value, which can be either a constant value or an enum member's value. The object type for the former is `const.value`, and for the latter is `enum.member.value`.
+`Common` contains some general types, including a generic type. Unless specifically stated, these objects cannot be directly called using the `Context/next` function. The [Value](#user-content-Object_Value) object represents a value, which can be either a constant value or an enum member's value. The object type for the former is `const.value`, and for the latter is `enum.member.value`.
 
 ### Annotation {#user-content-Object_Common_Annotation}
 
 `Annotation` represents an annotation by `name` => value.
 
-Annotation is a map that stores the parameters of a single annotation. It allows for flexible parameter types, including strings, numbers, booleans and [types](#user-content-Object_Common_Type).
+Annotation is a map that stores the parameters of a single annotation. It allows for flexible parameter types, including strings, numbers, booleans and [Type](#user-content-Object_Common_Type)s.
 
 Example:
 
@@ -602,7 +602,7 @@ struct User {/*...*/}
 
 `Decl` represents a top-level declaration in a file.
 
-All declarations are [nodes](#user-content-Object_Common_Node). Currently, the following declarations are supported:
+All declarations are [Node](#user-content-Object_Common_Node)s. Currently, the following declarations are supported:
 
 - [Package](#user-content-Object_Package)
 - [File](#user-content-Object_File)
@@ -692,7 +692,7 @@ Currently, the following nodes are supported:
 ###### .Annotations {#user-content-Object_Common_Node__Annotations}
 <div className="property-container">
 
-`.Annotations` represents the [annotations](#user-content-Object_Common_Annotations) for the node.
+`.Annotations` represents the [Annotations](#user-content-Object_Common_Annotations) for the node.
 
 </div>
 
@@ -740,7 +740,7 @@ It can be multiple lines.
 
 `Symbol` represents a Next symbol. There are two types of symbols:
 
-- [Value](#user-content-Object_Common_Value) symbol: such as a constant or an enum member.
+- [Value](#user-content-Object_Value) symbol: such as a constant or an enum member.
 - [Type](#user-content-Object_Common_Type) symbol: such as an enum, a struct, or an interface.
 
 ### Type {#user-content-Object_Common_Type}
@@ -761,14 +761,14 @@ Currently, the following types are supported:
 ###### .Decl {#user-content-Object_Common_Type__Decl}
 <div className="property-container">
 
-`.Decl` represents the [declaration](#user-content-Decl) of the type.
+`.Decl` represents the [Decl](#user-content-Object_Common_Decl) of the type.
 
 </div>
 
 ###### .Kind {#user-content-Object_Common_Type__Kind}
 <div className="property-container">
 
-`.Kind` returns the [kind](#user-content-Object_Common_Type_Kind) of the type.
+`.Kind` returns the [Kind](#user-content-Object_Common_Type_Kind) of the type.
 
 </div>
 
@@ -907,6 +907,13 @@ Currently, the following types are supported:
 
 </div>
 
+###### .IsPrimitive {#user-content-Object_Common_Type_Kind__IsPrimitive}
+<div className="property-container">
+
+`.IsPrimitive` reports whether the type is a [PrimitiveType](#user-content-Object_PrimitiveType).
+
+</div>
+
 ###### .IsString {#user-content-Object_Common_Type_Kind__IsString}
 <div className="property-container">
 
@@ -949,7 +956,7 @@ Currently, the following types are supported:
 ###### .Contains {#user-content-Object_Common_Type_Kinds__Contains}
 <div className="property-container">
 
-`.Contains` reports whether the type contains specific kind. The kind can be a `Kind` (or any integer) or a string representation of the [kind](#user-content-Object_Common_Type_Kind). If the kind is invalid, it returns an error.
+`.Contains` reports whether the type contains specific kind. The kind can be a `Kind` (or any integer) or a string representation of the [Kind](#user-content-Object_Common_Type_Kind). If the kind is invalid, it returns an error.
 
 </div>
 
@@ -960,7 +967,7 @@ Currently, the following types are supported:
 ###### .Comment {#user-content-Object_Const__Comment}
 <div className="property-container">
 
-`.Comment` is the line [comment](#user-content-Object_Comment) of the constant declaration.
+`.Comment` is the line [Comment](#user-content-Object_Comment) of the constant declaration.
 
 Example:
 
@@ -990,13 +997,13 @@ This is a line comment for the constant.
 ###### .Value {#user-content-Object_Const__Value}
 <div className="property-container">
 
-`.Value` represents the [value object](#user-content-Object_Value) of the constant.
+`.Value` represents the [Value](#user-content-Object_Value) object of the constant.
 
 </div>
 
 ## Consts {#user-content-Object_Consts}
 
-`Consts` represents a [list](#user-content-Object_Common_List) of [const](#user-content-Object_Const) declarations.
+`Consts` represents a [List](#user-content-Object_Common_List) of [Const](#user-content-Object_Const) declarations.
 
 ## Decls {#user-content-Object_Decls}
 
@@ -1005,28 +1012,28 @@ This is a line comment for the constant.
 ###### .Consts {#user-content-Object_Decls__Consts}
 <div className="property-container">
 
-`.Consts` represents the [list](#user-content-Object_Common_List) of [const](#user-content-Object_Const) declarations.
+`.Consts` represents the [List](#user-content-Object_Common_List) of [Const](#user-content-Object_Const) declarations.
 
 </div>
 
 ###### .Enums {#user-content-Object_Decls__Enums}
 <div className="property-container">
 
-`.Enums` represents the [list](#user-content-Object_Common_List) of [enum](#user-content-Object_Enum) declarations.
+`.Enums` represents the [List](#user-content-Object_Common_List) of [Enum](#user-content-Object_Enum) declarations.
 
 </div>
 
 ###### .Interfaces {#user-content-Object_Decls__Interfaces}
 <div className="property-container">
 
-`.Interfaces` represents the [list](#user-content-Object_Common_List) of [interface](#user-content-Object_Interface) declarations.
+`.Interfaces` represents the [List](#user-content-Object_Common_List) of [Interface](#user-content-Object_Interface) declarations.
 
 </div>
 
 ###### .Structs {#user-content-Object_Decls__Structs}
 <div className="property-container">
 
-`.Structs` represents the [list](#user-content-Object_Common_List) of [struct](#user-content-Object_Struct) declarations.
+`.Structs` represents the [List](#user-content-Object_Common_List) of [Struct](#user-content-Object_Struct) declarations.
 
 </div>
 
@@ -1146,19 +1153,19 @@ It can be multiple lines.
 
 ## EnumMember {#user-content-Object_EnumMember}
 
-`EnumMember` (extends [Decl](#user-content-Object_Common_Decl)) represents an enum member object in an [enum](#user-content-Object_Enum) declaration.
+`EnumMember` (extends [Decl](#user-content-Object_Common_Decl)) represents an enum member object in an [Enum](#user-content-Object_Enum) declaration.
 
 ###### .Comment {#user-content-Object_EnumMember__Comment}
 <div className="property-container">
 
-`.Comment` represents the line [comment](#user-content-Object_Comment) of the enum member declaration.
+`.Comment` represents the line [Comment](#user-content-Object_Comment) of the enum member declaration.
 
 </div>
 
 ###### .Decl {#user-content-Object_EnumMember__Decl}
 <div className="property-container">
 
-`.Decl` represents the [enum](#user-content-Object_Enum) that contains the member.
+`.Decl` represents the [Enum](#user-content-Object_Enum) that contains the member.
 
 </div>
 
@@ -1172,21 +1179,21 @@ It can be multiple lines.
 ###### .Value {#user-content-Object_EnumMember__Value}
 <div className="property-container">
 
-`.Value` represents the [value object](#user-content-Object_Value) of the enum member.
+`.Value` represents the [Value](#user-content-Object_Value) object of the enum member.
 
 </div>
 
 ## EnumMembers {#user-content-Object_EnumMembers}
 
-`EnumMembers` represents the [list](#user-content-Object_Common_Fields) of [enum members](#user-content-Object_EnumMember).
+`EnumMembers` represents the [Fields](#user-content-Object_Common_Fields) of [EnumEember](#user-content-Object_EnumMember).
 
 ## EnumType {#user-content-Object_EnumType}
 
-`EnumType` represents the [type](#user-content-Object_Common_Type) of an [enum](#user-content-Object_Enum) declaration.
+`EnumType` represents the [Type](#user-content-Object_Common_Type) of an [Enum](#user-content-Object_Enum) declaration.
 
 ## Enums {#user-content-Object_Enums}
 
-`Enums` represents a [list](#user-content-Object_Common_List) of [enum](#user-content-Object_Enum) declarations.
+`Enums` represents a [List](#user-content-Object_Common_List) of [Enum](#user-content-Object_Enum) declarations.
 
 ## File {#user-content-Object_File}
 
@@ -1241,7 +1248,7 @@ It can be multiple lines.
 ###### .Comment {#user-content-Object_Import__Comment}
 <div className="property-container">
 
-`.Comment` represents the import declaration line [comment](#user-content-Object_Comment).
+`.Comment` represents the import declaration line [Comment](#user-content-Object_Comment).
 
 Example:
 
@@ -1266,7 +1273,7 @@ This is a line comment for the import.
 ###### .Doc {#user-content-Object_Import__Doc}
 <div className="property-container">
 
-`.Doc` represents the import declaration [documentation](#user-content-Object_Doc).
+`.Doc` represents the import declaration [Doc](#user-content-Object_Doc).
 
 Example:
 
@@ -1366,7 +1373,7 @@ path/to/file.next
 ###### .List {#user-content-Object_Imports__List}
 <div className="property-container">
 
-`.List` represents the list of [imports](#user-content-Object_Import).
+`.List` represents the list of [Import](#user-content-Object_Import).
 
 </div>
 
@@ -1402,7 +1409,7 @@ path/to/file.next
 ###### .Comment {#user-content-Object_InterfaceMethod__Comment}
 <div className="property-container">
 
-`.Comment` represents the line [comment](#user-content-Object_Comment) of the interface method declaration.
+`.Comment` represents the line [Comment](#user-content-Object_Comment) of the interface method declaration.
 
 </div>
 
@@ -1532,13 +1539,13 @@ interface Shape {
 ###### .Type {#user-content-Object_InterfaceMethodParam__Type}
 <div className="property-container">
 
-`.Type` represents the [type](#user-content-Object_Common_Type) of the parameter.
+`.Type` represents the [Type](#user-content-Object_Common_Type) of the parameter.
 
 </div>
 
 ## InterfaceMethodParams {#user-content-Object_InterfaceMethodParams}
 
-`InterfaceMethodParams` represents the [list](#user-content-Object_Common_Fields) of [interface method parameters](#user-content-Object_InterfaceMethodParam).
+`InterfaceMethodParams` represents the [Fields](#user-content-Object_Common_Fields) of [InterfaceMethodParameter](#user-content-Object_InterfaceMethodParam).
 
 ## InterfaceMethodResult {#user-content-Object_InterfaceMethodResult}
 
@@ -1560,31 +1567,31 @@ interface Shape {
 
 ## InterfaceMethods {#user-content-Object_InterfaceMethods}
 
-`InterfaceMethods` represents the [list](#user-content-Object_Common_Fields) of [interface methods](#user-content-Object_InterfaceMethod).
+`InterfaceMethods` represents the [Fields](#user-content-Object_Common_Fields) of [InterfaceMethod](#user-content-Object_InterfaceMethod).
 
 ## InterfaceType {#user-content-Object_InterfaceType}
 
-`InterfaceType` represents the [type](#user-content-Object_Common_Type) of an [interface](#user-content-Object_Interface) declaration.
+`InterfaceType` represents the [Type](#user-content-Object_Common_Type) of an [Interface](#user-content-Object_Interface) declaration.
 
 ## Interfaces {#user-content-Object_Interfaces}
 
-`Interfaces` represents a [list](#user-content-Object_Common_List) of [interface](#user-content-Object_Interface) declarations.
+`Interfaces` represents a [List](#user-content-Object_Common_List) of [Interface](#user-content-Object_Interface) declarations.
 
 ## MapType {#user-content-Object_MapType}
 
-`MapType` represents a map [type](#user-content-Object_Common_Type).
+`MapType` represents a map [Type](#user-content-Object_Common_Type).
 
 ###### .ElemType {#user-content-Object_MapType__ElemType}
 <div className="property-container">
 
-`.ElemType` represents the element [type](#user-content-Object_Common_Type) of the map.
+`.ElemType` represents the element [Type](#user-content-Object_Common_Type) of the map.
 
 </div>
 
 ###### .KeyType {#user-content-Object_MapType__KeyType}
 <div className="property-container">
 
-`.KeyType` represents the key [type](#user-content-Object_Common_Type) of the map.
+`.KeyType` represents the key [Type](#user-content-Object_Common_Type) of the map.
 
 </div>
 
@@ -1649,6 +1656,21 @@ Example:
 
 `PrimitiveType` represents a primitive type.
 
+Currently, the following primitive types are supported:
+
+- **int**
+- **int8**
+- **int16**
+- **int32**
+- **int64**
+- **float32**
+- **float64**
+- **bool**
+- **string**
+- **byte**
+- **bytes**
+- **any**
+
 ## Struct {#user-content-Object_Struct}
 
 `Struct` (extends [Decl](#user-content-Object_Common_Decl)) represents a struct declaration.
@@ -1696,7 +1718,7 @@ y int
 ###### .Comment {#user-content-Object_StructField__Comment}
 <div className="property-container">
 
-`.Comment` represents the line [comment](#user-content-Object_Comment) of the struct field declaration.
+`.Comment` represents the line [Comment](#user-content-Object_Comment) of the struct field declaration.
 
 </div>
 
@@ -1758,21 +1780,21 @@ struct Point {
 ###### .Type {#user-content-Object_StructField__Type}
 <div className="property-container">
 
-`.Type` represents the [type](#user-content-Object_Common_Type) of the struct field.
+`.Type` represents the [Type](#user-content-Object_Common_Type) of the struct field.
 
 </div>
 
 ## StructFields {#user-content-Object_StructFields}
 
-`StructFields` represents the [list](#user-content-Object_Common_Fields) of [struct fields](#user-content-Object_StructField).
+`StructFields` represents the [Fields](#user-content-Object_Common_Fields) of [StructField](#user-content-Object_StructField).
 
 ## StructType {#user-content-Object_StructType}
 
-`StructType` represents the [type](#user-content-Object_Common_Type) of a [struct](#user-content-Object_Struct) declaration.
+`StructType` represents the [Type](#user-content-Object_Common_Type) of a [Struct](#user-content-Object_Struct) declaration.
 
 ## Structs {#user-content-Object_Structs}
 
-`Structs` represents a [list](#user-content-Object_Common_List) of [struct](#user-content-Object_Struct) declarations.
+`Structs` represents a [List](#user-content-Object_Common_List) of [Struct](#user-content-Object_Struct) declarations.
 
 ## UsedType {#user-content-Object_UsedType}
 
@@ -1862,18 +1884,18 @@ enum Color {
 ###### .Type {#user-content-Object_Value__Type}
 <div className="property-container">
 
-`.Type` represents the [primitive type](#user-content-Object_PrimitiveType) of the value.
+`.Type` represents the [PrimitiveType](#user-content-Object_PrimitiveType) of the value.
 
 </div>
 
 ## VectorType {#user-content-Object_VectorType}
 
-`VectorType` represents a vector [type](#user-content-Object_Common_Type).
+`VectorType` represents a vector [Type](#user-content-Object_Common_Type).
 
 ###### .ElemType {#user-content-Object_VectorType__ElemType}
 <div className="property-container">
 
-`.ElemType` represents the element [type](#user-content-Object_Common_Type) of the vector.
+`.ElemType` represents the element [Type](#user-content-Object_Common_Type) of the vector.
 
 </div>
 

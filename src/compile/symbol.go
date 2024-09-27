@@ -7,7 +7,7 @@ import (
 
 // @api(Object/Common/Symbol) represents a Next symbol. There are two types of symbols:
 //
-// - [Value](#Object/Common/Value) symbol: such as a constant or an enum member.
+// - [Value](#Object/Value) symbol: such as a constant or an enum member.
 // - [Type](#Object/Common/Type) symbol: such as an enum, a struct, or an interface.
 type Symbol interface {
 	LocatedObject

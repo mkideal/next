@@ -214,15 +214,15 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		//	```
 		"env": tc.env,
 
-		// @api(Context/this) represents the current [declaration](#Object/Common/Decl) object to be rendered.
+		// @api(Context/this) represents the current [Decl](#Object/Common/Decl) object to be rendered.
 		// this defined in the template [meta](#meta) `meta/this`. Supported types are:
 		//
-		// - [package](#Object/Package)
-		// - [file](#Object/File)
-		// - [const](#Object/Const)
-		// - [enum](#Object/Enum)
-		// - [struct](#Object/Struct)
-		// - [interface](#Object/Interface)
+		// - [Package](#Object/Package)
+		// - [File](#Object/File)
+		// - [Const](#Object/Const)
+		// - [Enum](#Object/Enum)
+		// - [Struct](#Object/Struct)
+		// - [Interface](#Object/Interface)
 		//
 		// It's "file" by default.
 		"this": tc.this,
@@ -396,13 +396,13 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		//	```
 		"load": tc.load,
 
-		// @api(Context/type) outputs the string representation of the given [type](#Object/Common/Type) for the current language.
+		// @api(Context/type) outputs the string representation of the given [Type](#Object/Common/Type) for the current language.
 		// The type function will lookup the type mapping in the command line flag `-M` and return the corresponding type. If
 		// the type is not found, it will lookup LANG.map file (e.g., cpp.map) for the type mapping. If the type is still not found,
 		// it will return an error.
 		"type": tc.type_,
 
-		// @api(Context/next) executes the next template with the given [object](#Object).
+		// @api(Context/next) executes the next template with the given [Object](#Object).
 		// `{{next object}}` is equivalent to `{{render (object.Typeof) object}}`.
 		//
 		// Example:
@@ -421,7 +421,7 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		//	```
 		"next": tc.next,
 
-		// @api(Context/super) executes the super template with the given [object](#Object).
+		// @api(Context/super) executes the super template with the given [Object](#Object).
 		// super is used to call the parent template in the current template. It's useful when
 		// you want to extend the parent template. The super template looks up the template with
 		// the following priority:

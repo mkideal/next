@@ -15,7 +15,7 @@ func (ks Kinds) contains(k Kind) bool {
 }
 
 // @api(Object/Common/Type/Kinds.Contains) reports whether the type contains specific kind.
-// The kind can be a `Kind` (or any integer) or a string representation of the [kind](#Object/Common/Type/Kind).
+// The kind can be a `Kind` (or any integer) or a string representation of the [Kind](#Object/Common/Type/Kind).
 // If the kind is invalid, it returns an error.
 func (ks Kinds) Contains(k any) (bool, error) {
 	switch k := k.(type) {
@@ -156,6 +156,11 @@ func (k Kind) Bits() int {
 	default:
 		return 0
 	}
+}
+
+// @api(Object/Common/Type/Kind.IsPrimitive) reports whether the type is a [PrimitiveType](#Object/PrimitiveType).
+func (k Kind) IsPrimitive() bool {
+	return k.IsNumeric() || k.IsString() || k.IsBytes() || k.IsBool() || k.IsAny()
 }
 
 // @api(Object/Common/Type/Kind.IsInteger) reports whether the type is an integer.

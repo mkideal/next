@@ -12,7 +12,7 @@ import (
 
 // @api(Object/Common) contains some general types, including a generic type. Unless specifically stated,
 // these objects cannot be directly called using the `Context/next` function.
-// The [Value](#Object/Common/Value) object represents a value, which can be either a constant
+// The [Value](#Object/Value) object represents a value, which can be either a constant
 // value or an enum member's value. The object type for the former is `const.value`, and for
 // the latter is `enum.member.value`.
 
@@ -261,7 +261,7 @@ type Node interface {
 	//	```
 	Doc() *Doc
 
-	// @api(Object/Common/Node.Annotations) represents the [annotations](#Object/Common/Annotations) for the node.
+	// @api(Object/Common/Node.Annotations) represents the [Annotations](#Object/Common/Annotations) for the node.
 	Annotations() Annotations
 }
 
@@ -290,7 +290,7 @@ func (x *commonNode[Self]) File() *File {
 
 // @api(Object/Common/Decl) represents a top-level declaration in a file.
 //
-// All declarations are [nodes](#Object/Common/Node). Currently, the following declarations are supported:
+// All declarations are [Node](#Object/Common/Node)s. Currently, the following declarations are supported:
 //
 // - [Package](#Object/Package)
 // - [File](#Object/File)
@@ -420,7 +420,7 @@ func (x builtinDecl) UsedKinds() Kinds       { return x.typ.UsedKinds() }
 type Type interface {
 	Object
 
-	// @api(Object/Common/Type.Kind) returns the [kind](#Object/Common/Type/Kind) of the type.
+	// @api(Object/Common/Type.Kind) returns the [Kind](#Object/Common/Type/Kind) of the type.
 	Kind() Kind
 
 	// @api(Object/Common/Type.UsedKinds) returns the used kinds in the type.
@@ -429,7 +429,7 @@ type Type interface {
 	// @api(Object/Common/Type.String) represents the string representation of the type.
 	String() string
 
-	// @api(Object/Common/Type.Decl) represents the [declaration](#Decl) of the type.
+	// @api(Object/Common/Type.Decl) represents the [Decl](#Object/Common/Decl) of the type.
 	Decl() Decl
 
 	// @api(Object/Common/Type.Value) returns the reflect value of the type.
@@ -491,6 +491,21 @@ func (u *UsedType) Value() reflect.Value { return u.Type.Value() }
 func UsedTypeNode(u *UsedType) ast.Type { return u.node }
 
 // @api(Object/PrimitiveType) represents a primitive type.
+//
+// Currently, the following primitive types are supported:
+//
+// - **int**
+// - **int8**
+// - **int16**
+// - **int32**
+// - **int64**
+// - **float32**
+// - **float64**
+// - **bool**
+// - **string**
+// - **byte**
+// - **bytes**
+// - **any**
 type PrimitiveType struct {
 	name string
 	kind Kind
@@ -511,11 +526,11 @@ var primitiveTypes = func() map[string]*PrimitiveType {
 	return m
 }()
 
-// @api(Object/ArrayType) represents an array [type](#Object/Common/Type).
+// @api(Object/ArrayType) represents an fixed-size array [Type](#Object/Common/Type).
 type ArrayType struct {
 	pos token.Pos
 
-	// @api(Object/ArrayType.ElemType) represents the element [type](#Object/Common/Type) of the array.
+	// @api(Object/ArrayType.ElemType) represents the element [Type](#Object/Common/Type) of the array.
 	ElemType Type
 
 	// @api(Object/ArrayType.N) represents the number of elements in the array.
@@ -528,11 +543,11 @@ func (a *ArrayType) String() string {
 
 func (a *ArrayType) Value() reflect.Value { return reflect.ValueOf(a) }
 
-// @api(Object/VectorType) represents a vector [type](#Object/Common/Type).
+// @api(Object/VectorType) represents a vector [Type](#Object/Common/Type).
 type VectorType struct {
 	pos token.Pos
 
-	// @api(Object/VectorType.ElemType) represents the element [type](#Object/Common/Type) of the vector.
+	// @api(Object/VectorType.ElemType) represents the element [Type](#Object/Common/Type) of the vector.
 	ElemType Type
 }
 
@@ -542,14 +557,14 @@ func (v *VectorType) String() string {
 
 func (v *VectorType) Value() reflect.Value { return reflect.ValueOf(v) }
 
-// @api(Object/MapType) represents a map [type](#Object/Common/Type).
+// @api(Object/MapType) represents a map [Type](#Object/Common/Type).
 type MapType struct {
 	pos token.Pos
 
-	// @api(Object/MapType.KeyType) represents the key [type](#Object/Common/Type) of the map.
+	// @api(Object/MapType.KeyType) represents the key [Type](#Object/Common/Type) of the map.
 	KeyType Type
 
-	// @api(Object/MapType.ElemType) represents the element [type](#Object/Common/Type) of the map.
+	// @api(Object/MapType.ElemType) represents the element [Type](#Object/Common/Type) of the map.
 	ElemType Type
 }
 
@@ -568,13 +583,13 @@ type DeclType[T Decl] struct {
 	decl T
 }
 
-// @api(Object/EnumType) represents the [type](#Object/Common/Type) of an [enum](#Object/Enum) declaration.
+// @api(Object/EnumType) represents the [Type](#Object/Common/Type) of an [Enum](#Object/Enum) declaration.
 type EnumType = DeclType[*Enum]
 
-// @api(Object/StructType) represents the [type](#Object/Common/Type) of a [struct](#Object/Struct) declaration.
+// @api(Object/StructType) represents the [Type](#Object/Common/Type) of a [Struct](#Object/Struct) declaration.
 type StructType = DeclType[*Struct]
 
-// @api(Object/InterfaceType) represents the [type](#Object/Common/Type) of an [interface](#Object/Interface) declaration.
+// @api(Object/InterfaceType) represents the [Type](#Object/Common/Type) of an [Interface](#Object/Interface) declaration.
 type InterfaceType = DeclType[*Interface]
 
 func newDeclType[T Decl](file *File, pos token.Pos, kind Kind, name string, decl T) *DeclType[T] {

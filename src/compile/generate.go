@@ -151,7 +151,7 @@ func Generate(c *Compiler) error {
 //   - **byte**: the byte type for the language
 //   - **bytes**: the byte slice type for the language
 //   - **any**: the any type for the language
-//   - **array**: the array type for the language
+//   - **array**: the fixed-sized array type for the language
 //   - **vector**: the slice type for the language
 //   - **map**: the map type for the language
 //   - **box**: the box replacement for the language (for java, e.g., box(int) = Integer)

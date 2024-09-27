@@ -54,7 +54,7 @@ func (a Annotations) Contains(name string) bool {
 // @api(Object/Common/Annotation) represents an annotation by `name` => value.
 //
 // Annotation is a map that stores the parameters of a single annotation.
-// It allows for flexible parameter types, including strings, numbers, booleans and [types](#Object/Common/Type).
+// It allows for flexible parameter types, including strings, numbers, booleans and [Type](#Object/Common/Type)s.
 //
 // Example:
 //

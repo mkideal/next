@@ -370,7 +370,7 @@ type BinaryExpr struct {
 	Y     Expr        // right operand
 }
 
-// ArrayType represents an array or slice type.
+// ArrayType represents an fixed-size array type.
 type ArrayType struct {
 	Array token.Pos // position of token.ARRAY
 	T     Type      // element type
