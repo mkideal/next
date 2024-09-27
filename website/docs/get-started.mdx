@@ -207,7 +207,7 @@ It's easy to generate many other langauge codes by writing template files. Here 
 
     <TabItem value="constants">
         This template file is used to generate all constants in a file `Constants.java` which define a `Constants` class to holds all constants of a package.
-        We add some metadata and override `next/java/file` by defining `java/file`.
+        We add some metadata and override `next/java/package` by defining `java/package`. We need define `meta/this` with `package`.
 
         <CodeBlock language="npl">{JavaDemoConstantsNplSource}</CodeBlock>
 
@@ -321,13 +321,13 @@ It's easy to generate many other langauge codes by writing template files. Here 
 </Tabs>
 
 :::note
-To generate `java` code, we need write templates for each declaration types: `enum`, `struct`, `interface`. Specially, write a template file to generate all constants in a single file `Constants.java`.
+To generate `java` code, we need write templates for each declaration types: `enum`, `struct`, `interface`. Specially, we write a template file to generate all constants in a single file `Constants.java`.
 :::
 
 Run `next` to generate multi-language codes as following(we assume `*.java.npl` files placed in dir `java`):
 
 ```sh
-next -T cpp=example.cpp.npl -O cpp=gen/cpp/ -T java=java/ -O java=gen/java/ demo.next
+next -T cpp=file.cpp.npl -O cpp=gen/cpp/ -T java=java/ -O java=gen/java/ demo.next
 ```
 
 :::tip

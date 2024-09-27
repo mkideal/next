@@ -27,18 +27,20 @@ func newComment(cg *ast.CommentGroup) *Comment {
 // @api(Object/Comment.Text) returns the content of the comment without comment delimiters.
 //
 // Example:
-// ```next
-// const x = 1; // This is a comment.
-// ```
 //
-// ```npl
-// {{.Comment.Text}}
-// ```
+//	```next
+//	const x = 1; // This is a comment.
+//	```
+//
+//	```npl
+//	{{.Comment.Text}}
+//	```
 //
 // Output:
-// ```
-// This is a comment.
-// ```
+//
+//	```
+//	This is a comment.
+//	```
 func (c *Comment) Text() string {
 	if c == nil || len(c.list) == 0 {
 		return ""
@@ -49,18 +51,20 @@ func (c *Comment) Text() string {
 // @api(Object/Comment.String) returns the full original comment text, including delimiters.
 //
 // Example:
-// ```next
-// const x = 1; // This is a comment.
-// ```
 //
-// ```npl
-// {{.Comment.String}}
-// ```
+//	```next
+//	const x = 1; // This is a comment.
+//	```
+//
+//	```npl
+//	{{.Comment.String}}
+//	```
 //
 // Output:
-// ```
-// // This is a comment.
-// ```
+//
+//	```
+//	// This is a comment.
+//	```
 func (c *Comment) String() string {
 	if c == nil || len(c.list) == 0 {
 		return ""
@@ -88,21 +92,23 @@ func newDoc(cg *ast.CommentGroup) *Doc {
 // @api(Object/Doc.Text) returns the content of the documentation comment without comment delimiters.
 //
 // Example:
-// ```next
-// // This is a documentation comment.
-// // It can be multiple lines.
-// const x = 1;
-// ```
 //
-// ```npl
-// {{.Doc.Text}}
-// ```
+//	```next
+//	// This is a documentation comment.
+//	// It can be multiple lines.
+//	const x = 1;
+//	```
+//
+//	```npl
+//	{{.Doc.Text}}
+//	```
 //
 // Output:
-// ```
-// This is a documentation comment.
-// It can be multiple lines.
-// ```
+//
+//	```
+//	This is a documentation comment.
+//	It can be multiple lines.
+//	```
 func (d *Doc) Text() string {
 	if d == nil || len(d.list) == 0 {
 		return ""
@@ -113,21 +119,23 @@ func (d *Doc) Text() string {
 // @api(Object/Doc.String) returns the full original documentation comment, including delimiters.
 //
 // Example:
-// ```next
-// // This is a documentation comment.
-// // It can be multiple lines.
-// const x = 1;
-// ```
 //
-// ```npl
-// {{.Doc.String}}
-// ```
+//	```next
+//	// This is a documentation comment.
+//	// It can be multiple lines.
+//	const x = 1;
+//	```
+//
+//	```npl
+//	{{.Doc.String}}
+//	```
 //
 // Output:
-// ```
-// // This is a documentation comment.
-// // It can be multiple lines.
-// ```
+//
+//	```
+//	// This is a documentation comment.
+//	// It can be multiple lines.
+//	```
 func (d *Doc) String() string {
 	if d == nil || len(d.list) == 0 {
 		return ""
@@ -140,28 +148,28 @@ func (d *Doc) String() string {
 // Parameters: (_indent_ string[, _begin_ string[, _end_ string]])
 //
 // Example:
-// ```next
-// // This is a documentation comment.
-// // It can be multiple lines.
-// const x = 1;
-// ```
 //
-// ```npl
-// {{.Doc.Format "/// "}}
-// {{.Doc.Format " * " "/**\n" " */"}}
-// ```
+//	```next
+//	// This is a documentation comment.
+//	// It can be multiple lines.
+//	const x = 1;
+//	```
+//
+//	```npl
+//	{{.Doc.Format "/// "}}
+//	{{.Doc.Format " * " "/**\n" " */"}}
+//	```
 //
 // Output:
-// ```
 //
+//	```
 //	/// This is a documentation comment.
 //	/// It can be multiple lines.
 //	/**
 //	 * This is a documentation comment.
 //	 * It can be multiple lines.
 //	 */
-//
-// ```
+//	```
 func (d *Doc) Format(indent string, beginAndEnd ...string) string {
 	if d == nil || len(d.list) == 0 {
 		return ""

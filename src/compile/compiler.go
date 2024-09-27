@@ -106,9 +106,10 @@ func (c *Compiler) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 	// - `debug` in Next template files (.npl).
 	//
 	// Example:
-	// ```sh
-	// next -v 1 ...
-	// ```
+	//
+	//	```sh
+	//	next -v 1 ...
+	//	```
 	flagSet.IntVar(&c.flags.verbose, "v", 0, u(""+
 		"Control verbosity of compiler output and debugging information.\n"+
 		"`VERBOSE` levels: "+b("0")+"=error,  "+b("1")+"=debug, "+b("2")+"=trace.\n"+
@@ -122,20 +123,22 @@ func (c *Compiler) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 	// The value is a map of environment variable names and their optional values.
 	//
 	// Example:
-	// ```sh
-	// next -D VERSION=2.1 -D DEBUG -D NAME=myapp ...
-	// ```
 	//
-	// ```npl
-	// {{env.NAME}}
-	// {{env.VERSION}}
-	// ```
+	//	```sh
+	//	next -D VERSION=2.1 -D DEBUG -D NAME=myapp ...
+	//	```
+	//
+	//	```npl
+	//	{{env.NAME}}
+	//	{{env.VERSION}}
+	//	```
 	//
 	// Output:
-	// ```
-	// myapp
-	// 2.1
-	// ```
+	//
+	//	```
+	//	myapp
+	//	2.1
+	//	```
 	flagSet.Var(&c.flags.envs, "D", u(""+
 		"Define custom environment variables for use in code generation templates.\n"+
 		"`NAME"+grey("[=VALUE]")+"` represents the variable name and its optional value.\n"+
@@ -147,9 +150,10 @@ func (c *Compiler) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 	// @api(CommandLine/Flag/-O) represents the output directories for generated code of each target language.
 	//
 	// Example:
-	// ```sh
-	// next -O go=./output/go -O ts=./output/ts ...
-	// ```
+	//
+	//	```sh
+	//	next -O go=./output/go -O ts=./output/ts ...
+	//	```
 	//
 	// :::tip
 	//
@@ -167,12 +171,13 @@ func (c *Compiler) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 	// You can specify multiple templates for a single language.
 	//
 	// Example:
-	// ```sh
-	// next -T go=./templates/go \
-	//      -T go=./templates/go_extra.npl \
-	//      -T python=./templates/python.npl \
-	//      ...
-	// ```
+	//
+	//	```sh
+	//	next -T go=./templates/go \
+	//	     -T go=./templates/go_extra.npl \
+	//	     -T python=./templates/python.npl \
+	//	     ...
+	//	```
 	flagSet.Var(&c.flags.templates, "T", u(""+
 		"Specify custom template directories or files for each target language.\n"+
 		"`LANG=PATH` defines the target language and its template directory or file.\n"+
@@ -187,14 +192,15 @@ func (c *Compiler) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 	// @api(CommandLine/Flag/-M) represents the language-specific type mappings and features.
 	//
 	// Example:
-	// ```sh
-	// next -M cpp.vector="std::vector<%T%>" \
-	//      -M java.array="ArrayList<%T%>" \
-	//      -M go.map="map[%K%]%V%" \
-	//      -M python.ext=.py \
-	//      -M ruby.comment="# %T%" \
-	//      ...
-	// ```
+	//
+	//	```sh
+	//	next -M cpp.vector="std::vector<%T%>" \
+	//	     -M java.array="ArrayList<%T%>" \
+	//	     -M go.map="map[%K%]%V%" \
+	//	     -M python.ext=.py \
+	//	     -M ruby.comment="# %T%" \
+	//	     ...
+	//	```
 	flagSet.Var(&c.flags.mappings, "M", u(""+
 		"Configure language-specific type mappings and features.\n"+
 		"`LANG.KEY=VALUE` specifies the mappings for a given language and type/feature.\n"+
@@ -218,9 +224,10 @@ func (c *Compiler) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 	// The built-in annotation `next` is reserved for the Next compiler.
 	//
 	// Example:
-	// ```sh
-	// next -X message="message-type-allocator message-types.json" ...
-	// ```
+	//
+	//	```sh
+	//	next -X message="message-type-allocator message-types.json" ...
+	//	```
 	//
 	// :::tip
 	//

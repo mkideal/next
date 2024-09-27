@@ -6,6 +6,12 @@ This guide provides a detailed overview of writing and using templates in the Ne
 
 NPL (**N**ext Tem**p**late **L**anguage based on Go's [text/template](https://pkg.go.dev/text/template/)) files are used to define templates for code generation in the Next project. These templates control how different programming constructs are translated into various target languages.
 
+:::tip
+
+See [Builtin Template Files](https://github.com/gopherd/next/tree/main/builtin) for more information.
+
+:::
+
 ## Basic Template Structure
 
 A typical npl file consists of the following elements:

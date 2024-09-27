@@ -157,54 +157,54 @@ func Generate(c *Compiler) error {
 //   - box: the box replacement for the language (for java, e.g., box(int) = Integer)
 //
 // Here is an example of a language map file for the Java language:
-// ```plain title="java.map"
-// ext=.java
-// comment=// %T%
 //
-// # primitive types
-// int=int
-// int8=byte
-// int16=short
-// int32=int
-// int64=long
-// float32=float
-// float64=double
-// bool=boolean
-// string=String
-// byte=byte
-// bytes=byte[]
-// any=Object
-// map=Map<box(%K%),box(%V%)>
-// vector=List<box(%T%)>
-// array=%T%[]
+//	```plain title="java.map"
+//	ext=.java
+//	comment=// %T%
 //
-// # box types
-// box(int)=Integer
-// box(byte)=Byte
-// box(short)=Short
-// box(long)=Long
-// box(float)=Float
-// box(double)=Double
-// box(boolean)=Boolean
-// ```
+//	# primitive types
+//	int=int
+//	int8=byte
+//	int16=short
+//	int32=int
+//	int64=long
+//	float32=float
+//	float64=double
+//	bool=boolean
+//	string=String
+//	byte=byte
+//	bytes=byte[]
+//	any=Object
+//	map=Map<box(%K%),box(%V%)>
+//	vector=List<box(%T%)>
+//	array=%T%[]
+//
+//	# box types
+//	box(int)=Integer
+//	box(byte)=Byte
+//	box(short)=Short
+//	box(long)=Long
+//	box(float)=Float
+//	box(double)=Double
+//	box(boolean)=Boolean
+//	```
 //
 // :::note
 //
 // - The `%T%`, `%K%`, `%V%` and `%N%` are placeholders for the type, key type, value type and name type.
 // - Line comments are started with the `#` character and it must be the first character of the line.
 //
-// ```plain title="java.map"
-// # This will error
-// ext=.java # This is an invalid comment
-// # Comment must be the first character of the line (leading spaces are allowed)
+//	```plain title="java.map"
+//	# This will error
+//	ext=.java # This is an invalid comment
+//	# Comment must be the first character of the line (leading spaces are allowed)
 //
-//	# This is a valid comment
-//
-// ```
-//
-// :::
+//		# This is a valid comment
+//	```
 //
 // See [Builtin Map Files](https://github.com/gopherd/next/tree/main/builtin) for more information.
+//
+// :::
 func loadMap(c *Compiler, m flags.Map, lang string) error {
 	f, err := c.builtin.Open("builtin/" + lang + langMapExt)
 	if err != nil {

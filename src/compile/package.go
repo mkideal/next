@@ -78,14 +78,14 @@ func (p *Package) Imports() *Imports[*Package] { return p.imports }
 //
 // Example:
 //
-// ```npl
-// {{- define "next/go/used.type" -}}
-// {{if not (.File.Package.Contains .Type) -}}
-// {{.Type.Decl.File.Package.Name -}}.
-// {{- end -}}
-// {{next .Type}}
-// {{- end}}
-// ```
+//	```npl
+//	{{- define "next/go/used.type" -}}
+//	{{if not (.File.Package.Contains .Type) -}}
+//	{{.Type.Decl.File.Package.Name -}}.
+//	{{- end -}}
+//	{{next .Type}}
+//	{{- end}}
+//	```
 func (p *Package) Contains(obj Object) (bool, error) {
 	var p2 *Package
 	switch node := obj.(type) {

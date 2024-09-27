@@ -6,6 +6,7 @@
 <div className="property-container">
 
 `.Typeof` returns the type name of the object. The type name is a string that represents the type of the object. Except for objects under [Common](#user-content-Object_Common), the type names of other objects are lowercase names separated by dots. For example, the type name of a `EnumMember` object is `enum.member`, and the type name of a `Enum` object is `enum`. These objects can be customized for code generation by defining templates. 
+
 Example: 
 
 ```next
@@ -18,7 +19,6 @@ enum Color {
 }
 ```
 
-
 ```npl
 {{- define "go/enum.member" -}}
 const {{next .Name}} = {{.Value}}
@@ -30,6 +30,7 @@ const {{next .Name}} = {{.Value}}
 ```
 
 Output: 
+
 ```go
 package demo
 
@@ -70,17 +71,19 @@ These two definitions will override the built-in template functions `next/go/enu
 <div className="property-container">
 
 `.String` returns the full original comment text, including delimiters. 
+
 Example: 
+
 ```next
 const x = 1; // This is a comment.
 ```
-
 
 ```npl
 {{.Comment.String}}
 ```
 
 Output: 
+
 ```
 // This is a comment.
 ```
@@ -91,17 +94,19 @@ Output:
 <div className="property-container">
 
 `.Text` returns the content of the comment without comment delimiters. 
+
 Example: 
+
 ```next
 const x = 1; // This is a comment.
 ```
-
 
 ```npl
 {{.Comment.Text}}
 ```
 
 Output: 
+
 ```
 This is a comment.
 ```
@@ -115,12 +120,14 @@ This is a comment.
 ### Annotation {#user-content-Object_Common_Annotation}
 
 `Annotation` represents an annotation by `name` => value. 
+
 Annotation is a map that stores the parameters of a single annotation. It allows for flexible parameter types, including strings, numbers, booleans and [types](#user-content-Object_Common_Type). 
+
 Example: 
+
 Next code: 
 
 ```next
-
 @json(omitempty)
 @event(name="Login")
 @message(name="Login", type=100)
@@ -150,6 +157,7 @@ Will be represented as:
 ```
 
 Output: 
+
 ```
 true
 Login
@@ -159,7 +167,9 @@ int8
 ```
 
 The `next` annotation is used to pass information to the next compiler. It's a reserved annotation and should not be used for other purposes. The `next` annotation can be annotated to `package` statements, `const` declarations, `enum` declarations, `struct` declarations, `field` declarations, `interface` declarations, `method` declarations, and `parameter` declarations. 
+
 :::note 
+
 parameter names **MUST** not start with an uppercase letter, as this is reserved for the next compiler. 
 
 ```next
@@ -177,12 +187,13 @@ parameter names **MUST** not start with an uppercase letter, as this is reserved
 <div className="property-container">
 
 `.Contains` reports whether the annotation contains the given parameter. 
+
 Example: 
+
 ```next
 @json(omitempty)
 struct User {/*...*/}
 ```
-
 
 ```npl
 {{if .Annotations.json.Contains "omitempty"}}
@@ -191,6 +202,7 @@ struct User {/*...*/}
 ```
 
 :::note 
+
 If you want to check whether the annotation has a non-empty value, you can use the parameter name directly. 
 
 ```npl
@@ -207,7 +219,9 @@ If you want to check whether the annotation has a non-empty value, you can use t
 <div className="property-container">
 
 `.NamePos` returns the position of the annotation name in the source code. It's useful to provide a better error message when needed. 
+
 Example: 
+
 ```next title="example.next" showLineNumbers
 package demo;
 
@@ -215,12 +229,12 @@ package demo;
 struct Login {/*...*/}
 ```
 
-
 ```npl
 {{error "%s: Something went wrong" (.Annotations.message.NamePos "type")}}
 ```
 
 Output: 
+
 ```
 example.next:3:10: Something went wrong
 ```
@@ -231,7 +245,9 @@ example.next:3:10: Something went wrong
 <div className="property-container">
 
 `.Pos` returns the position of the annotation in the source code. It's useful to provide a better error message when needed. 
+
 Example: 
+
 ```next title="example.next" showLineNumbers
 package demo;
 
@@ -239,12 +255,12 @@ package demo;
 struct Login {/*...*/}
 ```
 
-
 ```npl
 {{error "%s: Something went wrong" .Annotations.message.Pos}}
 ```
 
 Output: 
+
 ```
 example.next:3:1: Something went wrong
 ```
@@ -255,7 +271,9 @@ example.next:3:1: Something went wrong
 <div className="property-container">
 
 `.ValuePos` returns the position of the annotation value in the source code. It's useful to provide a better error message when needed. 
+
 Example: 
+
 ```next title="example.next" showLineNumbers
 package demo;
 
@@ -263,12 +281,12 @@ package demo;
 struct Login {/*...*/}
 ```
 
-
 ```npl
 {{error "%s: Something went wrong" (.Annotations.message.ValuePos "type")}}
 ```
 
 Output: 
+
 ```
 example.next:3:15: Something went wrong
 ```
@@ -280,7 +298,9 @@ example.next:3:15: Something went wrong
 <div className="property-container">
 
 The `@next(available="expression")` annotation for `file`, `const`, `enum`, `struct`, `field`, `interface`, `method` availability of the declaration. The `expression` is a boolean expression that can be used to control the availability of the declaration in the target language. Supported operators are `&`, `|`, `!`, `(`, `)`, and `true`, `false`. 
+
 Example: 
+
 ```next
 @next(available="c|cpp|java|go|csharp")
 struct Point {
@@ -305,7 +325,9 @@ The `next` annotation for `enum` declarations used to control the enum behavior.
 <div className="property-container">
 
 `.type` specifies the underlying type of the enum. 
+
 Example: 
+
 ```next
 @next(type=int8)
 enum Color {
@@ -316,6 +338,7 @@ enum Color {
 ```
 
 Output in Go: 
+
 ```go
 type Color int8
 
@@ -327,6 +350,7 @@ const (
 ```
 
 Output in C++: 
+
 ```cpp
 enum class Color : int8_t {
 	Red = 1,
@@ -340,7 +364,9 @@ enum class Color : int8_t {
 #### interface {#user-content-Object_Common_Annotation_interface}
 
 The `next` annotation for `interface` declarations used to control the interface behavior. `L_alias` is a alias for the interface name in language `L`. It's used to reference an external type in the target language. 
+
 Example: 
+
 ```next
 @next(
 	available="go|java",
@@ -364,7 +390,9 @@ The `next` annotation for `method` declarations used to control the method behav
 <div className="property-container">
 
 The `@next(error)` annotation used to indicate that the method returns an error or throws an exception. 
+
 Example: 
+
 ```next
 interface Parser {
 	@next(error)
@@ -373,6 +401,7 @@ interface Parser {
 ```
 
 Output in Go: 
+
 ```go
 type Parser interface {
 	Parse(s string) (int, error)
@@ -380,6 +409,7 @@ type Parser interface {
 ```
 
 Output in C++: 
+
 ```cpp
 class Parser {
 public:
@@ -388,6 +418,7 @@ public:
 ```
 
 Output in Java: 
+
 ```java
 interface Parser {
 	int parse(String s) throws Exception;
@@ -400,7 +431,9 @@ interface Parser {
 <div className="property-container">
 
 The `@next(mut)` annotation used to indicate that the method is a mutable method, which means it can modify the object's state. 
+
 Example: 
+
 ```next
 interface Writer {
 	@next(error, mut)
@@ -409,6 +442,7 @@ interface Writer {
 ```
 
 Output in Go: 
+
 ```go
 type Writer interface {
 	Write(data string) error
@@ -416,6 +450,7 @@ type Writer interface {
 ```
 
 Output in C++: 
+
 ```cpp
 class Writer {
 public:
@@ -428,8 +463,11 @@ public:
 #### package {#user-content-Object_Common_Annotation_package}
 
 The `next` annotation for `package` statements used to control the package behavior for specific languages. The `next` annotation can be used to set the package name, package path, and some other package-related information. 
+
 For any language `L`, the `next` annotation for `package` statements is defined as `@next(L_package="package_info")`. 
+
 Example: 
+
 ```next
 @next(
 	c_package="DEMO_",
@@ -439,7 +477,6 @@ Example:
 	csharp_package="demo",
 )
 ```
-
 
 ```npl
 {{.Package.Annotations.next.c_package}}
@@ -455,10 +492,15 @@ There are some reserved keys for the `next` annotation for `package` statements.
 <div className="property-container">
 
 `.go_imports` represents a list of import paths for Go packages, separated by commas: `@next(go_imports="fmt.Printf,*io.Reader")`. 
+
 :::note 
+
 **`*`** is required to import types. 
+
 ::: 
+
 Example: 
+
 ```next
 @next(go_imports="fmt.Printf,*io.Reader")
 package demo;
@@ -474,7 +516,9 @@ The `next` annotation for `parameter` declarations used to control the parameter
 <div className="property-container">
 
 The `@next(mut)` annotation used to indicate that the parameter is mutable. 
+
 Example: 
+
 ```next
 interface Reader {
 	@next(error);
@@ -483,6 +527,7 @@ interface Reader {
 ```
 
 Output in Go: 
+
 ```go
 type Reader interface {
 	Read(data string) error
@@ -490,6 +535,7 @@ type Reader interface {
 ```
 
 Output in C++: 
+
 ```cpp
 class Reader {
 public:
@@ -502,7 +548,9 @@ public:
 #### struct {#user-content-Object_Common_Annotation_struct}
 
 The `next` annotation for `struct` declarations used to control the struct behavior. `L_alias` is a alias for the struct name in language `L`. It's used to reference an external type in the target language. 
+
 Example: 
+
 ```next
 @next(rust_alias="u128")
 struct uint128 {
@@ -527,18 +575,20 @@ This will don't generate the `uint128` struct in the `rust` language, but use `u
 ### Annotations {#user-content-Object_Common_Annotations}
 
 `Annotations` represents a group of annotations by `name` => [Annotation](#user-content-Object_Common_Annotation). 
+
 Annotations is a map that stores multiple annotations for a given entity. The key is the annotation name (string), and the value is the corresponding [Annotation](#user-content-Object_Common_Annotation) object.
 
 ###### .Contains {#user-content-Object_Common_Annotations__Contains}
 <div className="property-container">
 
 `.Contains` reports whether the annotations contain the given annotation. 
+
 Example: 
+
 ```next
 @json(omitempty)
 struct User {/*...*/}
 ```
-
 
 ```npl
 {{if .Annotations.Contains "json"}}
@@ -551,7 +601,9 @@ struct User {/*...*/}
 ### Decl {#user-content-Object_Common_Decl}
 
 `Decl` represents a top-level declaration in a file. 
+
 All declarations are [nodes](#user-content-Object_Common_Node). Currently, the following declarations are supported: 
+
 - [Package](#user-content-Object_Package)
 - [File](#user-content-Object_File)
 - [Const](#user-content-Object_Const)
@@ -563,7 +615,9 @@ All declarations are [nodes](#user-content-Object_Common_Node). Currently, the f
 <div className="property-container">
 
 `.UsedKinds` returns the used kinds in the declaration. Returns 0 if the declaration does not use any kinds. Otherwise, returns the OR of all used kinds. 
+
 Example: 
+
 ```next
 struct User {
 	int64 id;
@@ -584,7 +638,9 @@ The used kinds in the `User` struct are: `(1<<KindInt64) | (1<<KindString) | (1<
 <div className="property-container">
 
 `.Decl` is the declaration object that contains the fields. 
+
 Currently, it is one of following types: 
+
 - [Enum](#user-content-Object_Enum)
 - [Struct](#user-content-Object_Struct)
 - [Interface](#user-content-Object_Interface)
@@ -596,7 +652,9 @@ Currently, it is one of following types:
 <div className="property-container">
 
 `.List` is the list of fields in the declaration. 
+
 Currently, the field object is one of following types: 
+
 - [EnumMember](#user-content-Object_EnumMember)
 - [StructField](#user-content-Object_StructField)
 - [InterfaceMethod](#user-content-Object_InterfaceMethod).
@@ -618,7 +676,9 @@ Currently, the field object is one of following types:
 ### Node {#user-content-Object_Common_Node}
 
 `Node` represents a Node in the Next AST. 
+
 Currently, the following nodes are supported: 
+
 - [File](#user-content-Object_File)
 - [Const](#user-content-Object_Const)
 - [Enum](#user-content-Object_Enum)
@@ -640,19 +700,21 @@ Currently, the following nodes are supported:
 <div className="property-container">
 
 `.Doc` represents the documentation comment for the node. The documentation comment is a comment that appears before the node declaration. 
+
 Example: 
+
 ```next
 // This is a documentation comment for the node.
 // It can be multiple lines.
 const x = 1;
 ```
 
-
 ```npl
 {{.Doc.Text}}
 ```
 
 Output: 
+
 ```
 This is a documentation comment for the node.
 It can be multiple lines.
@@ -677,13 +739,16 @@ It can be multiple lines.
 ### Symbol {#user-content-Object_Common_Symbol}
 
 `Symbol` represents a Next symbol. There are two types of symbols: 
+
 - [Value](#user-content-Object_Common_Value) symbol: such as a constant or an enum member.
 - [Type](#user-content-Object_Common_Type) symbol: such as an enum, a struct, or an interface.
 
 ### Type {#user-content-Object_Common_Type}
 
 `Type` represents a Next type. 
+
 Currently, the following types are supported: 
+
 - [UsedType](#user-content-Object_UsedType)
 - [PrimitiveType](#user-content-Object_PrimitiveType)
 - [ArrayType](#user-content-Object_ArrayType)
@@ -731,6 +796,7 @@ Currently, the following types are supported:
 #### Kind {#user-content-Object_Common_Type_Kind}
 
 `Kind` represents the type kind. Currently, the following kinds are supported: 
+
 - `bool`: true or false
 - `int`: integer
 - `int8`: 8-bit integer
@@ -895,17 +961,19 @@ Currently, the following types are supported:
 <div className="property-container">
 
 `.Comment` is the line [comment](#user-content-Object_Comment) of the constant declaration. 
+
 Example: 
+
 ```next
 const x = 1; // This is a line comment for the constant.
 ```
-
 
 ```npl
 {{.Comment.Text}}
 ```
 
 Output: 
+
 ```
 This is a line comment for the constant.
 ```
@@ -970,14 +1038,16 @@ This is a line comment for the constant.
 <div className="property-container">
 
 `.Format` formats the documentation comment for various output styles. 
+
 Parameters: (_indent_ string[, _begin_ string[, _end_ string]]) 
+
 Example: 
+
 ```next
 // This is a documentation comment.
 // It can be multiple lines.
 const x = 1;
 ```
-
 
 ```npl
 {{.Doc.Format "/// "}}
@@ -985,8 +1055,8 @@ const x = 1;
 ```
 
 Output: 
-```
 
+```
 /// This is a documentation comment.
 /// It can be multiple lines.
 /**
@@ -1001,19 +1071,21 @@ Output:
 <div className="property-container">
 
 `.String` returns the full original documentation comment, including delimiters. 
+
 Example: 
+
 ```next
 // This is a documentation comment.
 // It can be multiple lines.
 const x = 1;
 ```
 
-
 ```npl
 {{.Doc.String}}
 ```
 
 Output: 
+
 ```
 // This is a documentation comment.
 // It can be multiple lines.
@@ -1025,19 +1097,21 @@ Output:
 <div className="property-container">
 
 `.Text` returns the content of the documentation comment without comment delimiters. 
+
 Example: 
+
 ```next
 // This is a documentation comment.
 // It can be multiple lines.
 const x = 1;
 ```
 
-
 ```npl
 {{.Doc.Text}}
 ```
 
 Output: 
+
 ```
 This is a documentation comment.
 It can be multiple lines.
@@ -1168,19 +1242,21 @@ It can be multiple lines.
 <div className="property-container">
 
 `.Comment` represents the import declaration line [comment](#user-content-Object_Comment). 
+
 Example: 
+
 ```next
 // This is a documenation comment for the import.
 // It can be multiline.
 import "path/to/file.next"; // This is a line comment for the import.
 ```
 
-
 ```npl
 {{.Comment.Text}}
 ```
 
 Output: 
+
 ```
 This is a line comment for the import.
 ```
@@ -1191,19 +1267,21 @@ This is a line comment for the import.
 <div className="property-container">
 
 `.Doc` represents the import declaration [documentation](#user-content-Object_Doc). 
+
 Example: 
+
 ```next
 // This is a documenation comment for the import.
 // It can be multiline.
 import "path/to/file.next"; // This is a line comment for the import.
 ```
 
-
 ```npl
 {{.Doc.Text}}
 ```
 
 Output: 
+
 ```
 This is a documenation comment for the import.
 It can be multiline.
@@ -1222,17 +1300,19 @@ It can be multiline.
 <div className="property-container">
 
 `.FullPath` represents the full path of the import. 
+
 Example: 
+
 ```next
 import "path/to/file.next";
 ```
-
 
 ```npl
 {{.FullPath}}
 ```
 
 Output: 
+
 ```
 /full/path/to/file.next
 ```
@@ -1243,17 +1323,19 @@ Output:
 <div className="property-container">
 
 `.Path` represents the import path. 
+
 Example: 
+
 ```next
 import "path/to/file.next";
 ```
-
 
 ```npl
 {{.Path}}
 ```
 
 Output: 
+
 ```
 path/to/file.next
 ```
@@ -1275,6 +1357,7 @@ path/to/file.next
 <div className="property-container">
 
 `.Decl` represents the declaration object that contains the imports. Currently, it is one of following types: 
+
 - [File](#user-content-Object_File)
 - [Package](#user-content-Object_Package)
 
@@ -1334,9 +1417,10 @@ path/to/file.next
 <div className="property-container">
 
 `.Index` represents the index of the interface method in the interface type. 
-Example: 
-```next
 
+Example: 
+
+```next
 interface Shape {
     draw(); // Index is 0 for draw
     area() float64; // Index is 1 for area
@@ -1349,9 +1433,10 @@ interface Shape {
 <div className="property-container">
 
 `.IsFirst` reports whether the method is the first method in the interface type. 
-Example: 
-```next
 
+Example: 
+
+```next
 interface Shape {
     draw(); // IsFirst is true for draw
     area() float64;
@@ -1364,9 +1449,10 @@ interface Shape {
 <div className="property-container">
 
 `.IsLast` reports whether the method is the last method in the interface type. 
-Example: 
-```next
 
+Example: 
+
+```next
 interface Shape {
     draw();
     area() float64; // IsLast is true for area
@@ -1397,9 +1483,10 @@ interface Shape {
 <div className="property-container">
 
 `.Index` represents the index of the interface method parameter in the method. 
-Example: 
-```next
 
+Example: 
+
+```next
 interface Shape {
     draw(int x, int y); // Index is 0 for x, 1 for y
 }
@@ -1411,9 +1498,10 @@ interface Shape {
 <div className="property-container">
 
 `.IsFirst` reports whether the parameter is the first parameter in the method. 
-Example: 
-```next
 
+Example: 
+
+```next
 interface Shape {
     draw(int x, int y); // IsFirst is true for x
 }
@@ -1425,8 +1513,8 @@ interface Shape {
 <div className="property-container">
 
 `.IsLast` reports whether the parameter is the last parameter in the method. Example: 
-```next
 
+```next
 interface Shape {
     draw(int x, int y); // IsLast is true for y
 }
@@ -1508,6 +1596,7 @@ interface Shape {
 <div className="property-container">
 
 `.Contains` reports whether the package contains the given [Type](#user-content-Object_Common_Type) or [Symbol](#user-content-Object_Common_Symbol). If the current package is nil, it always returns true. 
+
 Example: 
 
 ```npl
@@ -1568,15 +1657,15 @@ Example:
 <div className="property-container">
 
 `.Fields` represents the list of struct fields. 
-Example: 
-```next
 
+Example: 
+
+```next
 struct Point {
     int x;
     int y;
 }
 ```
-
 
 ```npl
 {{range .Fields.List}}
@@ -1585,6 +1674,7 @@ struct Point {
 ```
 
 Output: 
+
 ```
 x int
 y int
@@ -1621,9 +1711,10 @@ y int
 <div className="property-container">
 
 `.Index` represents the index of the struct field in the struct type. 
-Example: 
-```next
 
+Example: 
+
+```next
 struct Point {
     int x; // Index is 0 for x
     int y; // Index is 1 for y
@@ -1636,9 +1727,10 @@ struct Point {
 <div className="property-container">
 
 `.IsFirst` reports whether the field is the first field in the struct type. 
-Example: 
-```next
 
+Example: 
+
+```next
 struct Point {
     int x; // IsFirst is true for x
     int y;
@@ -1651,9 +1743,10 @@ struct Point {
 <div className="property-container">
 
 `.IsLast` reports whether the field is the last field in the struct type. 
-Example: 
-```next
 
+Example: 
+
+```next
 struct Point {
     int x;
     int y; // IsLast is true for y
@@ -1707,6 +1800,7 @@ struct Point {
 <div className="property-container">
 
 `.Any` represents the underlying value of the constant. It returns one of the following types: 
+
 - `int32`
 - `int64`
 - `float32`
@@ -1728,9 +1822,10 @@ struct Point {
 <div className="property-container">
 
 `.IsFirst` reports whether the value is the first member of the enum type. 
-Example: 
-```next
 
+Example: 
+
+```next
 enum Color {
     Red = 1; // IsFirst is true for Red
     Green = 2;
@@ -1744,9 +1839,10 @@ enum Color {
 <div className="property-container">
 
 `.IsLast` reports whether the value is the last member of the enum type. 
-Example: 
-```next
 
+Example: 
+
+```next
 enum Color {
     Red = 1;
     Green = 2;

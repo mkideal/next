@@ -68,74 +68,82 @@ type Import struct {
 	// @api(Object/Import.Doc) represents the import declaration [documentation](#Object/Doc).
 	//
 	// Example:
-	// ```next
-	// // This is a documenation comment for the import.
-	// // It can be multiline.
-	// import "path/to/file.next"; // This is a line comment for the import.
-	// ```
 	//
-	// ```npl
-	// {{.Doc.Text}}
-	// ```
+	//	```next
+	//	// This is a documenation comment for the import.
+	//	// It can be multiline.
+	//	import "path/to/file.next"; // This is a line comment for the import.
+	//	```
+	//
+	//	```npl
+	//	{{.Doc.Text}}
+	//	```
 	//
 	// Output:
-	// ```
-	// This is a documenation comment for the import.
-	// It can be multiline.
-	// ```
+	//
+	//	```
+	//	This is a documenation comment for the import.
+	//	It can be multiline.
+	//	```
 	Doc *Doc
 
 	// @api(Object/Import.Comment) represents the import declaration line [comment](#Object/Comment).
 	//
 	// Example:
-	// ```next
-	// // This is a documenation comment for the import.
-	// // It can be multiline.
-	// import "path/to/file.next"; // This is a line comment for the import.
-	// ```
 	//
-	// ```npl
-	// {{.Comment.Text}}
-	// ```
+	//	```next
+	//	// This is a documenation comment for the import.
+	//	// It can be multiline.
+	//	import "path/to/file.next"; // This is a line comment for the import.
+	//	```
+	//
+	//	```npl
+	//	{{.Comment.Text}}
+	//	```
 	//
 	// Output:
-	// ```
-	// This is a line comment for the import.
-	// ```
+	//
+	//	```
+	//	This is a line comment for the import.
+	//	```
 	Comment *Comment
 
 	// @api(Object/Import.Path) represents the import path.
 	//
 	// Example:
-	// ```next
-	// import "path/to/file.next";
-	// ```
 	//
-	// ```npl
-	// {{.Path}}
-	// ```
+	//	```next
+	//	import "path/to/file.next";
+	//	```
+	//
+	//	```npl
+	//	{{.Path}}
+	//	```
 	//
 	// Output:
-	// ```
-	// path/to/file.next
-	// ```
+	//
+	//	```
+	//	path/to/file.next
+	//	```
 	Path string
 
 	// @api(Object/Import.FullPath) represents the full path of the import.
 	//
 	// Example:
-	// ```next
-	// import "path/to/file.next";
-	// ```
 	//
-	// ```npl
-	// {{.FullPath}}
-	// ```
+	//	```next
+	//	import "path/to/file.next";
+	//	```
+	//
+	//	```npl
+	//	{{.FullPath}}
+	//	```
 	//
 	// Output:
-	// ```
-	// /full/path/to/file.next
-	// ```
+	//
+	//	```
+	//	/full/path/to/file.next
+	//	```
 	FullPath string
 }
 
@@ -466,18 +474,20 @@ type Const struct {
 	// @api(Object/Const.Comment) is the line [comment](#Object/Comment) of the constant declaration.
 	//
 	// Example:
-	// ```next
-	// const x = 1; // This is a line comment for the constant.
-	// ```
 	//
-	// ```npl
-	// {{.Comment.Text}}
-	// ```
+	//	```next
+	//	const x = 1; // This is a line comment for the constant.
+	//	```
+	//
+	//	```npl
+	//	{{.Comment.Text}}
+	//	```
 	//
 	// Output:
-	// ```
-	// This is a line comment for the constant.
-	// ```
+	//
+	//	```
+	//	This is a line comment for the constant.
+	//	```
 	Comment *Comment
 }
 
@@ -634,15 +644,14 @@ func (m *EnumMember) Value() *Value {
 // @api(Object/Value.IsFirst) reports whether the value is the first member of the enum type.
 //
 // Example:
-// ```next
 //
+//	```next
 //	enum Color {
 //	    Red = 1; // IsFirst is true for Red
 //	    Green = 2;
 //	    Blue = 3;
 //	}
-//
-// ```
+//	```
 func (m *EnumMember) IsFirst() bool {
 	return m.value.enum.decl != nil && m.value.enum.index == 0
 }
@@ -650,15 +659,14 @@ func (m *EnumMember) IsFirst() bool {
 // @api(Object/Value.IsLast) reports whether the value is the last member of the enum type.
 //
 // Example:
-// ```next
 //
+//	```next
 //	enum Color {
 //	    Red = 1;
 //	    Green = 2;
 //	    Blue = 3; // IsLast is true for Blue
 //	}
-//
-// ```
+//	```
 func (m *EnumMember) IsLast() bool {
 	return m.value.enum.decl != nil && m.value.enum.index == len(m.value.enum.decl.Members.List)-1
 }
@@ -699,26 +707,26 @@ func (s *Struct) resolve(c *Compiler, file *File, scope Scope) {
 // @api(Object/Struct.Fields) represents the list of struct fields.
 //
 // Example:
-// ```next
 //
+//	```next
 //	struct Point {
 //	    int x;
 //	    int y;
 //	}
+//	```
 //
-// ```
-//
-// ```npl
-// {{range .Fields.List}}
-// {{.Name}} {{.Type}}
-// {{end}}
-// ```
+//	```npl
+//	{{range .Fields.List}}
+//	{{.Name}} {{.Type}}
+//	{{end}}
+//	```
 //
 // Output:
-// ```
-// x int
-// y int
-// ```
+//
+//	```
+//	x int
+//	y int
+//	```
 func (s *Struct) Fields() *StructFields {
 	return availableFields(s.file.compiler, s.fields, s.lang)
 }
@@ -758,14 +766,13 @@ func (f *StructField) resolve(c *Compiler, file *File, scope Scope) {
 // @api(Object/StructField.Index) represents the index of the struct field in the struct type.
 //
 // Example:
-// ```next
 //
+//	```next
 //	struct Point {
 //	    int x; // Index is 0 for x
 //	    int y; // Index is 1 for y
 //	}
-//
-// ```
+//	```
 func (f *StructField) Index() int {
 	return f.index
 }
@@ -773,14 +780,13 @@ func (f *StructField) Index() int {
 // @api(Object/StructField.IsFirst) reports whether the field is the first field in the struct type.
 //
 // Example:
-// ```next
 //
+//	```next
 //	struct Point {
 //	    int x; // IsFirst is true for x
 //	    int y;
 //	}
-//
-// ```
+//	```
 func (f *StructField) IsFirst() bool {
 	return f.index == 0
 }
@@ -788,14 +794,13 @@ func (f *StructField) IsFirst() bool {
 // @api(Object/StructField.IsLast) reports whether the field is the last field in the struct type.
 //
 // Example:
-// ```next
 //
+//	```next
 //	struct Point {
 //	    int x;
 //	    int y; // IsLast is true for y
 //	}
-//
-// ```
+//	```
 func (f *StructField) IsLast() bool {
 	return f.index == len(f.Decl.Fields().List)-1
 }
@@ -885,14 +890,13 @@ func (m *InterfaceMethod) resolve(c *Compiler, file *File, scope Scope) {
 // @api(Object/InterfaceMethod.Index) represents the index of the interface method in the interface type.
 //
 // Example:
-// ```next
 //
+//	```next
 //	interface Shape {
 //	    draw(); // Index is 0 for draw
 //	    area() float64; // Index is 1 for area
 //	}
-//
-// ```
+//	```
 func (m *InterfaceMethod) Index() int {
 	return m.index
 }
@@ -900,14 +904,13 @@ func (m *InterfaceMethod) Index() int {
 // @api(Object/InterfaceMethod.IsFirst) reports whether the method is the first method in the interface type.
 //
 // Example:
-// ```next
 //
+//	```next
 //	interface Shape {
 //	    draw(); // IsFirst is true for draw
 //	    area() float64;
 //	}
-//
-// ```
+//	```
 func (m *InterfaceMethod) IsFirst() bool {
 	return m.index == 0
 }
@@ -915,14 +918,13 @@ func (m *InterfaceMethod) IsFirst() bool {
 // @api(Object/InterfaceMethod.IsLast) reports whether the method is the last method in the interface type.
 //
 // Example:
-// ```next
 //
+//	```next
 //	interface Shape {
 //	    draw();
 //	    area() float64; // IsLast is true for area
 //	}
-//
-// ```
+//	```
 func (m *InterfaceMethod) IsLast() bool {
 	return m.index == len(m.Decl.Methods().List)-1
 }
@@ -962,13 +964,12 @@ func (p *InterfaceMethodParam) resolve(c *Compiler, file *File, scope Scope) {
 // @api(Object/InterfaceMethodParam.Index) represents the index of the interface method parameter in the method.
 //
 // Example:
-// ```next
 //
+//	```next
 //	interface Shape {
 //	    draw(int x, int y); // Index is 0 for x, 1 for y
 //	}
-//
-// ```
+//	```
 func (p *InterfaceMethodParam) Index() int {
 	return p.index
 }
@@ -976,26 +977,24 @@ func (p *InterfaceMethodParam) Index() int {
 // @api(Object/InterfaceMethodParam.IsFirst) reports whether the parameter is the first parameter in the method.
 //
 // Example:
-// ```next
 //
+//	```next
 //	interface Shape {
 //	    draw(int x, int y); // IsFirst is true for x
 //	}
-//
-// ```
+//	```
 func (p *InterfaceMethodParam) IsFirst() bool {
 	return p.index == 0
 }
 
 // @api(Object/InterfaceMethodParam.IsLast) reports whether the parameter is the last parameter in the method.
 // Example:
-// ```next
 //
+//	```next
 //	interface Shape {
 //	    draw(int x, int y); // IsLast is true for y
 //	}
-//
-// ```
+//	```
 func (p *InterfaceMethodParam) IsLast() bool {
 	return p.index == len(p.Method.Params.List)-1
 }

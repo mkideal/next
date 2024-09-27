@@ -1,4 +1,3 @@
-//go:generate go run github.com/gopherd/tools/cmd/docgen@v0.0.3 -I ./ -o ../../website/docs/api/latest -level 0
 package compile
 
 import (
@@ -30,7 +29,7 @@ type Object interface {
 	//
 	// Example:
 	//
-	// ```next
+	//	```next
 	//	package demo;
 	//
 	//	enum Color {
@@ -38,28 +37,29 @@ type Object interface {
 	//		Green = 2;
 	//		Blue = 3;
 	//	}
-	// ```
+	//	```
 	//
-	// ```npl
-	// {{- define "go/enum.member" -}}
-	// const {{next .Name}} = {{.Value}}
-	// {{- end}}
+	//	```npl
+	//	{{- define "go/enum.member" -}}
+	//	const {{next .Name}} = {{.Value}}
+	//	{{- end}}
 	//
-	// {{- define "go/enum.member:name" -}}
-	// {{.Decl.Name}}_{{.}}
-	// {{- end}}
-	// ```
+	//	{{- define "go/enum.member:name" -}}
+	//	{{.Decl.Name}}_{{.}}
+	//	{{- end}}
+	//	```
 	//
 	// Output:
-	// ```go
-	// package demo
 	//
-	// type Color int
+	//	```go
+	//	package demo
 	//
-	// const Color_Red = 1
-	// const Color_Green = 2
-	// const Color_Blue = 3
-	// ```
+	//	type Color int
+	//
+	//	const Color_Red = 1
+	//	const Color_Green = 2
+	//	const Color_Blue = 3
+	//	```
 	//
 	// These two definitions will override the built-in template functions `next/go/enum.member` and `next/go/enum.member.name`.
 	Typeof() string
@@ -242,21 +242,23 @@ type Node interface {
 	// The documentation comment is a comment that appears before the node declaration.
 	//
 	// Example:
-	// ```next
-	// // This is a documentation comment for the node.
-	// // It can be multiple lines.
-	// const x = 1;
-	// ```
 	//
-	// ```npl
-	// {{.Doc.Text}}
-	// ```
+	//	```next
+	//	// This is a documentation comment for the node.
+	//	// It can be multiple lines.
+	//	const x = 1;
+	//	```
+	//
+	//	```npl
+	//	{{.Doc.Text}}
+	//	```
 	//
 	// Output:
-	// ```
-	// This is a documentation comment for the node.
-	// It can be multiple lines.
-	// ```
+	//
+	//	```
+	//	This is a documentation comment for the node.
+	//	It can be multiple lines.
+	//	```
 	Doc() *Doc
 
 	// @api(Object/Common/Node.Annotations) represents the [annotations](#Object/Common/Annotations) for the node.
@@ -304,14 +306,15 @@ type Decl interface {
 	// Otherwise, returns the OR of all used kinds.
 	//
 	// Example:
-	// ```next
+	//
+	//	```next
 	//	struct User {
 	//		int64 id;
 	//		string name;
 	//		vector<string> emails;
 	//		map<int, bool> flags;
 	//	}
-	// ```
+	//	```
 	// The used kinds in the `User` struct are: `(1<<KindInt64) | (1<<KindString) | (1<<KindVector) | (1<<KindMap) | (1<<KindInt) | (1<<KindBool)`.
 	UsedKinds() Kinds
 

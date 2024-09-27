@@ -1,6 +1,7 @@
 # Map {#user-content-Map}
 
 `Map` represents a language map file. Usually, it is a text file that contains key-value pairs separated by a equal sign. The key is the name of the language feature. The built-in keys are: 
+
 - ext: the file extension for the language
 - comment: the line comment pattern for the language
 - int: the integer type for the language
@@ -21,6 +22,7 @@
 - box: the box replacement for the language (for java, e.g., box(int) = Integer)
 
 Here is an example of a language map file for the Java language: 
+
 ```plain title="java.map"
 ext=.java
 comment=// %T%
@@ -53,18 +55,19 @@ box(boolean)=Boolean
 ```
 
 :::note 
+
 - The `%T%`, `%K%`, `%V%` and `%N%` are placeholders for the type, key type, value type and name type.
 - Line comments are started with the `#` character and it must be the first character of the line.
-
 
 ```plain title="java.map"
 # This will error
 ext=.java # This is an invalid comment
 # Comment must be the first character of the line (leading spaces are allowed)
 
-# This is a valid comment
+	# This is a valid comment
 ```
 
-::: 
-See [Builtin Map Files](https://github.com/gopherd/next/tree/main/builtin) for more information.
+See [Builtin Map Files](https://github.com/gopherd/next/tree/main/builtin) for more information. 
+
+:::
 

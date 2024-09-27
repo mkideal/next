@@ -32,16 +32,17 @@ func (a Annotations) get(name string) Annotation {
 // @api(Object/Common/Annotations.Contains) reports whether the annotations contain the given annotation.
 //
 // Example:
-// ```next
-// @json(omitempty)
-// struct User {/*...*/}
-// ```
 //
-// ```npl
-// {{if .Annotations.Contains "json"}}
-// {{/* do something */}}
-// {{end}}
-// ```
+//	```next
+//	@json(omitempty)
+//	struct User {/*...*/}
+//	```
+//
+//	```npl
+//	{{if .Annotations.Contains "json"}}
+//	{{/* do something */}}
+//	{{end}}
+//	```
 func (a Annotations) Contains(name string) bool {
 	if a == nil {
 		return false
@@ -59,8 +60,7 @@ func (a Annotations) Contains(name string) bool {
 //
 // Next code:
 //
-// ```next
-//
+//	```next
 //	@json(omitempty)
 //	@event(name="Login")
 //	@message(name="Login", type=100)
@@ -72,32 +72,32 @@ func (a Annotations) Contains(name string) bool {
 //		Green = 2;
 //		Blue = 3;
 //	}
-//
-// ```
+//	```
 //
 // Will be represented as:
 //
-// ```npl
-// {{- define "go/struct" -}}
-// {{.Annotations.json.omitempty}}
-// {{.Annotations.event.name}}
-// {{.Annotations.message.name}}
-// {{.Annotations.message.type}}
-// {{- end}}
+//	```npl
+//	{{- define "go/struct" -}}
+//	{{.Annotations.json.omitempty}}
+//	{{.Annotations.event.name}}
+//	{{.Annotations.message.name}}
+//	{{.Annotations.message.type}}
+//	{{- end}}
 //
-// {{- define "go/enum" -}}
-// {{.Annotations.next.type}}
-// {{- end}}
-// ```
+//	{{- define "go/enum" -}}
+//	{{.Annotations.next.type}}
+//	{{- end}}
+//	```
 //
 // Output:
-// ```
-// true
-// Login
-// Login
-// 100
-// int8
-// ```
+//
+//	```
+//	true
+//	Login
+//	Login
+//	100
+//	int8
+//	```
 //
 // The `next` annotation is used to pass information to the next compiler. It's a reserved
 // annotation and should not be used for other purposes. The `next` annotation can be annotated
@@ -108,14 +108,14 @@ func (a Annotations) Contains(name string) bool {
 //
 // parameter names **MUST** not start with an uppercase letter, as this is reserved for the next compiler.
 //
-// ```next
-// @next(type=100) // OK
-// @next(_type=100) // OK
+//	```next
+//	@next(type=100) // OK
+//	@next(_type=100) // OK
 //
-// // This will error
-// @next(Type=100)
-// // invalid parameter name "Type": must not start with an uppercase letter (A-Z), e.g., "type"
-// ```
+//	// This will error
+//	@next(Type=100)
+//	// invalid parameter name "Type": must not start with an uppercase letter (A-Z), e.g., "type"
+//	```
 //
 // :::
 type Annotation map[string]any
@@ -130,26 +130,27 @@ func (a Annotation) get(name string) any {
 // @api(Object/Common/Annotation.Contains) reports whether the annotation contains the given parameter.
 //
 // Example:
-// ```next
-// @json(omitempty)
-// struct User {/*...*/}
-// ```
 //
-// ```npl
-// {{if .Annotations.json.Contains "omitempty"}}
-// {{/* do something */}}
-// {{end}}
-// ```
+//	```next
+//	@json(omitempty)
+//	struct User {/*...*/}
+//	```
+//
+//	```npl
+//	{{if .Annotations.json.Contains "omitempty"}}
+//	{{/* do something */}}
+//	{{end}}
+//	```
 //
 // :::note
 //
 // If you want to check whether the annotation has a non-empty value, you can use the parameter name directly.
 //
-// ```npl
-// {{if .Annotations.json.omitempty}}
-// {{/* do something */}}
-// {{end}}
-// ```
+//	```npl
+//	{{if .Annotations.json.omitempty}}
+//	{{/* do something */}}
+//	{{end}}
+//	```
 //
 // :::
 func (a Annotation) Contains(name string) bool {
@@ -166,21 +167,23 @@ const __pos__ = "__pos__"
 // It's useful to provide a better error message when needed.
 //
 // Example:
-// ```next title="example.next" showLineNumbers
-// package demo;
 //
-// @message(type=100)
-// struct Login {/*...*/}
-// ```
+//	```next title="example.next" showLineNumbers
+//	package demo;
 //
-// ```npl
-// {{error "%s: Something went wrong" .Annotations.message.Pos}}
-// ```
+//	@message(type=100)
+//	struct Login {/*...*/}
+//	```
+//
+//	```npl
+//	{{error "%s: Something went wrong" .Annotations.message.Pos}}
+//	```
 //
 // Output:
-// ```
-// example.next:3:1: Something went wrong
-// ```
+//
+//	```
+//	example.next:3:1: Something went wrong
+//	```
 func (a Annotation) Pos() Position {
 	return a.getPos(__pos__)
 }
@@ -189,21 +192,23 @@ func (a Annotation) Pos() Position {
 // It's useful to provide a better error message when needed.
 //
 // Example:
-// ```next title="example.next" showLineNumbers
-// package demo;
 //
-// @message(type=100)
-// struct Login {/*...*/}
-// ```
+//	```next title="example.next" showLineNumbers
+//	package demo;
 //
-// ```npl
-// {{error "%s: Something went wrong" (.Annotations.message.NamePos "type")}}
-// ```
+//	@message(type=100)
+//	struct Login {/*...*/}
+//	```
+//
+//	```npl
+//	{{error "%s: Something went wrong" (.Annotations.message.NamePos "type")}}
+//	```
 //
 // Output:
-// ```
-// example.next:3:10: Something went wrong
-// ```
+//
+//	```
+//	example.next:3:10: Something went wrong
+//	```
 func (a Annotation) NamePos(name string) Position {
 	return a.getPos(name)
 }
@@ -212,21 +217,23 @@ func (a Annotation) NamePos(name string) Position {
 // It's useful to provide a better error message when needed.
 //
 // Example:
-// ```next title="example.next" showLineNumbers
-// package demo;
 //
-// @message(type=100)
-// struct Login {/*...*/}
-// ```
+//	```next title="example.next" showLineNumbers
+//	package demo;
 //
-// ```npl
-// {{error "%s: Something went wrong" (.Annotations.message.ValuePos "type")}}
-// ```
+//	@message(type=100)
+//	struct Login {/*...*/}
+//	```
+//
+//	```npl
+//	{{error "%s: Something went wrong" (.Annotations.message.ValuePos "type")}}
+//	```
 //
 // Output:
-// ```
-// example.next:3:15: Something went wrong
-// ```
+//
+//	```
+//	example.next:3:15: Something went wrong
+//	```
 func (a Annotation) ValuePos(name string) Position {
 	return a.getPos(name + ":value")
 }
@@ -257,7 +264,8 @@ func (a Annotation) setPos(key string, pos Position) {
 // of the declaration in the target language. Supported operators are `&`, `|`, `!`, `(`, `)`, and `true`, `false`.
 //
 // Example:
-// ```next
+//
+//	```next
 //	@next(available="c|cpp|java|go|csharp")
 //	struct Point {
 //		int x;
@@ -269,7 +277,7 @@ func (a Annotation) setPos(key string, pos Position) {
 //		@next(available="!java & !c")
 //		int w;
 //	}
-// ```
+//	```
 
 // @api(Object/Common/Annotation/package)
 // The `next` annotation for `package` statements used to control the package behavior for specific
@@ -279,7 +287,8 @@ func (a Annotation) setPos(key string, pos Position) {
 // For any language `L`, the `next` annotation for `package` statements is defined as `@next(L_package="package_info")`.
 //
 // Example:
-// ```next
+//
+//	```next
 //	@next(
 //		c_package="DEMO_",
 //		cpp_package="demo",
@@ -287,15 +296,15 @@ func (a Annotation) setPos(key string, pos Position) {
 //		go_package="github.com/next/demo",
 //		csharp_package="demo",
 //	)
-// ```
+//	```
 //
-// ```npl
-// {{.Package.Annotations.next.c_package}}
-// {{.Package.Annotations.next.cpp_package}}
-// {{.Package.Annotations.next.java_package}}
-// {{.Package.Annotations.next.go_package}}
-// {{.Package.Annotations.next.csharp_package}}
-// ```
+//	```npl
+//	{{.Package.Annotations.next.c_package}}
+//	{{.Package.Annotations.next.cpp_package}}
+//	{{.Package.Annotations.next.java_package}}
+//	{{.Package.Annotations.next.go_package}}
+//	{{.Package.Annotations.next.csharp_package}}
+//	```
 //
 // There are some reserved keys for the `next` annotation for `package` statements.
 
@@ -309,10 +318,11 @@ func (a Annotation) setPos(key string, pos Position) {
 // :::
 //
 // Example:
-// ```next
+//
+//	```next
 //	@next(go_imports="fmt.Printf,*io.Reader")
 //	package demo;
-// ```
+//	```
 
 // @api(Object/Common/Annotation/enum)
 // The `next` annotation for `enum` declarations used to control the enum behavior.
@@ -320,17 +330,19 @@ func (a Annotation) setPos(key string, pos Position) {
 // @api(Object/Common/Annotation/enum.type) specifies the underlying type of the enum.
 //
 // Example:
-// ```next
+//
+//	```next
 //	@next(type=int8)
 //	enum Color {
 //		Red = 1;
 //		Green = 2;
 //		Blue = 3;
 //	}
-// ```
+//	```
 //
 // Output in Go:
-// ```go
+//
+//	```go
 //	type Color int8
 //
 //	const (
@@ -338,16 +350,17 @@ func (a Annotation) setPos(key string, pos Position) {
 //		ColorGreen Color = 2
 //		ColorBlue Color = 3
 //	)
-// ```
+//	```
 //
 // Output in C++:
-// ```cpp
+//
+//	```cpp
 //	enum class Color : int8_t {
 //		Red = 1,
 //		Green = 2,
 //		Blue = 3,
 //	};
-// ```
+//	```
 
 // @api(Object/Common/Annotation/struct)
 // The `next` annotation for `struct` declarations used to control the struct behavior.
@@ -355,7 +368,8 @@ func (a Annotation) setPos(key string, pos Position) {
 // in the target language.
 //
 // Example:
-// ```next
+//
+//	```next
 //	@next(rust_alias="u128")
 //	struct uint128 {
 //		int64 low;
@@ -372,7 +386,7 @@ func (a Annotation) setPos(key string, pos Position) {
 //		uint128 address;
 //		Complex complex;
 //	}
-// ```
+//	```
 //
 // This will don't generate the `uint128` struct in the `rust` language, but use `u128` instead.
 // And in the `go` language, it will use `complex128` instead of `Complex`.
@@ -383,7 +397,8 @@ func (a Annotation) setPos(key string, pos Position) {
 // in the target language.
 //
 // Example:
-// ```next
+//
+//	```next
 //	@next(
 //		available="go|java",
 //		go_alias="net/http.Handler",
@@ -396,7 +411,7 @@ func (a Annotation) setPos(key string, pos Position) {
 //		@next(error)
 //		Handle(string path, HTTPHandler handler);
 //	}
-// ```
+//	```
 
 // @api(Object/Common/Annotation/method)
 // The `next` annotation for `method` declarations used to control the method behavior.
@@ -405,61 +420,68 @@ func (a Annotation) setPos(key string, pos Position) {
 // The `@next(error)` annotation used to indicate that the method returns an error or throws an exception.
 //
 // Example:
-// ```next
+//
+//	```next
 //	interface Parser {
 //		@next(error)
 //		parse(string s) int;
 //	}
-// ```
+//	```
 //
 // Output in Go:
-// ```go
+//
+//	```go
 //	type Parser interface {
 //		Parse(s string) (int, error)
 //	}
-// ```
+//	```
 //
 // Output in C++:
-// ```cpp
+//
+//	```cpp
 //	class Parser {
 //	public:
 //		int parse(const std::string& s) const;
 //	};
-// ```
+//	```
 //
 // Output in Java:
-// ```java
+//
+//	```java
 //	interface Parser {
 //		int parse(String s) throws Exception;
 //	}
-// ```
+//	```
 
 // @api(Object/Common/Annotation/method.mut)
 // The `@next(mut)` annotation used to indicate that the method is a mutable method, which means
 // it can modify the object's state.
 //
 // Example:
-// ```next
+//
+//	```next
 //	interface Writer {
 //		@next(error, mut)
 //		write(string data);
 //	}
-// ```
+//	```
 //
 // Output in Go:
-// ```go
+//
+//	```go
 //	type Writer interface {
 //		Write(data string) error
 //	}
-// ```
+//	```
 //
 // Output in C++:
-// ```cpp
+//
+//	```cpp
 //	class Writer {
 //	public:
 //		void write(const std::string& data);
 //	};
-// ```
+//	```
 
 // @api(Object/Common/Annotation/param)
 // The `next` annotation for `parameter` declarations used to control the parameter behavior.
@@ -468,27 +490,30 @@ func (a Annotation) setPos(key string, pos Position) {
 // The `@next(mut)` annotation used to indicate that the parameter is mutable.
 //
 // Example:
-// ```next
+//
+//	```next
 //	interface Reader {
 //		@next(error);
 //		read(@next(mut) string data);
 //	}
-// ```
+//	```
 //
 // Output in Go:
-// ```go
+//
+//	```go
 //	type Reader interface {
 //		Read(data string) error
 //	}
-// ```
+//	```
 //
 // Output in C++:
-// ```cpp
+//
+//	```cpp
 //	class Reader {
 //	public:
 //		void read(std::string& data);
 //	};
-// ```
+//	```
 
 type locatedAnnotation struct {
 	key     string
