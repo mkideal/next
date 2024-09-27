@@ -37,6 +37,19 @@ Output:
 
 It's useful when you want to align the generated content, especially for multi-line strings (e.g., comments).
 
+## debug {#user-content-Context_debug}
+
+`debug` outputs a debug message in the console. 
+Example: 
+```npl
+{{debug "Hello, world"}}
+{{debug "Hello, %s" "world"}}
+```
+
+:::tip 
+It's useful when you want to print debug information in the console during code generation. 
+:::
+
 ## env {#user-content-Context_env}
 
 `env` represents the environment variables defined in the command line with the flag `-D`. 

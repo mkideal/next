@@ -60,7 +60,7 @@ func (p *Package) File() *File {
 	return p.files[0]
 }
 
-// @api(Object/Package.Files) represents the all declared files in the package.
+// @api(Object/Package.Files) represents the all declared file objects in the package.
 func (p *Package) Files() []*File {
 	return p.files
 }
@@ -73,7 +73,7 @@ func (p *Package) Types() []Type {
 // @api(Object/Package.Imports) represents the package's import declarations.
 func (p *Package) Imports() *Imports[*Package] { return p.imports }
 
-// @api(Object/Package.Contains) reports whether the package contains the given type.
+// @api(Object/Package.Contains) reports whether the package contains the given [Type](#Object/Common/Type) or [Symbol](#Object/Common/Symbol).
 // If the current package is nil, it always returns true.
 //
 // Example:
@@ -86,9 +86,9 @@ func (p *Package) Imports() *Imports[*Package] { return p.imports }
 // {{next .Type}}
 // {{- end}}
 // ```
-func (p *Package) Contains(node Object) (bool, error) {
+func (p *Package) Contains(obj Object) (bool, error) {
 	var p2 *Package
-	switch node := node.(type) {
+	switch node := obj.(type) {
 	case Type:
 		p2 = node.Decl().File().Package()
 	case Symbol:

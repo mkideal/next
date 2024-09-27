@@ -11,6 +11,10 @@ slug: /api/latest
 
 Welcome to our API documentation. This guide provides essential information for integrating and using our API effectively.
 
+### [CommandLine](/docs/api/latest/command_line)
+
+CommandLine APIs process command line flags and arguments.
+
 ### [Context](/docs/api/latest/context)
 
 Context APIs are related to the template context for code generation. They provide access to contextual information and utilities used within the code generation process.
@@ -22,6 +26,10 @@ Environment APIs deal with system environment variables used by the Next compile
 ### [Function](/docs/api/latest/function)
 
 Function APIs encompass context-independent global functions available in templates. These utility functions can be used across different parts of your templates.
+
+### [Map](/docs/api/latest/map)
+
+Map APIs are related to the language-specific types and features mappings.
 
 ### [Object](/docs/api/latest/object)
 

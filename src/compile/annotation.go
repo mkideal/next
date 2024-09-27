@@ -30,6 +30,18 @@ func (a Annotations) get(name string) Annotation {
 }
 
 // @api(Object/Common/Annotations.Contains) reports whether the annotations contain the given annotation.
+//
+// Example:
+// ```next
+// @json(omitempty)
+// struct User {/*...*/}
+// ```
+//
+// ```npl
+// {{if .Annotations.Contains "json"}}
+// {{/* do something */}}
+// {{end}}
+// ```
 func (a Annotations) Contains(name string) bool {
 	if a == nil {
 		return false
@@ -116,6 +128,30 @@ func (a Annotation) get(name string) any {
 }
 
 // @api(Object/Common/Annotation.Contains) reports whether the annotation contains the given parameter.
+//
+// Example:
+// ```next
+// @json(omitempty)
+// struct User {/*...*/}
+// ```
+//
+// ```npl
+// {{if .Annotations.json.Contains "omitempty"}}
+// {{/* do something */}}
+// {{end}}
+// ```
+//
+// :::note
+//
+// If you want to check whether the annotation has a non-empty value, you can use the parameter name directly.
+//
+// ```npl
+// {{if .Annotations.json.omitempty}}
+// {{/* do something */}}
+// {{end}}
+// ```
+//
+// :::
 func (a Annotation) Contains(name string) bool {
 	if a == nil {
 		return false
@@ -127,16 +163,70 @@ func (a Annotation) Contains(name string) bool {
 const __pos__ = "__pos__"
 
 // @api(Object/Common/Annotation.Pos) returns the position of the annotation in the source code.
+// It's useful to provide a better error message when needed.
+//
+// Example:
+// ```next title="example.next" showLineNumbers
+// package demo;
+//
+// @message(type=100)
+// struct Login {/*...*/}
+// ```
+//
+// ```npl
+// {{error "%s: Something went wrong" .Annotations.message.Pos}}
+// ```
+//
+// Output:
+// ```
+// example.next:3:1: Something went wrong
+// ```
 func (a Annotation) Pos() Position {
 	return a.getPos(__pos__)
 }
 
 // @api(Object/Common/Annotation.NamePos) returns the position of the annotation name in the source code.
+// It's useful to provide a better error message when needed.
+//
+// Example:
+// ```next title="example.next" showLineNumbers
+// package demo;
+//
+// @message(type=100)
+// struct Login {/*...*/}
+// ```
+//
+// ```npl
+// {{error "%s: Something went wrong" (.Annotations.message.NamePos "type")}}
+// ```
+//
+// Output:
+// ```
+// example.next:3:10: Something went wrong
+// ```
 func (a Annotation) NamePos(name string) Position {
 	return a.getPos(name)
 }
 
 // @api(Object/Common/Annotation.ValuePos) returns the position of the annotation value in the source code.
+// It's useful to provide a better error message when needed.
+//
+// Example:
+// ```next title="example.next" showLineNumbers
+// package demo;
+//
+// @message(type=100)
+// struct Login {/*...*/}
+// ```
+//
+// ```npl
+// {{error "%s: Something went wrong" (.Annotations.message.ValuePos "type")}}
+// ```
+//
+// Output:
+// ```
+// example.next:3:15: Something went wrong
+// ```
 func (a Annotation) ValuePos(name string) Position {
 	return a.getPos(name + ":value")
 }
@@ -210,7 +300,13 @@ func (a Annotation) setPos(key string, pos Position) {
 // There are some reserved keys for the `next` annotation for `package` statements.
 
 // @api(Object/Common/Annotation/package.go_imports) represents a list of import paths for Go packages,
-// separated by commas: `@next(go_imports="fmt.Printf,*io.Reader")`. Note: **`*` is required to import types.**
+// separated by commas: `@next(go_imports="fmt.Printf,*io.Reader")`.
+//
+// :::note
+//
+// **`*`** is required to import types.
+//
+// :::
 //
 // Example:
 // ```next
@@ -500,7 +596,7 @@ func (c *Compiler) solveAnnotations() error {
 			if len(req.Annotations) == 0 {
 				continue
 			}
-			c.Printf("run solver %q", words)
+			c.Trace("run solver %q", words)
 			cmd := exec.Command(words[0], words[1:]...)
 			var stdin bytes.Buffer
 			var stdout bytes.Buffer
@@ -530,7 +626,7 @@ func (c *Compiler) solveAnnotations() error {
 						if v.Kind() == constant.Unknown {
 							return fmt.Errorf("solver %q: invalid value for parameter %q in annotation %q: %v", words, name, la.name, param.Value)
 						}
-						c.Printf("solver %q: set %q.%q to %v", words, la.name, name, param.Value)
+						c.Trace("solver %q: set %q.%q to %v", words, la.name, name, param.Value)
 					}
 					_, ok := la.annotation[name]
 					if !ok {
@@ -543,7 +639,7 @@ func (c *Compiler) solveAnnotations() error {
 					if v != nil {
 						la.annotation[name] = constant.Underlying(v)
 					} else {
-						c.Printf("solver %q: remove %q.%q", words, la.name, name)
+						c.Trace("solver %q: remove %q.%q", words, la.name, name)
 						delete(la.annotation, name)
 					}
 				}

@@ -37,11 +37,11 @@ func newFile(c *Compiler, src *ast.File, path string) *File {
 		compiler: c,
 		src:      src,
 		pos:      src.Pos(),
-		Path:     path,
 		doc:      newDoc(src.Doc),
 		decls:    &Decls{compiler: c},
 		symbols:  make(map[string]Symbol),
 		objects:  make(map[ast.Node]Object),
+		Path:     path,
 	}
 	f.imports = &Imports[*File]{Decl: f}
 	f.unresolved.annotations = src.Annotations

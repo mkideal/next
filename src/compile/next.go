@@ -21,13 +21,13 @@ import (
 	"github.com/next/next/src/scanner"
 )
 
-// @api(Environment/NEXT_NO_COPY_BUILTIN) represents the environment variable to disable copying builtin files.
+// @api(Environment/NEXTNOCOPYBUILTIN) represents the environment variable to disable copying builtin files.
 // If the value is `1`, `true`, `on`, or `yes` (case-insensitive), builtin files will not be copied to the user home directory.
-const ENV_NEXT_NO_COPY_BUILTIN = "NEXT_NO_COPY_BUILTIN"
+const NEXTNOCOPYBUILTIN = "NEXTNOCOPYBUILTIN"
 
-// @api(Environment/NEXT_MAX_STACK) represents the environment variable to set the maximum stack depth.
+// @api(Environment/NEXTMAXSTACK) represents the environment variable to set the maximum stack depth.
 // The value is a positive integer that represents the maximum stack depth. The default value is 100.
-const ENV_NEXT_MAX_STACK = "NEXT_MAX_STACK"
+const NEXTMAXSTACK = "NEXTMAXSTACK"
 
 const nextExt = ".next"
 const website = "https://next.as"
@@ -274,12 +274,14 @@ func printErrorWithPosition(stderr io.Writer, err string) {
 	line := parts[1]
 	column := ""
 	if len(parts) > 3 {
-		column = parts[2]
-	}
-	if !strings.HasSuffix(filename, nextExt) {
-		// add 1 to column if it is a number for non-next files (most likely for template files)
-		if i, err := strconv.Atoi(column); err == nil {
-			column = strconv.Itoa(i + 1)
+		part := parts[2]
+		if i, err := strconv.Atoi(part); err == nil {
+			if !strings.HasSuffix(filename, nextExt) {
+				// add 1 to column if it is a number for non-next files (most likely for template files)
+				column = strconv.Itoa(i + 1)
+			} else {
+				column = part
+			}
 		}
 	}
 	message := parts[len(parts)-1]

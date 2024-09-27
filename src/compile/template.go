@@ -194,7 +194,7 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		templateContextInfo: info,
 		maxStack:            100,
 	}
-	if x := os.Getenv(ENV_NEXT_MAX_STACK); x != "" {
+	if x := os.Getenv(NEXTMAXSTACK); x != "" {
 		maxStack, err := strconv.Atoi(x)
 		if err == nil && maxStack > 0 {
 			tc.maxStack = maxStack
@@ -268,6 +268,21 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		//
 		// :::
 		"meta": func() Meta { return tc.meta },
+
+		// @api(Context/debug) outputs a debug message in the console.
+		//
+		// Example:
+		// ```npl
+		// {{debug "Hello, world"}}
+		// {{debug "Hello, %s" "world"}}
+		// ```
+		//
+		// :::tip
+		//
+		// It's useful when you want to print debug information in the console during code generation.
+		//
+		// :::
+		"debug": tc.debug,
 
 		// @api(Context/error) used to return an error message in the template.
 		//
@@ -515,11 +530,16 @@ func (tc *templateContext) env() flags.Map {
 	return tc.compiler.flags.envs
 }
 
-func (tc *templateContext) error(format string, args ...any) (string, error) {
+func (tc *templateContext) debug(msg string, args ...any) string {
+	tc.compiler.Debug(msg, args...)
+	return ""
+}
+
+func (tc *templateContext) error(msg string, args ...any) (string, error) {
 	if len(args) == 0 {
-		return "", errors.New(format)
+		return "", errors.New(msg)
 	}
-	return "", fmt.Errorf(format, args...)
+	return "", fmt.Errorf(msg, args...)
 }
 
 func (tc *templateContext) pwd() (string, error) {
@@ -688,7 +708,7 @@ func (tc *templateContext) loadTemplate(path string, fs FileSystem) (*template.T
 			if !os.IsNotExist(err) {
 				return nil, err
 			}
-			tc.compiler.Infof("template %q not found", path)
+			tc.compiler.Trace("template %q not found", path)
 			return nil, nil
 		}
 		if abs, err := fs.Abs(path); err == nil {
@@ -861,7 +881,7 @@ func (tc *templateContext) super(obj Object, langs ...string) (string, error) {
 		return "", fmt.Errorf("super not allowed in the template")
 	}
 	name := tc.stack[len(tc.stack)-1]
-	tc.compiler.Tracef("super template %q", name)
+	tc.compiler.Trace("super template %q", name)
 	names := tc.parseTemplateNames(lang, name)
 	if len(names) < 2 {
 		return "", fmt.Errorf("invalid template name %q", name)
@@ -902,7 +922,7 @@ func (tc *templateContext) renderWithNames(names []string, data any) (result str
 		return "", err
 	}
 	tc.stack = append(tc.stack, tt.Name())
-	tc.compiler.Tracef("rendering template %q", tt.Name())
+	tc.compiler.Trace("rendering template %q", tt.Name())
 	defer func() {
 		tc.stack = tc.stack[:len(tc.stack)-1]
 	}()

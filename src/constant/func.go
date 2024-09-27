@@ -12,8 +12,7 @@ import (
 // FuncContext represents the context in which a function is executed.
 // It provides methods for debugging, printing, and error reporting.
 type FuncContext interface {
-	IsDebugEnabled() bool
-	Print(args ...any)
+	Debug(msg string, args ...any)
 	Error(args ...any)
 }
 
@@ -272,18 +271,12 @@ func sprintlnFunc(ctx FuncContext, args []Value) Value {
 
 // printFunc prints the provided arguments if debugging is enabled.
 func printFunc(ctx FuncContext, args []Value) Value {
-	if !ctx.IsDebugEnabled() {
-		return MakeUnknown()
-	}
-	ctx.Print(fmt.Sprint(toArgs(args)...))
+	ctx.Debug(fmt.Sprint(toArgs(args)...))
 	return MakeUnknown()
 }
 
 // printfFunc prints a formatted string using the provided format and arguments if debugging is enabled.
 func printfFunc(ctx FuncContext, args []Value) Value {
-	if !ctx.IsDebugEnabled() {
-		return MakeUnknown()
-	}
 	if len(args) == 0 {
 		panic("printf: missing format string")
 	}
@@ -291,7 +284,7 @@ func printfFunc(ctx FuncContext, args []Value) Value {
 	if format.Kind() != String {
 		panic("printf: format string is not a string")
 	}
-	ctx.Print(fmt.Sprintf(StringVal(format), toArgs(args[1:])...))
+	ctx.Debug(StringVal(format), toArgs(args[1:])...)
 	return MakeUnknown()
 }
 

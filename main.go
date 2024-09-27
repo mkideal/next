@@ -32,7 +32,7 @@ func (d dirFS) Abs(name string) (string, error) {
 
 func copyBuiltin() compile.FileSystem {
 	builtin := embedFS{FS: builtin}
-	if x := strings.ToLower(os.Getenv(compile.ENV_NEXT_NO_COPY_BUILTIN)); x == "1" || x == "true" || x == "on" || x == "yes" {
+	if x := strings.ToLower(os.Getenv(compile.NEXTNOCOPYBUILTIN)); x == "1" || x == "true" || x == "on" || x == "yes" {
 		return builtin
 	}
 

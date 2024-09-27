@@ -18,6 +18,9 @@ import (
 	"github.com/next/next/src/token"
 )
 
+const verboseDebug = 1
+const verboseTrace = 2
+
 // Compiler represents a compiler of a Next program
 type Compiler struct {
 	// command line flags
@@ -94,12 +97,45 @@ func (c *Compiler) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 		return s
 	}
 
+	// @api(CommandLine/Flag/-v) represents the verbosity level of the compiler.
+	// The default value is **0**, which only shows error messages.
+	// The value **1** shows debug messages, and **2** shows trace messages.
+	// Usually, the trace message is used for debugging the compiler itself.
+	// Levels **1** (debug) and above enable execution of:
+	// - `print` and `printf` in Next source files (.next).
+	// - `debug` in Next template files (.npl).
+	//
+	// Example:
+	// ```sh
+	// next -v 1 ...
+	// ```
 	flagSet.IntVar(&c.flags.verbose, "v", 0, u(""+
 		"Control verbosity of compiler output and debugging information.\n"+
-		"`VERBOSE` levels: "+b("0")+"=error, "+b("1")+"=info, "+b("2")+"=debug, "+b("3")+"=trace\n"+
-		"Levels "+b("2")+" (debug) and above enable execution of "+b("print")+" and "+b("printf")+" in Next source files.\n",
+		"`VERBOSE` levels: "+b("0")+"=error,  "+b("1")+"=debug, "+b("2")+"=trace.\n"+
+		"Usually, the trace message used for debugging the compiler itself.\n"+
+		"Levels "+b("1")+" (debug) and above enable execution of:\n"+
+		" -"+b("print")+" and "+b("printf")+" in Next source filesa (.next).\n"+
+		" -"+b("debug")+" in Next template files (.npl).\n",
 	))
 
+	// @api(CommandLine/Flag/-D) represents the custom environment variables for code generation.
+	// The value is a map of environment variable names and their optional values.
+	//
+	// Example:
+	// ```sh
+	// next -D VERSION=2.1 -D DEBUG -D NAME=myapp ...
+	// ```
+	//
+	// ```npl
+	// {{env.NAME}}
+	// {{env.VERSION}}
+	// ```
+	//
+	// Output:
+	// ```
+	// myapp
+	// 2.1
+	// ```
 	flagSet.Var(&c.flags.envs, "D", u(""+
 		"Define custom environment variables for use in code generation templates.\n"+
 		"`NAME"+grey("[=VALUE]")+"` represents the variable name and its optional value.\n"+
@@ -108,6 +144,18 @@ func (c *Compiler) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 		"And then, use the variables in templates like this: {{env.NAME}}, {{env.VERSION}}\n",
 	))
 
+	// @api(CommandLine/Flag/-O) represents the output directories for generated code of each target language.
+	//
+	// Example:
+	// ```sh
+	// next -O go=./output/go -O ts=./output/ts ...
+	// ```
+	//
+	// :::tip
+	//
+	// The `{{meta.path}}` is relative to the output directory.
+	//
+	// :::
 	flagSet.Var(&c.flags.outputs, "O", u(""+
 		"Set output directories for generated code, organized by target language.\n"+
 		"`LANG=DIR` specifies the target language and its output directory.\n"+
@@ -115,6 +163,16 @@ func (c *Compiler) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 		"  next -O go=./output/go -O ts=./output/ts\n",
 	))
 
+	// @api(CommandLine/Flag/-T) represents the custom template directories or files for each target language.
+	// You can specify multiple templates for a single language.
+	//
+	// Example:
+	// ```sh
+	// next -T go=./templates/go \
+	//      -T go=./templates/go_extra.npl \
+	//      -T python=./templates/python.npl \
+	//      ...
+	// ```
 	flagSet.Var(&c.flags.templates, "T", u(""+
 		"Specify custom template directories or files for each target language.\n"+
 		"`LANG=PATH` defines the target language and its template directory or file.\n"+
@@ -126,6 +184,17 @@ func (c *Compiler) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 		"    -T python=./templates/python.npl\n",
 	))
 
+	// @api(CommandLine/Flag/-M) represents the language-specific type mappings and features.
+	//
+	// Example:
+	// ```sh
+	// next -M cpp.vector="std::vector<%T%>" \
+	//      -M java.array="ArrayList<%T%>" \
+	//      -M go.map="map[%K%]%V%" \
+	//      -M python.ext=.py \
+	//      -M ruby.comment="# %T%" \
+	//      ...
+	// ```
 	flagSet.Var(&c.flags.mappings, "M", u(""+
 		"Configure language-specific type mappings and features.\n"+
 		"`LANG.KEY=VALUE` specifies the mappings for a given language and type/feature.\n"+
@@ -143,6 +212,23 @@ func (c *Compiler) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 		"    -M ruby.comment=\"# %T%\"\n",
 	))
 
+	// @api(CommandLine/Flag/-X) represents the custom annotation solver programs for code generation.
+	// Annotation solvers are executed in a separate process to solve annotations.
+	// All annotations are passed to the solver program via stdin and stdout.
+	// The built-in annotation `next` is reserved for the Next compiler.
+	//
+	// Example:
+	// ```sh
+	// next -X message="message-type-allocator message-types.json" ...
+	// ```
+	//
+	// :::tip
+	//
+	// In the example above, the `message-type-allocator` is a custom annotation solver program that
+	// reads the message types from the `message-types.json` file and rewrite the message types to the
+	// `message-types.json` file.
+	//
+	// :::
 	flagSet.Var(&c.flags.solvers, "X", u(""+
 		"Specify custom annotation solver programs for code generation.\n"+
 		"`ANNOTATION=PROGRAM` defines the target annotation and its solver program.\n"+
@@ -150,7 +236,7 @@ func (c *Compiler) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 		"All annotations are passed to the solver program via stdin and stdout.\n"+
 		b("NOTE")+": built-in annotation 'next' is reserved for the Next compiler.\n"+
 		"Example:\n"+
-		"  next -X message=\"message-type-allocator -f message-types.json\"\n",
+		"  next -X message=\"message-type-allocator message-types.json\"\n",
 	))
 }
 
@@ -199,7 +285,10 @@ func (c *Compiler) IsDebugEnabled() bool {
 	return c.flags.verbose >= 2
 }
 
-func (c *Compiler) log(msg string) {
+func (c *Compiler) log(msg string, args ...any) {
+	if len(args) > 0 {
+		msg = fmt.Sprintf(msg, args...)
+	}
 	if !strings.HasSuffix(msg, "\n") {
 		msg += "\n"
 	}
@@ -213,47 +302,17 @@ func (c *Compiler) log(msg string) {
 }
 
 // Trace logs a message if trace logging is enabled
-func (c *Compiler) Trace(args ...any) {
-	if c.flags.verbose >= 3 {
-		c.log(fmt.Sprint(args...))
+func (c *Compiler) Trace(msg string, args ...any) {
+	if c.flags.verbose >= verboseTrace {
+		c.log(msg, args...)
 	}
 }
 
-// Tracef logs a formatted message if trace logging is enabled
-func (c *Compiler) Tracef(format string, args ...any) {
-	if c.flags.verbose >= 3 {
-		c.log(fmt.Sprintf(format, args...))
+// Debug logs a message if debug logging is enabled
+func (c *Compiler) Debug(msg string, args ...any) {
+	if c.flags.verbose >= verboseDebug {
+		c.log(msg, args...)
 	}
-}
-
-// Print logs a message if debug logging is enabled
-func (c *Compiler) Print(args ...any) {
-	if c.flags.verbose >= 2 {
-		c.log(fmt.Sprint(args...))
-	}
-}
-
-// Printf logs a formatted message if debug logging is enabled
-func (c *Compiler) Printf(format string, args ...any) {
-	if c.flags.verbose >= 2 {
-		c.log(fmt.Sprintf(format, args...))
-	}
-}
-
-// Info logs an info message if verbose logging is enabled
-func (c *Compiler) Info(args ...any) {
-	if c.flags.verbose < 1 {
-		return
-	}
-	c.log(fmt.Sprint(args...))
-}
-
-// Infof logs a formatted info message if verbose logging is enabled
-func (c *Compiler) Infof(format string, args ...any) {
-	if c.flags.verbose < 1 {
-		return
-	}
-	c.log(fmt.Sprintf(format, args...))
 }
 
 // Error logs an error message

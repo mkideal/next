@@ -16,7 +16,7 @@ func (ks Kinds) contains(k Kind) bool {
 
 // @api(Object/Common/Type/Kinds.Contains) reports whether the type contains specific kind.
 // The kind can be a `Kind` (or any integer) or a string representation of the [kind](#Object/Common/Type/Kind).
-// If the kind is invalid, it returns an error. Currently, the following kinds are supported:
+// If the kind is invalid, it returns an error.
 func (ks Kinds) Contains(k any) (bool, error) {
 	switch k := k.(type) {
 	case Kind:
@@ -89,6 +89,9 @@ const (
 	kindCount // -count-
 )
 
+// @api(Object/Common/Type/Kind.String) returns the string representation of the kind.
+// It returns the kind name in TitleCase. e.g. `KindInt` -> `Int`, `KindFloat32` -> `Float32`.
+
 // @api(Object/Common/Type/Kind.Valid) reports whether the type is valid.
 func (k Kind) Valid() bool {
 	return k > KindInvalid && k < kindCount
@@ -156,6 +159,7 @@ func (k Kind) Bits() int {
 }
 
 // @api(Object/Common/Type/Kind.IsInteger) reports whether the type is an integer.
+// It includes `int`, `int8`, `int16`, `int32`, `int64`, and `byte`.
 func (k Kind) IsInteger() bool {
 	switch k {
 	case KindInt, KindInt8, KindInt16, KindInt32, KindInt64, KindByte:
@@ -165,6 +169,7 @@ func (k Kind) IsInteger() bool {
 }
 
 // @api(Object/Common/Type/Kind.IsFloat) reports whether the type is a floating point.
+// It includes `float32` and `float64`.
 func (k Kind) IsFloat() bool {
 	switch k {
 	case KindFloat32, KindFloat64:
@@ -174,6 +179,7 @@ func (k Kind) IsFloat() bool {
 }
 
 // @api(Object/Common/Type/Kind.IsNumeric) reports whether the type is a numeric type.
+// It includes integer and floating point types.
 func (k Kind) IsNumeric() bool { return k.IsInteger() || k.IsFloat() }
 
 // @api(Object/Common/Type/Kind.IsString) reports whether the type is a string.
@@ -209,17 +215,17 @@ func (k Kind) IsStruct() bool { return k == KindStruct }
 // @api(Object/Common/Type/Kind.IsInterface) reports whether the type is an interface.
 func (k Kind) IsInterface() bool { return k == KindInterface }
 
-// @api(Object/Common/Type/Kind.Compatible) returns the compatible type between two types.
-// If the types are not compatible, it returns `KindInvalid`.
-// If the types are the same, it returns the type.
-// If the types are numeric, it returns the type with the most bits.
+// @api(Object/Common/Type/Kind.Compatible) returns the compatible type kind between two kinds.
+// If the kinds are not compatible, it returns `KindInvalid`.
+// If the kinds are the same, it returns the kind.
+// If the kinds are both numeric, it returns the kind with the most bits.
 func (k Kind) Compatible(other Kind) Kind {
 	if k == other {
 		return k
 	}
 	if k.IsNumeric() && other.IsNumeric() {
 		if k.IsFloat() || other.IsFloat() {
-			if k == KindFloat64 || other == KindFloat64 {
+			if max(k.Bits(), other.Bits()) == 64 {
 				return KindFloat64
 			}
 			return KindFloat32

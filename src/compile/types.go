@@ -1,4 +1,4 @@
-//go:generate go run github.com/gopherd/tools/cmd/docgen@v0.0.2 -I ./ -o ../../website/docs/api/latest -level 0
+//go:generate go run github.com/gopherd/tools/cmd/docgen@v0.0.3 -I ./ -o ../../website/docs/api/latest -level 0
 package compile
 
 import (
@@ -122,7 +122,7 @@ func (*Imports[T]) Typeof() string { return "imports" }
 func (*Import) Typeof() string     { return "import" }
 func (*Decls) Typeof() string      { return "decls" }
 func (x *Value) Typeof() string {
-	if x.enum.typ == nil {
+	if x.enum.decl == nil {
 		return "const.value"
 	}
 	return "enum.member.value"
@@ -239,6 +239,24 @@ type Node interface {
 	Name() string
 
 	// @api(Object/Common/Node.Doc) represents the documentation comment for the node.
+	// The documentation comment is a comment that appears before the node declaration.
+	//
+	// Example:
+	// ```next
+	// // This is a documentation comment for the node.
+	// // It can be multiple lines.
+	// const x = 1;
+	// ```
+	//
+	// ```npl
+	// {{.Doc.Text}}
+	// ```
+	//
+	// Output:
+	// ```
+	// This is a documentation comment for the node.
+	// It can be multiple lines.
+	// ```
 	Doc() *Doc
 
 	// @api(Object/Common/Node.Annotations) represents the [annotations](#Object/Common/Annotations) for the node.

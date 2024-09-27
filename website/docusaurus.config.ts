@@ -3,20 +3,18 @@ import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
 import type { Options as ClientRedirectsOptions } from "@docusaurus/plugin-client-redirects";
 
-import Prism from "prismjs";
 import prismLight from "./src/utils/prismLight";
 import prismDark from "./src/utils/prismDark";
-
-if (typeof window !== "undefined") {
-  window.Prism = Prism;
-} else if (typeof global !== "undefined") {
-  global.Prism = Prism;
-}
 
 // FIXME: change to https://next.as
 const URL = "https://gopherd.com";
 // FIXME: change to "https://github.com/next/next"
 const REPO = "https://github.com/gopherd/next";
+
+const customFields = {
+  announcedVersion: "0.0.3",
+  repo: REPO,
+};
 
 const config: Config = {
   title: "Next",
@@ -68,9 +66,7 @@ const config: Config = {
     ],
   ],
 
-  customFields: {
-    announcedVersion: "0.0.3",
-  },
+  customFields: customFields,
 
   presets: [
     [

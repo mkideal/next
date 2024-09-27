@@ -16,7 +16,11 @@ import (
 
 // @api(Object/Imports) holds a list of imports.
 type Imports[T Decl] struct {
-	// @api(Object/Imports.File) represents the file containing the imports.
+	// @api(Object/Imports.Decl) represents the declaration object that contains the imports.
+	// Currently, it is one of following types:
+	//
+	// - [File](#Object/File)
+	// - [Package](#Object/Package)
 	Decl Node
 
 	// @api(Object/Imports.List) represents the list of [imports](#Object/Import).
@@ -55,22 +59,83 @@ func (i *Imports[T]) TrimmedList() []*Import {
 	return pkgs
 }
 
-// @api(Object/Import) represents a file import.
+// @api(Object/Import) represents a import statement in a file.
 type Import struct {
 	pos    token.Pos // position of the import declaration
 	target *File     // imported file
 	file   *File     // file containing the import
 
 	// @api(Object/Import.Doc) represents the import declaration [documentation](#Object/Doc).
+	//
+	// Example:
+	// ```next
+	// // This is a documenation comment for the import.
+	// // It can be multiline.
+	// import "path/to/file.next"; // This is a line comment for the import.
+	// ```
+	//
+	// ```npl
+	// {{.Doc.Text}}
+	// ```
+	//
+	// Output:
+	// ```
+	// This is a documenation comment for the import.
+	// It can be multiline.
+	// ```
 	Doc *Doc
 
 	// @api(Object/Import.Comment) represents the import declaration line [comment](#Object/Comment).
+	//
+	// Example:
+	// ```next
+	// // This is a documenation comment for the import.
+	// // It can be multiline.
+	// import "path/to/file.next"; // This is a line comment for the import.
+	// ```
+	//
+	// ```npl
+	// {{.Comment.Text}}
+	// ```
+	//
+	// Output:
+	// ```
+	// This is a line comment for the import.
+	// ```
 	Comment *Comment
 
 	// @api(Object/Import.Path) represents the import path.
+	//
+	// Example:
+	// ```next
+	// import "path/to/file.next";
+	// ```
+	//
+	// ```npl
+	// {{.Path}}
+	// ```
+	//
+	// Output:
+	// ```
+	// path/to/file.next
+	// ```
 	Path string
 
 	// @api(Object/Import.FullPath) represents the full path of the import.
+	//
+	// Example:
+	// ```next
+	// import "path/to/file.next";
+	// ```
+	//
+	// ```npl
+	// {{.FullPath}}
+	// ```
+	//
+	// Output:
+	// ```
+	// /full/path/to/file.next
+	// ```
 	FullPath string
 }
 
@@ -100,10 +165,10 @@ func newImport(c *Compiler, file *File, src *ast.ImportDecl) *Import {
 	return i
 }
 
-// @api(Object/Import.Target) represents the imported file.
+// @api(Object/Import.Target) represents the imported file object.
 func (i *Import) Target() *File { return i.target }
 
-// @api(Object/Import.File) represents the file containing the import declaration.
+// @api(Object/Import.File) represents the file object containing the import declaration.
 func (i *Import) File() *File { return i.file }
 
 func (i *Import) resolve(c *Compiler, file *File, _ Scope) {
@@ -121,19 +186,19 @@ func (l List[T]) List() []T {
 	return l
 }
 
-// @api(Object/Consts) represents a [list](#Object/Common/List) of const declarations.
+// @api(Object/Consts) represents a [list](#Object/Common/List) of [const](#Object/Const) declarations.
 type Consts = List[*Const]
 
-// @api(Object/Enums) represents a [list](#Object/Common/List) of enum declarations.
+// @api(Object/Enums) represents a [list](#Object/Common/List) of [enum](#Object/Enum) declarations.
 type Enums = List[*Enum]
 
-// @api(Object/Structs) represents a [list](#Object/Common/List) of struct declarations.
+// @api(Object/Structs) represents a [list](#Object/Common/List) of [struct](#Object/Struct) declarations.
 type Structs = List[*Struct]
 
-// @api(Object/Interfaces) represents a [list](#Object/Common/List) of interface declarations.
+// @api(Object/Interfaces) represents a [list](#Object/Common/List) of [interface](#Object/Interface) declarations.
 type Interfaces = List[*Interface]
 
-// @api(Object/Decls) holds all declarations in a file.
+// @api(Object/Decls) holds all top-level declarations in a file.
 type Decls struct {
 	compiler   *Compiler
 	consts     Consts
@@ -231,12 +296,10 @@ func (d *commonNode[Self]) resolve(c *Compiler, file *File, scope Scope) {
 	d.annotations = resolveAnnotations(c, file, d.self, d.unresolved.annotations)
 }
 
-// Doc implements Node interface.
 func (d *commonNode[Self]) Doc() *Doc {
 	return d.doc
 }
 
-// Annotations implements Node interface.
 func (d *commonNode[Self]) Annotations() Annotations {
 	return d.annotations
 }
@@ -247,7 +310,7 @@ type iotaValue struct {
 	found bool
 }
 
-// @api(Object/Value) represents a constant value for a const declaration or an enum member.
+// @api(Object/Value) represents a value for a const declaration or an enum member.
 type Value struct {
 	namePos    token.Pos
 	name       string
@@ -258,7 +321,7 @@ type Value struct {
 	}
 	file *File
 	enum struct {
-		typ   *Enum     // parent enum
+		decl  *Enum     // enum declaration that contains the value
 		index int       // index in the enum type. start from 0
 		iota  iotaValue // iota value
 	}
@@ -308,31 +371,31 @@ func (v *Value) resolveValue(c *Compiler, file *File, scope Scope, refs []*Value
 	}
 
 	// If enum type is nil, resolve constant value expression in which iota is not allowed
-	if v.enum.typ == nil {
+	if v.enum.decl == nil {
 		v.val = c.recursiveResolveValue(file, scope, append(refs, v), v.unresolved.value, nil)
 		return v.val
 	}
 
 	if v.unresolved.value != nil {
 		// Resolve value expression
-		v.val = c.recursiveResolveValue(file, v.enum.typ, append(refs, v), v.unresolved.value, &v.enum.iota)
+		v.val = c.recursiveResolveValue(file, v.enum.decl, append(refs, v), v.unresolved.value, &v.enum.iota)
 	} else if v.enum.index == 0 {
 		// First member of enum type has value 0 if not specified
 		v.val = constant.MakeInt64(0)
 	} else {
 		// Resolve previous value
-		prev := v.enum.typ.Members.List[v.enum.index-1]
-		prev.value.resolveValue(c, file, v.enum.typ, append(refs, v))
+		prev := v.enum.decl.Members.List[v.enum.index-1]
+		prev.value.resolveValue(c, file, v.enum.decl, append(refs, v))
 
 		// Increment iota value
 		v.enum.iota.value = prev.value.enum.iota.value + 1
 
 		// Find the start value of the enum type for iota expression
-		start := v.enum.typ.Members.List[v.enum.index-v.enum.iota.value]
+		start := v.enum.decl.Members.List[v.enum.index-v.enum.iota.value]
 
 		if start.value.val != nil && start.value.enum.iota.found {
 			// If start value is specified and it has iota expression, resolve it with the current iota value
-			v.val = c.recursiveResolveValue(file, v.enum.typ, append(refs, v), start.value.unresolved.value, &v.enum.iota)
+			v.val = c.recursiveResolveValue(file, v.enum.decl, append(refs, v), start.value.unresolved.value, &v.enum.iota)
 		} else {
 			// Otherwise, add 1 to the previous value
 			v.val = constant.BinaryOp(prev.value.val, token.ADD, constant.MakeInt64(1))
@@ -341,9 +404,10 @@ func (v *Value) resolveValue(c *Compiler, file *File, scope Scope, refs []*Value
 	return v.val
 }
 
-// @api(Object/Value.IsEnum) returns true if the value is an enum member.
-func (v *Value) IsEnum() bool {
-	return v.enum.typ != nil
+// @api(Object/Value.Enum) represents the enum object that contains the value if it is an enum member.
+// Otherwise, it returns nil.
+func (v *Value) Enum() *Enum {
+	return v.enum.decl
 }
 
 // @api(Object/Value.Type) represents the [primitive type](#Object/PrimitiveType) of the value.
@@ -357,6 +421,15 @@ func (v *Value) String() string {
 }
 
 // @api(Object/Value.Any) represents the underlying value of the constant.
+// It returns one of the following types:
+//
+// - `int32`
+// - `int64`
+// - `float32`
+// - `float64`
+// - `bool`
+// - `string`
+// - `nil`
 func (v *Value) Any() any {
 	if v.val == nil {
 		return nil
@@ -391,6 +464,20 @@ type Const struct {
 	value *Value
 
 	// @api(Object/Const.Comment) is the line [comment](#Object/Comment) of the constant declaration.
+	//
+	// Example:
+	// ```next
+	// const x = 1; // This is a line comment for the constant.
+	// ```
+	//
+	// ```npl
+	// {{.Comment.Text}}
+	// ```
+	//
+	// Output:
+	// ```
+	// This is a line comment for the constant.
+	// ```
 	Comment *Comment
 }
 
@@ -524,7 +611,7 @@ func newEnumMember(c *Compiler, file *File, e *Enum, src *ast.EnumMember, index 
 	file.addObject(c, src, m)
 	m.commonNode = newCommonNode(m, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
 	m.value = newValue(c, file, src.Name.Name, src.Name.NamePos, src.Value)
-	m.value.enum.typ = e
+	m.value.enum.decl = e
 	m.value.enum.index = index
 	return m
 }
@@ -545,13 +632,35 @@ func (m *EnumMember) Value() *Value {
 }
 
 // @api(Object/Value.IsFirst) reports whether the value is the first member of the enum type.
+//
+// Example:
+// ```next
+//
+//	enum Color {
+//	    Red = 1; // IsFirst is true for Red
+//	    Green = 2;
+//	    Blue = 3;
+//	}
+//
+// ```
 func (m *EnumMember) IsFirst() bool {
-	return m.value.enum.typ != nil && m.value.enum.index == 0
+	return m.value.enum.decl != nil && m.value.enum.index == 0
 }
 
 // @api(Object/Value.IsLast) reports whether the value is the last member of the enum type.
+//
+// Example:
+// ```next
+//
+//	enum Color {
+//	    Red = 1;
+//	    Green = 2;
+//	    Blue = 3; // IsLast is true for Blue
+//	}
+//
+// ```
 func (m *EnumMember) IsLast() bool {
-	return m.value.enum.typ != nil && m.value.enum.index == len(m.value.enum.typ.Members.List)-1
+	return m.value.enum.decl != nil && m.value.enum.index == len(m.value.enum.decl.Members.List)-1
 }
 
 // @api(Object/Struct) (extends [Decl](#Object/Common/Decl)) represents a struct declaration.
@@ -588,6 +697,28 @@ func (s *Struct) resolve(c *Compiler, file *File, scope Scope) {
 }
 
 // @api(Object/Struct.Fields) represents the list of struct fields.
+//
+// Example:
+// ```next
+//
+//	struct Point {
+//	    int x;
+//	    int y;
+//	}
+//
+// ```
+//
+// ```npl
+// {{range .Fields.List}}
+// {{.Name}} {{.Type}}
+// {{end}}
+// ```
+//
+// Output:
+// ```
+// x int
+// y int
+// ```
 func (s *Struct) Fields() *StructFields {
 	return availableFields(s.file.compiler, s.fields, s.lang)
 }
@@ -625,16 +756,46 @@ func (f *StructField) resolve(c *Compiler, file *File, scope Scope) {
 }
 
 // @api(Object/StructField.Index) represents the index of the struct field in the struct type.
+//
+// Example:
+// ```next
+//
+//	struct Point {
+//	    int x; // Index is 0 for x
+//	    int y; // Index is 1 for y
+//	}
+//
+// ```
 func (f *StructField) Index() int {
 	return f.index
 }
 
 // @api(Object/StructField.IsFirst) reports whether the field is the first field in the struct type.
+//
+// Example:
+// ```next
+//
+//	struct Point {
+//	    int x; // IsFirst is true for x
+//	    int y;
+//	}
+//
+// ```
 func (f *StructField) IsFirst() bool {
 	return f.index == 0
 }
 
 // @api(Object/StructField.IsLast) reports whether the field is the last field in the struct type.
+//
+// Example:
+// ```next
+//
+//	struct Point {
+//	    int x;
+//	    int y; // IsLast is true for y
+//	}
+//
+// ```
 func (f *StructField) IsLast() bool {
 	return f.index == len(f.Decl.Fields().List)-1
 }
@@ -722,16 +883,46 @@ func (m *InterfaceMethod) resolve(c *Compiler, file *File, scope Scope) {
 }
 
 // @api(Object/InterfaceMethod.Index) represents the index of the interface method in the interface type.
+//
+// Example:
+// ```next
+//
+//	interface Shape {
+//	    draw(); // Index is 0 for draw
+//	    area() float64; // Index is 1 for area
+//	}
+//
+// ```
 func (m *InterfaceMethod) Index() int {
 	return m.index
 }
 
 // @api(Object/InterfaceMethod.IsFirst) reports whether the method is the first method in the interface type.
+//
+// Example:
+// ```next
+//
+//	interface Shape {
+//	    draw(); // IsFirst is true for draw
+//	    area() float64;
+//	}
+//
+// ```
 func (m *InterfaceMethod) IsFirst() bool {
 	return m.index == 0
 }
 
 // @api(Object/InterfaceMethod.IsLast) reports whether the method is the last method in the interface type.
+//
+// Example:
+// ```next
+//
+//	interface Shape {
+//	    draw();
+//	    area() float64; // IsLast is true for area
+//	}
+//
+// ```
 func (m *InterfaceMethod) IsLast() bool {
 	return m.index == len(m.Decl.Methods().List)-1
 }
@@ -769,16 +960,42 @@ func (p *InterfaceMethodParam) resolve(c *Compiler, file *File, scope Scope) {
 }
 
 // @api(Object/InterfaceMethodParam.Index) represents the index of the interface method parameter in the method.
+//
+// Example:
+// ```next
+//
+//	interface Shape {
+//	    draw(int x, int y); // Index is 0 for x, 1 for y
+//	}
+//
+// ```
 func (p *InterfaceMethodParam) Index() int {
 	return p.index
 }
 
 // @api(Object/InterfaceMethodParam.IsFirst) reports whether the parameter is the first parameter in the method.
+//
+// Example:
+// ```next
+//
+//	interface Shape {
+//	    draw(int x, int y); // IsFirst is true for x
+//	}
+//
+// ```
 func (p *InterfaceMethodParam) IsFirst() bool {
 	return p.index == 0
 }
 
 // @api(Object/InterfaceMethodParam.IsLast) reports whether the parameter is the last parameter in the method.
+// Example:
+// ```next
+//
+//	interface Shape {
+//	    draw(int x, int y); // IsLast is true for y
+//	}
+//
+// ```
 func (p *InterfaceMethodParam) IsLast() bool {
 	return p.index == len(p.Method.Params.List)-1
 }
