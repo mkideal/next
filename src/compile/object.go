@@ -431,13 +431,13 @@ func (v *Value) String() string {
 // @api(Object/Value.Any) represents the underlying value of the constant.
 // It returns one of the following types:
 //
-// - `int32`
-// - `int64`
-// - `float32`
-// - `float64`
-// - `bool`
-// - `string`
-// - `nil`
+// - **int32**
+// - **int64**
+// - **float32**
+// - **float64**
+// - **bool**
+// - **string**
+// - **nil**
 func (v *Value) Any() any {
 	if v.val == nil {
 		return nil

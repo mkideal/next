@@ -81,7 +81,7 @@ Let's break down each `*_package` parameter:
 
 Additional parameters:
 
-- `go_imports`: Specifies additional imports for Go (see [go_imports](#go_imports) section for details).
+- **go_imports**: Specifies additional imports for Go (see [go_imports](#go_imports) section for details).
 
 Examples of usage in different languages:
 

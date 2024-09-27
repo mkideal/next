@@ -102,8 +102,9 @@ func (c *Compiler) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 	// The value **1** shows debug messages, and **2** shows trace messages.
 	// Usually, the trace message is used for debugging the compiler itself.
 	// Levels **1** (debug) and above enable execution of:
-	// - `print` and `printf` in Next source files (.next).
-	// - `debug` in Next template files (.npl).
+	//
+	// - **print** and **printf** in Next source files (.next).
+	// - **debug** in Next template files (.npl).
 	//
 	// Example:
 	//

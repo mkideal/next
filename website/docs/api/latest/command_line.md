@@ -85,8 +85,9 @@ In the example above, the `message-type-allocator` is a custom annotation solver
 ### -v {#user-content-CommandLine_Flag_-v}
 
 `-v` represents the verbosity level of the compiler. The default value is **0**, which only shows error messages. The value **1** shows debug messages, and **2** shows trace messages. Usually, the trace message is used for debugging the compiler itself. Levels **1** (debug) and above enable execution of:
-- `print` and `printf` in Next source files (.next).
-- `debug` in Next template files (.npl).
+
+- **print** and **printf** in Next source files (.next).
+- **debug** in Next template files (.npl).
 
 Example:
 

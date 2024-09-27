@@ -170,7 +170,7 @@ The `next` annotation is used to pass information to the next compiler. It's a r
 
 :::note
 
-parameter names **MUST** not start with an uppercase letter, as this is reserved for the next compiler.
+parameter names **MUST NOT** start with an uppercase letter, as this is reserved for the next compiler.
 
 ```next
 @next(type=100) // OK
@@ -797,24 +797,24 @@ Currently, the following types are supported:
 
 `Kind` represents the type kind. Currently, the following kinds are supported:
 
-- `bool`: true or false
-- `int`: integer
-- `int8`: 8-bit integer
-- `int16`: 16-bit integer
-- `int32`: 32-bit integer
-- `int64`: 64-bit integer
-- `float32`: 32-bit floating point
-- `float64`: 64-bit floating point
-- `byte`: byte
-- `bytes`: byte slice
-- `string`: string
-- `any`: any object
-- `map`: dictionary
-- `vector`: vector of elements
-- `array`: array of elements
-- `enum`: enumeration
-- `struct`: structure
-- `interface`: interface
+- **bool**: true or false
+- **int**: integer
+- **int8**: 8-bit integer
+- **int16**: 16-bit integer
+- **int32**: 32-bit integer
+- **int64**: 64-bit integer
+- **float32**: 32-bit floating point
+- **float64**: 64-bit floating point
+- **byte**: byte
+- **bytes**: byte slice
+- **string**: string
+- **any**: any object
+- **map**: dictionary
+- **vector**: vector of elements
+- **array**: array of elements
+- **enum**: enumeration
+- **struct**: structure
+- **interface**: interface
 
 ###### .Bits {#user-content-Object_Common_Type_Kind__Bits}
 <div className="property-container">
@@ -1801,13 +1801,13 @@ struct Point {
 
 `.Any` represents the underlying value of the constant. It returns one of the following types:
 
-- `int32`
-- `int64`
-- `float32`
-- `float64`
-- `bool`
-- `string`
-- `nil`
+- **int32**
+- **int64**
+- **float32**
+- **float64**
+- **bool**
+- **string**
+- **nil**
 
 </div>
 

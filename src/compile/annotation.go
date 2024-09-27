@@ -106,7 +106,7 @@ func (a Annotations) Contains(name string) bool {
 //
 // :::note
 //
-// parameter names **MUST** not start with an uppercase letter, as this is reserved for the next compiler.
+// parameter names **MUST NOT** start with an uppercase letter, as this is reserved for the next compiler.
 //
 //	```next
 //	@next(type=100) // OK

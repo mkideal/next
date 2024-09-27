@@ -47,24 +47,24 @@ func (k Kind) kinds() Kinds { return 1 << k }
 // @api(Object/Common/Type/Kind) represents the type kind.
 // Currently, the following kinds are supported:
 //
-// - `bool`: true or false
-// - `int`: integer
-// - `int8`: 8-bit integer
-// - `int16`: 16-bit integer
-// - `int32`: 32-bit integer
-// - `int64`: 64-bit integer
-// - `float32`: 32-bit floating point
-// - `float64`: 64-bit floating point
-// - `byte`: byte
-// - `bytes`: byte slice
-// - `string`: string
-// - `any`: any object
-// - `map`: dictionary
-// - `vector`: vector of elements
-// - `array`: array of elements
-// - `enum`: enumeration
-// - `struct`: structure
-// - `interface`: interface
+// - **bool**: true or false
+// - **int**: integer
+// - **int8**: 8-bit integer
+// - **int16**: 16-bit integer
+// - **int32**: 32-bit integer
+// - **int64**: 64-bit integer
+// - **float32**: 32-bit floating point
+// - **float64**: 64-bit floating point
+// - **byte**: byte
+// - **bytes**: byte slice
+// - **string**: string
+// - **any**: any object
+// - **map**: dictionary
+// - **vector**: vector of elements
+// - **array**: array of elements
+// - **enum**: enumeration
+// - **struct**: structure
+// - **interface**: interface
 const (
 	KindInvalid   Kind = iota // Invalid
 	KindBool                  // Bool
