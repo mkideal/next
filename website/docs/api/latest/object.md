@@ -125,14 +125,15 @@ int8
 
 The `next` annotation is used to pass information to the next compiler. It's a reserved annotation and should not be used for other purposes. The `next` annotation can be annotated to `package` statements, `const` declarations, `enum` declarations, `struct` declarations, `field` declarations, `interface` declarations, `method` declarations, and `parameter` declarations. 
 :::note 
-parameter names must start with a lowercase letter. Any parameter name that does not start with a lowercase letter is reserved for the next compiler. 
+parameter names **MUST** not start with an uppercase letter, as this is reserved for the next compiler. 
 
 ```next
-@next(type=100) // valid
+@next(type=100) // OK
+@next(_type=100) // OK
 
-This will error
+// This will error
 @next(Type=100)
-// invalid parameter name "Type": must start with a lowercase letter, e.g., "type"
+// invalid parameter name "Type": must not start with an uppercase letter (A-Z), e.g., "type"
 ```
 
 :::

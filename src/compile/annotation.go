@@ -94,15 +94,15 @@ func (a Annotations) Contains(name string) bool {
 //
 // :::note
 //
-// parameter names must start with a lowercase letter. Any parameter name that does not start with a lowercase letter
-// is reserved for the next compiler.
+// parameter names **MUST** not start with an uppercase letter, as this is reserved for the next compiler.
 //
 // ```next
-// @next(type=100) // valid
+// @next(type=100) // OK
+// @next(_type=100) // OK
 //
-// This will error
+// // This will error
 // @next(Type=100)
-// // invalid parameter name "Type": must start with a lowercase letter, e.g., "type"
+// // invalid parameter name "Type": must not start with an uppercase letter (A-Z), e.g., "type"
 // ```
 //
 // :::
@@ -435,8 +435,8 @@ func resolveAnnotations(c *Compiler, file *File, obj Node, annotations *ast.Anno
 				c.addErrorf(p.Name.Pos(), "parameter name cannot be empty")
 				continue
 			}
-			if name[0] < 'a' || name[0] > 'z' {
-				c.addErrorf(p.Name.Pos(), "invalid parameter name %q: must start with a lowercase letter, e.g., %q", name, strings.ToLower(name[:1])+name[1:])
+			if name[0] >= 'A' && name[0] <= 'Z' {
+				c.addErrorf(p.Name.Pos(), "invalid parameter name %q: must not start with an uppercase letter (A-Z), e.g., %q", name, strings.ToLower(name[:1])+name[1:])
 				continue
 			}
 
