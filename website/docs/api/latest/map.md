@@ -23,7 +23,7 @@
 
 Here is an example of a language map file for the Java language:
 
-```plain title="java.map"
+```map title="java.map"
 ext=.java
 comment=// %T%
 
@@ -57,14 +57,14 @@ box(boolean)=Boolean
 :::note
 
 - The `%T%`, `%K%`, `%V%` and `%N%` are placeholders for the type, key type, value type and number of array elements.
-- Line comments are started with the `#` character and it must be the first character of the line.
+- Line comments are started with the `#` character and it must be the first character of the line (leading spaces are allowed).
 
 ```plain title="java.map"
 # This will error
 ext=.java # This is an invalid comment
-# Comment must be the first character of the line (leading spaces are allowed)
+# Comment must be the first character of the line
 
-	# This is a valid comment
+	# This is a valid comment (leading spaces are allowed)
 ```
 
 See [Builtin Map Files](https://github.com/gopherd/next/tree/main/builtin) for more information.

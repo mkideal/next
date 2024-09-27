@@ -37,6 +37,19 @@ const repository = "https://github.com/next/next"
 // Compile compiles the next files.
 func Compile(platform Platform, builtin FileSystem, args []string) {
 	stdin, stderr := platform.Stdin(), platform.Stderr()
+
+	// @api(CommandLine/Command/version) command prints the version of the next compiler.
+	// It prints the version of the next compiler and exits the program.
+	//
+	// Example:
+	// ```sh
+	// next version
+	// ```
+	//
+	// Output:
+	// ```
+	// next v0.0.4(main: 51864a35de7890d63bfd8acecdb62d20372ca963) built at 2024/09/27T22:58:21+0800 by go1.23.0
+	// ```
 	if len(args) == 2 && args[1] == "version" {
 		builder.PrintInfo()
 		unwrap(stderr, 0)

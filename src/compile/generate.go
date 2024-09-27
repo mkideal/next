@@ -100,7 +100,7 @@ func Generate(c *Compiler) error {
 		m[k] = v
 	}
 	c.flags.mappings = m
-	if c.IsDebugEnabled() {
+	if c.flags.verbose >= verboseTrace {
 		keys := make([]string, 0, len(m))
 		for k := range m {
 			keys = append(keys, k)
@@ -158,7 +158,7 @@ func Generate(c *Compiler) error {
 //
 // Here is an example of a language map file for the Java language:
 //
-//	```plain title="java.map"
+//	```map title="java.map"
 //	ext=.java
 //	comment=// %T%
 //
@@ -192,14 +192,14 @@ func Generate(c *Compiler) error {
 // :::note
 //
 // - The `%T%`, `%K%`, `%V%` and `%N%` are placeholders for the type, key type, value type and number of array elements.
-// - Line comments are started with the `#` character and it must be the first character of the line.
+// - Line comments are started with the `#` character and it must be the first character of the line (leading spaces are allowed).
 //
 //	```plain title="java.map"
 //	# This will error
 //	ext=.java # This is an invalid comment
-//	# Comment must be the first character of the line (leading spaces are allowed)
+//	# Comment must be the first character of the line
 //
-//		# This is a valid comment
+//		# This is a valid comment (leading spaces are allowed)
 //	```
 //
 // See [Builtin Map Files](https://github.com/gopherd/next/tree/main/builtin) for more information.
@@ -381,23 +381,23 @@ func generateForInterface(tc *templateContext, t *template.Template, content []b
 // gen generates a file using the given template, meta data, and object which may be a
 // file, const, enum or struct.
 func gen[T Decl](tc *templateContext, t *template.Template, decl T, content []byte) error {
-	// skip if the declaration is an alias
+	// Skip if the declaration is an alias
 	if decl.Annotations().get("next").get(tc.lang+"_alias") != nil {
 		return nil
 	}
 
-	// skip if the declaration is not available in the target language
+	// Skip if the declaration is not available in the target language
 	decl, ok := available(tc.compiler, decl, tc.lang)
 	if !ok {
 		return nil
 	}
 
-	// reset the template context with the template and the declaration
+	// Reset the template context with the template and the declaration
 	if err := tc.reset(t, reflect.ValueOf(decl)); err != nil {
 		return err
 	}
 
-	// resolve meta data
+	// Resolve meta data
 	meta, err := resolveMeta(tc, t, string(content))
 	if err != nil {
 		return err
@@ -406,7 +406,7 @@ func gen[T Decl](tc *templateContext, t *template.Template, decl T, content []by
 		tc.compiler.Trace("%s: meta[%q] = %q", t.Name(), k, v)
 	}
 
-	// skip if the meta data contains 'skip' and its value is true
+	// Skip if the meta data contains 'skip' and its value is true
 	if m := meta.lookup("skip").First; m != "" {
 		skip, err := strconv.ParseBool(m)
 		if err != nil {
@@ -417,14 +417,19 @@ func gen[T Decl](tc *templateContext, t *template.Template, decl T, content []by
 		}
 	}
 
-	// execute the template with the template context
+	// Execute the template with the template context
 	tc.pushPwd(filepath.Dir(t.ParseName))
 	defer tc.popPwd()
 	if err := t.Execute(&tc.buf, tc); err != nil {
 		return err
 	}
 
-	// write the generated content to the output file
+	// Do not write the generated content to the output file if the test flag is set
+	if tc.compiler.flags.test {
+		return nil
+	}
+
+	// Write the generated content to the output file
 	path := op.Or(meta.lookup("path").First, decl.Name()+tc.ext)
 	if !filepath.IsAbs(path) {
 		path = filepath.Join(tc.dir, path)
