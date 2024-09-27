@@ -56,21 +56,19 @@ type Compiler struct {
 	searchDirs []string
 
 	// all annotations
-	annotations         map[token.Pos]*linkedAnnotation
-	annotationPositions map[locatedAnnotation]token.Pos
+	annotations map[token.Pos]*linkedAnnotation
 }
 
 // NewCompiler creates a new compiler with builtin language supports
 func NewCompiler(platform Platform, builtin FileSystem) *Compiler {
 	c := &Compiler{
-		platform:            platform,
-		builtin:             builtin,
-		fset:                token.NewFileSet(),
-		files:               make(map[string]*File),
-		symbols:             make(map[string]Symbol),
-		searchDirs:          createSearchDirs(platform),
-		annotations:         make(map[token.Pos]*linkedAnnotation),
-		annotationPositions: make(map[locatedAnnotation]token.Pos),
+		platform:    platform,
+		builtin:     builtin,
+		fset:        token.NewFileSet(),
+		files:       make(map[string]*File),
+		symbols:     make(map[string]Symbol),
+		searchDirs:  createSearchDirs(platform),
+		annotations: make(map[token.Pos]*linkedAnnotation),
 	}
 	c.flags.envs = make(flags.Map)
 	c.flags.outputs = make(flags.Map)
@@ -349,7 +347,7 @@ func (c *Compiler) Resolve() error {
 		for name, symbol := range file.symbols {
 			symbolName := joinSymbolName(file.pkg.name, name)
 			if prev, ok := c.symbols[symbolName]; ok {
-				c.addErrorf(symbol.Pos().Offset, "symbol %s redeclared: previous declaration at %s", symbolName, prev.Pos())
+				c.addErrorf(symbol.Pos().pos, "symbol %s redeclared: previous declaration at %s", symbolName, prev.Pos())
 			} else {
 				c.symbols[symbolName] = symbol
 			}

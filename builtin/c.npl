@@ -103,7 +103,7 @@ typedef struct {{next .Type}} {{next .Type}};
 {{- else if .MemberType.Kind.IsFloat}}
     double value;
 {{- else}}
-    {{error "unsupported enum member type: %s" .MemberType.Kind}}
+    {{error "%s: unsupported enum member type: %s" .Pos .MemberType.Kind}}
 {{- end}}
 } {{next .Type}};
 {{range .Members.List}}

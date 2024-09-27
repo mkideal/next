@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os/exec"
 	"sort"
+	"strings"
 
 	"github.com/mattn/go-shellwords"
 
@@ -90,6 +91,21 @@ func (a Annotations) Contains(name string) bool {
 // annotation and should not be used for other purposes. The `next` annotation can be annotated
 // to `package` statements, `const` declarations, `enum` declarations, `struct` declarations,
 // `field` declarations, `interface` declarations, `method` declarations, and `parameter` declarations.
+//
+// :::note
+//
+// parameter names must start with a lowercase letter. Any parameter name that does not start with a lowercase letter
+// is reserved for the next compiler.
+//
+// ```next
+// @next(type=100) // valid
+//
+// This will error
+// @next(Type=100)
+// // invalid parameter name "Type": must start with a lowercase letter, e.g., "type"
+// ```
+//
+// :::
 type Annotation map[string]any
 
 func (a Annotation) get(name string) any {
@@ -106,6 +122,43 @@ func (a Annotation) Contains(name string) bool {
 	}
 	_, ok := a[name]
 	return ok
+}
+
+const __pos__ = "__pos__"
+
+// @api(Object/Common/Annotation.Pos) returns the position of the annotation in the source code.
+func (a Annotation) Pos() Position {
+	return a.getPos(__pos__)
+}
+
+// @api(Object/Common/Annotation.NamePos) returns the position of the annotation name in the source code.
+func (a Annotation) NamePos(name string) Position {
+	return a.getPos(name)
+}
+
+// @api(Object/Common/Annotation.ValuePos) returns the position of the annotation value in the source code.
+func (a Annotation) ValuePos(name string) Position {
+	return a.getPos(name + ":value")
+}
+
+func (a Annotation) getPos(key string) Position {
+	if a == nil {
+		return Position{}
+	}
+	positions, ok := a[__pos__].(map[string]Position)
+	if !ok {
+		return Position{}
+	}
+	return positions[key]
+}
+
+func (a Annotation) setPos(key string, pos Position) {
+	positions, ok := a[__pos__].(map[string]Position)
+	if !ok {
+		positions = make(map[string]Position)
+		a[__pos__] = positions
+	}
+	positions[key] = pos
 }
 
 // @api(Object/Common/Annotation/decl.available)
@@ -373,16 +426,22 @@ func resolveAnnotations(c *Compiler, file *File, obj Node, annotations *ast.Anno
 			obj:        obj,
 			annotation: annotation,
 		}
-		pos := obj.Pos().Offset
+		pos := obj.Pos().pos
 		c.annotations[pos] = la
-		c.annotationPositions[locatedAnnotation{
-			key:     a.Name.Name,
-			declPos: pos,
-		}] = pos
+		annotation.setPos(__pos__, positionFor(c, a.Pos()))
 		for _, p := range a.Params {
 			name := p.Name.Name
+			if name == "" {
+				c.addErrorf(p.Name.Pos(), "parameter name cannot be empty")
+				continue
+			}
+			if name[0] < 'a' || name[0] > 'z' {
+				c.addErrorf(p.Name.Pos(), "invalid parameter name %q: must start with a lowercase letter, e.g., %q", name, strings.ToLower(name[:1])+name[1:])
+				continue
+			}
+
 			if _, dup := annotation[name]; dup {
-				c.addErrorf(p.Pos(), "named parameter %s redefined", name)
+				c.addErrorf(p.Pos(), "parameter %q redefined, previous definition at %s", name, annotation.NamePos(name))
 				continue
 			}
 			var value any
@@ -400,15 +459,9 @@ func resolveAnnotations(c *Compiler, file *File, obj Node, annotations *ast.Anno
 			}
 			if value != nil {
 				annotation[name] = value
-				c.annotationPositions[locatedAnnotation{
-					key:     a.Name.Name + "." + p.Name.Name,
-					declPos: pos,
-				}] = p.Name.NamePos
+				annotation.setPos(p.Name.Name, positionFor(c, p.Name.NamePos))
 				if p.Value != nil {
-					c.annotationPositions[locatedAnnotation{
-						key:     a.Name.Name + "." + p.Name.Name + ":value",
-						declPos: pos,
-					}] = p.Value.Pos()
+					annotation.setPos(p.Name.Name+":value", positionFor(c, p.Value.Pos()))
 				}
 			} else {
 				c.addErrorf(p.Pos(), "unexpected parameter %T", p.Value)
@@ -522,10 +575,10 @@ func (c *Compiler) createAnnotationSolverRequest(name string) *api.AnnotationSol
 		obj := a.obj.(Node)
 		req.Annotations[api.ID(pos)] = &api.Annotation{
 			ID:     api.ID(pos),
-			Object: api.ID(obj.Pos().Offset),
+			Object: api.ID(obj.Pos().pos),
 			Params: params,
 		}
-		objects[obj.Pos().Offset] = obj
+		objects[obj.Pos().pos] = obj
 	}
 	for pos, obj := range objects {
 		req.Objects[api.ID(pos)] = &api.Object{

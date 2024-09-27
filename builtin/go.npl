@@ -240,6 +240,6 @@ type HTTPServer interface {
     {{- if $ptr -}}*{{- end -}}
     {{$pkg}}.{{$typ}}
 {{- else }}
-{{- error "bad go_alias format: %q" $alias}}
+{{- error "%s: invalid format of %q: MUST be in the form of '[[*]path/to/pkg.]TypeName'" (.Decl.Annotations.next.ValuePos "go_alias") $alias}}
 {{- end -}}
 {{- end}}

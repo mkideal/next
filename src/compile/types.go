@@ -1,4 +1,4 @@
-//go:generate go run github.com/gopherd/tools/cmd/docgen@v0.0.2 -I ./ -o ../../website/docs/api -level 0
+//go:generate go run github.com/gopherd/tools/cmd/docgen@v0.0.2 -I ./ -o ../../website/docs/api/latest -level 0
 package compile
 
 import (
@@ -156,23 +156,23 @@ func (*CallStmt) Typeof() string { return "stmt.call" }
 // -------------------------------------------------------------------------
 
 type Position struct {
-	Offset   token.Pos
+	pos      token.Pos
 	Filename string
 	Line     int
 	Column   int
 }
 
-func (pos Position) IsValid() bool { return pos.Offset.IsValid() }
+func (p Position) IsValid() bool { return p.pos.IsValid() }
 
-func (pos Position) String() string {
-	s := pos.Filename
-	if pos.IsValid() {
+func (p Position) String() string {
+	s := p.Filename
+	if p.IsValid() {
 		if s != "" {
 			s += ":"
 		}
-		s += strconv.Itoa(pos.Line)
-		if pos.Column != 0 {
-			s += fmt.Sprintf(":%d", pos.Column)
+		s += strconv.Itoa(p.Line)
+		if p.Column != 0 {
+			s += fmt.Sprintf(":%d", p.Column)
 		}
 	}
 	if s == "" {
@@ -185,7 +185,7 @@ func positionFor(c *Compiler, pos token.Pos) Position {
 	if pos.IsValid() {
 		p := c.fset.Position(pos)
 		return Position{
-			Offset:   pos,
+			pos:      pos,
 			Filename: p.Filename,
 			Line:     p.Line,
 			Column:   p.Column,

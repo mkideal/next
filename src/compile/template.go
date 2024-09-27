@@ -235,7 +235,7 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		// ```
 		"lang": func() string { return tc.lang },
 
-		// @api(Context/meta) represents the metadata of a entrypoint template file by flag `-T`.
+		// @api(Context/meta) represents the metadata of entrypoint template file by flag `-T`.
 		// To define a meta, you should define a template with the name `meta/<key>`.
 		// Currently, the following meta keys are used by the code generator:
 		//
@@ -243,7 +243,13 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		// - `meta/path`: the output path for the current object. If the path is not absolute, it will be resolved relative to the current output directory for the current language by command line flag `-O`.
 		// - `meta/skip`: whether to skip the current object.
 		//
-		// User-defined metq keys **MUST** prefixed with `_`. You can use them in the templates like `{{meta.<key>}}`.
+		// You can use them in the templates like `{{meta.<key>}}`.
+		//
+		// :::tip
+		//
+		// User-defined meta key **MUST** be prefixed with `_`, e.g., `_custom_key`.
+		//
+		// :::
 		//
 		// Example:
 		// ```npl
@@ -255,8 +261,12 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		// {{meta._custom_key}}
 		// ```
 		//
-		// **The metadata will be resolved in the order of the template definition
-		// before rendering the entrypoint template.**
+		// :::note
+		//
+		// The metadata will be resolved in the order of the template definition
+		// before rendering the entrypoint template.
+		//
+		// :::
 		"meta": func() Meta { return tc.meta },
 
 		// @api(Context/error) used to return an error message in the template.
@@ -264,7 +274,22 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		// Example:
 		// ```npl
 		// {{error "Something went wrong"}}
+		// {{error "%s went wrong" "Something"}}
 		// ```
+		//
+		// :::tip
+		//
+		// Using `.Pos` to get the current object's position in source file is a good practice.
+		//
+		// ```npl
+		// {{- define "next/protobuf/enum" -}}
+		// {{- if not .MemberType.Kind.IsInteger -}}
+		// {{error "%s: enum type must be an integer" .Pos}}
+		// {{- end}}
+		// {{- end}}
+		// ```
+		//
+		// :::
 		"error": tc.error,
 
 		// @api(Context/pwd) returns the current template file's directory.

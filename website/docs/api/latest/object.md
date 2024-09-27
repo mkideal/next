@@ -123,11 +123,35 @@ Login
 int8
 ```
 
-The `next` annotation is used to pass information to the next compiler. It's a reserved annotation and should not be used for other purposes. The `next` annotation can be annotated to `package` statements, `const` declarations, `enum` declarations, `struct` declarations, `field` declarations, `interface` declarations, `method` declarations, and `parameter` declarations.
+The `next` annotation is used to pass information to the next compiler. It's a reserved annotation and should not be used for other purposes. The `next` annotation can be annotated to `package` statements, `const` declarations, `enum` declarations, `struct` declarations, `field` declarations, `interface` declarations, `method` declarations, and `parameter` declarations. 
+:::note 
+parameter names must start with a lowercase letter. Any parameter name that does not start with a lowercase letter is reserved for the next compiler. 
+
+```next
+@next(type=100) // valid
+
+This will error
+@next(Type=100)
+// invalid parameter name "Type": must start with a lowercase letter, e.g., "type"
+```
+
+:::
 
 ###### .Contains {#user-content-Object_Common_Annotation_-Contains}
 
 `.Contains` reports whether the annotation contains the given parameter.
+
+###### .NamePos {#user-content-Object_Common_Annotation_-NamePos}
+
+`.NamePos` returns the position of the annotation name in the source code.
+
+###### .Pos {#user-content-Object_Common_Annotation_-Pos}
+
+`.Pos` returns the position of the annotation in the source code.
+
+###### .ValuePos {#user-content-Object_Common_Annotation_-ValuePos}
+
+`.ValuePos` returns the position of the annotation value in the source code.
 
 #### decl {#user-content-Object_Common_Annotation_decl}
 ###### .available {#user-content-Object_Common_Annotation_decl_-available}

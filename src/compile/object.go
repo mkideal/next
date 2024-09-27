@@ -811,22 +811,20 @@ func (t *InterfaceMethodResult) resolve(c *Compiler, file *File, scope Scope) {
 
 // isAvailable reports whether the declaration is available in the current language.
 func isAvailable(c *Compiler, decl Node, lang string) bool {
-	s, ok := decl.Annotations().get("next").get("available").(string)
+	a := decl.Annotations().get("next")
+	s, ok := a.get("available").(string)
 	if !ok {
 		return true
 	}
-	offset := c.annotationPositions[locatedAnnotation{
-		key:     "next.available:value",
-		declPos: decl.Pos().Offset,
-	}]
+	pos := a.ValuePos("available")
 	expr, err := parser.ParseExpr(s)
 	if err != nil {
-		panic(fmt.Sprintf("%s: invalid @next(available) expression", c.fset.Position(offset)))
+		panic(fmt.Sprintf("%s: invalid @next(available) expression", pos))
 	}
-	return evalAvailableExpr(c, offset, expr, lang)
+	return evalAvailableExpr(c, pos.pos, expr, lang)
 }
 
-func evalAvailableExpr(c *Compiler, offset token.Pos, expr ast.Expr, lang string) bool {
+func evalAvailableExpr(c *Compiler, pos token.Pos, expr ast.Expr, lang string) bool {
 	expr = ast.Unparen(expr)
 	switch expr := expr.(type) {
 	case *ast.Ident:
@@ -838,24 +836,24 @@ func evalAvailableExpr(c *Compiler, offset token.Pos, expr ast.Expr, lang string
 		return expr.Name == lang
 	case *ast.UnaryExpr:
 		if expr.Op == token.NOT {
-			return !evalAvailableExpr(c, offset, expr.X, lang)
+			return !evalAvailableExpr(c, pos, expr.X, lang)
 		}
-		panic(c.fset.Position(offset+expr.OpPos).String() + ": unexpected unary operator: " + expr.Op.String())
+		panic(c.fset.Position(pos+expr.OpPos).String() + ": unexpected unary operator: " + expr.Op.String())
 	case *ast.BinaryExpr:
 		switch expr.Op {
 		case token.OR:
-			return evalAvailableExpr(c, offset, expr.X, lang) || evalAvailableExpr(c, offset, expr.Y, lang)
+			return evalAvailableExpr(c, pos, expr.X, lang) || evalAvailableExpr(c, pos, expr.Y, lang)
 		case token.AND:
-			return evalAvailableExpr(c, offset, expr.X, lang) && evalAvailableExpr(c, offset, expr.Y, lang)
+			return evalAvailableExpr(c, pos, expr.X, lang) && evalAvailableExpr(c, pos, expr.Y, lang)
 		case token.EQL:
-			return evalAvailableExpr(c, offset, expr.X, lang) == evalAvailableExpr(c, offset, expr.Y, lang)
+			return evalAvailableExpr(c, pos, expr.X, lang) == evalAvailableExpr(c, pos, expr.Y, lang)
 		case token.NEQ:
-			return evalAvailableExpr(c, offset, expr.X, lang) != evalAvailableExpr(c, offset, expr.Y, lang)
+			return evalAvailableExpr(c, pos, expr.X, lang) != evalAvailableExpr(c, pos, expr.Y, lang)
 		default:
-			panic(c.fset.Position(offset+expr.OpPos).String() + ": unexpected binary operator: " + expr.Op.String())
+			panic(c.fset.Position(pos+expr.OpPos).String() + ": unexpected binary operator: " + expr.Op.String())
 		}
 	default:
-		panic(c.fset.Position(offset+expr.Pos()).String() + ": unexpected expression")
+		panic(c.fset.Position(pos+expr.Pos()).String() + ": unexpected expression")
 	}
 }
 

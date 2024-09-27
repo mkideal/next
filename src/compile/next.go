@@ -197,11 +197,18 @@ func printError(stderr io.Writer, err error) {
 		if e, ok := err.(template.ExecError); ok {
 			errs = append(errs, err.Error())
 			err = e.Err
-			origin = err
+			origin = nil
 		} else if e := errors.Unwrap(err); e != nil {
 			err = e
+			if origin == nil {
+				origin = err
+			}
 		} else {
-			errs = append(errs, origin.Error())
+			if origin == nil {
+				errs = append(errs, err.Error())
+			} else {
+				errs = append(errs, origin.Error())
+			}
 			break
 		}
 	}

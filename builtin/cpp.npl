@@ -128,7 +128,7 @@ static inline const {{render "enum:member.type" .Decl}} {{render "enum.member:na
 {{- else if .Decl.MemberType.Kind.IsFloat -}}
 static inline constexpr {{render "enum:member.type" .Decl}} {{render "enum.member:name" .}} = {{.Value}};
 {{- else -}}
-{{error "unsupported enum member type: %s" .Decl.MemberType.Kind}}
+{{error "%s: unsupported enum member type: %s" .Decl.Pos .Decl.MemberType.Kind}}
 {{- end}}
 {{- end}}
 
