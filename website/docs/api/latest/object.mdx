@@ -4,6 +4,9 @@ pagination_next: null
 ---
 # Object {#user-content-Object}
 
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
 `Object` is a generic object type. These objects can be used as parameters for the `Context/next` function, like `{{next .}}`.
 
 ###### .Typeof {#user-content-Object__Typeof}
@@ -1717,7 +1720,15 @@ import "path/to/file2.next";
 package a;
 ```
 
-```npl title="file.npl"
+<Tabs
+	defaultValue="file"
+  values={[
+    { label: 'file.npl', value: 'file' },
+    { label: 'package.npl', value: 'package' },
+  ]}>
+
+<TabItem value="file">
+```npl
 {{- define "meta/this" -}}file{{- end -}}
 
 {{range this.Imports.List}}
@@ -1730,8 +1741,10 @@ Output (for file1.next):
 ```
 file1
 ```
+</TabItem>
 
-```npl title="package.npl"
+<TabItem value="package">
+```npl
 {{- define "meta/this" -}}package{{- end -}}
 
 {{range this.Imports.List}}
@@ -1744,6 +1757,9 @@ Output:
 ```
 a
 ```
+</TabItem>
+
+</Tabs>
 
 </div>
 
