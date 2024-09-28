@@ -34,7 +34,15 @@ type Imports[T Decl] struct {
 	//	package a;
 	//	```
 	//
-	//	```npl title="file.npl"
+	//	<Tabs
+	//		defaultValue="file"
+	//	  values={[
+	//	    { label: 'file.npl', value: 'file' },
+	//	    { label: 'package.npl', value: 'package' },
+	//	  ]}>
+	//
+	//	<TabItem value="file">
+	//	```npl
 	//	{{- define "meta/this" -}}file{{- end -}}
 	//
 	//	{{range this.Imports.List}}
@@ -47,8 +55,10 @@ type Imports[T Decl] struct {
 	//	```
 	//	file1
 	//	```
+	//	</TabItem>
 	//
-	//	```npl title="package.npl"
+	//	<TabItem value="package">
+	//	```npl
 	//	{{- define "meta/this" -}}package{{- end -}}
 	//
 	//	{{range this.Imports.List}}
@@ -61,6 +71,9 @@ type Imports[T Decl] struct {
 	//	```
 	//	a
 	//	```
+	//	</TabItem>
+	//
+	//	</Tabs>
 	Decl Node
 
 	// @api(Object/Imports.List) represents a slice of [Import](#Object/Import) declarations: **\[[Import](#Object/Import)\]**.

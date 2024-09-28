@@ -4,6 +4,9 @@ pagination_next: null
 ---
 # Map {#user-content-Map}
 
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
 `Map` represents a language map file. Usually, it is a text file that contains key-value pairs separated by a equal sign. The key is the name of the language feature. The built-in keys are:
 
 - **ext**: the file extension for the language
@@ -25,8 +28,17 @@ pagination_next: null
 - **map**: the map type for the language
 - **box**: the box replacement for the language (for java, e.g., box(int) = Integer)
 
-Here is an example of a language map file for the Java language:
+Here are some examples of language map files:
 
+<Tabs
+  defaultValue="java"
+  values={[
+    { label: 'java.map', value: 'java' },
+    { label: 'cpp.map', value: 'cpp' },
+    { label: 'protobuf.map', value: 'protobuf' },
+  ]}>
+
+<TabItem value="java">
 ```map title="java.map"
 ext=.java
 comment=// %T%
@@ -57,10 +69,60 @@ box(float)=Float
 box(double)=Double
 box(boolean)=Boolean
 ```
+</TabItem>
 
-:::note
+<TabItem value="cpp">
+```map title="cpp.map"
+ext=.h
+comment=// %T%
+
+int=int
+int8=int8_t
+int16=int16_t
+int32=int32_t
+int64=int64_t
+float32=float
+float64=double
+bool=bool
+string=std::string
+byte=unsigned char
+bytes=std::vector<unsigned char>
+any=std::any
+map=std::unordered_map<%K%, %V%>
+vector=std::vector<%T%>
+array=std::array<%T%, %N%>
+```
+</TabItem>
+
+<TabItem value="protobuf">
+```map title="protobuf.map"
+ext=.proto
+comment=// %T%
+
+int=int32
+int8=int32
+int16=int32
+int32=int32
+int64=int64
+float32=float
+float64=double
+bool=bool
+string=string
+byte=int8
+bytes=bytes
+any=google.protobuf.Any
+map=map<%K%, %V%>
+vector=repeated %T.E%
+array=repeated %T.E%
+```
+</TabItem>
+
+</Tabs>
+
+:::tip
 
 - The `%T%`, `%K%`, `%V%` and `%N%` are placeholders for the type, key type, value type and number of array elements.
+- `%T.E%` is the final element type of `%T%`. It's useful if you need to get the final element type of a vector or array.
 - Line comments are started with the `#` character and it must be the first character of the line (leading spaces are allowed).
 
 ```plain title="java.map"

@@ -18,7 +18,12 @@ import (
 
 // -------------------------------------------------------------------------
 
-// @api(Object) is a generic object type. These objects can be used as parameters for the `Context/next`
+// @api(Object)
+//
+//	import Tabs from "@theme/Tabs";
+//	import TabItem from "@theme/TabItem";
+//
+// `Object` is a generic object type. These objects can be used as parameters for the `Context/next`
 // function, like `{{next .}}`.
 type Object interface {
 	// @api(Object.Typeof) returns the type name of the object.
