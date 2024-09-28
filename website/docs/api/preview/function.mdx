@@ -1,17 +1,21 @@
+---
+pagination_prev: null
+pagination_next: null
+---
 # Function
 
 ## _ {#user-content-_}
 
 `_` is a no-op function that returns an empty string. It's useful to place a newline in the template.
 
- Example:
+Example:
 ```tmpl
 {{- if true -}}
 {{_}} ok
 {{- end}}
 ```
 
- Output:
+Output:
 ```
 ok
 ```
@@ -23,15 +27,15 @@ ok
 
 - **Parameters**: (_dict_or_pairs_: ...any)
 
- dict supports keys of any comparable type and values of any type. If an odd number of arguments is provided, it returns an error. If the first argument is already a map, it extends that map with the following key/value pairs.
+dict supports keys of any comparable type and values of any type. If an odd number of arguments is provided, it returns an error. If the first argument is already a map, it extends that map with the following key/value pairs.
 
- Example:
+Example:
 ```tmpl
 {{$user := dict "name" "Alice" "age" 30}}
 {{dict "user" ($user) "active" true}}
 ```
 
- Output:
+Output:
 ```
 map[user:map[name:Alice age:30] active:true]
 ```
@@ -40,13 +44,13 @@ map[user:map[name:Alice age:30] active:true]
 
 `first` returns the first element of a list or string.
 
- Example:
+Example:
 ```tmpl
 {{first (list 1 2 3)}}
 {{first "hello"}}
 ```
 
- Output:
+Output:
 ```
 1
 h
@@ -59,13 +63,13 @@ h
 - **Parameters**: (_item_: any, _collection_: slice | map | string)
 - **Returns**: bool
 
- Example:
+Example:
 ```tmpl
 {{includes 2 (list 1 2 3)}}
 {{includes "world" "hello world"}}
 ```
 
- Output:
+Output:
 ```
 true
 true
@@ -75,13 +79,13 @@ true
 
 `last` returns the last element of a list or string.
 
- Example:
+Example:
 ```tmpl
 {{last (list 1 2 3)}}
 {{last "hello"}}
 ```
 
- Output:
+Output:
 ```
 3
 o
@@ -91,12 +95,12 @@ o
 
 `list` creates a list from the given arguments.
 
- Example:
+Example:
 ```tmpl
 {{list 1 2 3}}
 ```
 
- Output:
+Output:
 ```
 [1 2 3]
 ```
@@ -107,14 +111,14 @@ o
 
 - **Parameters**: (_fn_: function, _list_: slice)
 
- Example:
+Example:
 ```tmpl
 {{list 1 2 3 | map (add 1)}}
 {{list "a" "b" "c" | map (upper | replace "A" "X")}}
 {{"math/rand.Int63, *io.Reader, *io.Writer" | split "," | map (trim | split "." | first | trimPrefix "*") | sort | uniq}}
 ```
 
- Output:
+Output:
 ```
 [2 3 4]
 [X B C]
@@ -125,13 +129,13 @@ o
 
 `reverse` reverses a list or string.
 
- Example:
+Example:
 ```tmpl
 {{reverse (list 1 2 3)}}
 {{reverse "hello"}}
 ```
 
- Output:
+Output:
 ```
 [3 2 1]
 olleh
@@ -141,13 +145,13 @@ olleh
 
 `sort` sorts a list of numbers or strings.
 
- Example:
+Example:
 ```tmpl
 {{sort (list 3 1 4 1 5 9)}}
 {{sort (list "banana" "apple" "cherry")}}
 ```
 
- Output:
+Output:
 ```
 [1 1 3 4 5 9]
 [apple banana cherry]
@@ -157,12 +161,12 @@ olleh
 
 `uniq` removes duplicate elements from a list.
 
- Example:
+Example:
 ```tmpl
 {{uniq (list 1 2 2 3 3 3)}}
 ```
 
- Output:
+Output:
 ```
 [1 2 3]
 ```
@@ -172,13 +176,13 @@ olleh
 
 `bool` converts a value to a boolean.
 
- Example:
+Example:
 ```tmpl
 {{bool 1}}
 {{bool "false"}}
 ```
 
- Output:
+Output:
 ```
 true
 false
@@ -188,13 +192,13 @@ false
 
 `float` converts a value to a float.
 
- Example:
+Example:
 ```tmpl
 {{float "3.14"}}
 {{float 42}}
 ```
 
- Output:
+Output:
 ```
 3.14
 42
@@ -204,13 +208,13 @@ false
 
 `int` converts a value to an integer.
 
- Example:
+Example:
 ```tmpl
 {{int "42"}}
 {{int 3.14}}
 ```
 
- Output:
+Output:
 ```
 42
 3
@@ -220,13 +224,13 @@ false
 
 `string` converts a value to a string.
 
- Example:
+Example:
 ```tmpl
 {{string 42}}
 {{string true}}
 ```
 
- Output:
+Output:
 ```
 42
 true
@@ -237,12 +241,12 @@ true
 
 `now` returns the current time.
 
- Example:
+Example:
 ```tmpl
 {{now}}
 ```
 
- Output:
+Output:
 ```
 2024-09-12 15:04:05.999999999 +0000 UTC
 ```
@@ -253,12 +257,12 @@ true
 
 - **Parameters**: (_layout_: string, _value_: string)
 
- Example:
+Example:
 ```tmpl
 {{parseTime "2006-01-02" "2024-09-12"}}
 ```
 
- Output:
+Output:
 ```
 2024-09-12 00:00:00 +0000 UTC
 ```
@@ -268,12 +272,12 @@ true
 
 `b64dec` decodes a base64 encoded string.
 
- Example:
+Example:
 ```tmpl
 {{b64dec "SGVsbG8sIFdvcmxkIQ=="}}
 ```
 
- Output:
+Output:
 ```
 Hello, World!
 ```
@@ -282,12 +286,12 @@ Hello, World!
 
 `b64enc` encodes a string to base64.
 
- Example:
+Example:
 ```tmpl
 {{b64enc "Hello, World!"}}
 ```
 
- Output:
+Output:
 ```
 SGVsbG8sIFdvcmxkIQ==
 ```
@@ -299,12 +303,12 @@ SGVsbG8sIFdvcmxkIQ==
 
 - **Parameters**: (_a_: number, _b_: number)
 
- Example:
+Example:
 ```tmpl
 {{add 2 3}}
 ```
 
- Output:
+Output:
 ```
 5
 ```
@@ -313,12 +317,12 @@ SGVsbG8sIFdvcmxkIQ==
 
 `ceil` returns the least integer value greater than or equal to the input.
 
- Example:
+Example:
 ```tmpl
 {{ceil 3.14}}
 ```
 
- Output:
+Output:
 ```
 4
 ```
@@ -327,12 +331,12 @@ SGVsbG8sIFdvcmxkIQ==
 
 `floor` returns the greatest integer value less than or equal to the input.
 
- Example:
+Example:
 ```tmpl
 {{floor 3.14}}
 ```
 
- Output:
+Output:
 ```
 3
 ```
@@ -343,12 +347,12 @@ SGVsbG8sIFdvcmxkIQ==
 
 - **Parameters**: numbers (variadic)
 
- Example:
+Example:
 ```tmpl
 {{max 3 1 4 1 5 9}}
 ```
 
- Output:
+Output:
 ```
 9
 ```
@@ -359,12 +363,12 @@ SGVsbG8sIFdvcmxkIQ==
 
 - **Parameters**: numbers (variadic)
 
- Example:
+Example:
 ```tmpl
 {{min 3 1 4 1 5 9}}
 ```
 
- Output:
+Output:
 ```
 1
 ```
@@ -375,12 +379,12 @@ SGVsbG8sIFdvcmxkIQ==
 
 - **Parameters**: (_a_: number, _b_: number)
 
- Example:
+Example:
 ```tmpl
 {{mod -7 3}}
 ```
 
- Output:
+Output:
 ```
 2
 ```
@@ -391,12 +395,12 @@ SGVsbG8sIFdvcmxkIQ==
 
 - **Parameters**: (_a_: number, _b_: number)
 
- Example:
+Example:
 ```tmpl
 {{mul 2 3}}
 ```
 
- Output:
+Output:
 ```
 6
 ```
@@ -407,12 +411,12 @@ SGVsbG8sIFdvcmxkIQ==
 
 - **Parameters**: (_a_: number, _b_: number)
 
- Example:
+Example:
 ```tmpl
 {{quo 6 3}}
 ```
 
- Output:
+Output:
 ```
 2
 ```
@@ -423,12 +427,12 @@ SGVsbG8sIFdvcmxkIQ==
 
 - **Parameters**: (_a_: number, _b_: number)
 
- Example:
+Example:
 ```tmpl
 {{rem 7 3}}
 ```
 
- Output:
+Output:
 ```
 1
 ```
@@ -439,12 +443,12 @@ SGVsbG8sIFdvcmxkIQ==
 
 - **Parameters**: (_precision_: integer, _value_: number)
 
- Example:
+Example:
 ```tmpl
 {{round 2 3.14159}}
 ```
 
- Output:
+Output:
 ```
 3.14
 ```
@@ -455,12 +459,12 @@ SGVsbG8sIFdvcmxkIQ==
 
 - **Parameters**: (_a_: number, _b_: number)
 
- Example:
+Example:
 ```tmpl
 {{sub 5 3}}
 ```
 
- Output:
+Output:
 ```
 2
 ```
@@ -470,11 +474,11 @@ SGVsbG8sIFdvcmxkIQ==
 
 `absPath` returns the absolute path of a file or directory.
 
- Example:
+Example:
 ```tmpl
 {{absPath "file.txt"}}
 ```
- Output:
+Output:
 ```
 /path/to/file.txt
 ```
@@ -483,11 +487,11 @@ SGVsbG8sIFdvcmxkIQ==
 
 `basename` returns the last element of a path.
 
- Example:
+Example:
 ```tmpl
 {{basename "path/to/file.txt"}}
 ```
- Output:
+Output:
 ```
 file.txt
 ```
@@ -496,11 +500,11 @@ file.txt
 
 `cleanPath` returns the cleaned path.
 
- Example:
+Example:
 ```tmpl
 {{cleanPath "path/to/../file.txt"}}
 ```
- Output:
+Output:
 ```
 path/file.txt
 ```
@@ -509,11 +513,11 @@ path/file.txt
 
 `dirname` returns the directory of a path.
 
- Example:
+Example:
 ```tmpl
 {{dirname "path/to/file.txt"}}
 ```
- Output:
+Output:
 ```
 path/to
 ```
@@ -522,11 +526,11 @@ path/to
 
 `extname` returns the extension of a path.
 
- Example:
+Example:
 ```tmpl
 {{extname "path/to/file.txt"}}
 ```
- Output:
+Output:
 ```
 .txt
 ```
@@ -535,11 +539,11 @@ path/to
 
 `glob` returns the names of all files matching a pattern.
 
- Example:
+Example:
 ```tmpl
 {{glob "/path/to/*.txt"}}
 ```
- Output:
+Output:
 ```
 [/path/to/file1.txt /path/to/file2.txt]
 ```
@@ -548,11 +552,11 @@ path/to
 
 `isAbs` reports whether a path is absolute.
 
- Example:
+Example:
 ```tmpl
 {{isAbs "/path/to/file.txt"}}
 ```
- Output:
+Output:
 ```
 true
 ```
@@ -563,11 +567,11 @@ true
 
 - **Parameters**: elements (variadic)
 
- Example:
+Example:
 ```tmpl
 {{joinPath "path" "to" "file.txt"}}
 ```
- Output:
+Output:
 ```
 path/to/file.txt
 ```
@@ -578,12 +582,12 @@ path/to/file.txt
 
 - **Parameters**: (_pattern_: string, _path_: string)
 
- Example:
+Example:
 ```tmpl
 {{matchPath "/path/to/*.txt" "/path/to/file.txt"}}
 ```
 
- Output:
+Output:
 ```
 true
 ```
@@ -594,11 +598,11 @@ true
 
 - **Parameters**: (_base_: string, _target_: string)
 
- Example:
+Example:
 ```tmpl
 {{relPath "/path/to" "/path/to/file.txt"}}
 ```
- Output:
+Output:
 ```
 file.txt
 ```
@@ -607,11 +611,11 @@ file.txt
 
 `splitPath` splits a path into its elements.
 
- Example:
+Example:
 ```tmpl
 {{splitPath "path/to/file.txt"}}
 ```
- Output:
+Output:
 ```
 [path to file.txt]
 ```
@@ -621,12 +625,12 @@ file.txt
 
 `camelCase` converts a string to camelCase.
 
- Example:
+Example:
 ```tmpl
 {{camelCase "hello world"}}
 ```
 
- Output:
+Output:
 ```
 helloWorld
 ```
@@ -635,12 +639,12 @@ helloWorld
 
 `capitalize` capitalizes the first character of a string.
 
- Example:
+Example:
 ```tmpl
 {{capitalize "hello"}}
 ```
 
- Output:
+Output:
 ```
 Hello
 ```
@@ -651,12 +655,12 @@ Hello
 
 - **Parameters**: (_width_: int, _target_: string)
 
- Example:
+Example:
 ```tmpl
 {{center 20 "Hello"}}
 ```
 
- Output:
+Output:
 ```
 "       Hello        "
 ```
@@ -668,12 +672,12 @@ Hello
 - **Parameters**: (_prefix_: string, _target_: string)
 - **Returns**: bool
 
- Example:
+Example:
 ```tmpl
 {{hasPrefix "Hello" "Hello, World!"}}
 ```
 
- Output:
+Output:
 ```
 true
 ```
@@ -685,12 +689,12 @@ true
 - **Parameters**: (_suffix_: string, _target_: string)
 - **Returns**: bool
 
- Example:
+Example:
 ```tmpl
 {{hasSuffix "World!" "Hello, World!"}}
 ```
 
- Output:
+Output:
 ```
 true
 ```
@@ -699,12 +703,12 @@ true
 
 `html` escapes special characters in a string for use in HTML.
 
- Example:
+Example:
 ```tmpl
 {{html "<script>alert('XSS')</script>"}}
 ```
 
- Output:
+Output:
 ```
 &lt;script&gt;alert(&#39;XSS&#39;)&lt;/script&gt;
 ```
@@ -716,12 +720,12 @@ true
 - **Parameters**: (_separator_: string, _values_: slice of strings)
 - **Returns**: string
 
- Example:
+Example:
 ```tmpl
 {{join "-" (list "apple" "banana" "cherry")}}
 ```
 
- Output:
+Output:
 ```
 apple-banana-cherry
 ```
@@ -730,12 +734,12 @@ apple-banana-cherry
 
 `kebabCase` converts a string to kebab-case.
 
- Example:
+Example:
 ```tmpl
 {{kebabCase "helloWorld"}}
 ```
 
- Output:
+Output:
 ```
 hello-world
 ```
@@ -744,12 +748,12 @@ hello-world
 
 `lower` converts a string to lowercase.
 
- Example:
+Example:
 ```tmpl
 {{lower "HELLO"}}
 ```
 
- Output:
+Output:
 ```
 hello
 ```
@@ -761,12 +765,12 @@ hello
 - **Parameters**: (_pattern_: string, _target_: string)
 - **Returns**: bool
 
- Example:
+Example:
 ```tmpl
 {{matchRegex "^[a-z]+$" "hello"}}
 ```
 
- Output:
+Output:
 ```
 true
 ```
@@ -775,12 +779,12 @@ true
 
 `pascalCase` converts a string to PascalCase.
 
- Example:
+Example:
 ```tmpl
 {{pascalCase "hello world"}}
 ```
 
- Output:
+Output:
 ```
 HelloWorld
 ```
@@ -789,13 +793,13 @@ HelloWorld
 
 `quote` returns a double-quoted string.
 
- Example:
+Example:
 ```tmpl
 {{print "hello"}}
 {{quote "hello"}}
 ```
 
- Output:
+Output:
 ```
 hello
 "hello"
@@ -807,12 +811,12 @@ hello
 
 - **Parameters**: (_count_: int, _target_: string)
 
- Example:
+Example:
 ```tmpl
 {{repeat 3 "abc"}}
 ```
 
- Output:
+Output:
 ```
 abcabcabc
 ```
@@ -823,12 +827,12 @@ abcabcabc
 
 - **Parameters**: (_old_: string, _new_: string, _target_: string)
 
- Example:
+Example:
 ```tmpl
 {{replace "o" "0" "hello world"}}
 ```
 
- Output:
+Output:
 ```
 hell0 w0rld
 ```
@@ -839,12 +843,12 @@ hell0 w0rld
 
 - **Parameters**: (_old_: string, _new_: string, _n_: int, _target_: string)
 
- Example:
+Example:
 ```tmpl
 {{replaceN "o" "0" 1 "hello world"}}
 ```
 
- Output:
+Output:
 ```
 hell0 world
 ```
@@ -853,12 +857,12 @@ hell0 world
 
 `snakeCase` converts a string to snake_case.
 
- Example:
+Example:
 ```tmpl
 {{snakeCase "helloWorld"}}
 ```
 
- Output:
+Output:
 ```
 hello_world
 ```
@@ -870,12 +874,12 @@ hello_world
 - **Parameters**: (_separator_: string, _target_: string)
 - **Returns**: slice of strings
 
- Example:
+Example:
 ```tmpl
 {{split "," "apple,banana,cherry"}}
 ```
 
- Output:
+Output:
 ```
 [apple banana cherry]
 ```
@@ -884,12 +888,12 @@ hello_world
 
 `striptags` removes HTML tags from a string.
 
- Example:
+Example:
 ```tmpl
 {{striptags "<p>Hello <b>World</b>!</p>"}}
 ```
 
- Output:
+Output:
 ```
 Hello World!
 ```
@@ -900,12 +904,12 @@ Hello World!
 
 - **Parameters**: (_start_: int, _length_: int, _target_: string)
 
- Example:
+Example:
 ```tmpl
 {{substr 0 5 "Hello, World!"}}
 ```
 
- Output:
+Output:
 ```
 Hello
 ```
@@ -914,12 +918,12 @@ Hello
 
 `trim` removes leading and trailing whitespace from a string.
 
- Example:
+Example:
 ```tmpl
 {{trim "  hello  "}}
 ```
 
- Output:
+Output:
 ```
 hello
 ```
@@ -930,12 +934,12 @@ hello
 
 - **Parameters**: (_prefix_: string, _target_: string)
 
- Example:
+Example:
 ```tmpl
 {{trimPrefix "Hello, " "Hello, World!"}}
 ```
 
- Output:
+Output:
 ```
 World!
 ```
@@ -946,12 +950,12 @@ World!
 
 - **Parameters**: (_suffix_: string, _target_: string)
 
- Example:
+Example:
 ```tmpl
 {{trimSuffix ", World!" "Hello, World!"}}
 ```
 
- Output:
+Output:
 ```
 Hello
 ```
@@ -962,12 +966,12 @@ Hello
 
 - **Parameters**: (_length_: int, _suffix_: string, _target_: string)
 
- Example:
+Example:
 ```tmpl
 {{truncate 10 "..." "This is a long sentence."}}
 ```
 
- Output:
+Output:
 ```
 This is a...
 ```
@@ -976,12 +980,12 @@ This is a...
 
 `unquote` returns an unquoted string.
 
- Example:
+Example:
 ```tmpl
 {{unquote "\"hello\""}}
 ```
 
- Output:
+Output:
 ```
 hello
 ```
@@ -990,12 +994,12 @@ hello
 
 `upper` converts a string to uppercase.
 
- Example:
+Example:
 ```tmpl
 {{upper "hello"}}
 ```
 
- Output:
+Output:
 ```
 HELLO
 ```
@@ -1004,12 +1008,12 @@ HELLO
 
 `urlEscape` escapes a string for use in a URL query.
 
- Example:
+Example:
 ```tmpl
 {{urlEscape "hello world"}}
 ```
 
- Output:
+Output:
 ```
 hello+world
 ```
@@ -1018,12 +1022,12 @@ hello+world
 
 `urlUnescape` unescapes a URL query string.
 
- Example:
+Example:
 ```tmpl
 {{urlUnescape "hello+world"}}
 ```
 
- Output:
+Output:
 ```
 hello world
 ```
@@ -1034,12 +1038,12 @@ hello world
 
 - **Parameters**: (_width_: int, _target_: string)
 
- Example:
+Example:
 ```tmpl
 {{wordwrap 10 "This is a long sentence that needs wrapping."}}
 ```
 
- Output:
+Output:
 ```
 This is a
 long

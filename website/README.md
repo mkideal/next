@@ -43,5 +43,5 @@ If you are using GitHub pages for hosting, this command is a convenient way to b
 ### Generate Template Function API
 
 ```sh
-docgen -I ../../../gopherd/core/text/templates/ -o ./docs/api/preview/function.md -level 1 -title=Function
+docgen -ext .mdx -I ../../../gopherd/core/text/templates/ -o ./docs/api/preview/function.mdx -level 1 -title=Function -M "---" -M "pagination_prev: null" -M "pagination_next: null" -M "---"
 ```

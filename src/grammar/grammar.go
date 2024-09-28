@@ -1,4 +1,4 @@
-//go:generate go run github.com/gopherd/tools/cmd/docgen@v0.0.5 -I ./ -o ../../website/docs/api/preview -level 0
+//go:generate go run github.com/gopherd/tools/cmd/docgen@v0.0.7 -ext .mdx -I ./ -o ../../website/docs/api/preview -level 0 -M "---" -M "pagination_prev: null" -M "pagination_next: null" -M "---"
 package grammar
 
 // @api(Grammar) represents the custom grammar for the next files.
