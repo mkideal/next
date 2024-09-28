@@ -14,16 +14,58 @@ import (
 	"github.com/next/next/src/token"
 )
 
-// @api(Object/Imports) holds a list of imports.
+// @api(Object/Imports) holds a slice of [Import](#Object/Import) declarations and the declaration that contains the imports.
 type Imports[T Decl] struct {
-	// @api(Object/Imports.Decl) represents the declaration object that contains the imports.
+	// @api(Object/Imports.Decl) represents the declaration [Node](#Object/Common/Node) that contains the imports.
 	// Currently, it is one of following types:
 	//
 	// - [File](#Object/File)
 	// - [Package](#Object/Package)
+	//
+	// Example:
+	//
+	//	```next title="file1.next"
+	//	package a;
+	//
+	//	import "path/to/file2.next";
+	//	```
+	//
+	//	```next title="file2.next"
+	//	package a;
+	//	```
+	//
+	//	```npl title="file.npl"
+	//	{{- define "meta/this" -}}file{{- end -}}
+	//
+	//	{{range .Imports.List}}
+	//	{{.Decl.Name}}
+	//	{{end}}
+	//	```
+	//
+	//	Output (for file1.next):
+	//
+	//	```
+	//	file1
+	//	```
+	//
+	//	```npl title="package.npl"
+	//	{{- define "meta/this" -}}package{{- end -}}
+	//
+	//	{{range .Imports.List}}
+	//	{{.Decl.Name}}
+	//	{{end}}
+	//	```
+	//
+	//	Output:
+	//
+	//	```
+	//	a
+	//	```
 	Decl Node
 
-	// @api(Object/Imports.List) represents the list of [Import](#Object/Import).
+	// @api(Object/Imports.List) represents a slice of [Import](#Object/Import) declarations: **\[[Import](#Object/Import)\]**.
+	//
+	// Example: see [Object/Imports.Decl](#Object/Imports.Decl).
 	List []*Import
 }
 
@@ -42,7 +84,30 @@ func (i *Imports[T]) add(x *Import) {
 	i.List = append(i.List, x)
 }
 
-// @api(Object/Imports.TrimmedList) represents a list of unique imports sorted by package name.
+// @api(Object/Imports.TrimmedList) represents a slice of unique imports sorted by package name.
+//
+// Example:
+//
+//	```next
+//	package c;
+//
+//	import "path/to/file1.next"; // package: a
+//	import "path/to/file2.next"; // package: a
+//	import "path/to/file3.next"; // package: b
+//	```
+//
+//	```npl
+//	{{range .Imports.TrimmedList}}
+//	{{.Target.Package.Name}}
+//	{{end}}
+//	```
+//
+// Output:
+//
+//	```
+//	a
+//	b
+//	```
 func (i *Imports[T]) TrimmedList() []*Import {
 	var seen = make(map[string]bool)
 	var pkgs []*Import
@@ -59,20 +124,20 @@ func (i *Imports[T]) TrimmedList() []*Import {
 	return pkgs
 }
 
-// @api(Object/Import) represents a import statement in a file.
+// @api(Object/Import) represents a import declaration in a [File](#Object/File).
 type Import struct {
 	pos    token.Pos // position of the import declaration
-	target *File     // imported file
-	file   *File     // file containing the import
+	target *File     // the imported file
+	file   *File     // the file containing the import declaration
 
-	// @api(Object/Import.Doc) represents the import declaration [Doc](#Object/Doc).
+	// @api(Object/Import.Doc) represents the [Doc](#Object/Doc) comment of the import.
 	//
 	// Example:
 	//
 	//	```next
 	//	// This is a documenation comment for the import.
 	//	// It can be multiline.
-	//	import "path/to/file.next"; // This is a line comment for the import.
+	//	import "path/to/file.next"; // This is a line comment for the import declaration.
 	//	```
 	//
 	//	```npl
@@ -87,7 +152,7 @@ type Import struct {
 	//	```
 	Doc *Doc
 
-	// @api(Object/Import.Comment) represents the import declaration line [Comment](#Object/Comment).
+	// @api(Object/Import.Comment) represents the line [Comment](#Object/Comment) of the import declaration.
 	//
 	// Example:
 	//
@@ -173,10 +238,54 @@ func newImport(c *Compiler, file *File, src *ast.ImportDecl) *Import {
 	return i
 }
 
-// @api(Object/Import.Target) represents the imported file object.
+// @api(Object/Import.Target) represents the imported [File](#Object/File) object.
+//
+// Example:
+//
+//	```next title="file1.next"
+//	package a;
+//
+//	import "file2.next";
+//	import "file3.next";
+//	```
+//
+//	```npl
+//	{{range .Imports.List}}
+//	{{.Target.Path}}
+//	{{end}}
+//	```
+//
+//	Output:
+//
+//	```
+//	file2.next
+//	file3.next
+//	```
 func (i *Import) Target() *File { return i.target }
 
-// @api(Object/Import.File) represents the file object containing the import declaration.
+// @api(Object/Import.File) represents the [File](#Object/File) object that contains the import declaration.
+//
+// Example:
+//
+//	```next title="file1.next"
+//	package a;
+//
+//	import "file2.next";
+//	import "file3.next";
+//	```
+//
+//	```npl
+//	{{range .Imports.List}}
+//	{{.File.Path}}
+//	{{end}}
+//	```
+//
+//	Output:
+//
+//	```
+//	file1.next
+//	file1.next
+//	```
 func (i *Import) File() *File { return i.file }
 
 func (i *Import) resolve(c *Compiler, file *File, _ Scope) {
@@ -186,10 +295,11 @@ func (i *Import) resolve(c *Compiler, file *File, _ Scope) {
 	}
 }
 
-// @api(Object/Common/List) represents a list of objects.
+// @api(Object/Common/List)
+// `List<T>` represents a slice of objects: **\[T: [Object](#Object)\]**.
 type List[T Object] []T
 
-// @api(Object/Common/List.List) represents the list of objects. It is used to provide a uniform way to access.
+// @api(Object/Common/List.List) represents the slice of [Object](#Object)s. It is used to provide a uniform way to access.
 func (l List[T]) List() []T {
 	return l
 }
@@ -516,9 +626,11 @@ func (x *Const) Value() *Value {
 	return x.value
 }
 
-// @api(Object/Common/Fields) represents a list of fields in a declaration.
+// @api(Object/Common/Fields)
+// `Fields<D, F>` represents a list of fields of a declaration where `D` is the declaration [Node](#Object/Common/Node) and
+// `F` is the field [Object](#Object).
 type Fields[D Node, F Object] struct {
-	// @api(Object/Common/Fields.Decl) is the declaration object that contains the fields.
+	// @api(Object/Common/Fields.Decl) is the declaration [Node](#Object/Common/Node) that contains the fields.
 	//
 	// Currently, it is one of following types:
 	//
@@ -528,7 +640,7 @@ type Fields[D Node, F Object] struct {
 	// - [InterfaceMethod](#Object/InterfaceMethod).
 	Decl D
 
-	// @api(Object/Common/Fields.List) is the list of fields in the declaration.
+	// @api(Object/Common/Fields.List) is the slice of fields: **\[[Object](#Object)\]**.
 	//
 	// Currently, the field object is one of following types:
 	//
@@ -539,29 +651,33 @@ type Fields[D Node, F Object] struct {
 	List []F
 }
 
-// @api(Object/EnumMembers) represents the [Fields](#Object/Common/Fields) of [EnumEember](#Object/EnumMember).
+// @api(Object/EnumMembers) represents the [Fields](#Object/Common/Fields) of [EnumEember](#Object/EnumMember)
+// in an [Enum](#Object/Enum) declaration.
 type EnumMembers = Fields[*Enum, *EnumMember]
 
-// @api(Object/StructFields) represents the [Fields](#Object/Common/Fields) of [StructField](#Object/StructField).
+// @api(Object/StructFields) represents the [Fields](#Object/Common/Fields) of [StructField](#Object/StructField)
+// in a [Struct](#Object/Struct) declaration.
 type StructFields = Fields[*Struct, *StructField]
 
-// @api(Object/InterfaceMethods) represents the [Fields](#Object/Common/Fields) of [InterfaceMethod](#Object/InterfaceMethod).
+// @api(Object/InterfaceMethods) represents the [Fields](#Object/Common/Fields) of [InterfaceMethod](#Object/InterfaceMethod)
+// in an [Interface](#Object/Interface) declaration.
 type InterfaceMethods = Fields[*Interface, *InterfaceMethod]
 
-// @api(Object/InterfaceMethodParams) represents the [Fields](#Object/Common/Fields) of [InterfaceMethodParameter](#Object/InterfaceMethodParam).
+// @api(Object/InterfaceMethodParams) represents the [Fields](#Object/Common/Fields) of [InterfaceMethodParameter](#Object/InterfaceMethodParam)
+// in an [InterfaceMethod](#Object/InterfaceMethod) declaration.
 type InterfaceMethodParams = Fields[*InterfaceMethod, *InterfaceMethodParam]
 
 // @api(Object/Enum) (extends [Decl](#Object/Common/Decl)) represents an enum declaration.
 type Enum struct {
 	*commonNode[*Enum]
 
-	// @api(Object/Enum.MemberType) represents the type of the enum members.
+	// @api(Object/Enum.MemberType) represents the [PrimitiveType](#Object/PrimitiveType) of the enum members.
 	MemberType *PrimitiveType
 
-	// @api(Object/Enum.Type) is the enum type.
+	// @api(Object/Enum.Type) is the [EnumType](#Object/EnumType) of the enum.
 	Type *EnumType
 
-	// @api(Object/Enum.Members) is the list of enum members.
+	// @api(Object/Enum.Members) is the [Fields](#Object/Common/Fields) of [EnumMember](#Object/EnumMember).
 	Members *EnumMembers
 }
 
@@ -681,7 +797,7 @@ type Struct struct {
 	// fields is the list of struct fields.
 	fields *StructFields
 
-	// @api(Object/Struct.Type) represents the struct type.
+	// @api(Object/Struct.Type) represents [StructType](#Object/StructType) of the struct.
 	Type *StructType
 }
 
@@ -704,7 +820,7 @@ func (s *Struct) resolve(c *Compiler, file *File, scope Scope) {
 	}
 }
 
-// @api(Object/Struct.Fields) represents the list of struct fields.
+// @api(Object/Struct.Fields) represents the [Fields](#Object/Common/Fields) of [StructField](#Object/StructField).
 //
 // Example:
 //
@@ -740,7 +856,7 @@ type StructField struct {
 	}
 	index int
 
-	// @api(Object/StructField.Decl) represents the struct that contains the field.
+	// @api(Object/StructField.Decl) represents the [Struct](#Object/Struct) that contains the field.
 	Decl *Struct
 
 	// @api(Object/StructField.Type) represents the [Type](#Object/Common/Type) of the struct field.
@@ -815,7 +931,7 @@ type Interface struct {
 	// methods is the list of interface methods.
 	methods *InterfaceMethods
 
-	// @api(Object/Interface.Type) represents the interface type.
+	// @api(Object/Interface.Type) represents [InterfaceType](#Object/InterfaceType) of the interface.
 	Type *InterfaceType
 }
 
@@ -851,10 +967,10 @@ type InterfaceMethod struct {
 	// @api(Object/InterfaceMethod.Decl) represents the interface that contains the method.
 	Decl *Interface
 
-	// @api(Object/InterfaceMethod.Params) represents the list of method parameters.
+	// @api(Object/InterfaceMethod.Params) represents the [Fields](#Object/Common/Fields) of [InterfaceMethodParam](#Object/InterfaceMethodParam).
 	Params *InterfaceMethodParams
 
-	// @api(Object/InterfaceMethod.Result) represents the return type of the method.
+	// @api(Object/InterfaceMethod.Result) represents the [InterfaceMethodResult](#Object/InterfaceMethodResult) of the method.
 	Result *InterfaceMethodResult
 
 	// @api(Object/InterfaceMethod.Comment) represents the line [Comment](#Object/Comment) of the interface method declaration.
@@ -887,7 +1003,7 @@ func (m *InterfaceMethod) resolve(c *Compiler, file *File, scope Scope) {
 	}
 }
 
-// @api(Object/InterfaceMethod.Index) represents the index of the interface method in the interface type.
+// @api(Object/InterfaceMethod.Index) represents the index of the interface method in the interface.
 //
 // Example:
 //
@@ -901,7 +1017,7 @@ func (m *InterfaceMethod) Index() int {
 	return m.index
 }
 
-// @api(Object/InterfaceMethod.IsFirst) reports whether the method is the first method in the interface type.
+// @api(Object/InterfaceMethod.IsFirst) reports whether the method is the first method in the interface.
 //
 // Example:
 //
@@ -938,7 +1054,7 @@ type InterfaceMethodParam struct {
 		typ ast.Type
 	}
 
-	// @api(Object/InterfaceMethodParam.Method) represents the interface method that contains the parameter.
+	// @api(Object/InterfaceMethodParam.Method) represents the [InterfaceMethod](#Object/InterfaceMethod) that contains the parameter.
 	Method *InterfaceMethod
 
 	// @api(Object/InterfaceMethodParam.Type) represents the [Type](#Object/Common/Type) of the parameter.
@@ -1005,10 +1121,10 @@ type InterfaceMethodResult struct {
 		typ ast.Type
 	}
 
-	// @api(Object/InterfaceMethodResult.Method) represents the interface method that contains the result.
+	// @api(Object/InterfaceMethodResult.Method) represents the [InterfaceMethod](#Object/InterfaceMethod) that contains the result.
 	Method *InterfaceMethod
 
-	// @api(Object/InterfaceMethodResult.Type) represents the underlying type of the result.
+	// @api(Object/InterfaceMethodResult.Type) represents the underlying [Type](#Object/Common/Type) of the result.
 	Type Type
 }
 

@@ -632,12 +632,12 @@ The used kinds in the `User` struct are: `(1<<KindInt64) | (1<<KindString) | (1<
 
 ### Fields {#user-content-Object_Common_Fields}
 
-`Fields` represents a list of fields in a declaration.
+`Fields<D, F>` represents a list of fields of a declaration where `D` is the declaration [Node](#user-content-Object_Common_Node) and `F` is the field [Object](#user-content-Object).
 
 ###### .Decl {#user-content-Object_Common_Fields__Decl}
 <div className="property-container">
 
-`.Decl` is the declaration object that contains the fields.
+`.Decl` is the declaration [Node](#user-content-Object_Common_Node) that contains the fields.
 
 Currently, it is one of following types:
 
@@ -651,7 +651,7 @@ Currently, it is one of following types:
 ###### .List {#user-content-Object_Common_Fields__List}
 <div className="property-container">
 
-`.List` is the list of fields in the declaration.
+`.List` is the slice of fields: **\[[Object](#user-content-Object)\]**.
 
 Currently, the field object is one of following types:
 
@@ -664,12 +664,12 @@ Currently, the field object is one of following types:
 
 ### List {#user-content-Object_Common_List}
 
-`List` represents a list of objects.
+`List<T>` represents a slice of objects: **\[T: [Object](#user-content-Object)\]**.
 
 ###### .List {#user-content-Object_Common_List__List}
 <div className="property-container">
 
-`.List` represents the list of objects. It is used to provide a uniform way to access.
+`.List` represents the slice of [Object](#user-content-Object)s. It is used to provide a uniform way to access.
 
 </div>
 
@@ -1133,21 +1133,21 @@ It can be multiple lines.
 ###### .MemberType {#user-content-Object_Enum__MemberType}
 <div className="property-container">
 
-`.MemberType` represents the type of the enum members.
+`.MemberType` represents the [PrimitiveType](#user-content-Object_PrimitiveType) of the enum members.
 
 </div>
 
 ###### .Members {#user-content-Object_Enum__Members}
 <div className="property-container">
 
-`.Members` is the list of enum members.
+`.Members` is the [Fields](#user-content-Object_Common_Fields) of [EnumMember](#user-content-Object_EnumMember).
 
 </div>
 
 ###### .Type {#user-content-Object_Enum__Type}
 <div className="property-container">
 
-`.Type` is the enum type.
+`.Type` is the [EnumType](#user-content-Object_EnumType) of the enum.
 
 </div>
 
@@ -1185,7 +1185,7 @@ It can be multiple lines.
 
 ## EnumMembers {#user-content-Object_EnumMembers}
 
-`EnumMembers` represents the [Fields](#user-content-Object_Common_Fields) of [EnumEember](#user-content-Object_EnumMember).
+`EnumMembers` represents the [Fields](#user-content-Object_Common_Fields) of [EnumEember](#user-content-Object_EnumMember) in an [Enum](#user-content-Object_Enum) declaration.
 
 ## EnumType {#user-content-Object_EnumType}
 
@@ -1243,12 +1243,12 @@ It can be multiple lines.
 
 ## Import {#user-content-Object_Import}
 
-`Import` represents a import statement in a file.
+`Import` represents a import declaration in a [File](#user-content-Object_File).
 
 ###### .Comment {#user-content-Object_Import__Comment}
 <div className="property-container">
 
-`.Comment` represents the import declaration line [Comment](#user-content-Object_Comment).
+`.Comment` represents the line [Comment](#user-content-Object_Comment) of the import declaration.
 
 Example:
 
@@ -1273,14 +1273,14 @@ This is a line comment for the import.
 ###### .Doc {#user-content-Object_Import__Doc}
 <div className="property-container">
 
-`.Doc` represents the import declaration [Doc](#user-content-Object_Doc).
+`.Doc` represents the [Doc](#user-content-Object_Doc) comment of the import.
 
 Example:
 
 ```next
 // This is a documenation comment for the import.
 // It can be multiline.
-import "path/to/file.next"; // This is a line comment for the import.
+import "path/to/file.next"; // This is a line comment for the import declaration.
 ```
 
 ```npl
@@ -1299,7 +1299,29 @@ It can be multiline.
 ###### .File {#user-content-Object_Import__File}
 <div className="property-container">
 
-`.File` represents the file object containing the import declaration.
+`.File` represents the [File](#user-content-Object_File) object that contains the import declaration.
+
+Example:
+
+```next title="file1.next"
+package a;
+
+import "file2.next";
+import "file3.next";
+```
+
+```npl
+{{range .Imports.List}}
+{{.File.Path}}
+{{end}}
+```
+
+Output:
+
+```
+file1.next
+file1.next
+```
 
 </div>
 
@@ -1352,35 +1374,122 @@ path/to/file.next
 ###### .Target {#user-content-Object_Import__Target}
 <div className="property-container">
 
-`.Target` represents the imported file object.
+`.Target` represents the imported [File](#user-content-Object_File) object.
+
+Example:
+
+```next title="file1.next"
+package a;
+
+import "file2.next";
+import "file3.next";
+```
+
+```npl
+{{range .Imports.List}}
+{{.Target.Path}}
+{{end}}
+```
+
+Output:
+
+```
+file2.next
+file3.next
+```
 
 </div>
 
 ## Imports {#user-content-Object_Imports}
 
-`Imports` holds a list of imports.
+`Imports` holds a slice of [Import](#user-content-Object_Import) declarations and the declaration that contains the imports.
 
 ###### .Decl {#user-content-Object_Imports__Decl}
 <div className="property-container">
 
-`.Decl` represents the declaration object that contains the imports. Currently, it is one of following types:
+`.Decl` represents the declaration [Node](#user-content-Object_Common_Node) that contains the imports. Currently, it is one of following types:
 
 - [File](#user-content-Object_File)
 - [Package](#user-content-Object_Package)
+
+Example:
+
+```next title="file1.next"
+package a;
+
+import "path/to/file2.next";
+```
+
+```next title="file2.next"
+package a;
+```
+
+```npl title="file.npl"
+{{- define "meta/this" -}}file{{- end -}}
+
+{{range .Imports.List}}
+{{.Decl.Name}}
+{{end}}
+```
+
+Output (for file1.next):
+
+```
+file1
+```
+
+```npl title="package.npl"
+{{- define "meta/this" -}}package{{- end -}}
+
+{{range .Imports.List}}
+{{.Decl.Name}}
+{{end}}
+```
+
+Output:
+
+```
+a
+```
 
 </div>
 
 ###### .List {#user-content-Object_Imports__List}
 <div className="property-container">
 
-`.List` represents the list of [Import](#user-content-Object_Import).
+`.List` represents a slice of [Import](#user-content-Object_Import) declarations: **\[[Import](#user-content-Object_Import)\]**.
+
+Example: see [Object/Imports.Decl](#user-content-Object_Imports__Decl).
 
 </div>
 
 ###### .TrimmedList {#user-content-Object_Imports__TrimmedList}
 <div className="property-container">
 
-`.TrimmedList` represents a list of unique imports sorted by package name.
+`.TrimmedList` represents a slice of unique imports sorted by package name.
+
+Example:
+
+```next
+package c;
+
+import "path/to/file1.next"; // package: a
+import "path/to/file2.next"; // package: a
+import "path/to/file3.next"; // package: b
+```
+
+```npl
+{{range .Imports.TrimmedList}}
+{{.Target.Package.Name}}
+{{end}}
+```
+
+Output:
+
+```
+a
+b
+```
 
 </div>
 
@@ -1398,7 +1507,7 @@ path/to/file.next
 ###### .Type {#user-content-Object_Interface__Type}
 <div className="property-container">
 
-`.Type` represents the interface type.
+`.Type` represents [InterfaceType](#user-content-Object_InterfaceType) of the interface.
 
 </div>
 
@@ -1423,7 +1532,7 @@ path/to/file.next
 ###### .Index {#user-content-Object_InterfaceMethod__Index}
 <div className="property-container">
 
-`.Index` represents the index of the interface method in the interface type.
+`.Index` represents the index of the interface method in the interface.
 
 Example:
 
@@ -1439,7 +1548,7 @@ interface Shape {
 ###### .IsFirst {#user-content-Object_InterfaceMethod__IsFirst}
 <div className="property-container">
 
-`.IsFirst` reports whether the method is the first method in the interface type.
+`.IsFirst` reports whether the method is the first method in the interface.
 
 Example:
 
@@ -1471,14 +1580,14 @@ interface Shape {
 ###### .Params {#user-content-Object_InterfaceMethod__Params}
 <div className="property-container">
 
-`.Params` represents the list of method parameters.
+`.Params` represents the [Fields](#user-content-Object_Common_Fields) of [InterfaceMethodParam](#user-content-Object_InterfaceMethodParam).
 
 </div>
 
 ###### .Result {#user-content-Object_InterfaceMethod__Result}
 <div className="property-container">
 
-`.Result` represents the return type of the method.
+`.Result` represents the [InterfaceMethodResult](#user-content-Object_InterfaceMethodResult) of the method.
 
 </div>
 
@@ -1532,7 +1641,7 @@ interface Shape {
 ###### .Method {#user-content-Object_InterfaceMethodParam__Method}
 <div className="property-container">
 
-`.Method` represents the interface method that contains the parameter.
+`.Method` represents the [InterfaceMethod](#user-content-Object_InterfaceMethod) that contains the parameter.
 
 </div>
 
@@ -1545,7 +1654,7 @@ interface Shape {
 
 ## InterfaceMethodParams {#user-content-Object_InterfaceMethodParams}
 
-`InterfaceMethodParams` represents the [Fields](#user-content-Object_Common_Fields) of [InterfaceMethodParameter](#user-content-Object_InterfaceMethodParam).
+`InterfaceMethodParams` represents the [Fields](#user-content-Object_Common_Fields) of [InterfaceMethodParameter](#user-content-Object_InterfaceMethodParam) in an [InterfaceMethod](#user-content-Object_InterfaceMethod) declaration.
 
 ## InterfaceMethodResult {#user-content-Object_InterfaceMethodResult}
 
@@ -1554,20 +1663,20 @@ interface Shape {
 ###### .Method {#user-content-Object_InterfaceMethodResult__Method}
 <div className="property-container">
 
-`.Method` represents the interface method that contains the result.
+`.Method` represents the [InterfaceMethod](#user-content-Object_InterfaceMethod) that contains the result.
 
 </div>
 
 ###### .Type {#user-content-Object_InterfaceMethodResult__Type}
 <div className="property-container">
 
-`.Type` represents the underlying type of the result.
+`.Type` represents the underlying [Type](#user-content-Object_Common_Type) of the result.
 
 </div>
 
 ## InterfaceMethods {#user-content-Object_InterfaceMethods}
 
-`InterfaceMethods` represents the [Fields](#user-content-Object_Common_Fields) of [InterfaceMethod](#user-content-Object_InterfaceMethod).
+`InterfaceMethods` represents the [Fields](#user-content-Object_Common_Fields) of [InterfaceMethod](#user-content-Object_InterfaceMethod) in an [Interface](#user-content-Object_Interface) declaration.
 
 ## InterfaceType {#user-content-Object_InterfaceType}
 
@@ -1678,7 +1787,7 @@ Currently, the following primitive types are supported:
 ###### .Fields {#user-content-Object_Struct__Fields}
 <div className="property-container">
 
-`.Fields` represents the list of struct fields.
+`.Fields` represents the [Fields](#user-content-Object_Common_Fields) of [StructField](#user-content-Object_StructField).
 
 Example:
 
@@ -1707,7 +1816,7 @@ y int
 ###### .Type {#user-content-Object_Struct__Type}
 <div className="property-container">
 
-`.Type` represents the struct type.
+`.Type` represents [StructType](#user-content-Object_StructType) of the struct.
 
 </div>
 
@@ -1725,7 +1834,7 @@ y int
 ###### .Decl {#user-content-Object_StructField__Decl}
 <div className="property-container">
 
-`.Decl` represents the struct that contains the field.
+`.Decl` represents the [Struct](#user-content-Object_Struct) that contains the field.
 
 </div>
 
@@ -1786,7 +1895,7 @@ struct Point {
 
 ## StructFields {#user-content-Object_StructFields}
 
-`StructFields` represents the [Fields](#user-content-Object_Common_Fields) of [StructField](#user-content-Object_StructField).
+`StructFields` represents the [Fields](#user-content-Object_Common_Fields) of [StructField](#user-content-Object_StructField) in a [Struct](#user-content-Object_Struct) declaration.
 
 ## StructType {#user-content-Object_StructType}
 

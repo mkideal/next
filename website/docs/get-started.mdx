@@ -143,7 +143,7 @@ next -h
     { label: 'VSCode', value: 'vscode' },
   ]}>
   <TabItem value="vscode">
-  Install Visual Studio Code Extension for Next from [marketplace](https://marketplace.visualstudio.com/items?itemName=nextlangorg.nextlang)
+  Install Visual Studio Code Extension for Next from [marketplace](https://marketplace.visualstudio.com/items?itemName=nextlangorg.nextlang).
 
 This extension provides syntax highlighting, and other helpful features for Next development in Visual Studio Code. You can install it directly from the provided link or search for `next lang` in the Visual Studio Code Extensions marketplace.
 
@@ -165,7 +165,7 @@ See [Language Specification](/docs/language_spec) for details about `next` langu
 
 ## Write a Next template file
 
-Second, write a Next template file which has extension `.npl` used to constrol how to generate code for specified language. Here is an example template file used to generate `c++` code.
+Second, write a Next template file which has extension `.npl` used to conctrol how to generate code for specified language. Here is an example template file used to generate `c++` code.
 
 <CodeBlock language="npl" title="file.cpp.npl">
   {CppDemoNplSource}
@@ -180,7 +180,7 @@ See [API/Context/meta](/docs/api/latest/context#user-content-Context_meta) for d
 
 ## Generate code
 
-Finally, run `next` command to generate code using `demo.next` and `demo.cpp.npl`:
+Finally, run `next` command to generate code using `demo.next` and `file.cpp.npl`:
 
 ```sh
 next -T cpp=file.cpp.npl -O cpp=gen/cpp/ demo.next
