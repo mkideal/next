@@ -136,7 +136,7 @@ null
 {{- else if .Kind.IsStruct -}}
 new {{next .}}
 {{- else if .Kind.IsEnum -}}
-{{render "type:zero" .Value.Decl.MemberType}} as {{next .}}
+{{render "type:zero" .Actual.Decl.MemberType}} as {{next .}}
 {{- else}}
 null
 {{- end}}

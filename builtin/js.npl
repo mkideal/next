@@ -127,13 +127,13 @@ this.{{render "struct.field:name" .}} = {{render "type:zero" .Type}};{{next .Com
 {{- else if .Kind.IsStruct -}}
 {{next .Decl.Type}}
 {{- else if .Kind.IsEnum -}}
-{{- if .Value.Decl.MemberType.Kind.IsString}}'string'{{else}}'number'{{end -}}
+{{- if .Actual.Decl.MemberType.Kind.IsString}}'string'{{else}}'number'{{end -}}
 {{- else if .Kind.IsArray -}}
-'Array<{{render "type:doc" .Value.ElemType}}>'
+'Array<{{render "type:doc" .Actual.ElemType}}>'
 {{- else if .Kind.IsMap -}}
-'Map<{{render "type:doc" .Value.KeyType}}, {{render "type:doc" .Value.ElemType}}>'
+'Map<{{render "type:doc" .Actual.KeyType}}, {{render "type:doc" .Actual.ElemType}}>'
 {{- else if .Kind.IsVector -}}
-'Array<{{render "type:doc" .Value.ElemType}}>'
+'Array<{{render "type:doc" .Actual.ElemType}}>'
 {{- else if .Kind.IsBytes -}}
 'Uint8Array'
 {{- else -}}

@@ -141,7 +141,7 @@ null
 {{- else if .Kind.IsStruct -}}
 new {{next .}}()
 {{- else if .Kind.IsEnum -}}
-{{next .}}::{{render "enum.member:name" (index .Value.Decl.Members.List 0)}}
+{{next .}}::{{render "enum.member:name" (index .Actual.Decl.Members.List 0)}}
 {{- else -}}
 null
 {{- end -}}

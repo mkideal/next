@@ -31,7 +31,7 @@ export class User {
     deviceId: string = "";
     twoFactorToken: string = "";
     roles: Array<string> = [];
-    metadata: Map<string,string> = new Map();
+    metadata: Map<string, string> = new Map();
     scores: Array<number> = [];
 }
 

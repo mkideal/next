@@ -33,7 +33,7 @@ public struct User {
     public var deviceId: String
     public var twoFactorToken: String
     public var roles: [String]
-    public var metadata: [String:String]
+    public var metadata: [String: String]
     public var scores: [Int]
 
     public init() {

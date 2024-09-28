@@ -61,7 +61,7 @@ pub struct User {
     pub device_id: String,
     pub two_factor_token: String,
     pub roles: Vec<String>,
-    pub metadata: HashMap<String,String>,
+    pub metadata: HashMap<String, String>,
     pub scores: [i32; 4],
 }
 

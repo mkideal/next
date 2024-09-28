@@ -162,7 +162,7 @@ namespace a
         public int[] fixedArray { get; set; }
         public List<string> dynamicArray { get; set; }
         public List<int> intArray { get; set; }
-        public Dictionary<string,int> dictionary { get; set; }
+        public Dictionary<string, int> dictionary { get; set; }
     }
 
     public class User

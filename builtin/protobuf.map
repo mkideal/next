@@ -14,5 +14,5 @@ byte=int8
 bytes=bytes
 any=google.protobuf.Any
 map=map<%K%, %V%>
-vector=repeated %T%
-array=repeated %T%
+vector=repeated %T.E%
+array=repeated %T.E%

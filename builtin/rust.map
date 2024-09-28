@@ -13,6 +13,6 @@ string=String
 byte=u8
 bytes=Vec<u8>
 any=Box<dyn Any>
-map=HashMap<%K%,%V%>
+map=HashMap<%K%, %V%>
 vector=Vec<%T%>
 array=[%T%; %N%]

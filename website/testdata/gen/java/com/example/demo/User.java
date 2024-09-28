@@ -40,13 +40,13 @@ public class User {
         this.tags = tags;
     }
 
-    private Map<String,Integer> scores;
+    private Map<String, Integer> scores;
 
-    public Map<String,Integer> getScores() {
+    public Map<String, Integer> getScores() {
         return scores;
     }
 
-    public void setScores(Map<String,Integer> scores) {
+    public void setScores(Map<String, Integer> scores) {
         this.scores = scores;
     }
 
@@ -58,6 +58,16 @@ public class User {
 
     public void setCoordinates(double[] coordinates) {
         this.coordinates = coordinates;
+    }
+
+    private int[][] matrix;
+
+    public int[][] getMatrix() {
+        return matrix;
+    }
+
+    public void setMatrix(int[][] matrix) {
+        this.matrix = matrix;
     }
 
     private Color favoriteColor;

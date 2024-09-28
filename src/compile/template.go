@@ -674,6 +674,13 @@ func (tc *templateContext) resolveLangType(lang string, t any) (result string, e
 			}
 			p = strings.ReplaceAll(p, "%T%", e)
 		}
+		if strings.Contains(p, "%T.E%") {
+			e, err := tc.next(finalElementType(t.ElemType))
+			if err != nil {
+				return "", err
+			}
+			p = strings.ReplaceAll(p, "%T.E%", e)
+		}
 		return p, nil
 
 	case *ArrayType:
@@ -691,6 +698,13 @@ func (tc *templateContext) resolveLangType(lang string, t any) (result string, e
 		if strings.Contains(p, "%N%") {
 			p = strings.ReplaceAll(p, "%N%", strconv.FormatInt(t.N, 10))
 		}
+		if strings.Contains(p, "%T.E%") {
+			e, err := tc.next(finalElementType(t.ElemType))
+			if err != nil {
+				return "", err
+			}
+			p = strings.ReplaceAll(p, "%T.E%", e)
+		}
 		return p, nil
 
 	default:
@@ -703,6 +717,21 @@ func (tc *templateContext) resolveLangType(lang string, t any) (result string, e
 			return name, nil
 		}
 		return "", fmt.Errorf("unsupported type %T, expected Type or string", t)
+	}
+}
+
+func finalElementType(t Type) Type {
+	for {
+		switch x := t.(type) {
+		case *VectorType:
+			t = x.ElemType
+		case *ArrayType:
+			t = x.ElemType
+		case *UsedType:
+			t = x.Type
+		default:
+			return t
+		}
 	}
 }
 

@@ -13,6 +13,6 @@ string=String
 byte=UInt8
 bytes=[UInt8]
 any=Any
-map=[%K%:%V%]
+map=[%K%: %V%]
 vector=[%T%]
 array=[%T%]

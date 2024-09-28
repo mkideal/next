@@ -41,8 +41,9 @@ export class User {
     id: bigint = 0n;
     username: string = "";
     tags: Array<string> = [];
-    scores: Map<string,number> = new Map();
+    scores: Map<string, number> = new Map();
     coordinates: Array<number> = [];
+    matrix: Array<Array<number>> = [];
     favoriteColor: Color = 0 as Color;
     email: string = "";
     extra: any = null;

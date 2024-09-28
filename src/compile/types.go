@@ -155,15 +155,24 @@ func (*CallStmt) Typeof() string { return "stmt.call" }
 
 // -------------------------------------------------------------------------
 
+// @api(Object/Common/Position) represents the position of an [LocatedObject](#Object/Common/LocatedObject) in a file.
 type Position struct {
-	pos      token.Pos
+	pos token.Pos
+
+	// @api(Object/Common/Position.Filename) represents the filename of the position.
 	Filename string
-	Line     int
-	Column   int
+
+	// @api(Object/Common/Position.Line) represents the line number of the position starting from 1.
+	Line int
+
+	// @api(Object/Common/Position.Column) represents the column number of the position starting from 1.
+	Column int
 }
 
+// @api(Object/Common/Position.IsValid) reports whether the position is valid.
 func (p Position) IsValid() bool { return p.pos.IsValid() }
 
+// @api(Object/Common/Position) returns the string representation of the position, e.g., `demo.next:10:2`.
 func (p Position) String() string {
 	s := p.Filename
 	if p.IsValid() {
@@ -194,23 +203,43 @@ func positionFor(c *Compiler, pos token.Pos) Position {
 	return Position{}
 }
 
-// LocatedObject represents an object with a position.
+// @api(Object/Common/LocatedObject) represents an [Object](#Object) with a location in a file.
 type LocatedObject interface {
 	Object
 
-	// Pos returns the position of the object.
+	// @api(Object/Common/LocatedObject.Pos) represents the [Position](#Object/Common/Position) of the object.
+	//
+	// Example:
+	//
+	//	```next title="demo.next"
+	//	package demo;
+	//	const Name = "hei hei";
+	//	```
+	//
+	//	```npl
+	//	{{- define "meta/this" -}}const{{- end -}}
+	//	{{this.Pos}}
+	//	{{this.Value.Pos}}
+	//	```
+	//
+	// Output:
+	//
+	//	```
+	//	demo.next:2:1
+	//	demo.next:2:14
+	//	```
 	Pos() Position
 
-	// @api(Object/Common/Node.File) represents the file containing the node.
+	// @api(Object/Common/LocatedObject.File) represents the file containing the object.
 	File() *File
 
-	// @api(Object/Common/Node.Package) represents the package containing the node.
+	// @api(Object/Common/LocatedObject.Package) represents the package containing the object.
 	Package() *Package
 }
 
 func (x *File) Pos() Position             { return positionFor(x.compiler, x.pos) }
 func (x *commonNode[Self]) Pos() Position { return positionFor(x.file.compiler, x.pos) }
-func (x *Value) Pos() Position            { return positionFor(x.file.compiler, x.namePos) }
+func (x *Value) Pos() Position            { return positionFor(x.file.compiler, x.pos) }
 func (x *DeclType[T]) Pos() Position      { return positionFor(x.file.compiler, x.pos) }
 
 func (x *commonNode[Self]) Package() *Package { return x.File().Package() }
@@ -219,7 +248,7 @@ func (x *DeclType[T]) Package() *Package      { return x.File().Package() }
 
 // -------------------------------------------------------------------------
 
-// @api(Object/Common/Node) represents a Node in the Next AST.
+// @api(Object/Common/Node) represents a [LocatedObject](#Object/Common/LocatedObject) that is a node in a file.
 //
 // Currently, the following nodes are supported:
 //
@@ -235,8 +264,44 @@ func (x *DeclType[T]) Package() *Package      { return x.File().Package() }
 type Node interface {
 	LocatedObject
 
-	// Name returns the name of the node.
+	// @api(Object/Common/Node.Name) represents the name of the node.
+	//
+	// Example:
+	//
+	//	```next
+	//	const x = 1;
+	//	```
+	//
+	//	```npl
+	//	{{.Name}}
+	//	```
+	//
+	// Output:
+	//
+	//	```
+	//	x
+	//	```
 	Name() string
+
+	// @api(Object/Common/Node.NamePos) represents the position of the node name.
+	//
+	// Example:
+	//
+	//	```next title="demo.next"
+	//	package demo;
+	//	const x = 1;
+	//	```
+	//
+	//	```npl
+	//	{{.NamePos}}
+	//	```
+	//
+	// Output:
+	//
+	//	```
+	//	demo.next:2:7
+	//	```
+	NamePos() Position
 
 	// @api(Object/Common/Node.Doc) represents the documentation comment for the node.
 	// The documentation comment is a comment that appears before the node declaration.
@@ -262,6 +327,33 @@ type Node interface {
 	Doc() *Doc
 
 	// @api(Object/Common/Node.Annotations) represents the [Annotations](#Object/Common/Annotations) for the node.
+	//
+	// Example:
+	//
+	//	```next title="demo.next"
+	//	package demo;
+	//	@next(type=int8)
+	//	@deprecated
+	//	enum Color {
+	//		Red = 1;
+	//		Green = 2;
+	//		Blue = 3;
+	//	}
+	//	```
+	//
+	//	```npl
+	//	{{.Annotations.next.type}}
+	//	{{.Annotations.next.Pos}}
+	//	{{.Annotations.Contains "deprecated"}}
+	//	```
+	//
+	// Output:
+	//
+	//	```
+	//	int8
+	//	demo.next:2:1
+	//	true
+	//	```
 	Annotations() Annotations
 }
 
@@ -286,11 +378,15 @@ func (x *commonNode[Self]) File() *File {
 	return x.file
 }
 
+func (x *Package) NamePos() Position          { return Position{} }
+func (x *File) NamePos() Position             { return Position{} }
+func (x *commonNode[Self]) NamePos() Position { return positionFor(x.file.compiler, x.namePos) }
+
 // -------------------------------------------------------------------------
 
-// @api(Object/Common/Decl) represents a top-level declaration in a file.
+// @api(Object/Common/Decl) represents a top-level declaration [Node](#Object/Common/Node) in a file.
 //
-// All declarations are [Node](#Object/Common/Node)s. Currently, the following declarations are supported:
+// Currently, the following declarations are supported:
 //
 // - [Package](#Object/Package)
 // - [File](#Object/File)
@@ -394,6 +490,7 @@ var _ Decl = builtinDecl{}
 
 func (builtinDecl) Typeof() string           { return "<builtin.decl>" }
 func (builtinDecl) Name() string             { return "<builtin>" }
+func (builtinDecl) NamePos() Position        { return Position{} }
 func (builtinDecl) Pos() Position            { return Position{} }
 func (builtinDecl) File() *File              { return nil }
 func (builtinDecl) Package() *Package        { return nil }
@@ -405,7 +502,7 @@ func (x builtinDecl) UsedKinds() Kinds       { return x.typ.UsedKinds() }
 // -------------------------------------------------------------------------
 // Types
 
-// @api(Object/Common/Type) represents a Next type.
+// @api(Object/Common/Type) represents a Next type [Object](#Object).
 //
 // Currently, the following types are supported:
 //
@@ -421,19 +518,175 @@ type Type interface {
 	Object
 
 	// @api(Object/Common/Type.Kind) returns the [Kind](#Object/Common/Type/Kind) of the type.
+	//
+	// Example:
+	//
+	//	```next
+	//	package demo;
+	//
+	//	enum Color {
+	//		Red = 1;
+	//		Green = 2;
+	//		Blue = 3;
+	//	}
+	//	```
+	//
+	//	```npl
+	//	{{- define "cpp/enum" -}}
+	//	{{.Type.Kind}}
+	//	{{.MemberType.Kind}}
+	//	{{end}}
+	//	```
+	//
+	// Output:
+	//
+	//	```
+	//	Enum
+	//	Int32
+	//	```
 	Kind() Kind
 
 	// @api(Object/Common/Type.UsedKinds) returns the used kinds in the type.
+	//
+	// Example:
+	//
+	//	```next
+	//	package demo;
+	//
+	//	struct User {
+	//		int64 id;
+	//		string name;
+	//		vector<string> emails;
+	//		map<int, bool> flags;
+	//	}
+	//	```
+	// The used kinds in the `User` struct are: `(1<<KindStruct) | (1<<KindInt64) | (1<<KindString) | (1<<KindVector) | (1<<KindMap) | (1<<KindInt) | (1<<KindBool)`.
+	//
+	//	```npl
+	//	{{.UsedKinds.Contains "struct"}}
+	//	{{.UsedKinds.Contains "int64"}}
+	//	{{.UsedKinds.Contains "string"}}
+	//	{{.UsedKinds.Contains "vector"}}
+	//	{{.UsedKinds.Contains "map"}}
+	//	{{.UsedKinds.Contains "int"}}
+	//	{{.UsedKinds.Contains "bool"}}
+	//	{{.UsedKinds.Contains "float32"}}
+	//	```
+	//
+	// Output:
+	//
+	//	```
+	//	true
+	//	true
+	//	true
+	//	true
+	//	true
+	//	true
+	//	true
+	//	false
+	//	```
 	UsedKinds() Kinds
 
 	// @api(Object/Common/Type.String) represents the string representation of the type.
 	String() string
 
 	// @api(Object/Common/Type.Decl) represents the [Decl](#Object/Common/Decl) of the type.
+	// If the type is a built-in type, it returns a special declaration. Otherwise, it returns
+	// the declaration of the type: [Enum](#Object/Enum), [Struct](#Object/Struct), or [Interface](#Object/Interface).
 	Decl() Decl
 
-	// @api(Object/Common/Type.Value) returns the reflect value of the type.
-	Value() reflect.Value
+	// @api(Object/Common/Type.Actual) represents the actual type.
+	// You need to use the `Actual` method to get the actual type to access the specific fields of the type.
+	//
+	// For example, if you have a type `ArrayType`:
+	//
+	//	```npl
+	//	{{.Type.Actual.ElemType}} {{/* Good */}}
+	//	{{.Type.Actual.N}} {{/* Good */}}
+	//
+	//	// This will error
+	//	{{.Type.ElemType}} {{/* Error */}}
+	//	// This will error
+	//	{{.Type.N}} {{/* Error */}}
+	//	```
+	//
+	// Example:
+	//
+	//	```next
+	//	package demo;
+	//
+	//	struct User {
+	//		int64 id;
+	//		string name;
+	//		array<int, 3> codes;
+	//	}
+	//	```
+	//
+	//	```npl
+	//	{{- define "c/struct.field" -}}
+	//		{{- if .Type.Kind.IsArray -}}
+	//			{{next .Type.Actual.ElemType}} {{.Name}}[{{.Type.Actual.N}}];
+	//		{{- else -}}
+	//			{{next .Type}} {{.Name}};
+	//		{{- end}}
+	//	{{- end}}
+	//	```
+	//
+	// Output:
+	//
+	//	```c
+	//	typedef struct User {
+	//		int64_t id;
+	//		char* name;
+	//		int codes[3];
+	//	} User;
+	//	```
+	//
+	// :::tip
+	//
+	// In the example above, the `codes` field is an single-dimensional array of integers with a length of 3.
+	// If we want to process the multi-dimensional array, we need to fix the template to recursively process the array type.
+	//
+	// Example:
+	//
+	//	```next
+	//	package demo;
+	//
+	//	struct User {
+	//		int64 id;
+	//		string name;
+	//		array<array<int, 3>, 2> codes;
+	//	}
+	//	```
+	//
+	//	```npl
+	//	{{- define "c/struct.field" -}}
+	//	{{next .Doc}}{{render "dict:struct.field.decl" (dict "type" .Type "name" (render "struct.field:name" .))}};{{next .Comment}}
+	//	{{- end}}
+	//
+	//	{{- define "c/dict:struct.field.decl" -}}
+	//	{{- $type := .type -}}
+	//	{{- $name := .name -}}
+	//	{{- if $type.Kind.IsArray -}}
+	//	{{render "dict:struct.field.decl" (dict "type" $type.Actual.ElemType "name" (printf "%s[%d]" $name $type.Actual.N))}}
+	//	{{- else -}}
+	//	{{next $type}} {{$name}}
+	//	{{- end}}
+	//	{{- end}}
+	//	```
+	//
+	// Output:
+	//
+	//	```c
+	//	typedef struct User {
+	//		int64_t id;
+	//		char* name;
+	//		int codes[2][3];
+	//	} User;
+	//	```
+	//
+	// :::
+	Actual() reflect.Value
 }
 
 // All types listed here implement the Type interface.
@@ -467,14 +720,29 @@ func (x *MapType) UsedKinds() Kinds {
 	return x.Kind().kinds() | x.KeyType.UsedKinds() | x.ElemType.UsedKinds()
 }
 
-// @api(Object/UsedType) represents a used type in a file.
+// @api(Object/UsedType) represents a used [Type](#Object/Common/Type) in a file.
 type UsedType struct {
 	node ast.Type
 
-	// @api(Object/UsedType.File) represents the file where the type is used.
+	// @api(Object/UsedType.File) represents the [File](#Object/File) where the type is used.
 	File *File
 
-	// @api(Object/UsedType.Type) represents the used type.
+	// @api(Object/UsedType.Type) represents the underlying [Type](#Object/Common/Type).
+	//
+	// Example:
+	//
+	//	```next
+	//	package demo;
+	//
+	//	struct User {/*...*/}
+	//
+	//	struct Group {
+	//		// highlight-next-line
+	//		User user;
+	//	}
+	//	```
+	//
+	// The type of the `user` field is a `UsedType` with the underlying type `StructType` of the `User` struct.
 	Type Type
 }
 
@@ -485,7 +753,7 @@ func Use(t Type, f *File, node ast.Type) *UsedType {
 
 func (u *UsedType) String() string { return u.Type.String() }
 
-func (u *UsedType) Value() reflect.Value { return u.Type.Value() }
+func (u *UsedType) Actual() reflect.Value { return u.Type.Actual() }
 
 // UsedTypeNode returns the AST node of the used type.
 func UsedTypeNode(u *UsedType) ast.Type { return u.node }
@@ -513,9 +781,7 @@ type PrimitiveType struct {
 
 func (b *PrimitiveType) String() string { return b.name }
 
-func (b *PrimitiveType) Value() reflect.Value { return reflect.ValueOf(b) }
-
-func (b *PrimitiveType) ToPrimitive() *PrimitiveType { return b }
+func (b *PrimitiveType) Actual() reflect.Value { return reflect.ValueOf(b) }
 
 var primitiveTypes = func() map[string]*PrimitiveType {
 	m := make(map[string]*PrimitiveType)
@@ -541,7 +807,7 @@ func (a *ArrayType) String() string {
 	return "array<" + a.ElemType.String() + "," + strconv.FormatInt(a.N, 10) + ">"
 }
 
-func (a *ArrayType) Value() reflect.Value { return reflect.ValueOf(a) }
+func (a *ArrayType) Actual() reflect.Value { return reflect.ValueOf(a) }
 
 // @api(Object/VectorType) represents a vector [Type](#Object/Common/Type).
 type VectorType struct {
@@ -555,7 +821,7 @@ func (v *VectorType) String() string {
 	return "vector<" + v.ElemType.String() + ">"
 }
 
-func (v *VectorType) Value() reflect.Value { return reflect.ValueOf(v) }
+func (v *VectorType) Actual() reflect.Value { return reflect.ValueOf(v) }
 
 // @api(Object/MapType) represents a map [Type](#Object/Common/Type).
 type MapType struct {
@@ -572,7 +838,7 @@ func (m *MapType) String() string {
 	return "map<" + m.KeyType.String() + "," + m.ElemType.String() + ">"
 }
 
-func (m *MapType) Value() reflect.Value { return reflect.ValueOf(m) }
+func (m *MapType) Actual() reflect.Value { return reflect.ValueOf(m) }
 
 // DeclType represents a declaration type which is a type of a declaration: enum, struct, interface.
 type DeclType[T Decl] struct {
@@ -598,6 +864,6 @@ func newDeclType[T Decl](file *File, pos token.Pos, kind Kind, name string, decl
 
 func (d *DeclType[T]) String() string { return d.name }
 
-func (d *DeclType[T]) Value() reflect.Value { return reflect.ValueOf(d) }
+func (d *DeclType[T]) Actual() reflect.Value { return reflect.ValueOf(d) }
 
 func (d *DeclType[T]) File() *File { return d.file }

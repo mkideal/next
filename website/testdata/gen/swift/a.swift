@@ -164,7 +164,7 @@ public struct ComplexStruct {
     public var fixedArray: [Int]
     public var dynamicArray: [String]
     public var intArray: [Int]
-    public var dictionary: [String:Int]
+    public var dictionary: [String: Int]
 
     public init() {
         self.flag = false

@@ -39,6 +39,7 @@ class User
     public array $tags;
     public array $scores;
     public array $coordinates;
+    public array $matrix;
     public Color $favoriteColor;
     public string $email;
     public mixed $extra;
@@ -50,6 +51,7 @@ class User
         $this->tags = [];
         $this->scores = [];
         $this->coordinates = [];
+        $this->matrix = [];
         $this->favoriteColor = Color::RED;
         $this->email = "";
         $this->extra = null;

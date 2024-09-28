@@ -49,6 +49,8 @@ export class User {
         this.scores = new Map();
         /** @type { 'Array<Number>' } */
         this.coordinates = [];
+        /** @type { 'Array<'Array<Number>'>' } */
+        this.matrix = [];
         /** @type { 'number' } */
         this.favoriteColor = Color[Object.keys(Color)[0]];
         /** @type { String } */

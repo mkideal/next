@@ -37,7 +37,7 @@ type Imports[T Decl] struct {
 	//	```npl title="file.npl"
 	//	{{- define "meta/this" -}}file{{- end -}}
 	//
-	//	{{range .Imports.List}}
+	//	{{range this.Imports.List}}
 	//	{{.Decl.Name}}
 	//	{{end}}
 	//	```
@@ -51,7 +51,7 @@ type Imports[T Decl] struct {
 	//	```npl title="package.npl"
 	//	{{- define "meta/this" -}}package{{- end -}}
 	//
-	//	{{range .Imports.List}}
+	//	{{range this.Imports.List}}
 	//	{{.Decl.Name}}
 	//	{{end}}
 	//	```
@@ -379,10 +379,11 @@ func (d *Decls) Interfaces() Interfaces {
 
 // commonNode represents a common node.
 type commonNode[Self Node] struct {
-	self Self      // self represents the declaration object itself
-	pos  token.Pos // position of the declaration
-	name string    // name of the declaration
-	file *File     // file containing the declaration
+	self    Self      // self represents the declaration object itself
+	pos     token.Pos // position of the declaration
+	name    string    // name of the declaration
+	namePos token.Pos // position of the name
+	file    *File     // file containing the declaration
 
 	// unresolved is the unresolved declaration data. It is resolved in the
 	// resolve method.
@@ -396,15 +397,16 @@ type commonNode[Self Node] struct {
 
 func newCommonNode[Self Node](
 	self Self, file *File,
-	pos token.Pos, name string,
+	pos token.Pos, name *ast.Ident,
 	doc *ast.CommentGroup, annotations *ast.AnnotationGroup,
 ) *commonNode[Self] {
 	d := &commonNode[Self]{
-		self: self,
-		pos:  pos,
-		name: name,
-		file: file,
-		doc:  newDoc(doc),
+		self:    self,
+		pos:     pos,
+		name:    name.Name,
+		namePos: name.Pos(),
+		file:    file,
+		doc:     newDoc(doc),
 	}
 	d.unresolved.annotations = annotations
 	return d
@@ -430,6 +432,7 @@ type iotaValue struct {
 
 // @api(Object/Value) represents a value for a const declaration or an enum member.
 type Value struct {
+	pos        token.Pos
 	namePos    token.Pos
 	name       string
 	typ        *PrimitiveType
@@ -445,14 +448,17 @@ type Value struct {
 	}
 }
 
-func newValue(c *Compiler, file *File, name string, namePos token.Pos, src ast.Expr) *Value {
+func newValue(c *Compiler, file *File, name *ast.Ident, src ast.Expr) *Value {
 	v := &Value{
-		namePos: namePos,
-		name:    name,
+		namePos: name.Pos(),
+		name:    name.Name,
 		file:    file,
 	}
 	if src != nil {
+		v.pos = src.Pos()
 		file.addObject(c, src, v)
+	} else {
+		v.pos = name.End()
 	}
 	v.unresolved.value = src
 	return v
@@ -606,8 +612,8 @@ func newConst(c *Compiler, file *File, src *ast.GenDecl[ast.Expr]) *Const {
 		Comment: newComment(src.Comment),
 	}
 	file.addObject(c, src, x)
-	x.commonNode = newCommonNode(x, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
-	x.value = newValue(c, file, src.Name.Name, src.Name.NamePos, src.Spec)
+	x.commonNode = newCommonNode(x, file, src.Pos(), src.Name, src.Doc, src.Annotations)
+	x.value = newValue(c, file, src.Name, src.Spec)
 	return x
 }
 
@@ -684,7 +690,7 @@ type Enum struct {
 func newEnum(c *Compiler, file *File, src *ast.GenDecl[*ast.EnumType]) *Enum {
 	e := &Enum{}
 	file.addObject(c, src, e)
-	e.commonNode = newCommonNode(e, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
+	e.commonNode = newCommonNode(e, file, src.Pos(), src.Name, src.Doc, src.Annotations)
 	e.Type = newDeclType(file, src.Pos(), KindEnum, src.Name.Name, e)
 	e.Members = &EnumMembers{Decl: e}
 	for i, m := range src.Spec.Members.List {
@@ -735,8 +741,8 @@ func newEnumMember(c *Compiler, file *File, e *Enum, src *ast.EnumMember, index 
 		Decl:    e,
 	}
 	file.addObject(c, src, m)
-	m.commonNode = newCommonNode(m, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
-	m.value = newValue(c, file, src.Name.Name, src.Name.NamePos, src.Value)
+	m.commonNode = newCommonNode(m, file, src.Pos(), src.Name, src.Doc, src.Annotations)
+	m.value = newValue(c, file, src.Name, src.Value)
 	m.value.enum.decl = e
 	m.value.enum.index = index
 	return m
@@ -804,7 +810,7 @@ type Struct struct {
 func newStruct(c *Compiler, file *File, src *ast.GenDecl[*ast.StructType]) *Struct {
 	s := &Struct{}
 	file.addObject(c, src, s)
-	s.commonNode = newCommonNode(s, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
+	s.commonNode = newCommonNode(s, file, src.Pos(), src.Name, src.Doc, src.Annotations)
 	s.Type = newDeclType(file, src.Pos(), KindStruct, src.Name.Name, s)
 	s.fields = &StructFields{Decl: s}
 	for i, f := range src.Spec.Fields.List {
@@ -869,7 +875,7 @@ type StructField struct {
 func newStructField(c *Compiler, file *File, s *Struct, src *ast.StructField, index int) *StructField {
 	f := &StructField{Decl: s, index: index}
 	file.addObject(c, src, f)
-	f.commonNode = newCommonNode(f, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
+	f.commonNode = newCommonNode(f, file, src.Pos(), src.Name, src.Doc, src.Annotations)
 	f.unresolved.typ = src.Type
 	return f
 }
@@ -938,7 +944,7 @@ type Interface struct {
 func newInterface(c *Compiler, file *File, src *ast.GenDecl[*ast.InterfaceType]) *Interface {
 	x := &Interface{}
 	file.addObject(c, src, x)
-	x.commonNode = newCommonNode(x, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
+	x.commonNode = newCommonNode(x, file, src.Pos(), src.Name, src.Doc, src.Annotations)
 	x.Type = newDeclType(file, src.Pos(), KindInterface, src.Name.Name, x)
 	x.methods = &InterfaceMethods{Decl: x}
 	for i, m := range src.Spec.Methods.List {
@@ -984,7 +990,7 @@ func newInterfaceMethod(c *Compiler, file *File, i *Interface, src *ast.Method, 
 		Comment: newComment(src.Comment),
 	}
 	file.addObject(c, src, m)
-	m.commonNode = newCommonNode(m, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
+	m.commonNode = newCommonNode(m, file, src.Pos(), src.Name, src.Doc, src.Annotations)
 	m.Params = &InterfaceMethodParams{Decl: m}
 	for i, p := range src.Params.List {
 		m.Params.List = append(m.Params.List, newInterfaceMethodParam(c, file, m, p, i))
@@ -1067,7 +1073,7 @@ func newInterfaceMethodParam(c *Compiler, file *File, m *InterfaceMethod, src *a
 		index:  index,
 	}
 	file.addObject(c, src, p)
-	p.commonNode = newCommonNode(p, file, src.Pos(), src.Name.Name, src.Doc, src.Annotations)
+	p.commonNode = newCommonNode(p, file, src.Pos(), src.Name, src.Doc, src.Annotations)
 	p.unresolved.typ = src.Type
 	return p
 }

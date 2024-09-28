@@ -147,7 +147,7 @@ def {{render "interface.method:name" .}}(self{{if .Params.List}}, {{next .Params
 {{- else if .Kind.IsBool -}}
 False
 {{- else if .Kind.IsArray -}}
-[{{render "type:zero" .Value.ElemType}} for _ in range({{.Value.N}})]
+[{{render "type:zero" .Actual.ElemType}} for _ in range({{.Actual.N}})]
 {{- else if .Kind.IsMap -}}
 {}
 {{- else if .Kind.IsVector -}}
@@ -159,7 +159,7 @@ None
 {{- else if .Kind.IsStruct -}}
 {{next .}}()
 {{- else if .Kind.IsEnum -}}
-{{next .}}({{render "type:zero" .Value.Decl.MemberType}})
+{{next .}}({{render "type:zero" .Actual.Decl.MemberType}})
 {{- else -}}
 None
 {{- end -}}

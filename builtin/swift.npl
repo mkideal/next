@@ -130,7 +130,7 @@ nil
 {{- else if .Kind.IsStruct -}}
 {{next .}}()
 {{- else if .Kind.IsEnum -}}
-{{next .}}.{{render "enum.member:name" (index .Value.Decl.Members.List 0)}}
+{{next .}}.{{render "enum.member:name" (index .Actual.Decl.Members.List 0)}}
 {{- else -}}
 nil
 {{- end -}}

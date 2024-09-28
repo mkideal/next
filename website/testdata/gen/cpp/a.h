@@ -191,10 +191,10 @@ public:
     std::string text = {""};
     unsigned char singleByte = {0};
     std::vector<unsigned char> byteArray;
-    std::array<int,5> fixedArray = {0};
+    std::array<int, 5> fixedArray = {0};
     std::vector<std::string> dynamicArray;
     std::vector<int> intArray;
-    std::unordered_map<std::string,int> dictionary;
+    std::unordered_map<std::string, int> dictionary;
 };
 
 class User {

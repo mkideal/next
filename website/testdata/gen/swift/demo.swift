@@ -34,8 +34,9 @@ public struct User {
     public var id: Int64
     public var username: String
     public var tags: [String]
-    public var scores: [String:Int]
+    public var scores: [String: Int]
     public var coordinates: [Double]
+    public var matrix: [[Int]]
     public var favoriteColor: Color
     public var email: String
     public var extra: Any
@@ -46,6 +47,7 @@ public struct User {
         self.tags = []
         self.scores = [:]
         self.coordinates = []
+        self.matrix = []
         self.favoriteColor = Color.red
         self.email = ""
         self.extra = nil

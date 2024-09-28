@@ -130,11 +130,16 @@ typedef struct {{next .Type}} {{next .Type}};
 
 {{/* next/c/struct.field: Generates a struct field declaration */}}
 {{- define "next/c/struct.field" -}}
-{{- $type := .Type.Value -}}
+{{next .Doc}}{{render "dict:struct.field.decl" (dict "type" .Type "name" (render "struct.field:name" .))}};{{next .Comment}}
+{{- end}}
+
+{{- define "next/c/dict:struct.field.decl" -}}
+{{- $type := .type -}}
+{{- $name := .name -}}
 {{- if $type.Kind.IsArray -}}
-{{next .Doc}}{{next $type.ElemType}} {{render "struct.field:name" .}}[{{$type.N}}];{{next .Comment}}
+{{render "dict:struct.field.decl" (dict "type" $type.Actual.ElemType "name" (printf "%s[%d]" $name $type.Actual.N))}}
 {{- else -}}
-{{next .Doc}}{{next .Type}} {{render "struct.field:name" .}};{{next .Comment}}
+{{next $type}} {{$name}}
 {{- end}}
 {{- end}}
 

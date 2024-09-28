@@ -1,13 +1,18 @@
 (function (Prism) {
   const delimiter = "tag";
   Prism.languages.npl = {
+    "comment-action": {
+      pattern: /\{\{\-?\s*\/\*[\s\S]*?\*\/\s*\-?\}\}/,
+      alias: "comment",
+      greedy: true,
+    },
     // Template actions {{ ... }} or {{- ... -}}
     "template-action": {
-      pattern: /\{(?:-\{\{|\{)[\s\S]*?(?:\}\}|-\}\})/,
+      pattern: /\{\{[-]?[\s\S]*?[-]?\}\}/,
       inside: {
         // Delimiters {{ and }} with optional -
         delimiter: {
-          pattern: /^\{(?:-\{\{|\{)|\}(?:\}|-\}\})$/,
+          pattern: /^\{\{[-]?|[-]?\}\}$/,
           alias: delimiter,
         },
         // Trim operators - at start or end
@@ -15,8 +20,6 @@
           pattern: /^-|-$/,
           alias: delimiter,
         },
-        // Comments within template actions
-        comment: /\/\*[\s\S]*?\*\//,
         // Strings within template actions
         string: /"(?:\\.|[^"\\])*"/,
         // Booleans within template actions

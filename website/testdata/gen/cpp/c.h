@@ -57,8 +57,8 @@ public:
     std::string deviceId = {""};
     std::string twoFactorToken = {""};
     std::vector<std::string> roles;
-    std::unordered_map<std::string,std::string> metadata;
-    std::array<int,4> scores = {0};
+    std::unordered_map<std::string, std::string> metadata;
+    std::array<int, 4> scores = {0};
 };
 
 class LoginRequest {

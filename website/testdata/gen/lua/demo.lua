@@ -52,6 +52,7 @@ function User:new()
         tags = {},
         scores = {},
         coordinates = {},
+        matrix = {},
         favoriteColor = nil,
         email = "",
         extra = nil

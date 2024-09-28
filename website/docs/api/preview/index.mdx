@@ -1,0 +1,50 @@
+---
+sidebar_position: 2
+slug: /api/preview
+title: Preview
+version: 0.0.5
+---
+
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
+export const linkName = (name) => useBaseUrl(`/docs${frontMatter.slug}/${name}`);
+
+# Release Notes
+
+## Introduction to Next {frontMatter.version}
+
+:::note
+**Next {frontMatter.version} is not yet released. These are work-in-progress release notes.**
+:::
+
+<h2><a href={linkName("command_line")}>CommandLine</a></h2>
+
+CommandLine APIs process command line flags and arguments.
+
+<h2><a href={linkName("context")}>Context</a></h2>
+
+Context APIs are related to the template context for code generation. They provide access to contextual information and utilities used within the code generation process.
+
+<h2><a href={linkName("environment")}>Environment</a></h2>
+
+Environment APIs deal with system environment variables used by the Next compiler. These variables can affect the compilation process and output.
+
+<h2><a href={linkName("function")}>Function</a></h2>
+
+Function APIs encompass context-independent global functions available in templates. These utility functions can be used across different parts of your templates.
+
+<h2><a href={linkName("grammar")}>Grammar</a></h2>
+
+Grammar APIs are related to the custom grammar rules. The grammar is used to define a subset of the next files. It can limit the features of the next code according by your requirements.
+
+<h2><a href={linkName("map")}>Map</a></h2>
+
+Map APIs are related to the language-specific types and features mappings.
+
+<h2><a href={linkName("object")}>Object</a></h2>
+
+Object APIs define the interfaces for objects used within templates. They provide methods and properties for manipulating and accessing data structures in your code generation templates.
+
+---
+
+For more detailed information on each section, please refer to the respective pages in this documentation.

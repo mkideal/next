@@ -241,7 +241,7 @@ pub struct ComplexStruct {
     pub fixed_array: [i32; 5],
     pub dynamic_array: Vec<String>,
     pub int_array: Vec<i32>,
-    pub dictionary: HashMap<String,i32>,
+    pub dictionary: HashMap<String, i32>,
 }
 
 pub struct User {

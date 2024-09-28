@@ -13,6 +13,6 @@ string=string
 byte=byte
 bytes=byte[]
 any=object
-map=Dictionary<%K%,%V%>
+map=Dictionary<%K%, %V%>
 vector=List<%T%>
 array=%T%[]

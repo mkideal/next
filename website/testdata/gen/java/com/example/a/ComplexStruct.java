@@ -150,13 +150,13 @@ public class ComplexStruct {
         this.intArray = intArray;
     }
 
-    private Map<String,Integer> dictionary;
+    private Map<String, Integer> dictionary;
 
-    public Map<String,Integer> getDictionary() {
+    public Map<String, Integer> getDictionary() {
         return dictionary;
     }
 
-    public void setDictionary(Map<String,Integer> dictionary) {
+    public void setDictionary(Map<String, Integer> dictionary) {
         this.dictionary = dictionary;
     }
 

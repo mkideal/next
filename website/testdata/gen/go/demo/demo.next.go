@@ -78,6 +78,7 @@ type User struct {
     Tags []string
     Scores map[string]int
     Coordinates [3]float64
+    Matrix [3][2]int
     FavoriteColor Color
     Email string
     Extra any

@@ -45,6 +45,7 @@ struct User {
     vector<string> tags;
     map<string, int> scores;
     array<float64, 3> coordinates;
+    array<array<int, 2>, 3> matrix;
     Color favoriteColor;
     @deprecated string email;
     any extra;

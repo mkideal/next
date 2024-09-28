@@ -13,6 +13,6 @@ string=string
 byte=number
 bytes=Uint8Array
 any=any
-map=Map<%K%,%V%>
+map=Map<%K%, %V%>
 vector=Array<%T%>
 array=Array<%T%>

@@ -13,7 +13,7 @@ string=String
 byte=byte
 bytes=byte[]
 any=Object
-map=Map<box(%K%),box(%V%)>
+map=Map<box(%K%), box(%V%)>
 vector=List<box(%T%)>
 array=%T%[]
 

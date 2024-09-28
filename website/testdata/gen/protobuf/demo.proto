@@ -29,9 +29,10 @@ message User {
     repeated string tags = 3;
     map<string, int32> scores = 4;
     repeated double coordinates = 5;
-    Color favoriteColor = 6;
-    string email = 7 [deprecated = true];
-    google.protobuf.Any extra = 8;
+    repeated int32 matrix = 6;
+    Color favoriteColor = 7;
+    string email = 8 [deprecated = true];
+    google.protobuf.Any extra = 9;
 }
 
 // uint128 represents a 128-bit unsigned integer.

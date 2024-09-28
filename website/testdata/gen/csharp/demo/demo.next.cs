@@ -42,8 +42,9 @@ namespace demo
         public long id { get; set; }
         public string username { get; set; }
         public List<string> tags { get; set; }
-        public Dictionary<string,int> scores { get; set; }
+        public Dictionary<string, int> scores { get; set; }
         public double[] coordinates { get; set; }
+        public int[][] matrix { get; set; }
         public Color favoriteColor { get; set; }
         public string email { get; set; }
         public object extra { get; set; }

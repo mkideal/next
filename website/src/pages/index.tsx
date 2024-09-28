@@ -47,12 +47,7 @@ function TopBanner() {
       <div className={styles.topBanner}>
         <div className={styles.topBannerTitle}>
           {"🎉\xa0"}
-          <Link
-            // FIXME:
-            //to={`/blog/releases/${announcedVersion}`}
-            to={`/`}
-            className={styles.topBannerTitleText}
-          >
+          <Link to={"/docs/api/latest"} className={styles.topBannerTitleText}>
             <Translate
               id="homepage.banner.launch.newVersion"
               values={{ newVersion: announcedVersion }}

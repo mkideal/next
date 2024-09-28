@@ -1,0 +1,174 @@
+# Grammar {#user-content-Grammar}
+
+`Grammar` represents the custom grammar for the next files.
+
+The grammar is used to define a subset of the next files. It can limit the features of the next code according by your requirements. The grammar is a JSON object that contains rules.
+
+###### .Package {#user-content-Grammar__Package}
+<div className="property-container">
+
+`.Package` represents the [Package](#user-content-Grammar_Package) grammar rules for the package declaration.
+
+Example:
+
+```json
+{
+  "Package": {
+  }
+}
+```
+
+See [Package](#user-content-Grammar_Package) for more details.
+
+</div>
+
+## Annotation {#user-content-Grammar_Annotation}
+
+`Annotation` represents the annotation grammar rules. Only the built-in annotations are supported if no annotations are defined in the grammar.
+
+:::warning
+
+You **CAN NOT** define the built-in annotations in the grammar.
+
+:::
+
+###### .Description {#user-content-Grammar_Annotation__Description}
+<div className="property-container">
+
+`.Description` represents the annotation description.
+
+</div>
+
+###### .Name {#user-content-Grammar_Annotation__Name}
+<div className="property-container">
+
+`.Name` represents the annotation name.
+
+</div>
+
+###### .Parameters {#user-content-Grammar_Annotation__Parameters}
+<div className="property-container">
+
+`.Parameters` represents the annotation parameters.
+
+</div>
+
+###### .Required {#user-content-Grammar_Annotation__Required}
+<div className="property-container">
+
+`.Required` represents the annotation is required or not.
+
+</div>
+
+###### .Validators {#user-content-Grammar_Annotation__Validators}
+<div className="property-container">
+
+`.Validators` represents the [Validator](#user-content-Grammar_Validator) for the annotation.
+
+</div>
+
+### Parameter {#user-content-Grammar_Annotation_Parameter}
+
+`Parameter` represents the annotation parameter grammar rules. If no parameters are defined, the annotation does not have any parameters.
+
+###### .Name {#user-content-Grammar_Annotation_Parameter__Name}
+<div className="property-container">
+
+`.Name` represents the parameter name.
+
+</div>
+
+###### .Required {#user-content-Grammar_Annotation_Parameter__Required}
+<div className="property-container">
+
+`.Required` represents the parameter is required or not.
+
+</div>
+
+###### .Type {#user-content-Grammar_Annotation_Parameter__Type}
+<div className="property-container">
+
+`.Type` represents the parameter type. The type is a string that can be one of the following types:
+
+- **bool**: boolean type, the value can be `true` or `false`
+- **int**: integer type, the value can be a positive or negative integer, for example, `123`
+- **float**: float type, the value can be a positive or negative float, for example, `1.23`
+- **string**: string type, the value can be a string, for example, `"hello"`
+- **type**: any type name, for example, `int`, `float`, `string`, etc. Custom type names are supported.
+
+</div>
+
+###### .Validators {#user-content-Grammar_Annotation_Parameter__Validators}
+<div className="property-container">
+
+`.Validators` represents the [Validator](#user-content-Grammar_Validator) for the annotation parameter.
+
+</div>
+
+## Package {#user-content-Grammar_Package}
+
+`Package` represents the grammar rules for the package declaration.
+
+###### .Annotations {#user-content-Grammar_Package__Annotations}
+<div className="property-container">
+
+`.Annotations` represents the [AnnotationGrammar](#user-content-Grammar_Annotation) rules for the package declaration. It extends the built-in annotations.
+
+</div>
+
+###### .Validators {#user-content-Grammar_Package__Validators}
+<div className="property-container">
+
+`.Validators` represents the [Validator](#user-content-Grammar_Validator) for the package declaration. It's used to validate the package name. For example, You can limit the package name must be not start with a "_" character. The validator expression is a template string that can access package name by `.Name`.
+
+Example:
+
+```json
+{
+  "Package": {
+    "Validators": [
+      {
+        "Name": "PackageNameNotStartWithUnderscore",
+        "Expression": "{{not (hasPrefix `_` .Name)}}",
+        "Message": "package name must not start with an underscore"
+      }
+    ]
+  }
+}
+```
+
+```next
+// This will error
+package _test;
+// Error: package name must not start with an underscore
+```
+
+</div>
+
+## Validator {#user-content-Grammar_Validator}
+
+`Validator` represents the validator for the grammar rules.
+
+###### .Expression {#user-content-Grammar_Validator__Expression}
+<div className="property-container">
+
+`.Expression` represents the validator expression. The expression is a template string that can access the data by the `.` operator. The expression must return a boolean value.
+
+The data is the current context object. For example, **package** object for the package validator.
+
+</div>
+
+###### .Message {#user-content-Grammar_Validator__Message}
+<div className="property-container">
+
+`.Message` represents the error message when the validator is failed.
+
+</div>
+
+###### .Name {#user-content-Grammar_Validator__Name}
+<div className="property-container">
+
+`.Name` represents the validator name.
+
+</div>
+

@@ -172,7 +172,7 @@ export class ComplexStruct {
     fixedArray: Array<number> = [];
     dynamicArray: Array<string> = [];
     intArray: Array<number> = [];
-    dictionary: Map<string,number> = new Map();
+    dictionary: Map<string, number> = new Map();
 }
 
 export class User {

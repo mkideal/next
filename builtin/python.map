@@ -13,6 +13,6 @@ string=str
 byte=int
 bytes=bytes
 any=Any
-map=Dict[%K%,%V%]
+map=Dict[%K%, %V%]
 vector=List[%T%]
 array=List[%T%]

@@ -38,7 +38,7 @@ namespace c
                         public string deviceId { get; set; }
                         public string twoFactorToken { get; set; }
                         public List<string> roles { get; set; }
-                        public Dictionary<string,string> metadata { get; set; }
+                        public Dictionary<string, string> metadata { get; set; }
                         public int[] scores { get; set; }
                     }
 
