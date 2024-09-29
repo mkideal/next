@@ -66,8 +66,8 @@ export default function Home(): JSX.Element {
   const { siteConfig } = useDocusaurusContext();
   return (
     <Layout
-      title={`Hello from ${siteConfig.title}`}
-      description="Description will go into a meta tag in <head />"
+      title={`${siteConfig.title}`}
+      description="Next is a powerful Generic Interface Definition Language(IDL) designed to create highly customized code across multiple programming languages."
     >
       <TopBanner />
       <HeroBanner />

@@ -25,9 +25,10 @@ ifeq (, $(shell which stringer))
 	@go install golang.org/x/tools/cmd/stringer@latest
 endif
 
-.PHONY: go/generate
-go/generate: deps/stringer
+.PHONY: autogen
+autogen: deps/stringer
 	@echo "Running go generate..."
+	@cd src/grammar && go run gendoc.go -o doc.go
 	@go generate ./...
 
 .PHONY: go/vet
@@ -36,7 +37,7 @@ go/vet:
 	@go vet ./...
 
 .PHONY: build
-build: go/generate go/vet
+build: autogen go/vet
 	@echo "Building ${BUILD_BIN_DIR}/next..."
 	@mkdir -p ${BUILD_DIR}
 	@mkdir -p ${BUILD_BIN_DIR}
@@ -74,7 +75,7 @@ define release_js
 endef
 
 .PHONY: release
-release: go/generate go/vet
+release: autogen go/vet
 	@rm -f ${BUILD_DIR}/next.*.tar.gz ${BUILD_DIR}/next.*.zip ${BUILD_DIR}/*.wasm
 	$(call release_unix,darwin,amd64)
 	$(call release_unix,darwin,arm64)
@@ -87,7 +88,7 @@ release: go/generate go/vet
 	$(call release_js)
 
 .PHONY: test/src
-test/src: go/generate go/vet
+test/src: autogen go/vet
 	@echo "Running tests..."
 	@go test -v ./...
 
