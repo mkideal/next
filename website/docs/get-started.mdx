@@ -403,87 +403,101 @@ using System.Collections.Generic;
 
 namespace {{render "package:namespace" .Package}}
 {
-    {{next .Imports | align -}}
-    {{next .Decls | align}}
+    {{next .Decls | align -}}
 }
 {{- end}}
 
 {{/* next/csharp/package:namespace: Generates the namespace name */}}
 {{- define "next/csharp/package:namespace" -}}
-{{.Name}}
+{{with .Annotations.next.csharp_package}}{{.}}{{else}}{{.Name}}{{end}}
+{{- end}}
+
+{{/* next/csharp/used.type: Generates a fully qualified type name, including namespace if necessary */}}
+{{- define "next/csharp/used.type" -}}
+    {{- if not (.File.Package.Contains .Type)}}
+        {{- render "package:namespace" .Decl.File.Package}}.
+    {{- end}}
+    {{- next .Type}}
 {{- end}}
 
 {{/* next/csharp/imports: Generates using statements for imported namespaces */}}
 {{- define "next/csharp/imports" -}}
 {{- if .TrimmedList}}
 {{- range .TrimmedList}}
-{{- next . -}}
+{{- next .}}
 {{- end}}
-{{- end}}
+{{end}}
 {{- end}}
 
 {{/* next/csharp/import: Generates a using statement for a specific imported namespace */}}
 {{- define "next/csharp/import" -}}
-using {{render "package:namespace" .File.Package}};
-{{- end}}
+using {{render "package:namespace" .Target.Package}};
+{{end}}
 
 {{/* next/csharp/const: Generates a constant declaration */}}
 {{- define "next/csharp/const" -}}
-{{next .Doc}}public const {{next .Type}} {{render "const:name" .}} = {{next .Value}};{{next .Comment}}
-{{- end}}
+{{- next .Doc -}}
+public const {{next .Type}} {{render "const:name" .}} = {{next .Value}};{{next .Comment}}
+{{end}}
 
 {{/* next/csharp/enum: Generates an enum declaration */}}
 {{- define "next/csharp/enum" -}}
-{{next .Doc}}public enum {{next .Type}}
+{{- next .Doc -}}
+public enum {{next .Type}}
 {
-    {{- next .Members}}
+    {{next .Members | align -}}
 }
-{{- end}}
+{{end}}
 
 {{/* next/csharp/enum.member: Generates an enum member */}}
 {{- define "next/csharp/enum.member" -}}
-{{next .Doc}}{{render "enum.member:name" .}} = {{next .Value}},{{next .Comment}}
-{{- end}}
+{{- next .Doc -}}
+{{- render "enum.member:name" .}} = {{next .Value}},{{next .Comment}}
+{{end}}
 
 {{/* next/csharp/struct: Generates a class declaration (struct in C# is typically implemented as a class) */}}
 {{- define "next/csharp/struct" -}}
-{{next .Doc}}public class {{next .Type}}
+{{- next .Doc -}}
+public class {{next .Type}}
 {
-    {{- next .Fields}}
+    {{next .Fields | align -}}
 }
-{{- end}}
+{{end}}
 
 {{/* next/csharp/struct.field: Generates a property declaration for a class */}}
 {{- define "next/csharp/struct.field" -}}
-{{next .Doc}}public {{next .Type}} {{render "struct.field:name" .}} { get; set; }{{next .Comment}}
-{{- end}}
+{{- next .Doc -}}
+public {{next .Type}} {{render "struct.field:name" .}} { get; set; }{{next .Comment}}
+{{end}}
 
 {{/* next/csharp/struct.field.name: Generates the name for a class property */}}
 {{- define "next/csharp/struct.field.name" -}}
-{{.String | pascalCase}}
+{{- .String | pascalCase}}
 {{- end}}
 
 {{/* next/csharp/interface: Generates an interface declaration */}}
 {{- define "next/csharp/interface" -}}
-{{next .Doc}}public interface {{next .Type}}
+{{- next .Doc -}}
+public interface {{next .Type}}
 {
-    {{- next .Methods}}
+    {{next .Methods | align -}}
 }
-{{- end}}
+{{end}}
 
 {{/* next/csharp/interface.method: Generates a method declaration in an interface */}}
 {{- define "next/csharp/interface.method" -}}
-{{next .Doc}}{{next .Result}} {{render "interface.method:name" .}}({{next .Params}});{{next .Comment}}
-{{- end}}
+{{- next .Doc -}}
+{{- next .Result}} {{render "interface.method:name" .}}({{next .Params}});{{next .Comment}}
+{{end}}
 
 {{/* next/csharp/interface.method.result: Generates the return type for an interface method */}}
 {{- define "next/csharp/interface.method.result" -}}
-{{if .Type}}{{next .Type}}{{else}}void{{end}}
+{{- if .Type}}{{next .Type}}{{else}}void{{end}}
 {{- end}}
 
 {{/* next/csharp/interface.method.param: Generates a parameter for an interface method */}}
 {{- define "next/csharp/interface.method.param" -}}
-{{if .Annotations.next.mut}}ref {{end}}{{next .Type}} {{render "interface.method.param:name" .}}
+{{- if .Annotations.next.mut}}ref {{end}}{{next .Type}} {{render "interface.method.param:name" .}}
 {{- end}}
 ```
 
