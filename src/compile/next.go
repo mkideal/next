@@ -3,6 +3,7 @@ package compile
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -16,8 +17,10 @@ import (
 
 	"github.com/gopherd/core/builder"
 	"github.com/gopherd/core/flags"
+	"github.com/gopherd/core/op"
 	"github.com/gopherd/core/term"
 	"github.com/next/next/src/fsutil"
+	"github.com/next/next/src/grammar"
 	"github.com/next/next/src/parser"
 	"github.com/next/next/src/scanner"
 )
@@ -34,25 +37,81 @@ const nextExt = ".next"
 const website = "https://next.as"
 const repository = "https://github.com/next/next"
 
-// Compile compiles the next files.
-func Compile(platform Platform, builtin FileSystem, args []string) {
-	stdin, stderr := platform.Stdin(), platform.Stderr()
+type command struct {
+	desc string
+	fn   func(io.Writer, []string) error
+}
 
+func newCommand(desc string, fn func(io.Writer, []string) error) *command {
+	return &command{desc: desc, fn: fn}
+}
+
+func (c *command) description() string {
+	return c.desc
+}
+
+func (c *command) run(stderr io.Writer, args []string) error {
+	return c.fn(stderr, args)
+}
+
+var commands = map[string]*command{
 	// @api(CommandLine/Command/version) command prints the version of the next compiler.
 	// It prints the version of the next compiler and exits the program.
 	//
 	// Example:
-	// ```sh
-	// next version
-	// ```
+	//
+	//	```sh
+	//	next version
+	//	```
 	//
 	// Output:
-	// ```
-	// next v0.0.4(main: 51864a35de7890d63bfd8acecdb62d20372ca963) built at 2024/09/27T22:58:21+0800 by go1.23.0
-	// ```
-	if len(args) == 2 && args[1] == "version" {
+	//
+	//	```
+	//	next v0.0.4(main: 51864a35de7890d63bfd8acecdb62d20372ca963) built at 2024/09/27T22:58:21+0800 by go1.23.0
+	//	```
+	"version": newCommand("print the version of the next compiler", func(stderr io.Writer, _ []string) error {
 		builder.PrintInfo()
 		unwrap(stderr, 0)
+		return nil
+	}),
+
+	// @api(CommandLine/Command/grammar) command generates the default grammar for the next files.
+	//
+	// Example:
+	//
+	//	```sh
+	//	next grammar grammar.json
+	//	```
+	//
+	// Or you can run the following command to generate the default grammar to the standard output:
+	//	```sh
+	//	next grammar
+	//	```
+	"grammar": newCommand("generate the default grammar for the next files", func(stderr io.Writer, args []string) error {
+		if len(args) > 2 {
+			return fmt.Errorf("too many arguments: next %s [filename]", args[0])
+		}
+		content, err := json.MarshalIndent(grammar.Default, "", "  ")
+		if err != nil {
+			return err
+		}
+		if len(args) == 2 {
+			return os.WriteFile(args[1], content, 0644)
+		}
+		fmt.Println(string(content))
+		return nil
+	}),
+}
+
+// Compile compiles the next files.
+func Compile(platform Platform, builtin FileSystem, args []string) {
+	stdin, stderr := platform.Stdin(), platform.Stderr()
+
+	if len(args) >= 2 {
+		if cmd, ok := commands[args[1]]; ok {
+			unwrap(stderr, cmd.run(stderr, args[1:]))
+			unwrap(stderr, 0)
+		}
 	}
 
 	flagSet := flag.NewFlagSet(args[0], flag.ContinueOnError)
@@ -70,7 +129,8 @@ func Compile(platform Platform, builtin FileSystem, args []string) {
 		term.Fprint(flagSet.Output(), "Usage:\n")
 		term.Fprintf(flagSet.Output(), "  %s [Options] [source_dirs_or_files...] (default: current directory)\n", name)
 		term.Fprintf(flagSet.Output(), "  %s [Options] <stdin>\n", name)
-		term.Fprintf(flagSet.Output(), "  %s version\n", name)
+		term.Fprintf(flagSet.Output(), "  %s version            # print the version of the next compiler\n", name)
+		term.Fprintf(flagSet.Output(), "  %s grammar [filename] # generate the default grammar\n", name)
 		term.Fprintf(flagSet.Output(), "\nOptions:\n")
 		flagSet.PrintDefaults()
 		term.Fprintf(flagSet.Output(), `For more information:
@@ -98,8 +158,8 @@ func Compile(platform Platform, builtin FileSystem, args []string) {
 				source = osStdin
 				files = append(files, "<stdin>")
 			} else {
-				v, e := fsutil.AppendFiles(files, ".", nextExt, false)
-				files = result(stderr, v, e)
+				newFiles, err := fsutil.AppendFiles(files, ".", nextExt, false)
+				files = result(stderr, newFiles, err)
 			}
 		} else if stdin != nil {
 			source = stdin
@@ -115,8 +175,8 @@ func Compile(platform Platform, builtin FileSystem, args []string) {
 			}
 		}
 		for _, arg := range flagSet.Args() {
-			v, e := fsutil.AppendFiles(files, arg, nextExt, false)
-			files = result(stderr, v, e)
+			path, err := fsutil.AppendFiles(files, arg, nextExt, false)
+			files = result(stderr, path, err)
 		}
 	}
 	if len(files) == 0 {
@@ -127,8 +187,8 @@ func Compile(platform Platform, builtin FileSystem, args []string) {
 	if source == nil {
 		seen := make(map[string]bool)
 		for i := len(files) - 1; i >= 0; i-- {
-			v, e := filepath.Abs(files[i])
-			files[i] = result(stderr, v, e)
+			path, err := filepath.Abs(files[i])
+			files[i] = result(stderr, path, err)
 			if seen[files[i]] {
 				files = append(files[:i], files[i+1:]...)
 			} else {
@@ -137,19 +197,32 @@ func Compile(platform Platform, builtin FileSystem, args []string) {
 		}
 	}
 
+	// read grammar file
+	if compiler.flags.grammar != "" {
+		content, err := platform.ReadFile(compiler.flags.grammar)
+		content = result(stderr, content, err)
+		unwrap(stderr, json.Unmarshal(content, &compiler.grammar))
+		if err := compiler.grammar.Validate(); err != nil {
+			return
+		}
+	} else {
+		compiler.grammar = grammar.Default
+	}
+
 	// parse and resolve all files
 	for _, file := range files {
 		if source == nil {
-			v, e := platform.ReadFile(file)
-			source = bytes.NewReader(result(stderr, v, e))
+			content, err := platform.ReadFile(file)
+			source = bytes.NewReader(result(stderr, content, err))
 		}
-		v, e := parser.ParseFile(compiler.FileSet(), file, source, parser.ParseComments)
+		f, err := parser.ParseFile(compiler.FileSet(), file, source, parser.ParseComments)
+		unwrap(stderr, op.Second(compiler.AddFile(result(stderr, f, err))))
 		source = nil
-		f := result(stderr, v, e)
-		v2, e2 := compiler.AddFile(f)
-		result(stderr, v2, e2)
 	}
 	unwrap(stderr, compiler.Resolve())
+
+	// Validate the grammar
+	unwrap(stderr, compiler.ValidateGrammar())
 
 	// generate files
 	unwrap(stderr, Generate(compiler))

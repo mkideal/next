@@ -47,6 +47,10 @@ public class LoginResponse {
         this.user = user;
     }
 
+    public static int MessageType() {
+        return 202;
+    }
+
     public LoginResponse() {
     }
 }

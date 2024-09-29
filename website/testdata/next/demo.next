@@ -120,7 +120,7 @@ struct LoginRequest {
 }
 
 // LoginResponse represents a login response message (type 102)
-@message(type=102, res)
+@message(type=102)
 struct LoginResponse {
     string token;
     User user;

@@ -274,11 +274,23 @@ pub struct LoginRequest {
     pub two_factor_token: String,
 }
 
+impl LoginRequest {
+    pub fn message_type() -> i32 {
+        201
+    }
+}
+
 pub struct LoginResponse {
     pub success: bool,
     pub error_message: String,
     pub authentication_token: String,
     pub user: User,
+}
+
+impl LoginResponse {
+    pub fn message_type() -> i32 {
+        202
+    }
 }
 
 pub struct GenericRequest {

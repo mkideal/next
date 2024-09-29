@@ -1,0 +1,332 @@
+{
+  "Package": {
+    "Annotations": [
+      {
+        "Name": "next",
+        "Description": "Built-in annotation for the next compiler.",
+        "Parameters": [
+          {
+            "Name": "available",
+            "Description": "Sets the available expression for the declaration.",
+            "Type": "string"
+          },
+          {
+            "Name": ".+_package",
+            "Description": "Sets the package name for target languages.",
+            "Type": "string",
+            "Validators": [
+              {
+                "Name": "LangPackageMustNotBeEmpty",
+                "Expression": "{{ne .Name ``}}",
+                "Message": "must not be empty"
+              }
+            ]
+          },
+          {
+            "Name": ".+_imports",
+            "Description": "Sets the import declarations for target languages.",
+            "Type": "string"
+          }
+        ]
+      },
+      {
+        "Name": "deprecated",
+        "Description": "Sets the declaration as deprecated.",
+        "Parameters": [
+          {
+            "Name": "message",
+            "Description": "Sets the deprecation message.",
+            "Type": "string"
+          }
+        ]
+      }
+    ]
+  },
+  "Import": {},
+  "Const": {
+    "Types": [
+      "bool",
+      "int",
+      "float",
+      "string"
+    ],
+    "Annotations": [
+      {
+        "Name": "next",
+        "Description": "Built-in annotation for the next compiler.",
+        "Parameters": [
+          {
+            "Name": "available",
+            "Description": "Sets the available expression for the declaration.",
+            "Type": "string"
+          }
+        ]
+      },
+      {
+        "Name": "deprecated",
+        "Description": "Sets the declaration as deprecated.",
+        "Parameters": [
+          {
+            "Name": "message",
+            "Description": "Sets the deprecation message.",
+            "Type": "string"
+          }
+        ]
+      }
+    ]
+  },
+  "Enum": {
+    "Annotations": [
+      {
+        "Name": "next",
+        "Description": "Built-in annotation for the next compiler.",
+        "Parameters": [
+          {
+            "Name": "available",
+            "Description": "Sets the available expression for the declaration.",
+            "Type": "string"
+          },
+          {
+            "Name": "type",
+            "Description": "Sets the type for enum members.",
+            "Type": "type"
+          }
+        ]
+      },
+      {
+        "Name": "deprecated",
+        "Description": "Sets the declaration as deprecated.",
+        "Parameters": [
+          {
+            "Name": "message",
+            "Description": "Sets the deprecation message.",
+            "Type": "string"
+          }
+        ]
+      }
+    ],
+    "Member": {
+      "Types": [
+        "int",
+        "float",
+        "string"
+      ],
+      "Annotations": [
+        {
+          "Name": "next",
+          "Description": "Built-in annotation for the next compiler.",
+          "Parameters": [
+            {
+              "Name": "available",
+              "Description": "Sets the available expression for the declaration.",
+              "Type": "string"
+            }
+          ]
+        },
+        {
+          "Name": "deprecated",
+          "Description": "Sets the declaration as deprecated.",
+          "Parameters": [
+            {
+              "Name": "message",
+              "Description": "Sets the deprecation message.",
+              "Type": "string"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "Struct": {
+    "Annotations": [
+      {
+        "Name": "next",
+        "Description": "Built-in annotation for the next compiler.",
+        "Parameters": [
+          {
+            "Name": "available",
+            "Description": "Sets the available expression for the declaration.",
+            "Type": "string"
+          },
+          {
+            "Name": ".+_alias",
+            "Description": "Sets the alias name for target languages.",
+            "Type": "string"
+          }
+        ]
+      },
+      {
+        "Name": "deprecated",
+        "Description": "Sets the declaration as deprecated.",
+        "Parameters": [
+          {
+            "Name": "message",
+            "Description": "Sets the deprecation message.",
+            "Type": "string"
+          }
+        ]
+      },
+      {
+        "Name": "message",
+        "Description": "Sets the declaration as a message.",
+        "Parameters": [
+          {
+            "Name": "type",
+            "Description": "Sets the message type id",
+            "Type": "int",
+            "Required": true
+          },
+          {
+            "Name": "req",
+            "Description": "Sets the message as a request.",
+            "Type": "bool"
+          }
+        ]
+      }
+    ],
+    "Field": {
+      "Annotations": [
+        {
+          "Name": "next",
+          "Description": "Built-in annotation for the next compiler.",
+          "Parameters": [
+            {
+              "Name": "available",
+              "Description": "Sets the available expression for the declaration.",
+              "Type": "string"
+            },
+            {
+              "Name": ".+_type",
+              "Description": "Sets the field type name for target languages.",
+              "Type": "string"
+            }
+          ]
+        },
+        {
+          "Name": "deprecated",
+          "Description": "Sets the declaration as deprecated.",
+          "Parameters": [
+            {
+              "Name": "message",
+              "Description": "Sets the deprecation message.",
+              "Type": "string"
+            }
+          ]
+        },
+        {
+          "Name": "required",
+          "Description": "Sets the field as required."
+        },
+        {
+          "Name": "optional",
+          "Description": "Sets the field as optional.",
+          "Parameters": [
+            {
+              "Name": "default",
+              "Description": "Sets the default value for optional fields.",
+              "Type": "string"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "Interface": {
+    "Annotations": [
+      {
+        "Name": "next",
+        "Description": "Built-in annotation for the next compiler.",
+        "Parameters": [
+          {
+            "Name": "available",
+            "Description": "Sets the available expression for the declaration.",
+            "Type": "string"
+          },
+          {
+            "Name": ".+_alias",
+            "Description": "Sets the alias name for target languages.",
+            "Type": "string"
+          }
+        ]
+      },
+      {
+        "Name": "deprecated",
+        "Description": "Sets the declaration as deprecated.",
+        "Parameters": [
+          {
+            "Name": "message",
+            "Description": "Sets the deprecation message.",
+            "Type": "string"
+          }
+        ]
+      }
+    ],
+    "Method": {
+      "Annotations": [
+        {
+          "Name": "next",
+          "Description": "Built-in annotation for the next compiler.",
+          "Parameters": [
+            {
+              "Name": "available",
+              "Description": "Sets the available expression for the declaration.",
+              "Type": "string"
+            },
+            {
+              "Name": "mut",
+              "Description": "Sets object or parameter as mutable.",
+              "Type": "bool"
+            },
+            {
+              "Name": "error",
+              "Description": "Indicates the method returns an error.",
+              "Type": "bool"
+            }
+          ]
+        },
+        {
+          "Name": "deprecated",
+          "Description": "Sets the declaration as deprecated.",
+          "Parameters": [
+            {
+              "Name": "message",
+              "Description": "Sets the deprecation message.",
+              "Type": "string"
+            }
+          ]
+        }
+      ],
+      "Parameter": {
+        "Annotations": [
+          {
+            "Name": "next",
+            "Description": "Built-in annotation for the next compiler.",
+            "Parameters": [
+              {
+                "Name": "available",
+                "Description": "Sets the available expression for the declaration.",
+                "Type": "string"
+              },
+              {
+                "Name": "mut",
+                "Description": "Sets object or parameter as mutable.",
+                "Type": "bool"
+              }
+            ]
+          },
+          {
+            "Name": "deprecated",
+            "Description": "Sets the declaration as deprecated.",
+            "Parameters": [
+              {
+                "Name": "message",
+                "Description": "Sets the deprecation message.",
+                "Type": "string"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

@@ -4,16 +4,33 @@ pagination_next: null
 ---
 # CommandLine {#user-content-CommandLine}
 ## Command {#user-content-CommandLine_Command}
+### grammar {#user-content-CommandLine_Command_grammar}
+
+`grammar` command generates the default grammar for the next files.
+
+Example:
+
+```sh
+next grammar grammar.json
+```
+
+Or you can run the following command to generate the default grammar to the standard output:
+```sh
+next grammar
+```
+
 ### version {#user-content-CommandLine_Command_version}
 
 `version` command prints the version of the next compiler. It prints the version of the next compiler and exits the program.
 
 Example:
+
 ```sh
 next version
 ```
 
 Output:
+
 ```
 next v0.0.4(main: 51864a35de7890d63bfd8acecdb62d20372ca963) built at 2024/09/27T22:58:21+0800 by go1.23.0
 ```

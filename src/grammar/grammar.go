@@ -1,6 +1,15 @@
 //go:generate go run github.com/gopherd/tools/cmd/docgen@v0.0.8 -ext .mdx -I ./ -o ../../website/docs/api/preview -level 0 -M "---" -M "pagination_prev: null" -M "pagination_next: null" -M "---"
 package grammar
 
+import (
+	"fmt"
+	"regexp"
+	"slices"
+	"strconv"
+
+	"github.com/gopherd/core/text/templates"
+)
+
 const (
 	Bool   = "bool"
 	Int    = "int"
@@ -8,6 +17,24 @@ const (
 	String = "string"
 	Type   = "type"
 )
+
+var validateAnnotationParameterTypes = []string{Bool, Int, Float, String, Type}
+var validateConstTypes = []string{Bool, Int, Float, String}
+var validateEnumMemberTypes = []string{Int, Float, String}
+
+func duplicated[S ~[]T, T comparable](s S) error {
+	if len(s) < 2 {
+		return nil
+	}
+	seen := make(map[T]struct{}, len(s))
+	for _, v := range s {
+		if _, ok := seen[v]; ok {
+			return fmt.Errorf("duplicated %v", v)
+		}
+		seen[v] = struct{}{}
+	}
+	return nil
+}
 
 // @api(Grammar) represents the custom grammar for the next files.
 //
@@ -36,6 +63,18 @@ type Validator struct {
 
 	// @api(Grammar/Common/Validator.Message) represents the error message when the validator is failed.
 	Message string
+}
+
+func (v Validator) Validate(data any) (bool, error) {
+	result, err := templates.Execute(v.Name, v.Expression, data)
+	if err != nil {
+		return false, fmt.Errorf("failed to execute validator %q: %w", v.Name, err)
+	}
+	ok, err := strconv.ParseBool(result)
+	if err != nil {
+		return false, fmt.Errorf("validator %q must return a boolean value: %w", v.Name, err)
+	}
+	return ok, nil
 }
 
 // @api(Grammar/Common/Annotation) represents the annotation grammar rules.
@@ -106,7 +145,7 @@ type Validator struct {
 //	// Error: message type must be positive
 //	```
 type Annotation struct {
-	// @api(Grammar/Common/Annotation.Name) represents the annotation name pattern.
+	// @api(Grammar/Common/Annotation.Name) represents the annotation name.
 	Name string
 
 	// @api(Grammar/Common/Annotation.Description) represents the annotation description.
@@ -114,6 +153,16 @@ type Annotation struct {
 
 	// @api(Grammar/Common/Annotation.Parameters) represents the annotation parameters.
 	Parameters []AnnotationParameter `json:",omitempty"`
+}
+
+func LookupAnnotation(annotations []Annotation, name string) *Annotation {
+	for i := range annotations {
+		a := &annotations[i]
+		if a.Name == name {
+			return a
+		}
+	}
+	return nil
 }
 
 // @api(Grammar/Common/AnnotationParameter) represents the annotation parameter grammar rules.
@@ -126,7 +175,7 @@ type AnnotationParameter struct {
 	//
 	// - "**type**": matches the annotation name `type`
 	// - "**x|y**": matches the annotation name `x` or `y`
-	// - "**\*_package**": matches the annotation name that ends with `_package`, for example, `cpp_package`, `java_package`, etc.
+	// - "**.+_package**": matches the annotation name that ends with `_package`, for example, `cpp_package`, `java_package`, etc.
 	Name string
 
 	// @api(Grammar/Common/AnnotationParameter.Description) represents the parameter description.
@@ -147,6 +196,48 @@ type AnnotationParameter struct {
 
 	// @api(Grammar/Common/AnnotationParameter.Validators) represents the [Validator](#Grammar/Common/Validator) for the annotation parameter.
 	Validators []Validator `json:",omitempty"`
+
+	parsed struct {
+		name *regexp.Regexp
+	} `json:"-"`
+}
+
+func isIdentifer(s string) bool {
+	r := []rune(s)
+	if len(r) == 0 {
+		return false
+	}
+	if !isLetter(r[0]) || r[0] == '_' {
+		return false
+	}
+	for i := 1; i < len(r); i++ {
+		if !isLetter(r[i]) && !isDigit(r[i]) && r[i] != '_' {
+			return false
+		}
+	}
+	return true
+}
+
+func isDigit(r rune) bool {
+	return '0' <= r && r <= '9'
+}
+
+func isLetter(r rune) bool {
+	return 'a' <= r && r <= 'z' || 'A' <= r && r <= 'Z'
+}
+
+func LookupAnnotationParameter(parameters []AnnotationParameter, name string) *AnnotationParameter {
+	for i := range parameters {
+		p := &parameters[i]
+		if p.parsed.name != nil {
+			if p.parsed.name.MatchString(name) {
+				return p
+			}
+		} else if p.Name == name {
+			return p
+		}
+	}
+	return nil
 }
 
 // @api(Grammar/Package) represents the grammar rules for the package declaration.
@@ -375,62 +466,6 @@ type Enum struct {
 
 // @api(Grammar/EnumMember) represents the grammar rules for the enum member declaration.
 type EnumMember struct {
-	// @api(Grammar/EnumMember.OffValueExpr) represents the enum member value expression is off or not.
-	// If the enum member value expression is off, the enum member value expression is not allowed in the next files.
-	//
-	// Example:
-	//
-	//	```json
-	//	{
-	//	  "Enum": {
-	//	    "Member": {
-	//	      "OffValueExpr": true
-	//	    }
-	//	  }
-	//	}
-	//	```
-	//
-	//	```next
-	//	package demo;
-	//
-	//	enum Size {
-	//	  Small;
-	//	  Medium;
-	//	  // This will error
-	//	  Large = Small + Medium;
-	//	  // Error: enum member value expression is not allowed
-	//	}
-	//	```
-	OffValueExpr bool `json:",omitempty"`
-
-	// @api(Grammar/EnumMember.OffIota) represents the enum member iota value is off or not.
-	// If the enum member iota value is off, the enum member iota value is not allowed in the next files.
-	//
-	// Example:
-	//
-	//	```json
-	//	{
-	//	  "Enum": {
-	//	    "Member": {
-	//	      "OffIota": true
-	//	    }
-	//	  }
-	//	}
-	//	```
-	//
-	//	```next
-	//	package demo;
-	//
-	//	enum Size {
-	//	  // This will error
-	//	  Small = iota;
-	//	  // Error: enum member iota value is not allowed
-	//	  Medium;
-	//	  Large;
-	//	}
-	//	```
-	OffIota bool `json:",omitempty"`
-
 	// @api(Grammar/EnumMember.Types) represents a list of type names that are supported in the enum declaration.
 	//
 	// If no types are defined, the enum declaration supports all types. Otherwise, the enum declaration
@@ -796,7 +831,6 @@ type Interface struct {
 type InterfaceMethod struct {
 	// @api(Grammar/InterfaceMethod.Annotations) represents the [Annotation](#Grammar/Common/Annotation) grammar rules for the interface method declaration.
 	Annotations []Annotation `json:",omitempty"`
-
 	// @api(Grammar/InterfaceMethod.Validators) represents the [Validator](#Grammar/Common/Validator) for the interface method declaration.
 	Validators []Validator `json:",omitempty"`
 
@@ -807,6 +841,102 @@ type InterfaceMethod struct {
 		// @api(Grammar/InterfaceMethod/Parameter.Validators) represents the [Validator](#Grammar/Common/Validator) for the interface method parameter declaration.
 		Validators []Validator `json:",omitempty"`
 	}
+}
+
+// Validate validates the grammar rules.
+func (g *Grammar) Validate() error {
+	// Validate package
+	if err := validateAnnotations("package", g.Package.Annotations); err != nil {
+		return err
+	}
+	// Validate const
+	for _, v := range g.Const.Types {
+		if !slices.Contains(validateConstTypes, v) {
+			return fmt.Errorf("const type %q must be one of %v", v, validateConstTypes)
+		}
+	}
+	if err := duplicated(g.Const.Types); err != nil {
+		return fmt.Errorf("const types: %w", err)
+	}
+	if err := validateAnnotations("const", g.Const.Annotations); err != nil {
+		return err
+	}
+	// Validate enum
+	if err := validateAnnotations("enum", g.Enum.Annotations); err != nil {
+		return err
+	}
+	for _, v := range g.Enum.Member.Types {
+		if !slices.Contains(validateEnumMemberTypes, v) {
+			return fmt.Errorf("enum member type %q must be one of %v", v, validateEnumMemberTypes)
+		}
+	}
+	if err := duplicated(g.Enum.Member.Types); err != nil {
+		return fmt.Errorf("enum member types: %w", err)
+	}
+	if err := validateAnnotations("enum member", g.Enum.Member.Annotations); err != nil {
+		return err
+	}
+	// Validate struct
+	if err := validateAnnotations("struct", g.Struct.Annotations); err != nil {
+		return err
+	}
+	if err := validateAnnotations("struct field", g.Struct.Field.Annotations); err != nil {
+		return err
+	}
+	// Validate interface
+	if err := validateAnnotations("interface", g.Interface.Annotations); err != nil {
+		return err
+	}
+	if err := validateAnnotations("interface method", g.Interface.Method.Annotations); err != nil {
+		return err
+	}
+	if err := validateAnnotations("interface method parameter", g.Interface.Method.Parameter.Annotations); err != nil {
+		return err
+	}
+	return nil
+}
+
+func validateAnnotations(node string, annotations []Annotation) error {
+	for i := range annotations {
+		a := &annotations[i]
+		if err := a.validate(); err != nil {
+			return fmt.Errorf("%s: %w", node, err)
+		}
+	}
+	return nil
+}
+
+func (a *Annotation) validate() error {
+	if a.Name == "" {
+		return fmt.Errorf("annotation name is required")
+	}
+	for i := range a.Parameters {
+		p := &a.Parameters[i]
+		if err := p.validate(); err != nil {
+			return fmt.Errorf("annotation %q: %w", a.Name, err)
+		}
+	}
+	return nil
+}
+
+func (p *AnnotationParameter) validate() error {
+	if p.Name == "" {
+		return fmt.Errorf("parameter name is required")
+	}
+	if !isIdentifer(p.Name) {
+		pattern, err := regexp.Compile("^" + p.Name + "$")
+		if err != nil {
+			return fmt.Errorf("invalid parameter name pattern %q: %w", p.Name, err)
+		}
+		p.parsed.name = pattern
+	}
+	if p.Type == "" {
+		return fmt.Errorf("parameter %q: type is required", p.Name)
+	}
+	if slices.Contains(validateAnnotationParameterTypes, p.Type) {
+		return nil
+	}
+	return fmt.Errorf("type %q must be one of %v", p.Type, validateAnnotationParameterTypes)
 }
 
 const notEmpty = "{{ne .Name ``}}"
@@ -844,14 +974,23 @@ func optional() Annotation {
 	return Annotation{
 		Name:        "optional",
 		Description: "Sets the field as optional.",
+		Parameters:  []AnnotationParameter{default_()},
+	}
+}
+
+func default_() AnnotationParameter {
+	return AnnotationParameter{
+		Name:        "default",
+		Description: "Sets the default value for optional fields.",
+		Type:        String,
 	}
 }
 
 func available() AnnotationParameter {
 	return AnnotationParameter{
 		Name:        "available",
-		Description: "Sets the available target languages.",
-		Type:        Bool,
+		Description: "Sets the available expression for the declaration.",
+		Type:        String,
 	}
 }
 
@@ -863,7 +1002,7 @@ func mut() AnnotationParameter {
 	}
 }
 
-func error() AnnotationParameter {
+func error_() AnnotationParameter {
 	return AnnotationParameter{
 		Name:        "error",
 		Description: "Indicates the method returns an error.",
@@ -879,9 +1018,9 @@ func type_() AnnotationParameter {
 	}
 }
 
-func star_package() AnnotationParameter {
+func LANG_package() AnnotationParameter {
 	return AnnotationParameter{
-		Name:        "*_package",
+		Name:        ".+_package",
 		Description: "Sets the package name for target languages.",
 		Type:        String,
 		Validators: []Validator{
@@ -894,27 +1033,47 @@ func star_package() AnnotationParameter {
 	}
 }
 
-func star_imports() AnnotationParameter {
+func LANG_imports() AnnotationParameter {
 	return AnnotationParameter{
-		Name:        "*_imports",
+		Name:        ".+_imports",
 		Description: "Sets the import declarations for target languages.",
 		Type:        String,
 	}
 }
 
-func star_alias() AnnotationParameter {
+func LANG_alias() AnnotationParameter {
 	return AnnotationParameter{
-		Name:        "*_alias",
+		Name:        ".+_alias",
 		Description: "Sets the alias name for target languages.",
 		Type:        String,
 	}
 }
 
-// Default represents the default grammar for the next files.
+func LANG_type() AnnotationParameter {
+	return AnnotationParameter{
+		Name:        ".+_type",
+		Description: "Sets the field type name for target languages.",
+		Type:        String,
+	}
+}
+
+// @api(Grammar.default) represents the default grammar for the next files.
+//
+//	:::tip
+//
+//	Run the following command to generate the default grammar:
+//
+//	```sh
+//	next grammar grammar.json
+//	```
+//
+//	You can use this grammar as a starting point for your own grammar.
+//
+//	:::
 var Default = Grammar{
 	Package: Package{
 		Annotations: []Annotation{
-			next(available(), star_package(), star_imports()),
+			next(available(), LANG_package(), LANG_imports()),
 			deprecated(),
 		},
 	},
@@ -940,12 +1099,12 @@ var Default = Grammar{
 	},
 	Struct: Struct{
 		Annotations: []Annotation{
-			next(available(), star_alias()),
+			next(available(), LANG_alias()),
 			deprecated(),
 		},
 		Field: StructField{
 			Annotations: []Annotation{
-				next(available()),
+				next(available(), LANG_type()),
 				deprecated(),
 				required(),
 				optional(),
@@ -954,12 +1113,12 @@ var Default = Grammar{
 	},
 	Interface: Interface{
 		Annotations: []Annotation{
-			next(available(), star_alias()),
+			next(available(), LANG_alias()),
 			deprecated(),
 		},
 		Method: InterfaceMethod{
 			Annotations: []Annotation{
-				next(available(), mut(), error()),
+				next(available(), mut(), error_()),
 				deprecated(),
 			},
 			Parameter: struct {
@@ -973,4 +1132,11 @@ var Default = Grammar{
 			},
 		},
 	},
+}
+
+func init() {
+	// Ensure the default grammar is valid
+	if err := Default.Validate(); err != nil {
+		panic(err)
+	}
 }

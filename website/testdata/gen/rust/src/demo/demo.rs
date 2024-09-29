@@ -98,24 +98,24 @@ pub struct LoginRequest {
     pub timestamp: i64,
 }
 
-
 impl LoginRequest {
     pub fn message_type() -> i32 {
         101
     }
 }
+
 /// LoginResponse represents a login response message (type 102)
 pub struct LoginResponse {
     pub token: String,
     pub user: User,
 }
 
-
 impl LoginResponse {
     pub fn message_type() -> i32 {
         102
     }
 }
+
 /// Reader provides reading functionality
 pub trait Reader {
     /// @next(error) applies to the method:

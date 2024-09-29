@@ -228,6 +228,8 @@ public:
     std::string password = {""};
     std::string deviceId = {""};
     std::string twoFactorToken = {""};
+
+    static inline int message_type() { return 201; }
 public:
     LoginRequest() = default;
     ~LoginRequest() = default;
@@ -239,6 +241,8 @@ public:
     std::string errorMessage = {""};
     std::string authenticationToken = {""};
     User user;
+
+    static inline int message_type() { return 202; }
 public:
     LoginResponse() = default;
     ~LoginResponse() = default;

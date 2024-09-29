@@ -34,7 +34,6 @@ struct User {
     UserType type;
     int id;
     string username;
-    @sensitive
     string password;
     string deviceId;
     @optional
@@ -55,9 +54,7 @@ struct LoginRequest {
 
 struct LoginResponse {
     bool success;
-    @json(omitempty)
     string errorMessage;
-    @json(name = "auth_token")
     string authenticationToken;
     User user;
 }

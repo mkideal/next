@@ -190,6 +190,8 @@ namespace a
         public string password { get; set; }
         public string deviceId { get; set; }
         public string twoFactorToken { get; set; }
+
+        public static int MessageType() { return 201; }
     }
 
     public class LoginResponse
@@ -198,6 +200,8 @@ namespace a
         public string errorMessage { get; set; }
         public string authenticationToken { get; set; }
         public User user { get; set; }
+
+        public static int MessageType() { return 202; }
     }
 
     public class GenericRequest

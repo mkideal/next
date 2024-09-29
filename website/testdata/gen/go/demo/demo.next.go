@@ -110,16 +110,16 @@ type LoginRequest struct {
     Timestamp int64
 }
 
-
 func (LoginRequest) MessageType() int { return 101 }
+
 // LoginResponse represents a login response message (type 102)
 type LoginResponse struct {
     Token string
     User User
 }
 
-
 func (LoginResponse) MessageType() int { return 102 }
+
 // Reader provides reading functionality
 type Reader interface {
     // @next(error) applies to the method:

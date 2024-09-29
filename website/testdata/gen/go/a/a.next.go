@@ -329,12 +329,16 @@ type LoginRequest struct {
     TwoFactorToken string
 }
 
+func (LoginRequest) MessageType() int { return 201 }
+
 type LoginResponse struct {
     Success bool
     ErrorMessage string
     AuthenticationToken string
     User User
 }
+
+func (LoginResponse) MessageType() int { return 202 }
 
 type GenericRequest struct {
     RequestId string

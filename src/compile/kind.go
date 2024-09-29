@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+
+	"github.com/next/next/src/grammar"
 )
 
 // @api(Object/Common/Type/Kinds) represents the type kind set.
@@ -43,6 +45,22 @@ func (ks Kinds) Contains(k any) (bool, error) {
 type Kind int
 
 func (k Kind) kinds() Kinds { return 1 << k }
+
+func (k Kind) grammarType() string {
+	if k.IsInteger() {
+		return grammar.Int
+	}
+	if k.IsFloat() {
+		return grammar.Float
+	}
+	if k.IsString() {
+		return grammar.String
+	}
+	if k.IsBool() {
+		return grammar.Bool
+	}
+	return ""
+}
 
 // @api(Object/Common/Type/Kind) represents the type kind.
 // Currently, the following kinds are supported:

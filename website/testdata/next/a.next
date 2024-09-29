@@ -231,7 +231,6 @@ struct User {
     Month birthMonth;
 }
 
-@json(name = "UserProfile")
 struct UserProfile {
     User user;
     string firstName;
@@ -241,41 +240,33 @@ struct UserProfile {
 }
 
 // message types
-@message(req)
+@message(type=201,req)
 struct LoginRequest {
-    @key
     string username;
-    @sensitive
     string password;
     string deviceId;
     @optional
     string twoFactorToken;
 }
 
-@message(res)
+@message(type=202)
 struct LoginResponse {
     bool success;
-    @json(omitempty)
     string errorMessage;
-    @json(name = "auth_token")
     string authenticationToken;
     User user;
 }
 
-@api
 struct GenericRequest {
     string requestId;
     int64 timestamp;
 }
 
-@api
 struct GenericResponse {
     string requestId;
     int64 timestamp;
     bool success;
-    @json(omitempty)
     string errorCode;
-    @json(omitempty)
     string errorMessage;
 }
 

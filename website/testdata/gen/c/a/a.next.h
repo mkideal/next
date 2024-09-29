@@ -234,12 +234,16 @@ typedef struct DEMO_A_LoginRequest {
     char* twoFactorToken;
 } DEMO_A_LoginRequest;
 
+static inline int DEMO_A_LoginRequest_message_type() { return 201; }
+
 typedef struct DEMO_A_LoginResponse {
     _Bool success;
     char* errorMessage;
     char* authenticationToken;
     DEMO_A_User user;
 } DEMO_A_LoginResponse;
+
+static inline int DEMO_A_LoginResponse_message_type() { return 202; }
 
 typedef struct DEMO_A_GenericRequest {
     char* requestId;

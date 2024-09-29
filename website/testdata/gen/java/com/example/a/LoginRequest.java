@@ -50,6 +50,10 @@ public class LoginRequest {
         this.twoFactorToken = twoFactorToken;
     }
 
+    public static int MessageType() {
+        return 201;
+    }
+
     public LoginRequest() {
     }
 }

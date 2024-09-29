@@ -10,13 +10,12 @@ use crate::{{.File.Package.Name}}::{{.File.Name}};
 {{- define "rust/struct" -}}
 {{- super .}}
 {{- with .Annotations.message.type}}
-
 impl {{next $.Type}} {
     pub fn message_type() -> i32 {
         {{.}}
     }
 }
-{{- end}}
+{{end}}
 {{- end -}}
 
 {{head}}

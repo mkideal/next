@@ -28,7 +28,6 @@ endif
 .PHONY: autogen
 autogen: deps/stringer
 	@echo "Running go generate..."
-	@cd src/grammar && go run gendoc.go -o doc.go
 	@go generate ./...
 
 .PHONY: go/vet
@@ -98,6 +97,7 @@ test/template: install
 	@rm -rf ${TESTDATA_DIR}/gen
 	@NEXTNOCOPYBUILTIN=1 next \
 		-D PROJECT_NAME=demo \
+		-grammar ${TESTDATA_DIR}/grammar.json \
 		-O go=${TESTDATA_DIR}/gen/go -T go=${TESTDATA_DIR}/templates/go \
 		-O java=${TESTDATA_DIR}/gen/java -T java=${TESTDATA_DIR}/templates/java \
 		-O cpp=${TESTDATA_DIR}/gen/cpp -T cpp=${TESTDATA_DIR}/templates/cpp \

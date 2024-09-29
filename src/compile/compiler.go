@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
+	"reflect"
 	"slices"
 	"sort"
 	"strings"
@@ -14,6 +15,7 @@ import (
 
 	"github.com/next/next/src/ast"
 	"github.com/next/next/src/constant"
+	"github.com/next/next/src/grammar"
 	"github.com/next/next/src/scanner"
 	"github.com/next/next/src/token"
 )
@@ -36,8 +38,8 @@ type Compiler struct {
 		solvers   flags.MapSlice
 	}
 	platform Platform
-	// builtin builtin
-	builtin FileSystem
+	builtin  FileSystem
+	grammar  grammar.Grammar
 
 	// fset is the file set used to track file positions
 	fset *token.FileSet
@@ -760,4 +762,241 @@ func (c *Compiler) resolveMapType(file *File, t *ast.MapType, ignoreError bool) 
 		KeyType:  k,
 		ElemType: v,
 	}
+}
+
+// ValidateGrammar validates the grammar of the context
+func (c *Compiler) ValidateGrammar() error {
+	for _, pkg := range c.packages {
+		// Validate package
+		if err := c.validatePackageGrammar(pkg); err != nil {
+			return err
+		}
+		// Validate imports
+		if c.grammar.Import.Off && len(pkg.imports.List) > 0 {
+			c.addErrorf(pkg.imports.List[0].pos, "import declaration is not allowed")
+		}
+		// Validate constants
+		if c.grammar.Const.Off && len(pkg.decls.consts) > 0 {
+			c.addErrorf(pkg.decls.consts[0].pos, "const declaration is not allowed")
+		} else {
+			for _, x := range pkg.decls.consts {
+				if err := c.validateConstGrammar(x); err != nil {
+					return err
+				}
+			}
+		}
+		// Validate enums
+		if c.grammar.Enum.Off && len(pkg.decls.enums) > 0 {
+			c.addErrorf(pkg.decls.enums[0].pos, "enum declaration is not allowed")
+		} else {
+			for _, x := range pkg.decls.enums {
+				if err := c.validateEnumGrammar(x); err != nil {
+					return err
+				}
+			}
+		}
+		// Validate structs
+		if c.grammar.Struct.Off && len(pkg.decls.structs) > 0 {
+			c.addErrorf(pkg.decls.structs[0].pos, "struct declaration is not allowed")
+		} else {
+			for _, x := range pkg.decls.structs {
+				if err := c.validateStructGrammar(x); err != nil {
+					return err
+				}
+			}
+		}
+		// Validate interfaces
+		if c.grammar.Interface.Off && len(pkg.decls.interfaces) > 0 {
+			c.addErrorf(pkg.decls.interfaces[0].pos, "interface declaration is not allowed")
+		} else {
+			for _, x := range pkg.decls.interfaces {
+				if err := c.validateInterfaceGrammar(x); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return c.errors.Err()
+}
+
+func (c *Compiler) validatePackageGrammar(x *Package) error {
+	if err := c.executeValidators(x, c.grammar.Package.Validators); err != nil {
+		return err
+	}
+	for _, file := range x.files {
+		if err := c.validateAnnotations(file, c.grammar.Package.Annotations); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *Compiler) validateConstGrammar(x *Const) error {
+	if err := c.executeValidators(x, c.grammar.Const.Validators); err != nil {
+		return err
+	}
+	if err := c.validateAnnotations(x, c.grammar.Const.Annotations); err != nil {
+		return err
+	}
+	if len(c.grammar.Const.Types) > 0 {
+		if !slices.Contains(c.grammar.Const.Types, x.value.typ.kind.grammarType()) {
+			c.addErrorf(x.namePos, "constant type %s is not allowed: expected one of %v", x.value.typ.kind, c.grammar.Const.Types)
+		}
+	}
+	return nil
+}
+
+func (c *Compiler) validateEnumGrammar(x *Enum) error {
+	if err := c.executeValidators(x, c.grammar.Enum.Validators); err != nil {
+		return err
+	}
+	if err := c.validateAnnotations(x, c.grammar.Enum.Annotations); err != nil {
+		return err
+	}
+	if len(c.grammar.Enum.Member.Types) > 0 {
+		if !slices.Contains(c.grammar.Enum.Member.Types, x.MemberType.kind.grammarType()) {
+			c.addErrorf(x.namePos, "enum member type %s is not allowed: expected one of %v", x.MemberType.kind, c.grammar.Enum.Member.Types)
+		}
+	}
+	if c.grammar.Enum.Member.ValueRequired {
+		for _, m := range x.Members.List {
+			if m.value.unresolved.value == nil {
+				c.addErrorf(m.namePos, "enum member %s: value is required", m.Name())
+			}
+		}
+	}
+	if c.grammar.Enum.Member.ZeroRequired {
+		if len(x.Members.List) == 0 {
+			c.addErrorf(x.namePos, "enum should have at least one member")
+		}
+		hasZero := false
+		for _, m := range x.Members.List {
+			if rv := reflect.ValueOf(m.value.Any()); (rv.CanInt() && rv.Int() == 0) || (rv.CanUint() && rv.Uint() == 0) {
+				hasZero = true
+				break
+			}
+		}
+		if !hasZero {
+			c.addErrorf(x.namePos, "enum should have a zero value member")
+		}
+	}
+	for _, m := range x.Members.List {
+		if err := c.executeValidators(m, c.grammar.Enum.Member.Validators); err != nil {
+			return err
+		}
+		if err := c.validateAnnotations(m, c.grammar.Enum.Member.Annotations); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *Compiler) validateStructGrammar(x *Struct) error {
+	if err := c.executeValidators(x, c.grammar.Struct.Validators); err != nil {
+		return err
+	}
+	if err := c.validateAnnotations(x, c.grammar.Struct.Annotations); err != nil {
+		return err
+	}
+	for _, f := range x.fields.List {
+		if err := c.executeValidators(f, c.grammar.Struct.Field.Validators); err != nil {
+			return err
+		}
+		if err := c.validateAnnotations(f, c.grammar.Struct.Field.Annotations); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *Compiler) validateInterfaceGrammar(x *Interface) error {
+	if err := c.executeValidators(x, c.grammar.Interface.Validators); err != nil {
+		return err
+	}
+	if err := c.validateAnnotations(x, c.grammar.Interface.Annotations); err != nil {
+		return err
+	}
+	for _, m := range x.methods.List {
+		if err := c.executeValidators(m, c.grammar.Interface.Method.Validators); err != nil {
+			return err
+		}
+		if err := c.validateAnnotations(m, c.grammar.Interface.Method.Annotations); err != nil {
+			return err
+		}
+		for _, p := range m.Params.List {
+			if err := c.executeValidators(p, c.grammar.Interface.Method.Parameter.Validators); err != nil {
+				return err
+			}
+			if err := c.validateAnnotations(p, c.grammar.Interface.Method.Parameter.Annotations); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (c *Compiler) executeValidators(node Node, validators []grammar.Validator) error {
+	for _, v := range validators {
+		if ok, err := v.Validate(node); err != nil {
+			return fmt.Errorf("failed to validate %s %s: %w", node.Typeof(), node.Name(), err)
+		} else if !ok {
+			c.addErrorf(node.NamePos().pos, "%s %s: %s", node.Typeof(), node.Name(), v.Message)
+		}
+	}
+	return nil
+}
+
+func (c *Compiler) validateAnnotations(node Node, annotations []grammar.Annotation) error {
+	for name, annotation := range node.Annotations() {
+		ga := grammar.LookupAnnotation(annotations, name)
+		if ga == nil {
+			c.addErrorf(annotation.Pos().pos, "annotation %s not supported", name)
+			continue
+		}
+		for p, v := range annotation {
+			if strings.HasPrefix(p, "_") {
+				// Skip private parameters added by the compiler
+				continue
+			}
+			gp := grammar.LookupAnnotationParameter(ga.Parameters, p)
+			if gp == nil {
+				c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s not supported", name, p)
+				continue
+			}
+			rv := reflect.ValueOf(v)
+			switch gp.Type {
+			case grammar.String:
+				if rv.Kind() != reflect.String {
+					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should be a string value", name, p)
+				}
+			case grammar.Int:
+				if !rv.CanInt() && !rv.CanUint() {
+					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should be an integer value", name, p)
+				}
+			case grammar.Bool:
+				if rv.Kind() != reflect.Bool {
+					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should be a boolean value", name, p)
+				}
+			case grammar.Float:
+				if !rv.CanInt() && !rv.CanUint() && !rv.CanFloat() {
+					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should be a float value", name, p)
+				}
+			case grammar.Type:
+				if t, ok := v.(Type); !ok || t == nil {
+					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should be a type", name, p)
+				}
+			default:
+				return fmt.Errorf("unexpected parameter type %s", gp.Type)
+			}
+		}
+		for _, gp := range ga.Parameters {
+			if !gp.Required {
+				continue
+			}
+			if _, ok := annotation[gp.Name]; !ok {
+				c.addErrorf(annotation.Pos().pos, "annotation %s: missing required parameter %s", name, gp.Name)
+			}
+		}
+	}
+	return nil
 }
