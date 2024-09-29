@@ -938,7 +938,7 @@ func (c *Compiler) validateInterfaceGrammar(x *Interface) error {
 func (c *Compiler) executeValidators(node Node, validators []grammar.Validator) error {
 	for _, v := range validators {
 		if ok, err := v.Validate(node); err != nil {
-			return fmt.Errorf("failed to validate %s %s: %w", node.Typeof(), node.Name(), err)
+			return fmt.Errorf("%s: failed to validate %s %s: %w", node.NamePos(), node.Typeof(), node.Name(), err)
 		} else if !ok {
 			c.addErrorf(node.NamePos().pos, "%s %s: %s", node.Typeof(), node.Name(), v.Message)
 		}
@@ -987,6 +987,13 @@ func (c *Compiler) validateAnnotations(node Node, annotations []grammar.Annotati
 				}
 			default:
 				return fmt.Errorf("unexpected parameter type %s", gp.Type)
+			}
+			for _, va := range gp.Validators {
+				if ok, err := va.Validate(v); err != nil {
+					return fmt.Errorf("%s: failed to validate annotation %s parameter %s: %w", annotation.NamePos(p), name, p, err)
+				} else if !ok {
+					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s: %s", name, p, va.Message)
+				}
 			}
 		}
 		for _, gp := range ga.Parameters {

@@ -939,7 +939,7 @@ func (p *AnnotationParameter) validate() error {
 	return fmt.Errorf("type %q must be one of %v", p.Type, validateAnnotationParameterTypes)
 }
 
-const notEmpty = "{{ne .Name ``}}"
+const notEmpty = "{{ne . ``}}"
 
 func next(parameters ...AnnotationParameter) Annotation {
 	return Annotation{

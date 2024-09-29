@@ -17,7 +17,7 @@
             "Validators": [
               {
                 "Name": "LangPackageMustNotBeEmpty",
-                "Expression": "{{ne .Name ``}}",
+                "Expression": "{{ne . ``}}",
                 "Message": "must not be empty"
               }
             ]
@@ -174,7 +174,14 @@
             "Name": "type",
             "Description": "Sets the message type id",
             "Type": "int",
-            "Required": true
+            "Required": true,
+            "Validators": [
+              {
+                "Name": "MessageTypeIdMustNotPositive",
+                "Expression": "{{gt . 0}}",
+                "Message": "must be positive"
+              }
+            ]
           },
           {
             "Name": "req",
