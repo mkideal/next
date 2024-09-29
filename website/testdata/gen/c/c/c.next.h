@@ -6,6 +6,9 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "../a/a.next.h"
+#include "../b/b.next.h"
+
 #if !defined(__cplusplus) && !defined(__bool_true_false_are_defined)
 #include <stdbool.h>
 #endif
@@ -14,8 +17,6 @@
 typedef unsigned char _Bool;
 #endif
 
-#include "../c/c.next.h"
-#include "../c/c.next.h"
 // Enums forward declarations
 typedef enum DEMO_C_Color DEMO_C_Color;
 typedef enum DEMO_C_LoginType DEMO_C_LoginType;
@@ -29,7 +30,7 @@ typedef struct DEMO_C_LoginResponse DEMO_C_LoginResponse;
 #define DEMO_C_A 1
 #define DEMO_C_B "hello"
 #define DEMO_C_C 3.14
-#define DEMO_C_D true
+#define DEMO_C_D 1
 
 typedef enum DEMO_C_Color {
     DEMO_C_Color_Red = 0,

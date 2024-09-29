@@ -5,20 +5,18 @@ package com.example.b;
 import java.util.List;
 import java.util.Map;
 import java.util.Arrays;
-import com.example.a.*;
-
 
 public class TestStruct {
-    private Point2D point;
+    private com.example.a.Point2D point;
 
-    public Point2D getPoint() {
+    public com.example.a.Point2D getPoint() {
         return point;
     }
 
-    public void setPoint(Point2D point) {
+    public void setPoint(com.example.a.Point2D point) {
         this.point = point;
     }
 
-
-    public TestStruct() {}
+    public TestStruct() {
+    }
 }

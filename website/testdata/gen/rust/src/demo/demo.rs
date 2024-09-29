@@ -4,6 +4,7 @@ use std::vec::Vec;
 use std::boxed::Box;
 use std::collections::HashMap;
 use std::any::Any;
+
 pub const VERSION: &'static str = "1.0.0"; // String constant
 pub const MAX_RETRIES: i32 = 3; // Integer constant
 pub const TIMEOUT: f32 = 3000.0; // Float constant expression
@@ -17,6 +18,7 @@ pub enum Color {
     Blue = 4,
     Yellow = 8,
 }
+
 impl Color {
     pub fn value(&self) -> i32 {
         match self {
@@ -34,6 +36,7 @@ pub enum MathConstants {
     Pi,
     E,
 }
+
 impl MathConstants {
     pub fn value(&self) -> f64 {
         match self {
@@ -52,6 +55,7 @@ pub enum OperatingSystem {
     Android,
     IOS,
 }
+
 impl OperatingSystem {
     pub fn value(&self) -> &'static str {
         match self {
@@ -94,24 +98,24 @@ pub struct LoginRequest {
     pub timestamp: i64,
 }
 
+
 impl LoginRequest {
     pub fn message_type() -> i32 {
         101
     }
 }
-
 /// LoginResponse represents a login response message (type 102)
 pub struct LoginResponse {
     pub token: String,
     pub user: User,
 }
 
+
 impl LoginResponse {
     pub fn message_type() -> i32 {
         102
     }
 }
-
 /// Reader provides reading functionality
 pub trait Reader {
     /// @next(error) applies to the method:

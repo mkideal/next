@@ -4,6 +4,7 @@ use std::vec::Vec;
 use std::boxed::Box;
 use std::collections::HashMap;
 use std::any::Any;
+
 pub const A: i32 = 1;
 pub const B: &'static str = "hello";
 pub const C: f64 = 3.14;
@@ -15,6 +16,7 @@ pub enum Color {
     Green = 1,
     Blue = 2,
 }
+
 impl Color {
     pub fn value(&self) -> i32 {
         match self {
@@ -30,6 +32,7 @@ pub enum LoginType {
     Username = 1,
     Email = 2,
 }
+
 impl LoginType {
     pub fn value(&self) -> i32 {
         match self {
@@ -44,6 +47,7 @@ pub enum UserType {
     Admin = 1,
     User = 2,
 }
+
 impl UserType {
     pub fn value(&self) -> i32 {
         match self {

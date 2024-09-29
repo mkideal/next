@@ -5,12 +5,13 @@ syntax = "proto3";
 package demo;
 
 option csharp_namespace = "Demo";
-option go_package = "github.com/next/next/testdata/gen/go/demo";
+option go_package = "github.com/next/next/website/testdata/gen/go/demo";
 option java_package = "com.example.demo";
 
 import "google/protobuf/any.proto";
 
-// Constants Skipped.
+
+// 3 Constants skipped.
 
 // Color represents different color options
 // Values: Red (1), Green (2), Blue (4), Yellow (8)

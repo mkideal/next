@@ -5,6 +5,7 @@ package a
 import "strconv"
 
 var _ = strconv.FormatInt
+
 // XX constant
 // XX value 2
 const XX = 1 // XX value

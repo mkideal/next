@@ -6,8 +6,8 @@ using System.Collections.Generic;
 namespace a
 {
     // XX constant
-        // XX value 2
-        public const int XX = 1; // XX value
+    // XX value 2
+    public const int XX = 1; // XX value
     // Constants
     public const string ServerName = "Comprehensive Test Server";
     public const string Version = "1.0.0";
@@ -214,5 +214,4 @@ namespace a
         public string errorCode { get; set; }
         public string errorMessage { get; set; }
     }
-    
 }

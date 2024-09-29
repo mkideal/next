@@ -32,6 +32,6 @@ public class Uint128 {
         this.high = high;
     }
 
-
-    public Uint128() {}
+    public Uint128() {
+    }
 }

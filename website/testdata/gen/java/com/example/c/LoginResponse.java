@@ -5,9 +5,6 @@ package com.example.c;
 import java.util.List;
 import java.util.Map;
 import java.util.Arrays;
-import com.example.a.*;
-import com.example.b.*;
-
 
 public class LoginResponse {
     private boolean success;
@@ -50,6 +47,6 @@ public class LoginResponse {
         this.user = user;
     }
 
-
-    public LoginResponse() {}
+    public LoginResponse() {
+    }
 }

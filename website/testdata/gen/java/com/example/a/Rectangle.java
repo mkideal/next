@@ -27,6 +27,6 @@ public class Rectangle {
         this.bottomRight = bottomRight;
     }
 
-
-    public Rectangle() {}
+    public Rectangle() {
+    }
 }

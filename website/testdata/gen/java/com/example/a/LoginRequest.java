@@ -50,6 +50,6 @@ public class LoginRequest {
         this.twoFactorToken = twoFactorToken;
     }
 
-
-    public LoginRequest() {}
+    public LoginRequest() {
+    }
 }

@@ -3,17 +3,15 @@
 
 {{- /* Overrides "next/c/import" */ -}}
 {{- define "c/import" -}}
-#include "../{{.File.Package.Name}}/{{.File.Name}}.next.h"
-{{- end -}}
+#include "../{{.Target.Package.Name}}/{{.Target.Name}}.next.h"
+{{end -}}
 
 {{- /* Overrides "next/c/struct": add method 'message_type' for each message after fields */ -}}
 {{- define "c/struct" -}}
 {{super .}}
-
 {{- if .Annotations.message.type}}
-{{_}}
 static inline int {{next .Type}}_message_type() { return {{.Annotations.message.type}}; }
-{{- end}}
+{{end}}
 {{- end -}}
 
 {{head}}

@@ -5,6 +5,7 @@ use std::boxed::Box;
 use std::collections::HashMap;
 use std::any::Any;
 
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TestEnum {
     A = 1,
@@ -15,6 +16,7 @@ pub enum TestEnum {
     F = 1,
     G = 2,
 }
+
 impl TestEnum {
     pub fn value(&self) -> i32 {
         match self {
@@ -31,5 +33,5 @@ impl TestEnum {
 
 pub struct TestStruct {
     pub point: 
-    a::Point2D,
+        a::Point2D,
 }

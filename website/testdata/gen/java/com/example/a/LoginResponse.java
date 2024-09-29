@@ -47,6 +47,6 @@ public class LoginResponse {
         this.user = user;
     }
 
-
-    public LoginResponse() {}
+    public LoginResponse() {
+    }
 }

@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Arrays;
 
-interface HTTPServer {
+public interface HTTPServer {
     /**
      * @next(error) indicates that the method may return an error:
      * - For Go: The method returns (LoginResponse, error)

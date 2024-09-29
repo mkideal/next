@@ -127,12 +127,12 @@ export enum Month {
  * Test cases for iota
  */
 export enum IotatestEnum {
-    A = 0 // 0,
-    B = 1 // 1,
-    C = 0 // 0,
-    D = 2 // 2,
-    E = 0 // 0,
-    F = 1 // 1,
+    A = 0, // 0
+    B = 1, // 1
+    C = 0, // 0
+    D = 2, // 2
+    E = 0, // 0
+    F = 1, // 1
     G = 0 // 0
 }
 

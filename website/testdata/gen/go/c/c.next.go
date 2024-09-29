@@ -3,14 +3,13 @@
 package c
 
 import "strconv"
-
-import c github.com/next/next/testdata/gen/go/c
-
-import c github.com/next/next/testdata/gen/go/c
+import a "github.com/next/next/website/testdata/gen/go/a"
+import b "github.com/next/next/website/testdata/gen/go/b"
 
 var _ = strconv.FormatInt
-var _ = (*c.Color)(nil)
-var _ = (*c.Color)(nil)
+var _ = (*a.Color)(nil)
+var _ = (*b.TestEnum)(nil)
+
 const A = 1
 const B = "hello"
 const C = 3.14

@@ -57,6 +57,6 @@ public class UserProfile {
         this.interests = interests;
     }
 
-
-    public UserProfile() {}
+    public UserProfile() {
+    }
 }

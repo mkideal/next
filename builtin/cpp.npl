@@ -5,7 +5,7 @@
 {{next .Imports -}}
 {{render "file:namespace.begin" . -}}
 {{render "file:forward.declarations" . -}}
-{{next .Decls -}}
+{{next .Decls}}
 {{render "file:namespace.end" . -}}
 {{- end}}
 
@@ -20,7 +20,7 @@
 #include <vector>
 {{- if .List}}
 {{range .List}}
-{{next . -}}
+{{- next .}}
 {{- end}}
 {{- end}}
 {{- end}}
@@ -28,7 +28,7 @@
 {{/* next/cpp/import: Generates an include statement for a user-defined header */}}
 {{- define "next/cpp/import" -}}
 #include "{{.Target.Name}}.h"
-{{- end}}
+{{end}}
 
 {{/* next/cpp/used.type: Generates a fully qualified type name, including namespace if necessary */}}
 {{- define "next/cpp/used.type" -}}
@@ -53,58 +53,80 @@ namespace {{$ns}} {
 {{/* next/cpp/file:namespace.end: Ends a namespace block if a C++ package is specified */}}
 {{- define "next/cpp/file:namespace.end" -}}
 {{- $ns := .Annotations.next.cpp_package -}}
-{{- if $ns}}
+{{- if $ns -}}
 } // namespace {{$ns}}
 {{- end}}
 {{- end}}
 
 {{/* next/cpp/file:forward.declarations: Generates forward declarations for enums and classes */}}
 {{- define "next/cpp/file:forward.declarations" -}}
-{{- if .Decls.Enums.List -}}
-// Enums forward declarations
+
+{{- $n := 0 -}}
 {{- range .Decls.Enums.List}}
 {{- if not .Annotations.next.cpp_alias}}
-{{- if .MemberType.Kind.IsInteger}}
-enum class {{next .Type}};
-{{- else}}
-/* enum */ class {{next .Type}};
-{{- end}}
+{{- $n = add 1 $n}}
 {{- end}}
 {{- end}}
 
-{{end -}}
+{{- if $n -}}
+    // Enums forward declarations{{println}}
+    {{- range .Decls.Enums.List}}
+        {{- if not .Annotations.next.cpp_alias}}
+            {{- if .MemberType.Kind.IsInteger -}}
+                enum class {{next .Type}};{{println}}
+            {{- else -}}
+                /* enum */ class {{next .Type}};{{println}}
+            {{- end}}
+        {{- end}}
+    {{- end}}
+    {{- println}}
+{{- end}}
 
-{{- if .Decls.Structs.List -}}
-// Classes forward declarations
+{{- $n = 0 -}}
 {{- range .Decls.Structs.List}}
 {{- if not .Annotations.next.cpp_alias}}
-class {{next .Type}};
+{{- $n = add 1 $n}}
 {{- end}}
 {{- end}}
 
-{{end}}
+{{- if $n -}}
+    // Structs forward declarations{{println}}
+    {{- range .Decls.Structs.List}}
+        {{- if not .Annotations.next.cpp_alias -}}
+            class {{next .Type}};{{println}}
+        {{- end}}
+    {{- end}}
+    {{- println}}
+{{- end}}
+
+{{- end}}
+
+{{/* next/cpp/type:literal.suffix: Generates a suffix for a literal value by type */}}
+{{- define "next/cpp/type:literal.suffix" -}}
+{{- render "type:literal.suffix.clike" .}}
 {{- end}}
 
 {{/* next/cpp/const: Generates a constant declaration */}}
 {{- define "next/cpp/const" -}}
-{{next .Doc}}inline constexpr auto {{render "const:name" .}} = {{.Value}};{{next .Comment}}
-{{- end}}
+{{- next .Doc -}}
+inline constexpr auto {{render "const:name" .}} = {{next .Value}};{{next .Comment}}
+{{end}}
 
 {{/* next/cpp/enum: Generates an enum class declaration */}}
 {{- define "next/cpp/enum" -}}
 {{- if not .Annotations.next.cpp_alias -}}
 {{- if .MemberType.Kind.IsInteger -}}
-{{next .Doc}}enum class {{next .Type}} : {{render "enum:member.type" .}} {
-{{- next .Members}}
+{{- next .Doc -}}
+enum class {{next .Type}} : {{render "enum:member.type" .}} {
+    {{next .Members | align -}}
 };
-{{- else -}}
+{{else -}}
 /* enum */ class {{next .Type}} {
 private:
     {{render "enum:member.type" .}} value;
 
 public:
-    {{- next .Members}}
-
+    {{next .Members | align}}
     {{next .Type}}(const {{render "enum:member.type" .}}& v) : value(v) {}
 
     bool operator==(const {{next .Type}}& other) const {
@@ -115,82 +137,87 @@ public:
         return value;
     }
 };
-{{- end}}
+{{end}}
 {{- end}}
 {{- end}}
 
 {{/* next/cpp/enum.member: Generates an enum member */}}
 {{- define "next/cpp/enum.member" -}}
-{{- if .Decl.MemberType.Kind.IsInteger -}}
-{{next .Doc}}{{render "enum.member:name" .}} = {{.Value}},{{next .Comment}}
-{{- else if .Decl.MemberType.Kind.IsString -}}
-static inline const {{render "enum:member.type" .Decl}} {{render "enum.member:name" .}} = {{.Value}};
-{{- else if .Decl.MemberType.Kind.IsFloat -}}
-static inline constexpr {{render "enum:member.type" .Decl}} {{render "enum.member:name" .}} = {{.Value}};
-{{- else -}}
-{{error "%s: unsupported enum member type: %s" .Decl.Pos .Decl.MemberType.Kind}}
-{{- end}}
-{{- end}}
+    {{- next .Doc -}}
+    {{- if .Decl.MemberType.Kind.IsInteger -}}
+        {{- render "enum.member:name" .}} = {{next .Value}},{{next .Comment}}
+    {{- else if .Decl.MemberType.Kind.IsString -}}
+        static inline const {{render "enum:member.type" .Decl}} {{render "enum.member:name" .}} = {{next .Value}};
+    {{- else if .Decl.MemberType.Kind.IsFloat -}}
+        static inline constexpr {{render "enum:member.type" .Decl}} {{render "enum.member:name" .}} = {{next .Value}};
+    {{- else -}}
+        {{- error "%s: unsupported enum member type: %s" .Decl.Pos .Decl.MemberType.Kind}}
+    {{- end}}
+{{end}}
 
 {{/* next/cpp/struct: Generates a class declaration (struct in C++ is typically implemented as a class) */}}
 {{- define "next/cpp/struct" -}}
-{{next .Doc}}class {{next .Type}} {
+{{- next .Doc -}}
+class {{next .Type}} {
+public:
+    {{next .Fields | align -}}
+
 public:
     {{next .Type}}() = default;
     ~{{next .Type}}() = default;
-    {{next .Fields}}
 };
-{{- end}}
+{{end}}
 
 {{/* next/cpp/struct.field: Generates a class member variable declaration */}}
 {{- define "next/cpp/struct.field" -}}
 {{- $zero := render "type:zero" .Type -}}
-{{- if $zero -}}
-{{- $zero = printf " = {%s}" $zero -}}
-{{- end -}}
-{{next .Doc}}{{next .Type}} {{render "struct.field:name" . | camelCase}}{{$zero}};{{next .Comment}}
-{{- end}}
+{{- if $zero}}{{$zero = printf " = {%s}" $zero}}{{end -}}
+{{- next .Doc -}}
+{{- next .Type}} {{render "struct.field:name" . | camelCase}}{{$zero}};{{next .Comment}}
+{{end}}
 
 {{/* next/cpp/interface: Generates an abstract base class declaration (interface in C++ is typically implemented as an abstract class) */}}
 {{- define "next/cpp/interface" -}}
-{{next .Doc}}class {{next .Type}} {
+{{- next .Doc -}}
+class {{next .Type}} {
 public:
     virtual ~{{next .Type}}() = default;
-    {{next .Methods}}
+    {{next .Methods | align -}}
 };
-{{- end}}
+{{end}}
 
 {{/* next/cpp/interface.method: Generates a pure virtual method declaration */}}
 {{- define "next/cpp/interface.method" -}}
-{{next .Doc}}virtual {{next .Result}} {{render "interface.method:name" .}}({{next .Params}}) {{if not .Annotations.next.mut}}const {{end}}= 0;{{next .Comment}}
-{{- end}}
+{{- next .Doc -}}
+virtual {{next .Result}} {{render "interface.method:name" .}}({{next .Params}}) {{if not .Annotations.next.mut}}const {{end}}= 0;{{next .Comment}}
+{{end}}
 
 {{/* next/cpp/interface.method:name: Generates the name for an interface method */}}
 {{- define "next/cpp/interface.method:name" -}}
-{{snakeCase .Name}}
+{{- snakeCase .Name}}
 {{- end}}
 
 {{/* next/cpp/interface.method.param: Generates a parameter for an interface method */}}
 {{- define "next/cpp/interface.method.param" -}}
-{{if not .Annotations.next.mut}}const {{end}}{{next .Type}}& {{render "interface.method.param:name" .}}
+{{- if not .Annotations.next.mut}}const {{end}}{{next .Type}}& {{render "interface.method.param:name" .}}
 {{- end}}
 
 {{/* next/cpp/interface.method.result: Generates the return type for an interface method */}}
 {{- define "next/cpp/interface.method.result" -}}
-{{if .Type -}}
-{{next .Type}}
+{{- if .Type -}}
+    {{- next .Type}}
 {{- else -}}
-void
+    void
 {{- end}}
 {{- end}}
 
 {{/* next/cpp/type:zero: Generates a zero-initializer for a type */}}
 {{- define "next/cpp/type:zero" -}}
-{{- if .Kind.IsArray -}}
-{{- super .Actual.ElemType -}}
-{{- else if .Kind.IsEnum -}}
-{{- next . -}}({{render "type:zero" .Actual.Decl.MemberType -}})
+{{- if .Kind.IsArray}}
+    {{- super .Actual.ElemType}}
+{{- else if .Kind.IsEnum}}
+    {{- next .}}({{render "type:zero" .Actual.Decl.MemberType -}})
 {{- else -}}
-{{- super . -}}
+    {{- super .}}
 {{- end -}}
 {{- end}}

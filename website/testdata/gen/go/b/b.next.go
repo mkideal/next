@@ -3,11 +3,10 @@
 package b
 
 import "strconv"
-
-import b github.com/next/next/testdata/gen/go/b
+import a "github.com/next/next/website/testdata/gen/go/a"
 
 var _ = strconv.FormatInt
-var _ = (*b.TestEnum)(nil)
+var _ = (*a.Color)(nil)
 
 type TestEnum int32
 

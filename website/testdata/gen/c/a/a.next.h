@@ -45,8 +45,8 @@ typedef struct DEMO_A_GenericResponse DEMO_A_GenericResponse;
 #define DEMO_A_VERSION "1.0.0"
 #define DEMO_A_MAX_CONNECTIONS 1000
 #define DEMO_A_PI 3.14159265358979323846
-#define DEMO_A_MAX_INT_64 9223372036854775807 /* 2^63 - 1 */
-#define DEMO_A_MIN_INT_64 -9223372036854775808 /* -2^63 */
+#define DEMO_A_MAX_INT_64 9223372036854775807LL /* 2^63 - 1 */
+#define DEMO_A_MIN_INT_64 -9223372036854775808LL /* -2^63 */
 /**
  * Constants with complex expressions
  */
@@ -71,10 +71,10 @@ typedef struct DEMO_A_GenericResponse DEMO_A_GenericResponse;
  */
 #define DEMO_A_INT_FROM_BOOL 1
 #define DEMO_A_INT_FROM_FLOAT 3
-#define DEMO_A_FLOAT_FROM_INT 42.0
-#define DEMO_A_FLOAT_FROM_BOOL 0
-#define DEMO_A_BOOL_FROM_INT true
-#define DEMO_A_BOOL_FROM_STRING true
+#define DEMO_A_FLOAT_FROM_INT 42.0F
+#define DEMO_A_FLOAT_FROM_BOOL 0F
+#define DEMO_A_BOOL_FROM_INT 1
+#define DEMO_A_BOOL_FROM_STRING 1
 #define DEMO_A_FORMATTED_STRING_1 "The answer is 42"
 #define DEMO_A_FORMATTED_STRING_2 "Pi is approximately 3.14"
 #define DEMO_A_FORMATTED_STRING_3 "Hello World\n"

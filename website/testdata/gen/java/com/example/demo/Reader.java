@@ -9,7 +9,7 @@ import java.util.Arrays;
 /**
  * Reader provides reading functionality
  */
-interface Reader {
+public interface Reader {
     /**
      * @next(error) applies to the method:
      * - For Go: The method may return an error

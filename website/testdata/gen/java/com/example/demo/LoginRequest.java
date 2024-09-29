@@ -64,8 +64,10 @@ public class LoginRequest {
         this.timestamp = timestamp;
     }
 
+    public static int MessageType() {
+        return 101;
+    }
 
-    public static int MessageType() { return 101; }
-
-    public LoginRequest() {}
+    public LoginRequest() {
+    }
 }

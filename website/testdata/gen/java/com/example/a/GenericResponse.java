@@ -57,6 +57,6 @@ public class GenericResponse {
         this.errorMessage = errorMessage;
     }
 
-
-    public GenericResponse() {}
+    public GenericResponse() {
+    }
 }

@@ -16,7 +16,7 @@ enum class Color;
 /* enum */ class MathConstants;
 /* enum */ class OperatingSystem;
 
-// Classes forward declarations
+// Structs forward declarations
 class User;
 class Uint128;
 class Contract;
@@ -25,7 +25,7 @@ class LoginResponse;
 
 inline constexpr auto Version = "1.0.0"; // String constant
 inline constexpr auto MaxRetries = 3; // Integer constant
-inline constexpr auto Timeout = 3000.0; // Float constant expression
+inline constexpr auto Timeout = 3000.0F; // Float constant expression
 
 // Color represents different color options
 // Values: Red (1), Green (2), Blue (4), Yellow (8)
@@ -80,18 +80,18 @@ public:
 // User represents a user in the system
 class User {
 public:
-    User() = default;
-    ~User() = default;
-    
-    int64_t id = {0LL};
+    int64_t id = {0};
     std::string username = {""};
     std::vector<std::string> tags;
     std::unordered_map<std::string, int> scores;
-    std::array<double, 3> coordinates = {0};
+    std::array<double, 3> coordinates = {0.0};
     std::array<std::array<int, 2>, 3> matrix;
     Color favoriteColor = {Color(0)};
     std::string email = {""};
     std::any extra;
+public:
+    User() = default;
+    ~User() = default;
 };
 
 // uint128 represents a 128-bit unsigned integer.
@@ -99,53 +99,56 @@ public:
 // - In other languages, it is represented as a struct with low and high 64-bit integers.
 class Uint128 {
 public:
-    Uint128() = default;
-    ~Uint128() = default;
-    
     uint64_t low;
     uint64_t high;
+public:
+    Uint128() = default;
+    ~Uint128() = default;
 };
 
 // Contract represents a smart contract
 class Contract {
 public:
-    Contract() = default;
-    ~Contract() = default;
-    
     Uint128 address;
     std::any data;
+public:
+    Contract() = default;
+    ~Contract() = default;
 };
 
 // LoginRequest represents a login request message (type 101)
 // @message annotation is a custom annotation that generates message types.
 class LoginRequest {
 public:
-    LoginRequest() = default;
-    ~LoginRequest() = default;
-    
     std::string username = {""};
     std::string password = {""};
     // @optional annotation is a custom annotation that marks a field as optional.
     std::string device = {""};
     OperatingSystem os = {OperatingSystem("")};
-    int64_t timestamp = {0LL};
+    int64_t timestamp = {0};
+
+    static inline int message_type() { return 101; }
+public:
+    LoginRequest() = default;
+    ~LoginRequest() = default;
 };
 
 // LoginResponse represents a login response message (type 102)
 class LoginResponse {
 public:
-    LoginResponse() = default;
-    ~LoginResponse() = default;
-    
     std::string token = {""};
     User user;
+
+    static inline int message_type() { return 102; }
+public:
+    LoginResponse() = default;
+    ~LoginResponse() = default;
 };
 
 // Reader provides reading functionality
 class Reader {
 public:
     virtual ~Reader() = default;
-    
     // @next(error) applies to the method:
     // - For Go: The method may return an error
     // - For C++/Java: The method throws an exception
@@ -165,7 +168,6 @@ public:
 class HTTPClient {
 public:
     virtual ~HTTPClient() = default;
-    
     // Available for all languages
     virtual std::string request(const std::string& url, const std::string& method, const std::string& body) const = 0;
     virtual std::string request_2(const std::string& url, const std::string& method, const std::string& body) const = 0;

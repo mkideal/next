@@ -5,9 +5,6 @@ package com.example.c;
 import java.util.List;
 import java.util.Map;
 import java.util.Arrays;
-import com.example.a.*;
-import com.example.b.*;
-
 
 public class LoginRequest {
     private LoginType type;
@@ -60,6 +57,6 @@ public class LoginRequest {
         this.twoFactorToken = twoFactorToken;
     }
 
-
-    public LoginRequest() {}
+    public LoginRequest() {
+    }
 }

@@ -9,14 +9,14 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-
 #include "a.h"
+
 
 namespace demo::b {
 // Enums forward declarations
 enum class TestEnum;
 
-// Classes forward declarations
+// Structs forward declarations
 class TestStruct;
 
 
@@ -32,10 +32,10 @@ enum class TestEnum : int32_t {
 
 class TestStruct {
 public:
+    demo::a::Point2D point;
+public:
     TestStruct() = default;
     ~TestStruct() = default;
-    
-    demo::a::Point2D point;
 };
 
 } // namespace demo::b

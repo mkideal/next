@@ -1,43 +1,43 @@
 {{/* next/file: Generates code for a complete file, including imports and declarations */}}
 {{- define "next/file" -}}
-{{next .Imports -}}
-{{next .Decls -}}
+{{- next .Imports}}
+{{- next .Decls}}
 {{- end}}
 
 {{/* next/decls: Generates code for all declarations in a file, including constants, enums, structs, and interfaces */}}
 {{- define "next/decls" -}}
-{{- if .Consts -}}
-    {{- next .Consts -}}
-{{end -}}
-{{- if .Enums -}}
-    {{- next .Enums -}}
-{{end -}}
-{{- if .Structs -}}
-    {{- next .Structs -}}
-{{end -}}
-{{- if .Interfaces -}}
-    {{- next .Interfaces -}}
-{{end -}}
+{{- if .Consts}}
+    {{- next .Consts}}
+{{- end}}
+{{- if .Enums}}
+    {{- next .Enums}}
+{{- end}}
+{{- if .Structs}}
+    {{- next .Structs}}
+{{- end}}
+{{- if .Interfaces}}
+    {{- next .Interfaces}}
+{{- end}}
 {{- end}}
 
 {{/* next/comment: Generates formatted comment text */}}
 {{- define "next/comment" -}}
-{{align .String}}
+{{- .String}}
 {{- end}}
 
 {{/* next/doc: Generates formatted documentation comment text */}}
 {{- define "next/doc" -}}
-{{align .String}}
+{{- .String}}
 {{- end}}
 
 {{- define "next/doc:clike" -}}
-{{.Format " * " "/**\n" " */" | align}}
+{{- .Format " * " "/**\n" " */"}}
 {{- end}}
 
 {{/* next/imports: Generates code for all import statements in a file */}}
 {{- define "next/imports" -}}
 {{- range .List}}
-{{next . -}}
+{{- next . }}
 {{- end}}
 {{- end}}
 
@@ -50,106 +50,122 @@ import "{{.Path}}";
 {{- define "next/consts" -}}
 {{- range .List}}
 {{- next .}}
-{{_}}
 {{- end}}
 {{- end}}
 
 {{/* next/const: Generates code for a single constant declaration */}}
 {{- define "next/const" -}}
-{{next .Doc}}const {{render "const:name" .}} = {{.Value}};{{next .Comment}}
-{{- end}}
+{{- next .Doc -}}
+const {{render "const:name" .}} = {{next .Value}};{{next .Comment}}
+{{end}}
 
 {{/* next/const.name: Generates the name of a constant */}}
 {{- define "next/const:name" -}}
-{{.Name}}
+{{- .Name}}
+{{- end}}
+
+{{/* next/const.value: Generates the value of a constant */}}
+{{- define "next/const.value" -}}
+{{- render "value" .}}
 {{- end}}
 
 {{/* next/enums: Generates code for all enum declarations in a file */}}
 {{- define "next/enums" -}}
-{{render "next/decl:internal.types" .}}
+{{- render "next/decl:internal.types" .}}
 {{- end}}
 
 {{/* next/enum: Generates code for a single enum declaration */}}
 {{- define "next/enum" -}}
 enum {{next .Type}} {
-    {{- next .Members}}
+    {{next .Members | align -}}
 }
-{{- end}}
+{{end}}
 
 {{/* next/enum:member.type: Determines the underlying type for an enum */}}
 {{- define "next/enum:member.type" -}}
-{{if .Annotations.next.type}}{{next .Annotations.next.type}}{{else}}{{next .MemberType}}{{end}}
+{{- if .Annotations.next.type}}
+    {{- next .Annotations.next.type}}
+{{- else}}
+    {{- next .MemberType}}
+{{- end}}
 {{- end}}
 
 {{/* next/enum.type: Generates the type name for an enum */}}
 {{- define "next/enum.type" -}}
-{{render "next/decl.type:internal.alias" .}}
+{{- render "next/decl.type:internal.alias" .}}
 {{- end}}
 
 {{/* next/enum.members: Generates code for all members of an enum */}}
 {{- define "next/enum.members" -}}
 {{- range .List}}
-    {{next . -}}
+{{- next .}}
 {{- end}}
 {{- end}}
 
 {{/* next/enum.member: Generates code for a single enum member */}}
 {{- define "next/enum.member" -}}
-{{next .Doc}}{{render "enum.member:name" .}} = {{.Value}},{{next .Comment}}
-{{- end}}
+{{- next .Doc -}}
+{{- render "enum.member:name" .}} = {{next .Value}},{{next .Comment}}
+{{end}}
 
 {{/* next/enum.member.name: Generates the name of an enum member */}}
 {{- define "next/enum.member:name" -}}
-{{.Name}}
+{{- .Name}}
+{{- end}}
+
+{{/* next/enum.member.value: Generates the value of an enum member */}}
+{{- define "next/enum.member.value" -}}
+{{- render "value" .}}
 {{- end}}
 
 {{/* next/structs: Generates code for all struct declarations in a file */}}
 {{- define "next/structs" -}}
-{{render "next/decl:internal.types" .}}
+{{- render "next/decl:internal.types" .}}
 {{- end}}
 
 {{/* next/struct: Generates code for a single struct declaration */}}
 {{- define "next/struct" -}}
-{{next .Doc}}struct {{next .Type}} {
-    {{- next .Fields}}
+{{- next .Doc -}}
+struct {{next .Type}} {
+    {{next .Fields | align -}}
 }
-{{- end}}
+{{end}}
 
 {{/* next/struct.type: Generates the type name for a struct */}}
 {{- define "next/struct.type" -}}
-{{render "next/decl.type:internal.alias" .}}
+{{- render "next/decl.type:internal.alias" .}}
 {{- end}}
 
 {{/* next/struct.fields: Generates code for all fields of a struct */}}
 {{- define "next/struct.fields" -}}
 {{- range .List}}
-    {{next .}}
+{{- next .}}
 {{- end}}
 {{- end}}
 
 {{/* next/struct.field: Generates code for a single struct field */}}
 {{- define "next/struct.field" -}}
-{{next .Doc}}{{next .Type}} {{render "struct.field:name" .}};{{next .Comment}}
-{{- end}}
+{{- next .Doc -}}
+{{- next .Type}} {{render "struct.field:name" .}};{{next .Comment}}
+{{end}}
 
 {{/* next/struct.field.name: Generates the name of a struct field */}}
 {{- define "next/struct.field:name" -}}
-{{.Name}}
+{{- .Name}}
 {{- end}}
 
 {{/* next/interfaces: Generates code for all interface declarations in a file */}}
 {{- define "next/interfaces" -}}
-{{render "next/decl:internal.types" .}}
+{{- render "next/decl:internal.types" .}}
 {{- end}}
 
 {{/* next/decl:internal.types: Generates code for type declarations, handling potential aliases */}}
 {{- define "next/decl:internal.types" -}}
 {{- $n := 0 -}}
-{{range .List}}
+{{- range .List}}
     {{- if or (not .Annotations.next) (not (index .Annotations.next (printf "%s_alias" lang))) -}}
         {{- println}}
         {{- next .}}
-        {{- println}}
     {{- end}}
     {{- $n = add 1 $n}}
 {{- end}}
@@ -164,47 +180,47 @@ enum {{next .Type}} {
 
 {{/* next/interface.type: Generates the type name for an interface */}}
 {{- define "next/interface.type" -}}
-{{render "next/decl.type:internal.alias" .}}
+{{- render "next/decl.type:internal.alias" .}}
 {{- end}}
 
 {{/* next/interface.methods: Generates code for all methods of an interface */}}
 {{- define "next/interface.methods" -}}
 {{- range .List}}
-    {{next . -}}
+{{- next . }}
 {{- end}}
 {{- end}}
 
 {{/* next/interface.method: Generates code for a single interface method */}}
 {{- define "next/interface.method" -}}
-{{next .Doc}}{{render "interface.method:name" .}}({{next .Params}}){{next .Result}}{{next .Comment}}
-{{- end}}
+{{- next .Doc -}}
+{{- render "interface.method:name" .}}({{next .Params}}){{next .Result}}{{next .Comment}}
+{{end}}
 
 {{/* next/interface.method.name: Generates the name of an interface method */}}
 {{- define "next/interface.method:name" -}}
-{{.Name}}
+{{- .Name}}
 {{- end}}
 
 {{/* next/interface.method.params: Generates code for all parameters of an interface method */}}
 {{- define "next/interface.method.params" -}}
-{{- range $i, $p := .List -}}
-    {{if $i}}, {{end}}{{next . -}}
+{{- range $i, $p := .List}}
+    {{- if $i}}, {{end}}{{next . -}}
 {{- end}}
 {{- end}}
 
 {{/* next/interface.method.param: Generates code for a single interface method parameter */}}
 {{- define "next/interface.method.param" -}}
-{{next .Type}} {{render "interface.method.param:name" .}}
+{{- next .Type}} {{render "interface.method.param:name" .}}
 {{- end}}
 
 {{/* next/interface.method.param.name: Generates the name of an interface method parameter */}}
 {{- define "next/interface.method.param:name" -}}
-{{.Name}}
+{{- .Name}}
 {{- end}}
 
 {{/* next/interface.method.result: Generates the return type of an interface method */}}
 {{- define "next/interface.method.result" -}}
-{{- if .Type}} {{next .Type}}
-{{- end}}
+{{- if .Type}} {{next .Type}}{{end}}
 {{- end}}
 
 {{/* next/decl.type:internal.alias: Handles internal type aliases */}}
@@ -228,25 +244,29 @@ enum {{next .Type}} {
 
 {{/* next/used.type: Generates a used type */}}
 {{- define "next/used.type" -}}
-{{- next .Type -}}
+{{- next .Type}}
 {{- end}}
 
 {{/* next/value: Generates a value */}}
 {{- define "next/value" -}}
-{{.}}{{render "type:literal.suffix" .Type}}
+{{- if .Type.Kind.IsBool}}
+    {{- if .Any}}{{render "true" .}}{{else}}{{render "false" .}}{{end}}
+{{- else}}
+    {{- .}}{{render "type:literal.suffix" .Type}}
+{{- end}}
 {{- end}}
 
-{{- define "next/type:literal.suffix" -}}
+{{- define "next/type:literal.suffix.clike" -}}
 {{- $kind := .Kind.String | lower -}}
-{{- if eq "ts" lang -}}
-    {{- if eq $kind "int64" -}}
-        n
-    {{- end -}}
-{{- else if eq $kind "int64" -}}
+{{- if eq $kind "int64" -}}
     L{{- if or (eq "c" lang) (eq "cpp" lang)}}L{{- end -}}
 {{- else if eq $kind "float32" -}}
     F
 {{- end -}}
+{{- end}}
+
+{{/* next/type:literal.suffix: Generates a suffix for a literal value by type */}}
+{{- define "next/type:literal.suffix" -}}
 {{- end}}
 
 {{/* next/true: Generates a boolean true value */}}
@@ -273,8 +293,10 @@ false
 
 {{/* next/zero: Generates a zero value for a given type */}}
 {{- define "next/type:zero" -}}
-{{- if .Kind.IsNumeric -}}
+{{- if .Kind.IsInteger -}}
 0{{render "next/type:literal.suffix" .}}
+{{- else if .Kind.IsFloat -}}
+0.0{{render "next/type:literal.suffix" .}}
 {{- else if .Kind.IsString -}}
 ""
 {{- else if .Kind.IsBool -}}

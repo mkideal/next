@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace demo
+namespace Demo
 {
     public const string Version = "1.0.0"; // String constant
     public const int MaxRetries = 3; // Integer constant
@@ -114,5 +114,4 @@ namespace demo
         string request(string url, string method, string body);
         string request2(string url, string method, string body);
     }
-    
 }

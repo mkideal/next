@@ -5,7 +5,7 @@
 {{- define "java/interface" -}}
 package {{render "package:name" .Package}};
 
-{{next .File.Imports}}
+{{next .File.Imports -}}
 {{super .}}
 {{- end -}}
 

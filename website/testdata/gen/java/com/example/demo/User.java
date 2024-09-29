@@ -100,6 +100,6 @@ public class User {
         this.extra = extra;
     }
 
-
-    public User() {}
+    public User() {
+    }
 }

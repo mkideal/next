@@ -9,7 +9,7 @@ import java.util.Arrays;
 /**
  * HTTPClient provides HTTP request functionality
  */
-interface HTTPClient {
+public interface HTTPClient {
     /**
      * Available for all languages
      */

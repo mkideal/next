@@ -18,7 +18,7 @@ enum class Day;
 enum class Month;
 enum class IotatestEnum;
 
-// Classes forward declarations
+// Structs forward declarations
 class Point2D;
 class Point3D;
 class Rectangle;
@@ -38,8 +38,8 @@ inline constexpr auto ServerName = "Comprehensive Test Server";
 inline constexpr auto Version = "1.0.0";
 inline constexpr auto MaxConnections = 1000;
 inline constexpr auto Pi = 3.14159265358979323846;
-inline constexpr auto MaxInt64 = 9223372036854775807; // 2^63 - 1
-inline constexpr auto MinInt64 = -9223372036854775808; // -2^63
+inline constexpr auto MaxInt64 = 9223372036854775807LL; // 2^63 - 1
+inline constexpr auto MinInt64 = -9223372036854775808LL; // -2^63
 // Constants with complex expressions
 inline constexpr auto A = 1;
 inline constexpr auto B = 3;
@@ -58,8 +58,8 @@ inline constexpr auto MaxValue = 5673;
 // Constants using built-in functions
 inline constexpr auto IntFromBool = 1;
 inline constexpr auto IntFromFloat = 3;
-inline constexpr auto FloatFromInt = 42.0;
-inline constexpr auto FloatFromBool = 0;
+inline constexpr auto FloatFromInt = 42.0F;
+inline constexpr auto FloatFromBool = 0F;
 inline constexpr auto BoolFromInt = true;
 inline constexpr auto BoolFromString = true;
 inline constexpr auto FormattedString1 = "The answer is 42";
@@ -149,45 +149,42 @@ enum class IotatestEnum : int32_t {
 // Struct types
 class Point2D {
 public:
+    double x = {0.0};
+    double y = {0.0};
+public:
     Point2D() = default;
     ~Point2D() = default;
-    
-    double x = {0};
-    double y = {0};
 };
 
 class Point3D {
 public:
+    Point2D point;
+    double z = {0.0};
+public:
     Point3D() = default;
     ~Point3D() = default;
-    
-    Point2D point;
-    double z = {0};
 };
 
 class Rectangle {
 public:
-    Rectangle() = default;
-    ~Rectangle() = default;
-    
     Point2D topLeft;
     Point2D bottomRight;
+public:
+    Rectangle() = default;
+    ~Rectangle() = default;
 };
 
 // Struct with various field types
 class ComplexStruct {
 public:
-    ComplexStruct() = default;
-    ~ComplexStruct() = default;
-    
     bool flag = {false};
     int8_t tinyInt = {0};
     int16_t smallInt = {0};
     int32_t mediumInt = {0};
-    int64_t bigInt = {0LL};
+    int64_t bigInt = {0};
     int defaultInt = {0};
-    float singlePrecision = {0F};
-    double doublePrecision = {0};
+    float singlePrecision = {0.0};
+    double doublePrecision = {0.0};
     std::string text = {""};
     unsigned char singleByte = {0};
     std::vector<unsigned char> byteArray;
@@ -195,74 +192,77 @@ public:
     std::vector<std::string> dynamicArray;
     std::vector<int> intArray;
     std::unordered_map<std::string, int> dictionary;
+public:
+    ComplexStruct() = default;
+    ~ComplexStruct() = default;
 };
 
 class User {
 public:
-    User() = default;
-    ~User() = default;
-    
-    int64_t id = {0LL};
+    int64_t id = {0};
     std::string username = {""};
     std::string email = {""};
     Day preferredDay = {Day(0)};
     Month birthMonth = {Month(0)};
+public:
+    User() = default;
+    ~User() = default;
 };
 
 class UserProfile {
 public:
-    UserProfile() = default;
-    ~UserProfile() = default;
-    
     User user;
     std::string firstName = {""};
     std::string lastName = {""};
     int age = {0};
     std::vector<std::string> interests;
+public:
+    UserProfile() = default;
+    ~UserProfile() = default;
 };
 
 // message types
 class LoginRequest {
 public:
-    LoginRequest() = default;
-    ~LoginRequest() = default;
-    
     std::string username = {""};
     std::string password = {""};
     std::string deviceId = {""};
     std::string twoFactorToken = {""};
+public:
+    LoginRequest() = default;
+    ~LoginRequest() = default;
 };
 
 class LoginResponse {
 public:
-    LoginResponse() = default;
-    ~LoginResponse() = default;
-    
     bool success = {false};
     std::string errorMessage = {""};
     std::string authenticationToken = {""};
     User user;
+public:
+    LoginResponse() = default;
+    ~LoginResponse() = default;
 };
 
 class GenericRequest {
 public:
+    std::string requestId = {""};
+    int64_t timestamp = {0};
+public:
     GenericRequest() = default;
     ~GenericRequest() = default;
-    
-    std::string requestId = {""};
-    int64_t timestamp = {0LL};
 };
 
 class GenericResponse {
 public:
-    GenericResponse() = default;
-    ~GenericResponse() = default;
-    
     std::string requestId = {""};
-    int64_t timestamp = {0LL};
+    int64_t timestamp = {0};
     bool success = {false};
     std::string errorCode = {""};
     std::string errorMessage = {""};
+public:
+    GenericResponse() = default;
+    ~GenericResponse() = default;
 };
 
 } // namespace demo::a

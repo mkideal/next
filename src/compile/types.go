@@ -46,7 +46,7 @@ type Object interface {
 	//
 	//	```npl
 	//	{{- define "go/enum.member" -}}
-	//	const {{render "enum.member:name" .Name}} = {{.Value}}
+	//	const {{render "enum.member:name" .Name}} = {{next .Value}}
 	//	{{- end}}
 	//
 	//	{{- define "go/enum.member:name" -}}

@@ -4,23 +4,17 @@
 
 
 local _M_ = {}
---[[
 -- XX constant
 -- XX value 2
---]]
 _M_.XX = 1 -- XX value
---[[
 -- Constants
---]]
 _M_.ServerName = "Comprehensive Test Server"
 _M_.Version = "1.0.0"
 _M_.MaxConnections = 1000
 _M_.Pi = 3.14159265358979323846
 _M_.MaxInt64 = 9223372036854775807 -- 2^63 - 1
 _M_.MinInt64 = -9223372036854775808 -- -2^63
---[[
 -- Constants with complex expressions
---]]
 _M_.A = 1
 _M_.B = 3
 _M_.C = 9
@@ -31,15 +25,11 @@ _M_.G = 1052
 _M_.H = 5672
 _M_.I = 5673.618 -- Approximation of golden ratio
 _M_.J = 47.28015 -- 120 is 5!
---[[
 -- Constants with function calls
---]]
 _M_.StringLength = 13
 _M_.MinValue = 1
 _M_.MaxValue = 5673
---[[
 -- Constants using built-in functions
---]]
 _M_.IntFromBool = 1
 _M_.IntFromFloat = 3
 _M_.FloatFromInt = 42.0
@@ -49,19 +39,15 @@ _M_.BoolFromString = true
 _M_.FormattedString1 = "The answer is 42"
 _M_.FormattedString2 = "Pi is approximately 3.14"
 _M_.FormattedString3 = "Hello World\n"
---[[
 -- Constants for testing complex expressions and bitwise operations
---]]
 _M_.Complex1 = 5673
 _M_.Complex2 = 78547
 _M_.Complex3 = 31
 _M_.Complex4 = 31
 _M_.Complex5 = 31
 
---[[
 -- Enum with iota
---]]
-_M_.Color = {
+local Color = {
     RED = 1,
     GREEN = 2,
     BLUE = 4,
@@ -71,11 +57,10 @@ _M_.Color = {
     MAGENTA = 5,
     WHITE = 7
 }
+_M_.Color = Color
 
---[[
 -- Enum with complex iota usage
---]]
-_M_.FilePermission = {
+local FilePermission = {
     NONE = 0,
     EXECUTE = 1,
     WRITE = 2,
@@ -89,14 +74,13 @@ _M_.FilePermission = {
     OTHERS_READ = 1048576,
     OTHERS_WRITE = 8388608,
     OTHERS_EXECUTE = 67108864,
-    --[[
     -- 4|32|256|2048|16384|131072|1048576|8388608|67108864
     -- 4 + 32 + 256 + 2048 + 16384 + 131072 + 1048576 + 8388608 + 67108864
-    --]]
     ALL = 76695844
 }
+_M_.FilePermission = FilePermission
 
-_M_.Day = {
+local Day = {
     MONDAY = 1,
     TUESDAY = 2,
     WEDNESDAY = 4,
@@ -107,8 +91,9 @@ _M_.Day = {
     WEEKDAY = 31,
     WEEKEND = 96
 }
+_M_.Day = Day
 
-_M_.Month = {
+local Month = {
     JANUARY = 1,
     FEBRUARY = 2,
     MARCH = 4,
@@ -126,11 +111,10 @@ _M_.Month = {
     Q_3 = 448,
     Q_4 = 3584
 }
+_M_.Month = Month
 
---[[
 -- Test cases for iota
---]]
-_M_.IotatestEnum = {
+local IotatestEnum = {
     A = 0, -- 0
     B = 1, -- 1
     C = 0, -- 0
@@ -139,10 +123,9 @@ _M_.IotatestEnum = {
     F = 1, -- 1
     G = 0 -- 0
 }
+_M_.IotatestEnum = IotatestEnum
 
---[[
 -- Struct types
---]]
 local Point2D = {}
 _M_.Point2D = Point2D
 Point2D.__index = Point2D
@@ -182,9 +165,7 @@ function Rectangle:new()
     return obj
 end
 
---[[
 -- Struct with various field types
---]]
 local ComplexStruct = {}
 _M_.ComplexStruct = ComplexStruct
 ComplexStruct.__index = ComplexStruct
@@ -243,9 +224,7 @@ function UserProfile:new()
     return obj
 end
 
---[[
 -- message types
---]]
 local LoginRequest = {}
 _M_.LoginRequest = LoginRequest
 LoginRequest.__index = LoginRequest

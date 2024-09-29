@@ -160,6 +160,6 @@ public class ComplexStruct {
         this.dictionary = dictionary;
     }
 
-
-    public ComplexStruct() {}
+    public ComplexStruct() {
+    }
 }

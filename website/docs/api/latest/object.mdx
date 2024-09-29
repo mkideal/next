@@ -2,6 +2,7 @@
 pagination_prev: null
 pagination_next: null
 ---
+
 # Object {#user-content-Object}
 
 import Tabs from "@theme/Tabs";
@@ -9,7 +10,8 @@ import TabItem from "@theme/TabItem";
 
 `Object` is a generic object type. These objects can be used as parameters for the `Context/next` function, like `{{next .}}`.
 
-###### .Typeof {#user-content-Object__Typeof}
+###### .Typeof {#user-content-Object\_\_Typeof}
+
 <div className="property-container">
 
 `.Typeof` returns the type name of the object. The type name is a string that represents the type of the object. Except for objects under [Common](#user-content-Object_Common), the type names of other objects are lowercase names separated by dots. For example, the type name of a `EnumMember` object is `enum.member`, and the type name of a `Enum` object is `enum`. These objects can be customized for code generation by defining templates.
@@ -28,7 +30,7 @@ enum Color {
 
 ```npl
 {{- define "go/enum.member" -}}
-const {{render "enum.member:name" .Name}} = {{.Value}}
+const {{render "enum.member:name" .Name}} = {{next .Value}}
 {{- end}}
 
 {{- define "go/enum.member:name" -}}
@@ -56,14 +58,16 @@ These two definitions will override the built-in template functions `next/go/enu
 
 `ArrayType` represents an fixed-size array [Type](#user-content-Object_Common_Type).
 
-###### .ElemType {#user-content-Object_ArrayType__ElemType}
+###### .ElemType {#user-content-Object_ArrayType\_\_ElemType}
+
 <div className="property-container">
 
 `.ElemType` represents the element [Type](#user-content-Object_Common_Type) of the array.
 
 </div>
 
-###### .N {#user-content-Object_ArrayType__N}
+###### .N {#user-content-Object_ArrayType\_\_N}
+
 <div className="property-container">
 
 `.N` represents the number of elements in the array.
@@ -74,7 +78,8 @@ These two definitions will override the built-in template functions `next/go/enu
 
 `Comment` represents a line comment or a comment group in Next source code. Use this in templates to access and format comments.
 
-###### .String {#user-content-Object_Comment__String}
+###### .String {#user-content-Object_Comment\_\_String}
+
 <div className="property-container">
 
 `.String` returns the full original comment text, including delimiters.
@@ -97,7 +102,8 @@ Output:
 
 </div>
 
-###### .Text {#user-content-Object_Comment__Text}
+###### .Text {#user-content-Object_Comment\_\_Text}
+
 <div className="property-container">
 
 `.Text` returns the content of the comment without comment delimiters.
@@ -190,7 +196,8 @@ parameter names **MUST NOT** start with an uppercase letter, as this is reserved
 
 :::
 
-###### .Contains {#user-content-Object_Common_Annotation__Contains}
+###### .Contains {#user-content-Object_Common_Annotation\_\_Contains}
+
 <div className="property-container">
 
 `.Contains` reports whether the annotation contains the given parameter.
@@ -222,7 +229,8 @@ If you want to check whether the annotation has a non-empty value, you can use t
 
 </div>
 
-###### .NamePos {#user-content-Object_Common_Annotation__NamePos}
+###### .NamePos {#user-content-Object_Common_Annotation\_\_NamePos}
+
 <div className="property-container">
 
 `.NamePos` returns the position of the annotation name in the source code. It's useful to provide a better error message when needed.
@@ -248,7 +256,8 @@ example.next:3:10: Something went wrong
 
 </div>
 
-###### .Pos {#user-content-Object_Common_Annotation__Pos}
+###### .Pos {#user-content-Object_Common_Annotation\_\_Pos}
+
 <div className="property-container">
 
 `.Pos` returns the position of the annotation in the source code. It's useful to provide a better error message when needed.
@@ -274,7 +283,8 @@ example.next:3:1: Something went wrong
 
 </div>
 
-###### .ValuePos {#user-content-Object_Common_Annotation__ValuePos}
+###### .ValuePos {#user-content-Object_Common_Annotation\_\_ValuePos}
+
 <div className="property-container">
 
 `.ValuePos` returns the position of the annotation value in the source code. It's useful to provide a better error message when needed.
@@ -301,7 +311,9 @@ example.next:3:15: Something went wrong
 </div>
 
 #### decl {#user-content-Object_Common_Annotation_decl}
-###### .available {#user-content-Object_Common_Annotation_decl__available}
+
+###### .available {#user-content-Object_Common_Annotation_decl\_\_available}
+
 <div className="property-container">
 
 The `@next(available="expression")` annotation for `file`, `const`, `enum`, `struct`, `field`, `interface`, `method` availability of the declaration. The `expression` is a boolean expression that can be used to control the availability of the declaration in the target language. Supported operators are `&`, `|`, `!`, `(`, `)`, and `true`, `false`.
@@ -328,7 +340,8 @@ struct Point {
 
 The `next` annotation for `enum` declarations used to control the enum behavior.
 
-###### .type {#user-content-Object_Common_Annotation_enum__type}
+###### .type {#user-content-Object_Common_Annotation_enum\_\_type}
+
 <div className="property-container">
 
 `.type` specifies the underlying type of the enum.
@@ -393,7 +406,8 @@ interface HTTPServer {
 
 The `next` annotation for `method` declarations used to control the method behavior.
 
-###### .error {#user-content-Object_Common_Annotation_method__error}
+###### .error {#user-content-Object_Common_Annotation_method\_\_error}
+
 <div className="property-container">
 
 The `@next(error)` annotation used to indicate that the method returns an error or throws an exception.
@@ -434,7 +448,8 @@ interface Parser {
 
 </div>
 
-###### .mut {#user-content-Object_Common_Annotation_method__mut}
+###### .mut {#user-content-Object_Common_Annotation_method\_\_mut}
+
 <div className="property-container">
 
 The `@next(mut)` annotation used to indicate that the method is a mutable method, which means it can modify the object's state.
@@ -495,7 +510,8 @@ Example:
 
 There are some reserved keys for the `next` annotation for `package` statements.
 
-###### .go_imports {#user-content-Object_Common_Annotation_package__go_imports}
+###### .go_imports {#user-content-Object_Common_Annotation_package\_\_go_imports}
+
 <div className="property-container">
 
 `.go_imports` represents a list of import paths for Go packages, separated by commas: `@next(go_imports="fmt.Printf,*io.Reader")`.
@@ -519,7 +535,8 @@ package demo;
 
 The `next` annotation for `parameter` declarations used to control the parameter behavior.
 
-###### .mut {#user-content-Object_Common_Annotation_param__mut}
+###### .mut {#user-content-Object_Common_Annotation_param\_\_mut}
+
 <div className="property-container">
 
 The `@next(mut)` annotation used to indicate that the parameter is mutable.
@@ -585,7 +602,8 @@ This will don't generate the `uint128` struct in the `rust` language, but use `u
 
 Annotations is a map that stores multiple annotations for a given entity. The key is the annotation name (string), and the value is the corresponding [Annotation](#user-content-Object_Common_Annotation) object.
 
-###### .Contains {#user-content-Object_Common_Annotations__Contains}
+###### .Contains {#user-content-Object_Common_Annotations\_\_Contains}
+
 <div className="property-container">
 
 `.Contains` reports whether the annotations contain the given annotation.
@@ -618,7 +636,8 @@ Currently, the following declarations are supported:
 - [Struct](#user-content-Object_Struct)
 - [Interface](#user-content-Object_Interface)
 
-###### .UsedKinds {#user-content-Object_Common_Decl__UsedKinds}
+###### .UsedKinds {#user-content-Object_Common_Decl\_\_UsedKinds}
+
 <div className="property-container">
 
 `.UsedKinds` returns the used kinds in the declaration. Returns 0 if the declaration does not use any kinds. Otherwise, returns the OR of all used kinds.
@@ -633,6 +652,7 @@ struct User {
 	map<int, bool> flags;
 }
 ```
+
 The used kinds in the `User` struct are: `(1<<KindInt64) | (1<<KindString) | (1<<KindVector) | (1<<KindMap) | (1<<KindInt) | (1<<KindBool)`.
 
 </div>
@@ -641,7 +661,8 @@ The used kinds in the `User` struct are: `(1<<KindInt64) | (1<<KindString) | (1<
 
 `Fields<D, F>` represents a list of fields of a declaration where `D` is the declaration [Node](#user-content-Object_Common_Node) and `F` is the field [Object](#user-content-Object).
 
-###### .Decl {#user-content-Object_Common_Fields__Decl}
+###### .Decl {#user-content-Object_Common_Fields\_\_Decl}
+
 <div className="property-container">
 
 `.Decl` is the declaration [Node](#user-content-Object_Common_Node) that contains the fields.
@@ -655,7 +676,8 @@ Currently, it is one of following types:
 
 </div>
 
-###### .List {#user-content-Object_Common_Fields__List}
+###### .List {#user-content-Object_Common_Fields\_\_List}
+
 <div className="property-container">
 
 `.List` is the slice of fields: **\[[Object](#user-content-Object)\]**.
@@ -673,7 +695,8 @@ Currently, the field object is one of following types:
 
 `List<T>` represents a slice of objects: **\[T: [Object](#user-content-Object)\]**.
 
-###### .List {#user-content-Object_Common_List__List}
+###### .List {#user-content-Object_Common_List\_\_List}
+
 <div className="property-container">
 
 `.List` represents the slice of [Object](#user-content-Object)s. It is used to provide a uniform way to access.
@@ -684,21 +707,24 @@ Currently, the field object is one of following types:
 
 `LocatedObject` represents an [Object](#user-content-Object) with a location in a file.
 
-###### .File {#user-content-Object_Common_LocatedObject__File}
+###### .File {#user-content-Object_Common_LocatedObject\_\_File}
+
 <div className="property-container">
 
 `.File` represents the file containing the object.
 
 </div>
 
-###### .Package {#user-content-Object_Common_LocatedObject__Package}
+###### .Package {#user-content-Object_Common_LocatedObject\_\_Package}
+
 <div className="property-container">
 
 `.Package` represents the package containing the object.
 
 </div>
 
-###### .Pos {#user-content-Object_Common_LocatedObject__Pos}
+###### .Pos {#user-content-Object_Common_LocatedObject\_\_Pos}
+
 <div className="property-container">
 
 `.Pos` represents the [Position](#user-content-Object_Common_Position) of the object.
@@ -741,7 +767,8 @@ Currently, the following nodes are supported:
 - [InterfaceMethod](#user-content-Object_InterfaceMethod)
 - [InterfaceMethodParam](#user-content-Object_InterfaceMethodParam)
 
-###### .Annotations {#user-content-Object_Common_Node__Annotations}
+###### .Annotations {#user-content-Object_Common_Node\_\_Annotations}
+
 <div className="property-container">
 
 `.Annotations` represents the [Annotations](#user-content-Object_Common_Annotations) for the node.
@@ -775,7 +802,8 @@ true
 
 </div>
 
-###### .Doc {#user-content-Object_Common_Node__Doc}
+###### .Doc {#user-content-Object_Common_Node\_\_Doc}
+
 <div className="property-container">
 
 `.Doc` represents the documentation comment for the node. The documentation comment is a comment that appears before the node declaration.
@@ -801,7 +829,8 @@ It can be multiple lines.
 
 </div>
 
-###### .Name {#user-content-Object_Common_Node__Name}
+###### .Name {#user-content-Object_Common_Node\_\_Name}
+
 <div className="property-container">
 
 `.Name` represents the name of the node.
@@ -824,7 +853,8 @@ x
 
 </div>
 
-###### .NamePos {#user-content-Object_Common_Node__NamePos}
+###### .NamePos {#user-content-Object_Common_Node\_\_NamePos}
+
 <div className="property-container">
 
 `.NamePos` represents the position of the node name.
@@ -852,28 +882,32 @@ demo.next:2:7
 
 `Position` returns the string representation of the position, e.g., `demo.next:10:2`.
 
-###### .Column {#user-content-Object_Common_Position__Column}
+###### .Column {#user-content-Object_Common_Position\_\_Column}
+
 <div className="property-container">
 
 `.Column` represents the column number of the position starting from 1.
 
 </div>
 
-###### .Filename {#user-content-Object_Common_Position__Filename}
+###### .Filename {#user-content-Object_Common_Position\_\_Filename}
+
 <div className="property-container">
 
 `.Filename` represents the filename of the position.
 
 </div>
 
-###### .IsValid {#user-content-Object_Common_Position__IsValid}
+###### .IsValid {#user-content-Object_Common_Position\_\_IsValid}
+
 <div className="property-container">
 
 `.IsValid` reports whether the position is valid.
 
 </div>
 
-###### .Line {#user-content-Object_Common_Position__Line}
+###### .Line {#user-content-Object_Common_Position\_\_Line}
+
 <div className="property-container">
 
 `.Line` represents the line number of the position starting from 1.
@@ -902,7 +936,8 @@ Currently, the following types are supported:
 - [StructType](#user-content-Object_StructType)
 - [InterfaceType](#user-content-Object_InterfaceType)
 
-###### .Actual {#user-content-Object_Common_Type__Actual}
+###### .Actual {#user-content-Object_Common_Type\_\_Actual}
+
 <div className="property-container">
 
 `.Actual` represents the actual type. You need to use the `Actual` method to get the actual type to access the specific fields of the type.
@@ -997,14 +1032,16 @@ typedef struct User {
 
 </div>
 
-###### .Decl {#user-content-Object_Common_Type__Decl}
+###### .Decl {#user-content-Object_Common_Type\_\_Decl}
+
 <div className="property-container">
 
 `.Decl` represents the [Decl](#user-content-Object_Common_Decl) of the type. If the type is a built-in type, it returns a special declaration. Otherwise, it returns the declaration of the type: [Enum](#user-content-Object_Enum), [Struct](#user-content-Object_Struct), or [Interface](#user-content-Object_Interface).
 
 </div>
 
-###### .Kind {#user-content-Object_Common_Type__Kind}
+###### .Kind {#user-content-Object_Common_Type\_\_Kind}
+
 <div className="property-container">
 
 `.Kind` returns the [Kind](#user-content-Object_Common_Type_Kind) of the type.
@@ -1037,14 +1074,16 @@ Int32
 
 </div>
 
-###### .String {#user-content-Object_Common_Type__String}
+###### .String {#user-content-Object_Common_Type\_\_String}
+
 <div className="property-container">
 
 `.String` represents the string representation of the type.
 
 </div>
 
-###### .UsedKinds {#user-content-Object_Common_Type__UsedKinds}
+###### .UsedKinds {#user-content-Object_Common_Type\_\_UsedKinds}
+
 <div className="property-container">
 
 `.UsedKinds` returns the used kinds in the type.
@@ -1061,6 +1100,7 @@ struct User {
 	map<int, bool> flags;
 }
 ```
+
 The used kinds in the `User` struct are: `(1<<KindStruct) | (1<<KindInt64) | (1<<KindString) | (1<<KindVector) | (1<<KindMap) | (1<<KindInt) | (1<<KindBool)`.
 
 ```npl
@@ -1112,133 +1152,152 @@ false
 - **struct**: structure
 - **interface**: interface
 
-###### .Bits {#user-content-Object_Common_Type_Kind__Bits}
+###### .Bits {#user-content-Object_Common_Type_Kind\_\_Bits}
+
 <div className="property-container">
 
 `.Bits` returns the number of bits for the type. If the type has unknown bits, it returns 0 (for example, `any`, `string`, `bytes`).
 
 </div>
 
-###### .Compatible {#user-content-Object_Common_Type_Kind__Compatible}
+###### .Compatible {#user-content-Object_Common_Type_Kind\_\_Compatible}
+
 <div className="property-container">
 
 `.Compatible` returns the compatible type kind between two kinds. If the kinds are not compatible, it returns `KindInvalid`. If the kinds are the same, it returns the kind. If the kinds are both numeric, it returns the kind with the most bits.
 
 </div>
 
-###### .IsAny {#user-content-Object_Common_Type_Kind__IsAny}
+###### .IsAny {#user-content-Object_Common_Type_Kind\_\_IsAny}
+
 <div className="property-container">
 
 `.IsAny` reports whether the type is any.
 
 </div>
 
-###### .IsArray {#user-content-Object_Common_Type_Kind__IsArray}
+###### .IsArray {#user-content-Object_Common_Type_Kind\_\_IsArray}
+
 <div className="property-container">
 
 `.IsArray` reports whether the type is an array.
 
 </div>
 
-###### .IsBool {#user-content-Object_Common_Type_Kind__IsBool}
+###### .IsBool {#user-content-Object_Common_Type_Kind\_\_IsBool}
+
 <div className="property-container">
 
 `.IsBool` reports whether the type is a boolean.
 
 </div>
 
-###### .IsByte {#user-content-Object_Common_Type_Kind__IsByte}
+###### .IsByte {#user-content-Object_Common_Type_Kind\_\_IsByte}
+
 <div className="property-container">
 
 `.IsByte` reports whether the type is a byte.
 
 </div>
 
-###### .IsBytes {#user-content-Object_Common_Type_Kind__IsBytes}
+###### .IsBytes {#user-content-Object_Common_Type_Kind\_\_IsBytes}
+
 <div className="property-container">
 
 `.IsBytes` reports whether the type is a byte slice.
 
 </div>
 
-###### .IsEnum {#user-content-Object_Common_Type_Kind__IsEnum}
+###### .IsEnum {#user-content-Object_Common_Type_Kind\_\_IsEnum}
+
 <div className="property-container">
 
 `.IsEnum` reports whether the type is an enumeration.
 
 </div>
 
-###### .IsFloat {#user-content-Object_Common_Type_Kind__IsFloat}
+###### .IsFloat {#user-content-Object_Common_Type_Kind\_\_IsFloat}
+
 <div className="property-container">
 
 `.IsFloat` reports whether the type is a floating point. It includes `float32` and `float64`.
 
 </div>
 
-###### .IsInteger {#user-content-Object_Common_Type_Kind__IsInteger}
+###### .IsInteger {#user-content-Object_Common_Type_Kind\_\_IsInteger}
+
 <div className="property-container">
 
 `.IsInteger` reports whether the type is an integer. It includes `int`, `int8`, `int16`, `int32`, `int64`, and `byte`.
 
 </div>
 
-###### .IsInterface {#user-content-Object_Common_Type_Kind__IsInterface}
+###### .IsInterface {#user-content-Object_Common_Type_Kind\_\_IsInterface}
+
 <div className="property-container">
 
 `.IsInterface` reports whether the type is an interface.
 
 </div>
 
-###### .IsMap {#user-content-Object_Common_Type_Kind__IsMap}
+###### .IsMap {#user-content-Object_Common_Type_Kind\_\_IsMap}
+
 <div className="property-container">
 
 `.IsMap` reports whether the type is a map.
 
 </div>
 
-###### .IsNumeric {#user-content-Object_Common_Type_Kind__IsNumeric}
+###### .IsNumeric {#user-content-Object_Common_Type_Kind\_\_IsNumeric}
+
 <div className="property-container">
 
 `.IsNumeric` reports whether the type is a numeric type. It includes integer and floating point types.
 
 </div>
 
-###### .IsPrimitive {#user-content-Object_Common_Type_Kind__IsPrimitive}
+###### .IsPrimitive {#user-content-Object_Common_Type_Kind\_\_IsPrimitive}
+
 <div className="property-container">
 
 `.IsPrimitive` reports whether the type is a [PrimitiveType](#user-content-Object_PrimitiveType).
 
 </div>
 
-###### .IsString {#user-content-Object_Common_Type_Kind__IsString}
+###### .IsString {#user-content-Object_Common_Type_Kind\_\_IsString}
+
 <div className="property-container">
 
 `.IsString` reports whether the type is a string.
 
 </div>
 
-###### .IsStruct {#user-content-Object_Common_Type_Kind__IsStruct}
+###### .IsStruct {#user-content-Object_Common_Type_Kind\_\_IsStruct}
+
 <div className="property-container">
 
 `.IsStruct` reports whether the type is a structure.
 
 </div>
 
-###### .IsVector {#user-content-Object_Common_Type_Kind__IsVector}
+###### .IsVector {#user-content-Object_Common_Type_Kind\_\_IsVector}
+
 <div className="property-container">
 
 `.IsVector` reports whether the type is a vector.
 
 </div>
 
-###### .String {#user-content-Object_Common_Type_Kind__String}
+###### .String {#user-content-Object_Common_Type_Kind\_\_String}
+
 <div className="property-container">
 
 `.String` returns the string representation of the kind. It returns the kind name in TitleCase. e.g. `KindInt` -> `Int`, `KindFloat32` -> `Float32`.
 
 </div>
 
-###### .Valid {#user-content-Object_Common_Type_Kind__Valid}
+###### .Valid {#user-content-Object_Common_Type_Kind\_\_Valid}
+
 <div className="property-container">
 
 `.Valid` reports whether the type is valid.
@@ -1249,7 +1308,8 @@ false
 
 `Kinds` represents the type kind set.
 
-###### .Contains {#user-content-Object_Common_Type_Kinds__Contains}
+###### .Contains {#user-content-Object_Common_Type_Kinds\_\_Contains}
+
 <div className="property-container">
 
 `.Contains` reports whether the type contains specific kind. The kind can be a `Kind` (or any integer) or a string representation of the [Kind](#user-content-Object_Common_Type_Kind). If the kind is invalid, it returns an error.
@@ -1260,7 +1320,8 @@ false
 
 `Const` (extends [Decl](#user-content-Object_Common_Decl)) represents a const declaration.
 
-###### .Comment {#user-content-Object_Const__Comment}
+###### .Comment {#user-content-Object_Const\_\_Comment}
+
 <div className="property-container">
 
 `.Comment` is the line [Comment](#user-content-Object_Comment) of the constant declaration.
@@ -1283,14 +1344,16 @@ This is a line comment for the constant.
 
 </div>
 
-###### .Type {#user-content-Object_Const__Type}
+###### .Type {#user-content-Object_Const\_\_Type}
+
 <div className="property-container">
 
 `.Type` represents the type of the constant.
 
 </div>
 
-###### .Value {#user-content-Object_Const__Value}
+###### .Value {#user-content-Object_Const\_\_Value}
+
 <div className="property-container">
 
 `.Value` represents the [Value](#user-content-Object_Value) object of the constant.
@@ -1305,28 +1368,32 @@ This is a line comment for the constant.
 
 `Decls` holds all top-level declarations in a file.
 
-###### .Consts {#user-content-Object_Decls__Consts}
+###### .Consts {#user-content-Object_Decls\_\_Consts}
+
 <div className="property-container">
 
 `.Consts` represents the [List](#user-content-Object_Common_List) of [Const](#user-content-Object_Const) declarations.
 
 </div>
 
-###### .Enums {#user-content-Object_Decls__Enums}
+###### .Enums {#user-content-Object_Decls\_\_Enums}
+
 <div className="property-container">
 
 `.Enums` represents the [List](#user-content-Object_Common_List) of [Enum](#user-content-Object_Enum) declarations.
 
 </div>
 
-###### .Interfaces {#user-content-Object_Decls__Interfaces}
+###### .Interfaces {#user-content-Object_Decls\_\_Interfaces}
+
 <div className="property-container">
 
 `.Interfaces` represents the [List](#user-content-Object_Common_List) of [Interface](#user-content-Object_Interface) declarations.
 
 </div>
 
-###### .Structs {#user-content-Object_Decls__Structs}
+###### .Structs {#user-content-Object_Decls\_\_Structs}
+
 <div className="property-container">
 
 `.Structs` represents the [List](#user-content-Object_Common_List) of [Struct](#user-content-Object_Struct) declarations.
@@ -1337,7 +1404,8 @@ This is a line comment for the constant.
 
 `Doc` represents a documentation comment for a declaration in Next source code. Use this in templates to access and format documentation comments.
 
-###### .Format {#user-content-Object_Doc__Format}
+###### .Format {#user-content-Object_Doc\_\_Format}
+
 <div className="property-container">
 
 `.Format` formats the documentation comment for various output styles.
@@ -1370,7 +1438,8 @@ Output:
 
 </div>
 
-###### .String {#user-content-Object_Doc__String}
+###### .String {#user-content-Object_Doc\_\_String}
+
 <div className="property-container">
 
 `.String` returns the full original documentation comment, including delimiters.
@@ -1396,7 +1465,8 @@ Output:
 
 </div>
 
-###### .Text {#user-content-Object_Doc__Text}
+###### .Text {#user-content-Object_Doc\_\_Text}
+
 <div className="property-container">
 
 `.Text` returns the content of the documentation comment without comment delimiters.
@@ -1426,21 +1496,24 @@ It can be multiple lines.
 
 `Enum` (extends [Decl](#user-content-Object_Common_Decl)) represents an enum declaration.
 
-###### .MemberType {#user-content-Object_Enum__MemberType}
+###### .MemberType {#user-content-Object_Enum\_\_MemberType}
+
 <div className="property-container">
 
 `.MemberType` represents the [PrimitiveType](#user-content-Object_PrimitiveType) of the enum members.
 
 </div>
 
-###### .Members {#user-content-Object_Enum__Members}
+###### .Members {#user-content-Object_Enum\_\_Members}
+
 <div className="property-container">
 
 `.Members` is the [Fields](#user-content-Object_Common_Fields) of [EnumMember](#user-content-Object_EnumMember).
 
 </div>
 
-###### .Type {#user-content-Object_Enum__Type}
+###### .Type {#user-content-Object_Enum\_\_Type}
+
 <div className="property-container">
 
 `.Type` is the [EnumType](#user-content-Object_EnumType) of the enum.
@@ -1451,28 +1524,32 @@ It can be multiple lines.
 
 `EnumMember` (extends [Decl](#user-content-Object_Common_Decl)) represents an enum member object in an [Enum](#user-content-Object_Enum) declaration.
 
-###### .Comment {#user-content-Object_EnumMember__Comment}
+###### .Comment {#user-content-Object_EnumMember\_\_Comment}
+
 <div className="property-container">
 
 `.Comment` represents the line [Comment](#user-content-Object_Comment) of the enum member declaration.
 
 </div>
 
-###### .Decl {#user-content-Object_EnumMember__Decl}
+###### .Decl {#user-content-Object_EnumMember\_\_Decl}
+
 <div className="property-container">
 
 `.Decl` represents the [Enum](#user-content-Object_Enum) that contains the member.
 
 </div>
 
-###### .Index {#user-content-Object_EnumMember__Index}
+###### .Index {#user-content-Object_EnumMember\_\_Index}
+
 <div className="property-container">
 
 `.Index` represents the index of the enum member in the enum type.
 
 </div>
 
-###### .Value {#user-content-Object_EnumMember__Value}
+###### .Value {#user-content-Object_EnumMember\_\_Value}
+
 <div className="property-container">
 
 `.Value` represents the [Value](#user-content-Object_Value) object of the enum member.
@@ -1495,42 +1572,48 @@ It can be multiple lines.
 
 `File` (extends [Decl](#user-content-Object_Common_Decl)) represents a Next source file.
 
-###### .Decls {#user-content-Object_File__Decls}
+###### .Decls {#user-content-Object_File\_\_Decls}
+
 <div className="property-container">
 
 `.Decls` returns the file's all top-level declarations.
 
 </div>
 
-###### .Imports {#user-content-Object_File__Imports}
+###### .Imports {#user-content-Object_File\_\_Imports}
+
 <div className="property-container">
 
 `.Imports` represents the file's import declarations.
 
 </div>
 
-###### .LookupLocalType {#user-content-Object_File__LookupLocalType}
+###### .LookupLocalType {#user-content-Object_File\_\_LookupLocalType}
+
 <div className="property-container">
 
 `.LookupLocalType` looks up a type by name in the file's symbol table. If the type is not found, it returns an error. If the symbol is found but it is not a type, it returns an error.
 
 </div>
 
-###### .LookupLocalValue {#user-content-Object_File__LookupLocalValue}
+###### .LookupLocalValue {#user-content-Object_File\_\_LookupLocalValue}
+
 <div className="property-container">
 
 `.LookupLocalValue` looks up a value by name in the file's symbol table. If the value is not found, it returns an error. If the symbol is found but it is not a value, it returns an error.
 
 </div>
 
-###### .Name {#user-content-Object_File__Name}
+###### .Name {#user-content-Object_File\_\_Name}
+
 <div className="property-container">
 
 `.Name` represents the file name without the ".next" extension.
 
 </div>
 
-###### .Path {#user-content-Object_File__Path}
+###### .Path {#user-content-Object_File\_\_Path}
+
 <div className="property-container">
 
 `.Path` represents the file full path.
@@ -1541,7 +1624,8 @@ It can be multiple lines.
 
 `Import` represents a import declaration in a [File](#user-content-Object_File).
 
-###### .Comment {#user-content-Object_Import__Comment}
+###### .Comment {#user-content-Object_Import\_\_Comment}
+
 <div className="property-container">
 
 `.Comment` represents the line [Comment](#user-content-Object_Comment) of the import declaration.
@@ -1566,7 +1650,8 @@ This is a line comment for the import.
 
 </div>
 
-###### .Doc {#user-content-Object_Import__Doc}
+###### .Doc {#user-content-Object_Import\_\_Doc}
+
 <div className="property-container">
 
 `.Doc` represents the [Doc](#user-content-Object_Doc) comment of the import.
@@ -1592,7 +1677,8 @@ It can be multiline.
 
 </div>
 
-###### .File {#user-content-Object_Import__File}
+###### .File {#user-content-Object_Import\_\_File}
+
 <div className="property-container">
 
 `.File` represents the [File](#user-content-Object_File) object that contains the import declaration.
@@ -1621,7 +1707,8 @@ file1.next
 
 </div>
 
-###### .FullPath {#user-content-Object_Import__FullPath}
+###### .FullPath {#user-content-Object_Import\_\_FullPath}
+
 <div className="property-container">
 
 `.FullPath` represents the full path of the import.
@@ -1644,7 +1731,8 @@ Output:
 
 </div>
 
-###### .Path {#user-content-Object_Import__Path}
+###### .Path {#user-content-Object_Import\_\_Path}
+
 <div className="property-container">
 
 `.Path` represents the import path.
@@ -1667,7 +1755,8 @@ path/to/file.next
 
 </div>
 
-###### .Target {#user-content-Object_Import__Target}
+###### .Target {#user-content-Object_Import\_\_Target}
+
 <div className="property-container">
 
 `.Target` represents the imported [File](#user-content-Object_File) object.
@@ -1700,7 +1789,8 @@ file3.next
 
 `Imports` holds a slice of [Import](#user-content-Object_Import) declarations and the declaration that contains the imports.
 
-###### .Decl {#user-content-Object_Imports__Decl}
+###### .Decl {#user-content-Object_Imports\_\_Decl}
+
 <div className="property-container">
 
 `.Decl` represents the declaration [Node](#user-content-Object_Common_Node) that contains the imports. Currently, it is one of following types:
@@ -1734,13 +1824,16 @@ package a;
 {{range this.Imports.List}}
 {{.Decl.Name}}
 {{end}}
+
 ```
 
 Output (for file1.next):
 
 ```
+
 file1
-```
+
+````
 </TabItem>
 
 <TabItem value="package">
@@ -1750,20 +1843,22 @@ file1
 {{range this.Imports.List}}
 {{.Decl.Name}}
 {{end}}
-```
+````
 
 Output:
 
 ```
 a
 ```
+
 </TabItem>
 
 </Tabs>
 
 </div>
 
-###### .List {#user-content-Object_Imports__List}
+###### .List {#user-content-Object_Imports\_\_List}
+
 <div className="property-container">
 
 `.List` represents a slice of [Import](#user-content-Object_Import) declarations: **\[[Import](#user-content-Object_Import)\]**.
@@ -1772,7 +1867,8 @@ Example: see [Object/Imports.Decl](#user-content-Object_Imports__Decl).
 
 </div>
 
-###### .TrimmedList {#user-content-Object_Imports__TrimmedList}
+###### .TrimmedList {#user-content-Object_Imports\_\_TrimmedList}
+
 <div className="property-container">
 
 `.TrimmedList` represents a slice of unique imports sorted by package name.
@@ -1806,14 +1902,16 @@ b
 
 `Interface` (extends [Decl](#user-content-Object_Common_Decl)) represents an interface declaration.
 
-###### .Methods {#user-content-Object_Interface__Methods}
+###### .Methods {#user-content-Object_Interface\_\_Methods}
+
 <div className="property-container">
 
 `.Methods` represents the list of interface methods.
 
 </div>
 
-###### .Type {#user-content-Object_Interface__Type}
+###### .Type {#user-content-Object_Interface\_\_Type}
+
 <div className="property-container">
 
 `.Type` represents [InterfaceType](#user-content-Object_InterfaceType) of the interface.
@@ -1824,21 +1922,24 @@ b
 
 `InterfaceMethod` (extends [Node](#user-content-Object_Common_Node)) represents an interface method declaration.
 
-###### .Comment {#user-content-Object_InterfaceMethod__Comment}
+###### .Comment {#user-content-Object_InterfaceMethod\_\_Comment}
+
 <div className="property-container">
 
 `.Comment` represents the line [Comment](#user-content-Object_Comment) of the interface method declaration.
 
 </div>
 
-###### .Decl {#user-content-Object_InterfaceMethod__Decl}
+###### .Decl {#user-content-Object_InterfaceMethod\_\_Decl}
+
 <div className="property-container">
 
 `.Decl` represents the interface that contains the method.
 
 </div>
 
-###### .Index {#user-content-Object_InterfaceMethod__Index}
+###### .Index {#user-content-Object_InterfaceMethod\_\_Index}
+
 <div className="property-container">
 
 `.Index` represents the index of the interface method in the interface.
@@ -1854,7 +1955,8 @@ interface Shape {
 
 </div>
 
-###### .IsFirst {#user-content-Object_InterfaceMethod__IsFirst}
+###### .IsFirst {#user-content-Object_InterfaceMethod\_\_IsFirst}
+
 <div className="property-container">
 
 `.IsFirst` reports whether the method is the first method in the interface.
@@ -1870,7 +1972,8 @@ interface Shape {
 
 </div>
 
-###### .IsLast {#user-content-Object_InterfaceMethod__IsLast}
+###### .IsLast {#user-content-Object_InterfaceMethod\_\_IsLast}
+
 <div className="property-container">
 
 `.IsLast` reports whether the method is the last method in the interface type.
@@ -1886,14 +1989,16 @@ interface Shape {
 
 </div>
 
-###### .Params {#user-content-Object_InterfaceMethod__Params}
+###### .Params {#user-content-Object_InterfaceMethod\_\_Params}
+
 <div className="property-container">
 
 `.Params` represents the [Fields](#user-content-Object_Common_Fields) of [InterfaceMethodParam](#user-content-Object_InterfaceMethodParam).
 
 </div>
 
-###### .Result {#user-content-Object_InterfaceMethod__Result}
+###### .Result {#user-content-Object_InterfaceMethod\_\_Result}
+
 <div className="property-container">
 
 `.Result` represents the [InterfaceMethodResult](#user-content-Object_InterfaceMethodResult) of the method.
@@ -1904,7 +2009,8 @@ interface Shape {
 
 `InterfaceMethodParam` (extends [Node](#user-content-Object_Common_Node)) represents an interface method parameter declaration.
 
-###### .Index {#user-content-Object_InterfaceMethodParam__Index}
+###### .Index {#user-content-Object_InterfaceMethodParam\_\_Index}
+
 <div className="property-container">
 
 `.Index` represents the index of the interface method parameter in the method.
@@ -1919,7 +2025,8 @@ interface Shape {
 
 </div>
 
-###### .IsFirst {#user-content-Object_InterfaceMethodParam__IsFirst}
+###### .IsFirst {#user-content-Object_InterfaceMethodParam\_\_IsFirst}
+
 <div className="property-container">
 
 `.IsFirst` reports whether the parameter is the first parameter in the method.
@@ -1934,7 +2041,8 @@ interface Shape {
 
 </div>
 
-###### .IsLast {#user-content-Object_InterfaceMethodParam__IsLast}
+###### .IsLast {#user-content-Object_InterfaceMethodParam\_\_IsLast}
+
 <div className="property-container">
 
 `.IsLast` reports whether the parameter is the last parameter in the method. Example:
@@ -1947,14 +2055,16 @@ interface Shape {
 
 </div>
 
-###### .Method {#user-content-Object_InterfaceMethodParam__Method}
+###### .Method {#user-content-Object_InterfaceMethodParam\_\_Method}
+
 <div className="property-container">
 
 `.Method` represents the [InterfaceMethod](#user-content-Object_InterfaceMethod) that contains the parameter.
 
 </div>
 
-###### .Type {#user-content-Object_InterfaceMethodParam__Type}
+###### .Type {#user-content-Object_InterfaceMethodParam\_\_Type}
+
 <div className="property-container">
 
 `.Type` represents the [Type](#user-content-Object_Common_Type) of the parameter.
@@ -1969,14 +2079,16 @@ interface Shape {
 
 `InterfaceMethodResult` represents an interface method result.
 
-###### .Method {#user-content-Object_InterfaceMethodResult__Method}
+###### .Method {#user-content-Object_InterfaceMethodResult\_\_Method}
+
 <div className="property-container">
 
 `.Method` represents the [InterfaceMethod](#user-content-Object_InterfaceMethod) that contains the result.
 
 </div>
 
-###### .Type {#user-content-Object_InterfaceMethodResult__Type}
+###### .Type {#user-content-Object_InterfaceMethodResult\_\_Type}
+
 <div className="property-container">
 
 `.Type` represents the underlying [Type](#user-content-Object_Common_Type) of the result.
@@ -1999,14 +2111,16 @@ interface Shape {
 
 `MapType` represents a map [Type](#user-content-Object_Common_Type).
 
-###### .ElemType {#user-content-Object_MapType__ElemType}
+###### .ElemType {#user-content-Object_MapType\_\_ElemType}
+
 <div className="property-container">
 
 `.ElemType` represents the element [Type](#user-content-Object_Common_Type) of the map.
 
 </div>
 
-###### .KeyType {#user-content-Object_MapType__KeyType}
+###### .KeyType {#user-content-Object_MapType\_\_KeyType}
+
 <div className="property-container">
 
 `.KeyType` represents the key [Type](#user-content-Object_Common_Type) of the map.
@@ -2017,7 +2131,8 @@ interface Shape {
 
 `Package` (extends [Decl](#user-content-Object_Common_Decl)) represents a Next package.
 
-###### .Contains {#user-content-Object_Package__Contains}
+###### .Contains {#user-content-Object_Package\_\_Contains}
+
 <div className="property-container">
 
 `.Contains` reports whether the package contains the given [Type](#user-content-Object_Common_Type) or [Symbol](#user-content-Object_Common_Symbol). If the current package is nil, it always returns true.
@@ -2035,35 +2150,40 @@ Example:
 
 </div>
 
-###### .Decls {#user-content-Object_Package__Decls}
+###### .Decls {#user-content-Object_Package\_\_Decls}
+
 <div className="property-container">
 
 `.Decls` represents the top-level declarations in the package.
 
 </div>
 
-###### .Files {#user-content-Object_Package__Files}
+###### .Files {#user-content-Object_Package\_\_Files}
+
 <div className="property-container">
 
 `.Files` represents the all declared file objects in the package.
 
 </div>
 
-###### .Imports {#user-content-Object_Package__Imports}
+###### .Imports {#user-content-Object_Package\_\_Imports}
+
 <div className="property-container">
 
 `.Imports` represents the package's import declarations.
 
 </div>
 
-###### .Name {#user-content-Object_Package__Name}
+###### .Name {#user-content-Object_Package\_\_Name}
+
 <div className="property-container">
 
 `.Name` represents the package name string.
 
 </div>
 
-###### .Types {#user-content-Object_Package__Types}
+###### .Types {#user-content-Object_Package\_\_Types}
+
 <div className="property-container">
 
 `.Types` represents the all declared types in the package.
@@ -2093,7 +2213,8 @@ Currently, the following primitive types are supported:
 
 `Struct` (extends [Decl](#user-content-Object_Common_Decl)) represents a struct declaration.
 
-###### .Fields {#user-content-Object_Struct__Fields}
+###### .Fields {#user-content-Object_Struct\_\_Fields}
+
 <div className="property-container">
 
 `.Fields` represents the [Fields](#user-content-Object_Common_Fields) of [StructField](#user-content-Object_StructField).
@@ -2122,7 +2243,8 @@ y int
 
 </div>
 
-###### .Type {#user-content-Object_Struct__Type}
+###### .Type {#user-content-Object_Struct\_\_Type}
+
 <div className="property-container">
 
 `.Type` represents [StructType](#user-content-Object_StructType) of the struct.
@@ -2133,21 +2255,24 @@ y int
 
 `StructField` (extends [Node](#user-content-Object_Common_Node)) represents a struct field declaration.
 
-###### .Comment {#user-content-Object_StructField__Comment}
+###### .Comment {#user-content-Object_StructField\_\_Comment}
+
 <div className="property-container">
 
 `.Comment` represents the line [Comment](#user-content-Object_Comment) of the struct field declaration.
 
 </div>
 
-###### .Decl {#user-content-Object_StructField__Decl}
+###### .Decl {#user-content-Object_StructField\_\_Decl}
+
 <div className="property-container">
 
 `.Decl` represents the [Struct](#user-content-Object_Struct) that contains the field.
 
 </div>
 
-###### .Index {#user-content-Object_StructField__Index}
+###### .Index {#user-content-Object_StructField\_\_Index}
+
 <div className="property-container">
 
 `.Index` represents the index of the struct field in the struct type.
@@ -2163,7 +2288,8 @@ struct Point {
 
 </div>
 
-###### .IsFirst {#user-content-Object_StructField__IsFirst}
+###### .IsFirst {#user-content-Object_StructField\_\_IsFirst}
+
 <div className="property-container">
 
 `.IsFirst` reports whether the field is the first field in the struct type.
@@ -2179,7 +2305,8 @@ struct Point {
 
 </div>
 
-###### .IsLast {#user-content-Object_StructField__IsLast}
+###### .IsLast {#user-content-Object_StructField\_\_IsLast}
+
 <div className="property-container">
 
 `.IsLast` reports whether the field is the last field in the struct type.
@@ -2195,7 +2322,8 @@ struct Point {
 
 </div>
 
-###### .Type {#user-content-Object_StructField__Type}
+###### .Type {#user-content-Object_StructField\_\_Type}
+
 <div className="property-container">
 
 `.Type` represents the [Type](#user-content-Object_Common_Type) of the struct field.
@@ -2218,14 +2346,16 @@ struct Point {
 
 `UsedType` represents a used [Type](#user-content-Object_Common_Type) in a file.
 
-###### .File {#user-content-Object_UsedType__File}
+###### .File {#user-content-Object_UsedType\_\_File}
+
 <div className="property-container">
 
 `.File` represents the [File](#user-content-Object_File) where the type is used.
 
 </div>
 
-###### .Type {#user-content-Object_UsedType__Type}
+###### .Type {#user-content-Object_UsedType\_\_Type}
+
 <div className="property-container">
 
 `.Type` represents the underlying [Type](#user-content-Object_Common_Type).
@@ -2251,7 +2381,8 @@ The type of the `user` field is a `UsedType` with the underlying type `StructTyp
 
 `Value` represents a value for a const declaration or an enum member.
 
-###### .Any {#user-content-Object_Value__Any}
+###### .Any {#user-content-Object_Value\_\_Any}
+
 <div className="property-container">
 
 `.Any` represents the underlying value of the constant. It returns one of the following types:
@@ -2266,14 +2397,16 @@ The type of the `user` field is a `UsedType` with the underlying type `StructTyp
 
 </div>
 
-###### .Enum {#user-content-Object_Value__Enum}
+###### .Enum {#user-content-Object_Value\_\_Enum}
+
 <div className="property-container">
 
 `.Enum` represents the enum object that contains the value if it is an enum member. Otherwise, it returns nil.
 
 </div>
 
-###### .IsFirst {#user-content-Object_Value__IsFirst}
+###### .IsFirst {#user-content-Object_Value\_\_IsFirst}
+
 <div className="property-container">
 
 `.IsFirst` reports whether the value is the first member of the enum type.
@@ -2290,7 +2423,8 @@ enum Color {
 
 </div>
 
-###### .IsLast {#user-content-Object_Value__IsLast}
+###### .IsLast {#user-content-Object_Value\_\_IsLast}
+
 <div className="property-container">
 
 `.IsLast` reports whether the value is the last member of the enum type.
@@ -2307,14 +2441,16 @@ enum Color {
 
 </div>
 
-###### .String {#user-content-Object_Value__String}
+###### .String {#user-content-Object_Value\_\_String}
+
 <div className="property-container">
 
 `.String` represents the string representation of the value.
 
 </div>
 
-###### .Type {#user-content-Object_Value__Type}
+###### .Type {#user-content-Object_Value\_\_Type}
+
 <div className="property-container">
 
 `.Type` represents the [PrimitiveType](#user-content-Object_PrimitiveType) of the value.
@@ -2325,10 +2461,10 @@ enum Color {
 
 `VectorType` represents a vector [Type](#user-content-Object_Common_Type).
 
-###### .ElemType {#user-content-Object_VectorType__ElemType}
+###### .ElemType {#user-content-Object_VectorType\_\_ElemType}
+
 <div className="property-container">
 
 `.ElemType` represents the element [Type](#user-content-Object_Common_Type) of the vector.
 
 </div>
-

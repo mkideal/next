@@ -6,8 +6,8 @@
 
 {{/* next/ts/import: Generates an import statement for a module */}}
 {{- define "next/ts/import" -}}
-import * as {{.File.Name}} from './{{.File.Name}}';
-{{- end}}
+import * as {{.Target.Name}} from './{{.Target.Name}}';
+{{end}}
 
 {{/* next/ts/doc: Generates documentation comments for TypeScript (uses C-like doc style) */}}
 {{- define "next/ts/doc" -}}
@@ -22,48 +22,39 @@ import * as {{.File.Name}} from './{{.File.Name}}';
 {{next .Type -}}
 {{- end}}
 
+{{- define "next/ts/type:literal.suffix" -}}
+    {{- if eq .Kind.String "Int64" -}}
+        n
+    {{- end -}}
+{{- end}}
+
 {{/* next/ts/const: Generates a constant declaration with type annotation */}}
 {{- define "next/ts/const" -}}
-{{next .Doc -}}
-export const {{render "const:name" .}}: {{next .Type}} = {{render "value" .Value}};{{next .Comment}}
-{{- end}}
+{{- next .Doc -}}
+export const {{render "const:name" .}}: {{next .Type}} = {{next .Value}};{{next .Comment}}
+{{end}}
 
 {{/* next/ts/enum: Generates an enum declaration */}}
 {{- define "next/ts/enum" -}}
-{{next .Doc -}}
+{{- next .Doc -}}
 export enum {{next .Type}} {
-    {{- next .Members}}
+    {{next .Members | align -}}
 }
-{{- end}}
-
-{{/* next/ts/enum.members: Generates enum members */}}
-{{- define "next/ts/enum.members" -}}
-{{- $n := len .List -}}
-{{- range $i, $member := .List}}
-    {{next $member -}}
 {{end}}
-{{- end}}
 
 {{/* next/ts/enum.member: Generates an individual enum member */}}
 {{- define "next/ts/enum.member" -}}
-{{next .Doc -}}
-{{render "enum.member:name" .}} = {{.Value}}{{next .Comment}}{{if not .IsLast}},{{end}}
-{{- end}}
+{{- next .Doc -}}
+{{- render "enum.member:name" .}} = {{next .Value}}{{if not .IsLast}},{{end}}{{next .Comment}}
+{{end}}
 
 {{/* next/ts/struct: Generates a class declaration */}}
 {{- define "next/ts/struct" -}}
-{{next .Doc -}}
+{{- next .Doc -}}
 export class {{next .Type}} {
-    {{- next .Fields}}
+    {{next .Fields | align -}}
 }
-{{- end}}
-
-{{/* next/ts/struct.fields: Generates field declarations for a class */}}
-{{- define "next/ts/struct.fields" -}}
-{{range .List}}
-    {{next . | align}}
-{{- end}}
-{{- end}}
+{{end}}
 
 {{/* next/ts/struct.field: Generates a single field declaration with JSDoc */}}
 {{- define "next/ts/struct.field" -}}
@@ -72,24 +63,17 @@ export class {{next .Type}} {
 {{.Doc.Format " * " -}}
 {{_}} * @type { {{next .Type}} }
  */
-{{end -}}
-{{render "struct.field:name" .}}: {{next .Type}} = {{render "type:zero" .Type}};{{next .Comment}}
-{{- end}}
+{{end}}
+{{- render "struct.field:name" .}}: {{next .Type}} = {{render "type:zero" .Type}};{{next .Comment}}
+{{end}}
 
 {{/* next/ts/interface: Generates an interface declaration */}}
 {{- define "next/ts/interface" -}}
-{{next .Doc}}
+{{- next .Doc -}}
 export interface {{next .Type}} {
-    {{- next .Methods}}
+    {{next .Methods | align -}}
 }
-{{- end}}
-
-{{/* next/ts/interface.methods: Generates method declarations for an interface */}}
-{{- define "next/ts/interface.methods" -}}
-{{range .List}}
-    {{next . | align}}
-{{- end}}
-{{- end}}
+{{end}}
 
 {{/* next/ts/interface.method: Generates a single method declaration with JSDoc */}}
 {{- define "next/ts/interface.method" -}}
@@ -106,13 +90,13 @@ export interface {{next .Type}} {
 {{_}} * @returns { {{next .Result.Type}} }
 {{- end}}
  */
-{{end -}}
-{{render "interface.method:name" .}}({{next .Params}}): {{next .Result.Type}};{{next .Comment}}
+{{end}}
+{{- render "interface.method:name" .}}({{next .Params}}): {{next .Result.Type}};{{next .Comment}}
 {{- end}}
 
 {{/* next/ts/interface.method.param: Generates a parameter for an interface method */}}
 {{- define "next/ts/interface.method.param" -}}
-{{render "interface.method.param:name" .}}: {{next .Type}}
+{{- render "interface.method.param:name" .}}: {{next .Type}}
 {{- end}}
 
 {{/* next/ts/type:zero: Generates a zero value for a given type */}}

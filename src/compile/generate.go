@@ -460,6 +460,8 @@ func gen[T Decl](tc *templateContext, t *template.Template, decl T, content []by
 	if err := tc.reset(t, reflect.ValueOf(decl)); err != nil {
 		return err
 	}
+	tc.push(filepath.Dir(t.ParseName))
+	defer tc.pop()
 
 	// Resolve meta data
 	meta, err := resolveMeta(tc, t, string(content))
@@ -482,9 +484,8 @@ func gen[T Decl](tc *templateContext, t *template.Template, decl T, content []by
 	}
 
 	// Execute the template with the template context
-	tc.pushPwd(filepath.Dir(t.ParseName))
-	defer tc.popPwd()
-	if err := t.Execute(&tc.buf, tc); err != nil {
+	buf := tc.pc().buf
+	if err := t.Execute(buf, tc); err != nil {
 		return err
 	}
 
@@ -498,7 +499,7 @@ func gen[T Decl](tc *templateContext, t *template.Template, decl T, content []by
 	if !filepath.IsAbs(path) {
 		path = filepath.Join(tc.dir, path)
 	}
-	if err := tc.compiler.platform.WriteFile(path, []byte(tc.buf.String())); err != nil {
+	if err := tc.compiler.platform.WriteFile(path, []byte(buf.String())); err != nil {
 		return fmt.Errorf("failed to write file %q: %v", path, err)
 	}
 

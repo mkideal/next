@@ -10,7 +10,7 @@ from typing import List, Dict, Any
 
 {{if .TrimmedList}}
 {{- range .TrimmedList}}
-{{next .}}
+{{- next .}}
 {{- end}}
 {{end}}
 {{- end}}
@@ -18,7 +18,7 @@ from typing import List, Dict, Any
 {{/* next/python/import: Generates an import statement for a specific module */}}
 {{- define "next/python/import" -}}
 from {{.File.Package.Name}} import *
-{{- end}}
+{{end}}
 
 {{/* next/python/comment: Generates line comments for Python */}}
 {{- define "next/python/comment" -}}
@@ -34,64 +34,55 @@ from {{.File.Package.Name}} import *
 
 {{/* next/python/const: Generates a constant declaration */}}
 {{- define "next/python/const" -}}
-{{next .Doc}}{{render "const:name" . | snakeCase | upper}} = {{.Value}}{{next .Comment}}
-{{- end}}
+{{- next .Doc -}}
+{{- render "const:name" . | snakeCase | upper}} = {{next .Value}}{{next .Comment}}
+{{end}}
 
 {{/* next/python/enum: Generates an enum class declaration */}}
 {{- define "next/python/enum" -}}
-{{next .Doc}}class {{next .Type}}:
-    {{- next .Members}}
-{{- end}}
+{{- next .Doc -}}
+class {{next .Type}}:
+    {{next .Members | align -}}
+{{end}}
 
 {{/* next/python/enum.member: Generates an enum member */}}
 {{- define "next/python/enum.member" -}}
-{{next .Doc}}{{render "enum.member:name" .}} = {{.Value}}{{next .Comment}}
-{{- end}}
+{{- next .Doc -}}
+{{- render "enum.member:name" .}} = {{next .Value}}{{next .Comment}}
+{{end}}
 
 {{/* next/python/enum.member:name: Generates the name for an enum member */}}
 {{- define "next/python/enum.member:name" -}}
-{{.Name | snakeCase | upper}}
+{{- .Name | snakeCase | upper}}
 {{- end}}
 
 {{/* next/python/struct: Generates a class declaration */}}
 {{- define "next/python/struct" -}}
-{{next .Doc}}class {{next .Type}}:
+{{- next .Doc -}}
+class {{next .Type}}:
     def __init__(self):
-        {{- next .Fields}}
-{{- end}}
-
-{{/* next/python/struct.fields: Generates field declarations for a class */}}
-{{- define "next/python/struct.fields" -}}
-{{range .List}}
-        {{next . | align}}
-{{- end}}
-{{- end}}
+        {{next .Fields | align -}}
+{{end}}
 
 {{/* next/python/struct.field: Generates a class field declaration */}}
 {{- define "next/python/struct.field" -}}
-{{next .Doc -}}
+{{- next .Doc -}}
 self.{{render "struct.field:name" .}} = {{render "type:zero" .Type}}{{next .Comment}}
-{{- end}}
+{{end}}
 
 {{/* next/python/struct.field:name: Generates the name for a class field */}}
 {{- define "next/python/struct.field:name" -}}
-{{.Name | snakeCase}}
+{{- .Name | snakeCase}}
 {{- end}}
 
 {{/* next/python/interface: Generates an abstract base class declaration */}}
 {{- define "next/python/interface" -}}
-{{next .Doc}}from abc import ABC, abstractmethod
+{{- next .Doc -}}
+from abc import ABC, abstractmethod
 
 class {{next .Type}}(ABC):
-    {{- next .Methods}}
-{{- end}}
-
-{{/* next/python/interface.methods: Generates method declarations for an interface */}}
-{{- define "next/python/interface.methods" -}}
-{{range .List}}
-    {{next . | align}}
-{{- end}}
-{{- end}}
+    {{next .Methods | align -}}
+{{end}}
 
 {{/* next/python/interface.method: Generates an abstract method declaration */}}
 {{- define "next/python/interface.method" -}}
@@ -117,12 +108,12 @@ def {{render "interface.method:name" .}}(self{{if .Params.List}}, {{next .Params
 
 {{/* next/python/interface.method:name: Generates the name for an interface method */}}
 {{- define "next/python/interface.method:name" -}}
-{{snakeCase .Name}}
+{{- snakeCase .Name}}
 {{- end}}
 
 {{/* next/python/interface.method.param: Generates a parameter for an interface method */}}
 {{- define "next/python/interface.method.param" -}}
-{{render "interface.method.param:name" .}}: {{next .Type}}
+{{- render "interface.method.param:name" .}}: {{next .Type}}
 {{- end}}
 
 {{/* next/python/interface.method.result: Generates the return type for an interface method */}}
@@ -132,10 +123,10 @@ def {{render "interface.method:name" .}}(self{{if .Params.List}}, {{next .Params
 
 {{/* next/python/used.type: Generates a fully qualified type name */}}
 {{- define "next/python/used.type" -}}
-{{- if and (not (.File.Package.Contains .Type)) (.Type.Decl.File) -}}
-{{.Type.Decl.File.Package.Name}}.
-{{- end -}}
-{{next .Type -}}
+{{- if and (not (.File.Package.Contains .Type)) (.Type.Decl.File)}}
+{{- .Type.Decl.File.Package.Name}}.
+{{- end}}
+{{- next .Type}}
 {{- end}}
 
 {{/* next/python/type:zero: Generates a zero value for a given type */}}

@@ -5,9 +5,6 @@ package com.example.c;
 import java.util.List;
 import java.util.Map;
 import java.util.Arrays;
-import com.example.a.*;
-import com.example.b.*;
-
 
 public class User {
     private UserType type;
@@ -100,6 +97,6 @@ public class User {
         this.scores = scores;
     }
 
-
-    public User() {}
+    public User() {
+    }
 }

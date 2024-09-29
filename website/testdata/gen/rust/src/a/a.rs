@@ -4,6 +4,7 @@ use std::vec::Vec;
 use std::boxed::Box;
 use std::collections::HashMap;
 use std::any::Any;
+
 /// XX constant
 /// XX value 2
 pub const X_X: i32 = 1; // XX value
@@ -58,6 +59,7 @@ pub enum Color {
     Magenta = 5,
     White = 7,
 }
+
 impl Color {
     pub fn value(&self) -> i32 {
         match self {
@@ -93,6 +95,7 @@ pub enum FilePermission {
     /// 4 + 32 + 256 + 2048 + 16384 + 131072 + 1048576 + 8388608 + 67108864
     All = 76695844,
 }
+
 impl FilePermission {
     pub fn value(&self) -> i32 {
         match self {
@@ -126,6 +129,7 @@ pub enum Day {
     Weekday = 31,
     Weekend = 96,
 }
+
 impl Day {
     pub fn value(&self) -> i32 {
         match self {
@@ -161,6 +165,7 @@ pub enum Month {
     Q3 = 448,
     Q4 = 3584,
 }
+
 impl Month {
     pub fn value(&self) -> i32 {
         match self {
@@ -195,6 +200,7 @@ pub enum IotatestEnum {
     F = 1 // 1,
     G = 0 // 0,
 }
+
 impl IotatestEnum {
     pub fn value(&self) -> i32 {
         match self {

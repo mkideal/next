@@ -30,6 +30,6 @@ public class Contract {
         this.data = data;
     }
 
-
-    public Contract() {}
+    public Contract() {
+    }
 }

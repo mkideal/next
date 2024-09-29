@@ -31,27 +31,27 @@ option csharp_namespace = "{{$value}}";
 {{- define "next/protobuf/imports" -}}
 {{- if this.UsedKinds.Contains "any"}}
 import "google/protobuf/any.proto";
-{{- end}}
+{{end}}
 
 {{- range .List}}
-{{next .}}
+{{- next .}}
 {{- end}}
 {{- end}}
 
 {{/* next/protobuf/import: Generates an import statement for a specific .proto file */}}
 {{- define "next/protobuf/import" -}}
-import "{{.File.Name}}.proto";
-{{- end}}
+import "{{.Target.Name}}.proto";
+{{end}}
 
 {{/* next/protobuf/consts: Skips constant declarations as they're not directly supported in Protocol Buffers */}}
 {{- define "next/protobuf/consts"}}
-// Constants Skipped.
+// {{len .List}} Constant{{if gt (len .List) 1}}s{{end}} skipped.
 {{end -}}
 
 {{/* next/protobuf/enum: Generates an enum declaration */}}
 {{- define "next/protobuf/enum" -}}
 {{- if .MemberType.Kind.IsInteger -}}
-{{next .Doc}}enum {{next .Type}} {
+{{- next .Doc}}enum {{next .Type}} {
     {{- $hasZero := false -}}
     {{- range .Members.List}}
         {{- if eq .Value.Any 0 -}}
@@ -62,44 +62,46 @@ import "{{.File.Name}}.proto";
     {{- if not $hasZero}}
     {{next .Type | snakeCase | upper}}_UNSPECIFIED = 0;
     {{- end}}
-    {{- next .Members}}
+    {{next .Members | align -}}
 }
 {{- else -}}
 {{error "%s: enum type must be an integer" .Pos}}
 {{- end}}
-{{- end}}
+{{end}}
 
 {{/* next/protobuf/enum.member: Generates an enum member */}}
 {{- define "next/protobuf/enum.member" -}}
-{{next .Doc}}{{render "enum.member:name" .}} = {{.Value}};
-{{- end}}
+{{- next .Doc -}}
+{{- render "enum.member:name" .}} = {{next .Value}};
+{{end}}
 
 {{/* next/protobuf/enum.member:name: Generates the name for an enum member */}}
 {{- define "next/protobuf/enum.member:name" -}}
-{{.Name | snakeCase | upper}}
+{{- .Name | snakeCase | upper}}
 {{- end}}
 
 {{/* next/protobuf/struct: Generates a message declaration */}}
 {{- define "next/protobuf/struct" -}}
-{{next .Doc}}message {{next .Type}} {
-    {{- next .Fields}}
+{{- next .Doc -}}
+message {{next .Type}} {
+    {{next .Fields | align -}}
 }
-{{- end}}
+{{end}}
 
 {{/* next/protobuf/struct.field: Generates a field declaration within a message */}}
 {{- define "next/protobuf/struct.field" -}}
-{{next .Doc -}}
-    {{render "struct.field:type" .}} {{render "struct.field:name" .}} = {{render "struct.field:tag" .}}{{render "struct.field:deprecated" .}};{{next .Comment}}
-{{- end}}
+{{- next .Doc -}}
+{{render "struct.field:type" .}} {{render "struct.field:name" .}} = {{render "struct.field:tag" .}}{{render "struct.field:deprecated" .}};{{next .Comment}}
+{{end}}
 
 {{/* next/protobuf/struct.field:deprecated: Adds the deprecated option to a field if necessary */}}
 {{- define "next/protobuf/struct.field:deprecated" -}}
-{{if .Annotations.Contains "deprecated"}} [deprecated = true]{{end}}
+{{- if .Annotations.Contains "deprecated"}} [deprecated = true]{{end}}
 {{- end -}}
 
 {{/* next/protobuf/struct.field:tag: Assigns a sequential tag number based on field index */}}
 {{- define "next/protobuf/struct.field:tag" -}}
-{{add .Index 1}}
+{{- add .Index 1}}
 {{- end -}}
 
 {{/* next/protobuf/struct.field:type: Handles custom field type if specified */}}
@@ -128,15 +130,16 @@ import "{{.File.Name}}.proto";
 
 {{/* next/protobuf/interface: Generates a service declaration */}}
 {{- define "next/protobuf/interface" -}}
-{{next .Doc}}service {{next .Type}} {
-    {{- next .Methods}}
+{{- next .Doc -}}service {{next .Type}} {
+    {{next .Methods | align -}}
 }
 {{- end}}
 
 {{/* next/protobuf/interface.method: Generates an RPC method declaration within a service */}}
 {{- define "next/protobuf/interface.method" -}}
-{{next .Doc}}rpc {{render "interface.method:name" .}} ({{render "interface.method:param.type" .}}) returns ({{next .Result}});
-{{- end}}
+{{- next .Doc -}}
+rpc {{render "interface.method:name" .}} ({{render "interface.method:param.type" .}}) returns ({{next .Result}});
+{{end}}
 
 {{/* next/protobuf/interface.method:param.type: Determines the input type for an RPC method */}}
 {{- define "next/protobuf/interface.method:param.type" -}}

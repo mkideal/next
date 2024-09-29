@@ -2,8 +2,8 @@
 
 from typing import List, Dict, Any
 
-
 from b import *
+
 
 class TestEnum:
     A = 1

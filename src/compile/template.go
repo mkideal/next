@@ -154,6 +154,34 @@ type templateContextInfo struct {
 	ext      string // file extension for current language
 }
 
+type buffer struct {
+	lang string
+	id   string
+	data []byte
+}
+
+func (b *buffer) Write(p []byte) (int, error) {
+	b.data = append(b.data, p...)
+	return len(p), nil
+}
+
+func (b *buffer) String() string {
+	return string(b.data)
+}
+
+func (b *buffer) Bytes() []byte {
+	return b.data
+}
+
+func (b *buffer) Reset() {
+	b.data = b.data[:0]
+}
+
+type stack struct {
+	pwd string
+	buf *buffer
+}
+
 // @api(Context) related methods and properties are used to retrieve information, perform operations,
 // and generate code within the current code generator's context. These methods or properties are
 // called directly by name, for example:
@@ -167,8 +195,11 @@ type templateContextInfo struct {
 type templateContext struct {
 	templateContextInfo
 
-	// buf is used to buffer the generated content.
-	buf bytes.Buffer
+	// execution stacks
+	stacks   []*stack
+	trace    []string
+	maxStack int
+
 	// current decl object to be rendered: File, Const, Enum, Struct, Interface
 	decl reflect.Value
 
@@ -183,9 +214,6 @@ type templateContext struct {
 	}
 	initiated bool
 	funcs     template.FuncMap
-	stack     []string
-	pwds      []string
-	maxStack  int
 	meta      Meta
 }
 
@@ -481,20 +509,31 @@ func (tc *templateContext) reset(t *template.Template, d reflect.Value) error {
 	tc.entrypoint = t
 	tc.decl = d
 	tc.meta = make(Meta)
-	tc.buf.Reset()
+	tc.stacks = tc.stacks[:0]
 	return tc.lazyInit()
 }
 
-func (tc *templateContext) pushPwd(pwd string) {
-	tc.pwds = append(tc.pwds, pwd)
+var nextBuffer int
+
+func (tc *templateContext) push(pwd string) *stack {
+	nextBuffer++
+	tc.stacks = append(tc.stacks, &stack{pwd: pwd, buf: &buffer{
+		lang: tc.lang,
+		id:   fmt.Sprintf("%d:%d", len(tc.stacks), nextBuffer),
+	}})
+	return tc.pc()
 }
 
-func (tc *templateContext) popPwd() error {
-	if len(tc.pwds) == 0 {
-		return errors.New("empty pwd stack")
+func (tc *templateContext) pop() error {
+	if len(tc.stacks) == 0 {
+		return errors.New("no stacks")
 	}
-	tc.pwds = tc.pwds[:len(tc.pwds)-1]
+	tc.stacks = tc.stacks[:len(tc.stacks)-1]
 	return nil
+}
+
+func (tc *templateContext) pc() *stack {
+	return tc.stacks[len(tc.stacks)-1]
 }
 
 func (tc *templateContext) lazyInit() error {
@@ -560,10 +599,10 @@ func (tc *templateContext) error(msg string, args ...any) (string, error) {
 }
 
 func (tc *templateContext) pwd() (string, error) {
-	if len(tc.pwds) == 0 {
-		return "", errors.New("empty pwd stack")
+	if len(tc.stacks) == 0 {
+		return "", errors.New("no stacks")
 	}
-	return tc.pwds[len(tc.pwds)-1], nil
+	return tc.pc().pwd, nil
 }
 
 func (tc *templateContext) exist(name string) bool {
@@ -574,10 +613,11 @@ func (tc *templateContext) exist(name string) bool {
 }
 
 func (tc *templateContext) load(path string) (string, error) {
-	if len(tc.pwds) == 0 {
-		return "", errors.New("empty pwd stack")
+	if len(tc.stacks) == 0 {
+		return "", errors.New("no stacks")
 	}
-	path = filepath.Join(tc.pwds[len(tc.pwds)-1], path)
+	pwd := tc.pc().pwd
+	path = filepath.Join(pwd, path)
 	if _, err := tc.loadTemplate(path, nil); err != nil {
 		return "", err
 	}
@@ -630,21 +670,21 @@ func (tc *templateContext) resolveLangType(lang string, t any) (result string, e
 	case string:
 		p, ok := mappings[lang+"."+t]
 		if !ok {
-			return "", fmt.Errorf("type %q not found", t)
+			return "", fmt.Errorf("%s: type %q not found", tc.lang, t)
 		}
 		return p, nil
 
 	case *PrimitiveType:
 		p, ok := mappings[lang+"."+t.name]
 		if !ok {
-			return "", fmt.Errorf("type %q not found", t.name)
+			return "", fmt.Errorf("%s: type %q not found", tc.lang, t.name)
 		}
 		return p, nil
 
 	case *MapType:
 		p, ok := mappings[lang+".map"]
 		if !ok {
-			return "", fmt.Errorf("type %q not found", "map")
+			return "", fmt.Errorf("%s: type %q not found", tc.lang, "map")
 		}
 		if strings.Contains(p, "%K%") {
 			k, err := tc.next(t.KeyType)
@@ -665,7 +705,7 @@ func (tc *templateContext) resolveLangType(lang string, t any) (result string, e
 	case *VectorType:
 		p, ok := mappings[lang+".vector"]
 		if !ok {
-			return "", fmt.Errorf("type %q not found", "vector")
+			return "", fmt.Errorf("%s: type %q not found", tc.lang, "vector")
 		}
 		if strings.Contains(p, "%T%") {
 			e, err := tc.next(t.ElemType)
@@ -686,7 +726,7 @@ func (tc *templateContext) resolveLangType(lang string, t any) (result string, e
 	case *ArrayType:
 		p, ok := mappings[lang+".array"]
 		if !ok {
-			return "", fmt.Errorf("type %q not found", "array")
+			return "", fmt.Errorf("%s: type %q not found", tc.lang, "array")
 		}
 		if strings.Contains(p, "%T%") {
 			e, err := tc.next(t.ElemType)
@@ -799,7 +839,7 @@ func (tc *templateContext) loadTemplate(path string, fs FileSystem) (*template.T
 		stubContent := fmt.Sprintf(`{{%s .}}`, stubName)
 		stubFuncs := template.FuncMap{
 			stubName: func(data any) (string, error) {
-				return tc.execute(tt, path, data)
+				return tc.execute(tt, filepath.Dir(path), data)
 			},
 		}
 		stub, err := createTemplate(stubName, stubContent, tc.funcs, stubFuncs)
@@ -814,8 +854,8 @@ func (tc *templateContext) loadTemplate(path string, fs FileSystem) (*template.T
 	tc.cache.templates.Store(path, t)
 	// Execute the template but ignore the result. This is to ensure that the template is valid
 	// and immediately imports the templates it needs.
-	tc.pushPwd(filepath.Dir(path))
-	defer tc.popPwd()
+	tc.push(filepath.Dir(path))
+	defer tc.pop()
 	if err := t.Execute(io.Discard, tc); err != nil {
 		return nil, err
 	}
@@ -823,17 +863,13 @@ func (tc *templateContext) loadTemplate(path string, fs FileSystem) (*template.T
 }
 
 func (tc *templateContext) execute(tt *template.Template, path string, data any) (string, error) {
-	if path != "" {
-		tc.pushPwd(filepath.Dir(path))
-		defer tc.popPwd()
-	}
-	start := tc.buf.Len()
-	if err := tt.Execute(&tc.buf, data); err != nil {
+	stack := tc.push(path)
+	defer tc.pop()
+	buf := stack.buf
+	if err := tt.Execute(buf, data); err != nil {
 		return "", err
 	}
-	result := tc.buf.String()[start:]
-	tc.buf.Truncate(start)
-	return result, nil
+	return buf.String(), nil
 }
 
 const sep = "/"
@@ -926,10 +962,10 @@ func (tc *templateContext) super(obj Object, langs ...string) (string, error) {
 	if len(langs) == 1 {
 		lang = langs[0]
 	}
-	if len(tc.stack) == 0 {
+	if len(tc.trace) == 0 {
 		return "", fmt.Errorf("super not allowed in the template")
 	}
-	name := tc.stack[len(tc.stack)-1]
+	name := tc.trace[len(tc.trace)-1]
 	tc.compiler.Trace("super template %q", name)
 	names := tc.parseTemplateNames(lang, name)
 	if len(names) < 2 {
@@ -963,40 +999,24 @@ func (tc *templateContext) renderWithNames(names []string, data any) (result str
 			}
 		}
 	}()
-	if len(tc.stack) >= tc.maxStack {
+	if len(tc.trace) >= tc.maxStack {
 		return "", fmt.Errorf("npl: stack overflow")
 	}
 	tt, err := tc.lookupTemplate(names)
 	if err != nil {
 		return "", err
 	}
-	tc.stack = append(tc.stack, tt.Name())
+	tc.trace = append(tc.trace, tt.Name())
 	tc.compiler.Trace("rendering template %q", tt.Name())
 	defer func() {
-		tc.stack = tc.stack[:len(tc.stack)-1]
+		tc.trace = tc.trace[:len(tc.trace)-1]
 	}()
-	return tc.execute(tt, "", data)
+	return tc.execute(tt, tc.pc().pwd, data)
 }
 
 func (tc *templateContext) lastLine() string {
-	content := tc.buf.Bytes()
-	if len(content) == 0 {
-		return ""
-	}
-
-	lastLineEnd := len(content)
-	for i := len(content) - 1; i >= 0; i-- {
-		if content[i] == '\n' {
-			lastLineEnd = i + 1
-			break
-		}
-	}
-
-	return string(content[lastLineEnd:])
-}
-
-func (tc *templateContext) lastIndent() string {
-	content := tc.buf.Bytes()
+	buf := tc.pc().buf
+	content := buf.Bytes()
 	if len(content) == 0 {
 		return ""
 	}
@@ -1009,33 +1029,24 @@ func (tc *templateContext) lastIndent() string {
 		}
 	}
 
-	indentEnd := lastLineBegin
-	for indentEnd < len(content) && (content[indentEnd] == ' ' || content[indentEnd] == '\t') {
-		indentEnd++
-	}
-
-	return string(content[lastLineBegin:indentEnd])
+	return string(content[lastLineBegin:])
 }
 
-func (tc *templateContext) align(s string) string {
-	return tc.alignWith(s, "")
-}
-
-func (tc *templateContext) alignWith(text, prefix string) string {
+func (tc *templateContext) align(text string) string {
+	lastLine := tc.lastLine()
 	indent := strings.Map(func(r rune) rune {
 		if r != ' ' && r != '\t' {
 			return ' '
 		}
 		return r
-	}, tc.lastLine())
+	}, lastLine)
 	lines := strings.Split(text, "\n")
 	if len(lines) <= 1 {
-		return prefix + text
+		return text
 	}
-	lines[0] = prefix + lines[0]
 	for i := 1; i < len(lines); i++ {
-		if lines[i] != "" || i+1 == len(lines) {
-			lines[i] = indent + prefix + lines[i]
+		if lines[i] != "" {
+			lines[i] = indent + lines[i]
 		}
 	}
 	return strings.Join(lines, "\n")

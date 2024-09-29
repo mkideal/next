@@ -1,9 +1,9 @@
 <?php
 namespace c;
 
-
 use a;
 use b;
+
 const A = 1;
 const B = "hello";
 const C = 3.14;

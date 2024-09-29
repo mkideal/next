@@ -1,5 +1,5 @@
 @next(
-    go_package="github.com/next/next/testdata/gen/go/demo",
+    go_package="github.com/next/next/website/testdata/gen/go/demo",
     // Import statements for go_imports:
     // - "net/http" is imported for go_alias "net/http.HandlerFunc"
     // - "fmt" is imported to demonstrate importing with go type

@@ -9,9 +9,9 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-
 #include "a.h"
 #include "b.h"
+
 
 namespace demo::c {
 // Enums forward declarations
@@ -19,7 +19,7 @@ enum class Color;
 enum class LoginType;
 enum class UserType;
 
-// Classes forward declarations
+// Structs forward declarations
 class User;
 class LoginRequest;
 class LoginResponse;
@@ -47,9 +47,6 @@ enum class UserType : int32_t {
 
 class User {
 public:
-    User() = default;
-    ~User() = default;
-    
     UserType type = {UserType(0)};
     int id = {0};
     std::string username = {""};
@@ -59,29 +56,32 @@ public:
     std::vector<std::string> roles;
     std::unordered_map<std::string, std::string> metadata;
     std::array<int, 4> scores = {0};
+public:
+    User() = default;
+    ~User() = default;
 };
 
 class LoginRequest {
 public:
-    LoginRequest() = default;
-    ~LoginRequest() = default;
-    
     LoginType type = {LoginType(0)};
     std::string username = {""};
     std::string password = {""};
     std::string deviceId = {""};
     std::string twoFactorToken = {""};
+public:
+    LoginRequest() = default;
+    ~LoginRequest() = default;
 };
 
 class LoginResponse {
 public:
-    LoginResponse() = default;
-    ~LoginResponse() = default;
-    
     bool success = {false};
     std::string errorMessage = {""};
     std::string authenticationToken = {""};
     User user;
+public:
+    LoginResponse() = default;
+    ~LoginResponse() = default;
 };
 
 } // namespace demo::c

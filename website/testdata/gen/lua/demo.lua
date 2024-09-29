@@ -8,39 +8,34 @@ _M_.Version = "1.0.0" -- String constant
 _M_.MaxRetries = 3 -- Integer constant
 _M_.Timeout = 3000.0 -- Float constant expression
 
---[[
 -- Color represents different color options
 -- Values: Red (1), Green (2), Blue (4), Yellow (8)
---]]
-_M_.Color = {
+local Color = {
     RED = 1,
     GREEN = 2,
     BLUE = 4,
     YELLOW = 8
 }
+_M_.Color = Color
 
---[[
 -- MathConstants represents mathematical constants
---]]
-_M_.MathConstants = {
+local MathConstants = {
     PI = 3.14159265358979323846,
     E = 2.71828182845904523536
 }
+_M_.MathConstants = MathConstants
 
---[[
 -- OperatingSystem represents different operating systems
---]]
-_M_.OperatingSystem = {
+local OperatingSystem = {
     WINDOWS = "windows",
     LINUX = "linux",
     MAC_O_S = "macos",
     ANDROID = "android",
     I_O_S = "ios"
 }
+_M_.OperatingSystem = OperatingSystem
 
---[[
 -- User represents a user in the system
---]]
 local User = {}
 _M_.User = User
 User.__index = User
@@ -61,7 +56,6 @@ function User:new()
     return obj
 end
 
---[[
 -- uint64 represents a 64-bit unsigned integer.
 -- - In Go, it is aliased as uint64
 -- - In C++, it is aliased as uint64_t
@@ -70,7 +64,6 @@ end
 -- - In C#, it is aliased as ulong
 -- - In Protobuf, it is represented as uint64
 -- - In other languages, it is represented as a struct with low and high 32-bit integers.
---]]
 local Uint64 = {}
 _M_.Uint64 = Uint64
 Uint64.__index = Uint64
@@ -84,11 +77,9 @@ function Uint64:new()
     return obj
 end
 
---[[
 -- uint128 represents a 128-bit unsigned integer.
 -- - In rust, it is aliased as u128
 -- - In other languages, it is represented as a struct with low and high 64-bit integers.
---]]
 local Uint128 = {}
 _M_.Uint128 = Uint128
 Uint128.__index = Uint128
@@ -102,9 +93,7 @@ function Uint128:new()
     return obj
 end
 
---[[
 -- Contract represents a smart contract
---]]
 local Contract = {}
 _M_.Contract = Contract
 Contract.__index = Contract
@@ -118,10 +107,8 @@ function Contract:new()
     return obj
 end
 
---[[
 -- LoginRequest represents a login request message (type 101)
 -- @message annotation is a custom annotation that generates message types.
---]]
 local LoginRequest = {}
 _M_.LoginRequest = LoginRequest
 LoginRequest.__index = LoginRequest
@@ -130,9 +117,7 @@ function LoginRequest:new()
     local obj = {
         username = "",
         password = "",
-        --[[
         -- @optional annotation is a custom annotation that marks a field as optional.
-        --]]
         device = "",
         os = nil,
         timestamp = 0
@@ -141,9 +126,7 @@ function LoginRequest:new()
     return obj
 end
 
---[[
 -- LoginResponse represents a login response message (type 102)
---]]
 local LoginResponse = {}
 _M_.LoginResponse = LoginResponse
 LoginResponse.__index = LoginResponse
@@ -157,14 +140,11 @@ function LoginResponse:new()
     return obj
 end
 
---[[
 -- Reader provides reading functionality
---]]
 local Reader = {}
 _M_.Reader = Reader
 Reader.__index = Reader
 
---[[
 -- @next(error) applies to the method:
 -- - For Go: The method may return an error
 -- - For C++/Java: The method throws an exception
@@ -177,28 +157,20 @@ Reader.__index = Reader
 -- - For C++: The parameter is non-const, allowing modification
 -- - For other languages: This annotation may not have a direct effect,
 --   but indicates that the buffer content may be modified
---]]
 function Reader:read(buffer)
     error("Method not implemented")
 end
 
-
---[[
 -- HTTPClient provides HTTP request functionality
---]]
 local HTTPClient = {}
 _M_.HTTPClient = HTTPClient
 HTTPClient.__index = HTTPClient
 
---[[
 -- Available for all languages
---]]
 function HTTPClient:request(url, method, body)
     error("Method not implemented")
 end
-
 function HTTPClient:request2(url, method, body)
     error("Method not implemented")
 end
-
 return _M_

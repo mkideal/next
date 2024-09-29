@@ -349,7 +349,6 @@ next \
     -O python=gen/python -T python=templates/python \
     -O php=gen/php -T php=templates/php \
     -O rust=gen/rust/src -T rust=templates/rust \
-    -O swift=gen/swift -T swift=templates/swift \
     -O ts=gen/ts -T ts=templates/ts \
     -M "c.vector=void*" -M "c.map=void*" \
     next/source/dir/ # or source files
@@ -430,7 +429,7 @@ using {{render "package:namespace" .File.Package}};
 
 {{/* next/csharp/const: Generates a constant declaration */}}
 {{- define "next/csharp/const" -}}
-{{next .Doc}}public const {{next .Type}} {{render "const:name" .}} = {{.Value}};{{next .Comment}}
+{{next .Doc}}public const {{next .Type}} {{render "const:name" .}} = {{next .Value}};{{next .Comment}}
 {{- end}}
 
 {{/* next/csharp/enum: Generates an enum declaration */}}
@@ -443,7 +442,7 @@ using {{render "package:namespace" .File.Package}};
 
 {{/* next/csharp/enum.member: Generates an enum member */}}
 {{- define "next/csharp/enum.member" -}}
-{{next .Doc}}{{render "enum.member:name" .}} = {{.Value}},{{next .Comment}}
+{{next .Doc}}{{render "enum.member:name" .}} = {{next .Value}},{{next .Comment}}
 {{- end}}
 
 {{/* next/csharp/struct: Generates a class declaration (struct in C# is typically implemented as a class) */}}

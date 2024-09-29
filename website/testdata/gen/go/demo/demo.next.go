@@ -9,6 +9,7 @@ import "net/http"
 var _ = strconv.FormatInt
 var _ = (*fmt.Stringer)(nil)
 var _ = http.HandlerFunc
+
 const Version = "1.0.0" // String constant
 const MaxRetries = 3 // Integer constant
 const Timeout = 3000.0 // Float constant expression
@@ -109,16 +110,16 @@ type LoginRequest struct {
     Timestamp int64
 }
 
-func (LoginRequest) MessageType() int { return 101 }
 
+func (LoginRequest) MessageType() int { return 101 }
 // LoginResponse represents a login response message (type 102)
 type LoginResponse struct {
     Token string
     User User
 }
 
-func (LoginResponse) MessageType() int { return 102 }
 
+func (LoginResponse) MessageType() int { return 102 }
 // Reader provides reading functionality
 type Reader interface {
     // @next(error) applies to the method:

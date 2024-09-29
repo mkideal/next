@@ -5,9 +5,8 @@
 {{- define "csharp/struct.fields" -}}
 {{- super .}}
 {{- with .Decl.Annotations.message.type}}
-
-    public static int MessageType() { return {{.}}; }
-{{- end}}
+public static int MessageType() { return {{.}}; }
+{{end}}
 {{- end -}}
 
 {{head}}

@@ -109,7 +109,6 @@ export class LoginResponse {
 /**
  * Reader provides reading functionality
  */
-
 export interface Reader {
     /**
      * @next(error) applies to the method:
@@ -128,13 +127,11 @@ export interface Reader {
      * @param buffer { Uint8Array }
      * @returns { number }
      */
-    read(buffer: Uint8Array): number;
-}
+    read(buffer: Uint8Array): number;}
 
 /**
  * HTTPClient provides HTTP request functionality
  */
-
 export interface HTTPClient {
     /**
      * Available for all languages
@@ -144,6 +141,4 @@ export interface HTTPClient {
      * @param body { string }
      * @returns { string }
      */
-    request(url: string, method: string, body: string): string;
-    request2(url: string, method: string, body: string): string;
-}
+    request(url: string, method: string, body: string): string;request2(url: string, method: string, body: string): string;}

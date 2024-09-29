@@ -1,13 +1,13 @@
 {{/* next/go/file: Generates the package declaration and content for a Go file */}}
 {{- define "next/go/file" -}}
 package {{.Package.Name}}
-{{super . -}}
+{{super .}}
 {{- end}}
 
 {{/* next/go/imports: Generates import declarations and unused import statements */}}
 {{- define "next/go/imports" -}}
-{{render "imports:decl" . -}}
-{{render "imports:unused" . -}}
+{{- render "imports:decl" .}}
+{{- render "imports:unused" .}}
 {{- end}}
 
 {{/*
@@ -34,8 +34,7 @@ import "net/http"
 import "time"
 ```
 */}}
-{{- define "next/go/imports:decl" -}}
-{{_}}
+{{- define "next/go/imports:decl"}}
 import "strconv"
 {{- if .Decl.Annotations.next.go_imports}}
 {{- range (.Decl.Annotations.next.go_imports | split "," | map (trim | split "." | first | trimPrefix "*") | sort | uniq)}}
@@ -43,17 +42,16 @@ import "{{.}}"
 {{- end}}
 {{- end}}
 {{range .TrimmedList}}
-{{- if len .File.Package.Types}}
-{{next .}}
-{{_}}
+{{- if .Target.Package.Types}}
+{{- next .}}
 {{- end}}
 {{- end}}
 {{- end}}
 
 {{/* next/go/import: Generates an import statement for a specific package */}}
 {{- define "next/go/import" -}}
-import {{.File.Package.Name}} {{.File.Package.Annotations.next.go_package -}}
-{{- end}}
+import {{.Target.Package.Name}} "{{.Target.Package.Annotations.next.go_package}}"
+{{end}}
 
 {{/*
 next/go/imports:unused: Generates unused variable declarations for imports to prevent compiler errors.
@@ -91,7 +89,7 @@ var _ = {{$pkg}}.{{$val}}
 {{- end}}
 {{_}}
     {{- range .TrimmedList}}
-        {{- if len .File.Package.Types}}
+        {{- if len .Target.Package.Types}}
             {{- render "import:unused" .}}
 {{_}}
         {{- end}}
@@ -100,7 +98,7 @@ var _ = {{$pkg}}.{{$val}}
 
 {{/* next/go/import:unused: Generates an unused variable declaration for a specific import */}}
 {{- define "next/go/import:unused" -}}
-var _ = (*{{.File.Package.Name}}.{{next (index (.File.Package.Types) 0)}})(nil)
+var _ = (*{{.Target.Package.Name}}.{{next (index (.Target.Package.Types) 0)}})(nil)
 {{- end}}
 
 {{/* next/go/used.type: Generates a fully qualified type name, including package name if necessary */}}
@@ -111,17 +109,23 @@ var _ = (*{{.File.Package.Name}}.{{next (index (.File.Package.Types) 0)}})(nil)
 {{next .Type}}
 {{- end}}
 
+{{- define "next/go/consts"}}
+{{super .}}
+{{- end}}
+
 {{/* next/go/const: Generates a constant declaration */}}
 {{- define "next/go/const" -}}
-{{next .Doc}}const {{render "const:name" .}} = {{.Value}}{{next .Comment}}
-{{- end}}
+{{- next .Doc -}}
+const {{render "const:name" .}} = {{next .Value}}{{next .Comment}}
+{{end}}
 
 {{/* next/go/enum: Generates an enum type declaration, constants, and String method */}}
 {{- define "next/go/enum" -}}
-{{next .Doc}}type {{next .Type}} {{render "enum:member.type" .}}
+{{- next .Doc -}}
+type {{next .Type}} {{render "enum:member.type" .}}
 
 const (
-{{- next .Members}}
+    {{next .Members | align -}}
 )
 
 func (x {{next .Type}}) String() string {
@@ -141,28 +145,31 @@ func (x {{next .Type}}) String() string {
 {{- end}}
 {{- end}}
 }
-{{- end}}
+{{end}}
 
 {{/* next/go/enum.member: Generates a constant declaration for an enum member */}}
 {{- define "next/go/enum.member" -}}
-{{next .Doc}}{{render "enum.member:name" .}} = {{.Value}}{{next .Comment}}
-{{- end}}
+{{- next .Doc -}}
+{{- render "enum.member:name" .}} = {{next .Value}}{{next .Comment}}
+{{end}}
 
 {{- define "next/go/enum.member:name" -}}
-{{next .Decl.Type}}{{.Name | pascalCase}}
+{{- next .Decl.Type}}{{.Name | pascalCase}}
 {{- end}}
 
 {{/* next/go/struct: Generates a struct type declaration */}}
 {{- define "next/go/struct" -}}
-{{next .Doc}}type {{next .Type}} struct {
-    {{- next .Fields}}
+{{- next .Doc -}}
+type {{next .Type}} struct {
+    {{next .Fields | align -}}
 }
-{{- end}}
+{{end}}
 
 {{/* next/go/struct.field: Generates a struct field declaration */}}
 {{- define "next/go/struct.field" -}}
-{{next .Doc}}{{render "struct.field:name" .}} {{next .Type}}{{render "struct.field.tag" .}}{{next .Comment}}
-{{- end}}
+{{- next .Doc -}}
+{{- render "struct.field:name" .}} {{next .Type}}{{render "struct.field.tag" .}}{{next .Comment}}
+{{end}}
 
 {{/* next/go/struct.field.tag: Placeholder for generating struct field tags */}}
 {{- define "next/go/struct.field.tag" -}}
@@ -171,19 +178,20 @@ func (x {{next .Type}}) String() string {
 
 {{/* next/go/struct.field.name: Generates the name for a struct field */}}
 {{- define "next/go/struct.field:name" -}}
-{{.Name | pascalCase }}
+{{- .Name | pascalCase }}
 {{- end}}
 
 {{/* next/go/interface: Generates an interface type declaration */}}
 {{- define "next/go/interface" -}}
-{{next .Doc}}type {{next .Type}} interface {
-    {{- next .Methods}}
+{{- next .Doc -}}
+type {{next .Type}} interface {
+    {{next .Methods | align -}}
 }
-{{- end}}
+{{end}}
 
 {{/* next/go/interface.method.param: Generates a parameter declaration for an interface method */}}
 {{- define "next/go/interface.method.param" -}}
-{{render "interface.method.param:name" .}} {{next .Type}}
+{{- render "interface.method.param:name" .}} {{next .Type}}
 {{- end}}
 
 {{/* next/go/interface.method.result: Generates the return type(s) for an interface method */}}

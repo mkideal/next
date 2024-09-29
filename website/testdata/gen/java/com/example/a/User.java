@@ -57,6 +57,6 @@ public class User {
         this.birthMonth = birthMonth;
     }
 
-
-    public User() {}
+    public User() {
+    }
 }

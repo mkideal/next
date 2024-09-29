@@ -5,9 +5,10 @@
 
 local a_a = require("a.a")
 
+
 local _M_ = {}
 
-_M_.TestEnum = {
+local TestEnum = {
     A = 1,
     B = 5,
     C = 5,
@@ -16,6 +17,7 @@ _M_.TestEnum = {
     F = 1,
     G = 2
 }
+_M_.TestEnum = TestEnum
 
 local TestStruct = {}
 _M_.TestStruct = TestStruct

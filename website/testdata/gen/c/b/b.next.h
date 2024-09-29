@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "../a/a.next.h"
+
 #if !defined(__cplusplus) && !defined(__bool_true_false_are_defined)
 #include <stdbool.h>
 #endif
@@ -14,7 +16,6 @@
 typedef unsigned char _Bool;
 #endif
 
-#include "../b/b.next.h"
 // Enums forward declarations
 typedef enum DEMO_B_TestEnum DEMO_B_TestEnum;
 
@@ -33,7 +34,7 @@ typedef enum DEMO_B_TestEnum {
 } DEMO_B_TestEnum;
 
 typedef struct DEMO_B_TestStruct {
-    DEMO_B_Point2D point;
+    DEMO_A_Point2D point;
 } DEMO_B_TestStruct;
 
 #endif /* DEMO_B_B_H */

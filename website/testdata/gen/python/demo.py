@@ -131,7 +131,6 @@ class Reader(ABC):
     @abstractmethod
     def read(self, buffer: bytes) -> int:
         pass
-    
 
 """
 HTTPClient provides HTTP request functionality
@@ -151,7 +150,6 @@ class HTTPClient(ABC):
     @abstractmethod
     def request(self, url: str, method: str, body: str) -> str:
         pass
-    
     """
 
     Args:
@@ -164,4 +162,3 @@ class HTTPClient(ABC):
     @abstractmethod
     def request_2(self, url: str, method: str, body: str) -> str:
         pass
-    

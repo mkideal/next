@@ -2,13 +2,13 @@
 
 from typing import List, Dict, Any
 
+from c import *
+from c import *
 
-from c import *
-from c import *
 A = 1
 B = "hello"
 C = 3.14
-D = true
+D = True
 
 class Color:
     RED = 0

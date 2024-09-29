@@ -27,6 +27,6 @@ public class GenericRequest {
         this.timestamp = timestamp;
     }
 
-
-    public GenericRequest() {}
+    public GenericRequest() {
+    }
 }

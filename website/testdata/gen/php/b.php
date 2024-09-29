@@ -1,8 +1,8 @@
 <?php
 namespace b;
 
-
 use a;
+
 
 enum TestEnum : int
 {

@@ -4,13 +4,13 @@ syntax = "proto3";
 
 package c;
 
-option go_package = "github.com/next/next/testdata/gen/go/c";
+option go_package = "github.com/next/next/website/testdata/gen/go/c";
 option java_package = "com.example.c";
+import "a.proto";
+import "b.proto";
 
-import "c.proto";
-import "c.proto";
 
-// Constants Skipped.
+// 4 Constants skipped.
 
 enum Color {
     RED = 0;

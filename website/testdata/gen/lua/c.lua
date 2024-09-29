@@ -4,7 +4,9 @@
 
 
 local a_a = require("a.a")
+
 local b_b = require("b.b")
+
 
 local _M_ = {}
 _M_.A = 1
@@ -12,21 +14,24 @@ _M_.B = "hello"
 _M_.C = 3.14
 _M_.D = true
 
-_M_.Color = {
+local Color = {
     RED = 0,
     GREEN = 1,
     BLUE = 2
 }
+_M_.Color = Color
 
-_M_.LoginType = {
+local LoginType = {
     USERNAME = 1,
     EMAIL = 2
 }
+_M_.LoginType = LoginType
 
-_M_.UserType = {
+local UserType = {
     ADMIN = 1,
     USER = 2
 }
+_M_.UserType = UserType
 
 local User = {}
 _M_.User = User

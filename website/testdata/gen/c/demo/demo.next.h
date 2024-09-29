@@ -21,6 +21,7 @@ typedef /* enum */ struct DEMO_OperatingSystem DEMO_OperatingSystem;
 
 // Structs forward declarations
 typedef struct DEMO_User DEMO_User;
+typedef struct DEMO_Uint64 DEMO_Uint64;
 typedef struct DEMO_Uint128 DEMO_Uint128;
 typedef struct DEMO_Contract DEMO_Contract;
 typedef struct DEMO_LoginRequest DEMO_LoginRequest;
@@ -28,7 +29,7 @@ typedef struct DEMO_LoginResponse DEMO_LoginResponse;
 
 #define DEMO_VERSION "1.0.0" /* String constant */
 #define DEMO_MAX_RETRIES 3 /* Integer constant */
-#define DEMO_TIMEOUT 3000.0 /* Float constant expression */
+#define DEMO_TIMEOUT 3000.0F /* Float constant expression */
 
 /**
  * Color represents different color options

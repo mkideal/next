@@ -7,9 +7,9 @@
 package {{render "package:name" .}};
 
 public class {{meta._class}} {
-{{- next .Decls.Consts}}
+    {{next .Decls.Consts | align -}}
 }
-{{- end -}}
+{{end -}}
 
 {{head}}
 

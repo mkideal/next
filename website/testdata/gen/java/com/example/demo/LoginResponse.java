@@ -30,8 +30,10 @@ public class LoginResponse {
         this.user = user;
     }
 
+    public static int MessageType() {
+        return 102;
+    }
 
-    public static int MessageType() { return 102; }
-
-    public LoginResponse() {}
+    public LoginResponse() {
+    }
 }

@@ -4,11 +4,11 @@ syntax = "proto3";
 
 package a;
 
-option go_package = "github.com/next/next/testdata/gen/go/a";
+option go_package = "github.com/next/next/website/testdata/gen/go/a";
 option java_package = "com.example.a";
 
 
-// Constants Skipped.
+// 34 Constants skipped.
 
 // Enum with iota
 enum Color {

@@ -108,7 +108,6 @@ test/template: install
 		-O ts=${TESTDATA_DIR}/gen/ts -T ts=${TESTDATA_DIR}/templates/ts \
 		-O python=${TESTDATA_DIR}/gen/python -T python=${TESTDATA_DIR}/templates/python \
 		-O php=${TESTDATA_DIR}/gen/php -T php=${TESTDATA_DIR}/templates/php \
-		-O swift=${TESTDATA_DIR}/gen/swift -T swift=${TESTDATA_DIR}/templates/swift \
 		-O lua=${TESTDATA_DIR}/gen/lua -T lua=${TESTDATA_DIR}/templates/lua \
 		-M "c.vector=void*" -M "c.map=void*" \
 		${TESTDATA_DIR}/next/
