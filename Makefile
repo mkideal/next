@@ -104,7 +104,6 @@ example/gen:
 	@rm -rf ${EXAMPLE_DIR}/gen
 	@NEXTNOCOPYBUILTIN=1 ${BUILD_BIN_DIR}/next \
 		-D PROJECT_NAME=demo \
-		-grammar ${EXAMPLE_DIR}/grammar.json \
 		-O go=${EXAMPLE_DIR}/gen/go -T go=${EXAMPLE_DIR}/templates/go \
 		-O java=${EXAMPLE_DIR}/gen/java -T java=${EXAMPLE_DIR}/templates/java \
 		-O cpp=${EXAMPLE_DIR}/gen/cpp -T cpp=${EXAMPLE_DIR}/templates/cpp \
@@ -118,8 +117,9 @@ example/gen:
 		-O php=${EXAMPLE_DIR}/gen/php -T php=${EXAMPLE_DIR}/templates/php \
 		-O lua=${EXAMPLE_DIR}/gen/lua -T lua=${EXAMPLE_DIR}/templates/lua \
 		-M "c.vector=void*" -M "c.map=void*" \
+		-s -g ${EXAMPLE_DIR}/grammar.json \
 		${EXAMPLE_DIR}/next/
-	@cd ${EXAMPLE_DIR}/gen/rust && cargo init --vcs none -q
+	@if [ -d ${EXAMPLE_DIR}/gen/rust ]; then cd ${EXAMPLE_DIR}/gen/rust && cargo init --vcs none -q; fi
 
 .PHONY: clean
 clean:
