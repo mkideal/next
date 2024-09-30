@@ -7,18 +7,33 @@ pagination_next: null
 `Grammar` represents the custom grammar for the next files.
 
 import CodeBlock from "@theme/CodeBlock";
-import ExampleGrammarSource from "!!raw-loader!@site/example/grammar.json";
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+import ExampleGrammarJSONSource from "!!raw-loader!@site/example/grammar.json";
+import ExampleGrammarYAMLSource from "!!raw-loader!@site/example/grammar.yaml";
 
-The grammar is used to define a subset of the next files. It can limit the features of the next code according by your requirements. The grammar is a JSON object that contains rules.
+The grammar is used to define a subset of the next files. It can limit the features of the next code according by your requirements. The grammar is a yaml file that contains rules.
 
 Here is an example of the grammar file:
 
-<details open>
-	<summary>grammar.json</summary>
-	<CodeBlock language="json">
-		{ExampleGrammarSource}
+<Tabs
+	defaultValue="yaml"
+	values={[
+		{label: 'YAML', value: 'yaml'},
+		{label: 'JSON', value: 'json'},
+	]}
+>
+<TabItem value="json">
+	<CodeBlock language="json" title="grammar.json">
+		{ExampleGrammarJSONSource}
 	</CodeBlock>
-</details>
+</TabItem>
+<TabItem value="yaml">
+	<CodeBlock language="yaml" title="grammar.yaml">
+		{ExampleGrammarYAMLSource}
+	</CodeBlock>
+</TabItem>
+</Tabs>
 
 ###### .default {#user-content-Grammar__default}
 <div className="property-container">
@@ -30,7 +45,7 @@ Here is an example of the grammar file:
 Run the following command to generate the default grammar:
 
 ```sh
-next grammar grammar.json
+next grammar grammar.yaml
 ```
 
 You can use this grammar as a starting point for your own grammar.
@@ -46,24 +61,32 @@ You can use this grammar as a starting point for your own grammar.
 
 Example:
 
+<Tabs
+	defaultValue="yaml"
+	values={[
+		{label: 'YAML', value: 'yaml'},
+		{label: 'JSON', value: 'json'},
+	]}
+>
+<TabItem value="json">
 ```json
 {
-  "Struct": {
-    "Annotations": [
+  "struct": {
+    "annotations": [
       {
-        "Name": "message",
-        "Description": "Sets the struct as a message.",
-        "Parameters": [
+        "name": "message",
+        "description": "Sets the struct as a message.",
+        "parameters": [
           {
-            "Name": "type",
-            "Description": "Sets the message type id.",
-            "Type": "int",
-            "Required": true
-            "Validators": [
+            "name": "type",
+            "description": "Sets the message type id.",
+            "type": "int",
+            "required": true
+            "validators": [
               {
-                "Name": "MessageTypeMustBePositive",
-                "Expression": "{{gt . 0}}",
-                "Message": "message type must be positive"
+                "name": "MessageTypeMustBePositive",
+                "expression": "{{gt . 0}}",
+                "message": "message type must be positive"
               }
             ]
           }
@@ -73,6 +96,25 @@ Example:
   }
 }
 ```
+</TabItem>
+<TabItem value="yaml">
+```yaml
+struct:
+  annotations:
+    - name: message
+      description: Sets the struct as a message.
+      parameters:
+        - name: type
+          description: Sets the message type id.
+          type: int
+          required: true
+          validators:
+            - name: MessageTypeMustBePositive
+              expression: "{{gt . 0}}"
+              message: message type must be positive
+```
+</TabItem>
+</Tabs>
 
 ```next
 package demo;
@@ -223,20 +265,36 @@ The data is the current context object. For example, **package** object for the 
 
 </div>
 
-###### .Off {#user-content-Grammar_Const__Off}
+###### .Disabled {#user-content-Grammar_Const__Disabled}
 <div className="property-container">
 
-`.Off` represents the const declaration is off or not. If the const declaration is off, the const declaration is not allowed in the next files.
+`.Disabled` represents the const declaration is off or not. If the const declaration is off, the const declaration is not allowed in the next files.
 
 Example:
 
+<Tabs
+	defaultValue="yaml"
+	values={[
+		{label: 'YAML', value: 'yaml'},
+		{label: 'JSON', value: 'json'},
+	]}
+>
+<TabItem value="json">
 ```json
 {
-  "Const": {
-    "Off": true
+  "const": {
+    "disabled": true
   }
 }
 ```
+</TabItem>
+<TabItem value="yaml">
+```yaml
+const:
+  disabled: true
+```
+</TabItem>
+</Tabs>
 
 ```next
 package demo;
@@ -262,13 +320,31 @@ Currently, each type name can be one of the following types:
 
 Example:
 
+<Tabs
+	defaultValue="yaml"
+	values={[
+		{label: 'YAML', value: 'yaml'},
+		{label: 'JSON', value: 'json'},
+	]}
+>
+<TabItem value="json">
 ```json
 {
-  "Const": {
-    "Types": ["int", "float"]
+  "const": {
+    "types": ["int", "float"]
   }
 }
 ```
+</TabItem>
+<TabItem value="yaml">
+```yaml
+const:
+  types:
+    - int
+    - float
+```
+</TabItem>
+</Tabs>
 
 ```next
 package demo;
@@ -290,19 +366,38 @@ const z = "hello";
 
 Example:
 
+<Tabs
+	defaultValue="yaml"
+	values={[
+		{label: 'YAML', value: 'yaml'},
+		{label: 'JSON', value: 'json'},
+	]}
+>
+<TabItem value="json">
 ```json
 {
-  "Const": {
-    "Validators": [
+  "const": {
+    "validators": [
       {
-        "Name": "ConstNameMustBeCapitalized",
-        "Expression": "{{eq .Name (.Name | capitalize)}}",
-        "Message": "const name must be capitalized"
+        "name": "ConstNameMustBeCapitalized",
+        "expression": "{{eq .Name (.Name | capitalize)}}",
+        "message": "const name must be capitalized"
       }
     ]
   }
 }
 ```
+</TabItem>
+<TabItem value="yaml">
+```yaml
+const:
+  validators:
+    - name: ConstNameMustBeCapitalized
+      expression: "{{eq .Name (.Name | capitalize)}}"
+      message: const name must be capitalized
+```
+</TabItem>
+</Tabs>
 
 ```next
 package demo;
@@ -327,27 +422,36 @@ const world = 1;
 
 </div>
 
-###### .Member {#user-content-Grammar_Enum__Member}
+###### .Disabled {#user-content-Grammar_Enum__Disabled}
 <div className="property-container">
 
-`.Member` represents the [EnumMember](#user-content-Grammar_EnumMember) grammar rules for the enum declaration.
-
-</div>
-
-###### .Off {#user-content-Grammar_Enum__Off}
-<div className="property-container">
-
-`.Off` represents the enum declaration is off or not. If the enum declaration is off, the enum declaration is not allowed in the next files.
+`.Disabled` represents the enum declaration is off or not. If the enum declaration is off, the enum declaration is not allowed in the next files.
 
 Example:
 
+<Tabs
+	defaultValue="yaml"
+	values={[
+		{label: 'YAML', value: 'yaml'},
+		{label: 'JSON', value: 'json'},
+	]}
+>
+<TabItem value="json">
 ```json
 {
-  "Enum": {
-    "Off": true
+  "enum": {
+    "disabled": true
   }
 }
 ```
+</TabItem>
+<TabItem value="yaml">
+```yaml
+enum:
+  disabled: true
+```
+</TabItem>
+</Tabs>
 
 ```next
 package demo;
@@ -363,6 +467,13 @@ enum Color {
 
 </div>
 
+###### .Member {#user-content-Grammar_Enum__Member}
+<div className="property-container">
+
+`.Member` represents the [EnumMember](#user-content-Grammar_EnumMember) grammar rules for the enum declaration.
+
+</div>
+
 ###### .Validators {#user-content-Grammar_Enum__Validators}
 <div className="property-container">
 
@@ -370,19 +481,38 @@ enum Color {
 
 Example:
 
+<Tabs
+	defaultValue="yaml"
+	values={[
+		{label: 'YAML', value: 'yaml'},
+		{label: 'JSON', value: 'json'},
+	]}
+>
+<TabItem value="json">
 ```json
 {
-  "Enum": {
-    "Validators": [
+  "enum": {
+    "validators": [
       {
-        "Name": "EnumNameMustBeCapitalized",
-        "Expression": "{{eq .Name (.Name | capitalize)}}",
-        "Message": "enum name must be capitalized"
+        "name": "EnumNameMustBeCapitalized",
+        "expression": "{{eq .Name (.Name | capitalize)}}",
+        "message": "enum name must be capitalized"
       }
     ]
   }
 }
 ```
+</TabItem>
+<TabItem value="yaml">
+```yaml
+enum:
+  validators:
+    - name: EnumNameMustBeCapitalized
+      expression: "{{eq .Name (.Name | capitalize)}}"
+      message: enum name must be capitalized
+```
+</TabItem>
+</Tabs>
 
 ```next
 package demo;
@@ -431,15 +561,33 @@ Currently, each type name can be one of the following types:
 
 Example:
 
+<Tabs
+	defaultValue="yaml"
+	values={[
+		{label: 'YAML', value: 'yaml'},
+		{label: 'JSON', value: 'json'},
+	]}
+>
+<TabItem value="json">
 ```json
 {
-  "Enum": {
-    "Member": {
-      "Types": ["int"]
+  "enum": {
+    "member": {
+      "types": ["int"]
     }
   }
 }
 ```
+</TabItem>
+<TabItem value="yaml">
+```yaml
+enum:
+  member:
+    types:
+      - int
+```
+</TabItem>
+</Tabs>
 
 ```next
 package demo;
@@ -471,21 +619,41 @@ It's used to validate the enum member name. You can access the enum member name 
 
 Example:
 
+<Tabs
+	defaultValue="yaml"
+	values={[
+		{label: 'YAML', value: 'yaml'},
+		{label: 'JSON', value: 'json'},
+	]}
+>
+<TabItem value="json">
 ```json
 {
-  "Enum": {
-    "Member": {
-      "Validators": [
+  "enum": {
+    "member": {
+      "validators": [
         {
-          "Name": "EnumMemberNameMustBeCapitalized",
-          "Expression": "{{eq .Name (.Name | capitalize)}}",
-          "Message": "enum member name must be capitalized"
+          "name": "EnumMemberNameMustBeCapitalized",
+          "expression": "{{eq .Name (.Name | capitalize)}}",
+          "message": "enum member name must be capitalized"
         }
       ]
     }
   }
 }
 ```
+</TabItem>
+<TabItem value="yaml">
+```yaml
+enum:
+  member:
+    validators:
+      - name: EnumMemberNameMustBeCapitalized
+        expression: "{{eq .Name (.Name | capitalize)}}"
+        message: enum member name must be capitalized
+```
+</TabItem>
+</Tabs>
 
 ```next
 package demo;
@@ -508,15 +676,32 @@ enum Size {
 
 Example:
 
+<Tabs
+	defaultValue="yaml"
+	values={[
+		{label: 'YAML', value: 'yaml'},
+		{label: 'JSON', value: 'json'},
+	]}
+>
+<TabItem value="json">
 ```json
 {
-  "Enum": {
-    "Member": {
-      "ValueRequired": true
+  "enum": {
+    "member": {
+      "value_required": true
     }
   }
 }
 ```
+</TabItem>
+<TabItem value="yaml">
+```yaml
+enum:
+  member:
+    value_required: true
+```
+</TabItem>
+</Tabs>
 
 ```next
 package demo;
@@ -541,15 +726,32 @@ If the enum member zero value is required, the enum member zero value must be sp
 
 Example:
 
+<Tabs
+	defaultValue="yaml"
+	values={[
+		{label: 'YAML', value: 'yaml'},
+		{label: 'JSON', value: 'json'},
+	]}
+>
+<TabItem value="json">
 ```json
 {
-  "Enum": {
-    "Member": {
-      "ZeroRequired": true
+  "enum": {
+    "member": {
+      "zero_required": true
     }
   }
 }
 ```
+</TabItem>
+<TabItem value="yaml">
+```yaml
+enum:
+  member:
+    zero_required: true
+```
+</TabItem>
+</Tabs>
 
 ```next
 package demo;
@@ -574,20 +776,36 @@ enum Size {
 
 `Import` represents the grammar rules for the import declaration.
 
-###### .Off {#user-content-Grammar_Import__Off}
+###### .Disabled {#user-content-Grammar_Import__Disabled}
 <div className="property-container">
 
-`.Off` represents the import declaration is off or not. If the import declaration is off, the import declaration is not allowed in the next files.
+`.Disabled` represents the import declaration is off or not. If the import declaration is off, the import declaration is not allowed in the next files.
 
 Example:
 
+<Tabs
+	defaultValue="yaml"
+	values={[
+		{label: 'YAML', value: 'yaml'},
+		{label: 'JSON', value: 'json'},
+	]}
+>
+<TabItem value="json">
 ```json
 {
-  "Import": {
-    "Off": true
+  "import": {
+    "disabled": true
   }
 }
 ```
+</TabItem>
+<TabItem value="yaml">
+```yaml
+import:
+  disabled: true
+```
+</TabItem>
+</Tabs>
 
 ```next
 package demo;
@@ -610,27 +828,36 @@ import "other.next";
 
 </div>
 
-###### .Method {#user-content-Grammar_Interface__Method}
+###### .Disabled {#user-content-Grammar_Interface__Disabled}
 <div className="property-container">
 
-`.Method` represents the [InterfaceMethod](#user-content-Grammar_InterfaceMethod) grammar rules for the interface declaration.
-
-</div>
-
-###### .Off {#user-content-Grammar_Interface__Off}
-<div className="property-container">
-
-`.Off` represents the interface declaration is off or not. If the interface declaration is off, the interface declaration is not allowed in the next files.
+`.Disabled` represents the interface declaration is off or not. If the interface declaration is off, the interface declaration is not allowed in the next files.
 
 Example:
 
+<Tabs
+	defaultValue="yaml"
+	values={[
+		{label: 'YAML', value: 'yaml'},
+		{label: 'JSON', value: 'json'},
+	]}
+>
+<TabItem value="json">
 ```json
 {
-  "Interface": {
-    "Off": true
+  "interface": {
+    "disabled": true
   }
 }
 ```
+</TabItem>
+<TabItem value="yaml">
+```yaml
+interface:
+  disabled: true
+```
+</TabItem>
+</Tabs>
 
 ```next
 package demo;
@@ -644,6 +871,13 @@ interface User {
 
 </div>
 
+###### .Method {#user-content-Grammar_Interface__Method}
+<div className="property-container">
+
+`.Method` represents the [InterfaceMethod](#user-content-Grammar_InterfaceMethod) grammar rules for the interface declaration.
+
+</div>
+
 ###### .Validators {#user-content-Grammar_Interface__Validators}
 <div className="property-container">
 
@@ -651,19 +885,38 @@ interface User {
 
 Example:
 
+<Tabs
+	defaultValue="yaml"
+	values={[
+		{label: 'YAML', value: 'yaml'},
+		{label: 'JSON', value: 'json'},
+	]}
+>
+<TabItem value="json">
 ```json
 {
-  "Interface": {
-    "Validators": [
+  "interface": {
+    "validators": [
       {
-        "Name": "InterfaceNameMustBeCapitalized",
-        "Expression": "{{eq .Name (.Name | capitalize)}}",
-        "Message": "interface name must be capitalized"
+        "name": "InterfaceNameMustBeCapitalized",
+        "expression": "{{eq .Name (.Name | capitalize)}}",
+        "message": "interface name must be capitalized"
       }
     ]
   }
 }
 ```
+</TabItem>
+<TabItem value="yaml">
+```yaml
+interface:
+  validators:
+    - name: InterfaceNameMustBeCapitalized
+      expression: "{{eq .Name (.Name | capitalize)}}"
+      message: interface name must be capitalized
+```
+</TabItem>
+</Tabs>
 
 ```next
 package demo;
@@ -688,47 +941,86 @@ interface user {
 
 Example:
 
+<Tabs
+	defaultValue="yaml"
+	values={[
+		{label: 'YAML', value: 'yaml'},
+		{label: 'JSON', value: 'json'},
+	]}
+>
+<TabItem value="json">
 ```json
 {
-  "Interface": {
-    "Method": {
-      "Annotations": [
+  "interface": {
+    "method": {
+      "annotations": [
         {
-          "Name": "http",
-          "Description": "Sets the method as an HTTP handler.",
-          "Parameters": [
+          "name": "http",
+          "description": "Sets the method as an HTTP handler.",
+          "parameters": [
             {
-              "Name": "method",
-              "Description": "Sets the HTTP method.",
-              "Type": "string",
-              "Required": true
-              "Validators": [
+              "name": "method",
+              "description": "Sets the HTTP method.",
+              "type": "string",
+              "required": true
+              "validators": [
                 {
-                  "Name": "HTTPMethodMustBeValid",
-                  "Expression": "{{includes (list `GET` `POST` `PUT` `DELETE` `PATCH` `HEAD` `OPTIONS` `TRACE` `CONNECT`) .}}",
-                  "Message": "http method must be valid"
+                  "name": "HTTPMethodMustBeValid",
+                  "expression": "{{includes (list `GET` `POST` `PUT` `DELETE` `PATCH` `HEAD` `OPTIONS` `TRACE` `CONNECT`) .}}",
+                  "message": "http method must be valid"
                 }
               ]
             }
           ]
         }
       ],
-      "Validators": [
+      "validators": [
         {
-          "Name": "MethodNameMustBeCapitalized",
-          "Expression": "{{eq .Name (.Name | capitalize)}}",
-          "Message": "method name must be capitalized"
+          "name": "MethodNameMustBeCapitalized",
+          "expression": "{{eq .Name (.Name | capitalize)}}",
+          "message": "method name must be capitalized"
         }
       ]
     }
   }
 }
 ```
+</TabItem>
+<TabItem value="yaml">
+```yaml
+interface:
+  method:
+    annotations:
+      - name: http
+        description: Sets the method as an HTTP handler.
+        parameters:
+          - name: method
+            description: Sets the HTTP method.
+            type: string
+            required: true
+            validators:
+              - name: HTTPMethodMustBeValid
+                expression: "{{includes (list `GET` `POST` `PUT` `DELETE` `PATCH` `HEAD` `OPTIONS` `TRACE` `CONNECT`) .}}"
+                message: http method must be valid
+    validators:
+      - name: MethodNameMustBeCapitalized
+        expression: "{{eq .Name (.Name | capitalize)}}"
+        message: method name must be capitalized
+```
+</TabItem>
+</Tabs>
 
 ###### .Annotations {#user-content-Grammar_InterfaceMethod__Annotations}
 <div className="property-container">
 
 `.Annotations` represents the [Annotation](#user-content-Grammar_Common_Annotation) grammar rules for the interface method declaration.
+
+</div>
+
+###### .Parameter {#user-content-Grammar_InterfaceMethod__Parameter}
+<div className="property-container">
+
+`.Parameter` represents the [InterfaceMethodParameter](#user-content-Grammar_InterfaceMethodParameter) grammar rules for the interface method declaration.
 
 </div>
 
@@ -739,18 +1031,18 @@ Example:
 
 </div>
 
-### Parameter {#user-content-Grammar_InterfaceMethod_Parameter}
+## InterfaceMethodParameter {#user-content-Grammar_InterfaceMethodParameter}
 
-`Parameter` represents the grammar rules for the interface method parameter declaration.
+`InterfaceMethodParameter` represents the grammar rules for the interface method parameter declaration.
 
-###### .Annotations {#user-content-Grammar_InterfaceMethod_Parameter__Annotations}
+###### .Annotations {#user-content-Grammar_InterfaceMethodParameter__Annotations}
 <div className="property-container">
 
 `.Annotations` represents the [Annotation](#user-content-Grammar_Common_Annotation) grammar rules for the interface method parameter declaration.
 
 </div>
 
-###### .Validators {#user-content-Grammar_InterfaceMethod_Parameter__Validators}
+###### .Validators {#user-content-Grammar_InterfaceMethodParameter__Validators}
 <div className="property-container">
 
 `.Validators` represents the [Validator](#user-content-Grammar_Common_Validator) for the interface method parameter declaration.
@@ -775,19 +1067,38 @@ Example:
 
 Example:
 
+<Tabs
+	defaultValue="yaml"
+	values={[
+		{label: 'YAML', value: 'yaml'},
+		{label: 'JSON', value: 'json'},
+	]}
+>
+<TabItem value="json">
 ```json
 {
-  "Package": {
-    "Validators": [
+  "package": {
+    "validators": [
       {
-        "Name": "PackageNameNotStartWithUnderscore",
-        "Expression": "{{not (hasPrefix `_` .Name)}}",
-        "Message": "package name must not start with an underscore"
+        "name": "PackageNameNotStartWithUnderscore",
+        "expression": "{{not (hasPrefix `_` .Name)}}",
+        "message": "package name must not start with an underscore"
       }
     ]
   }
 }
 ```
+</TabItem>
+<TabItem value="yaml">
+```yaml
+package:
+  validators:
+    - name: PackageNameNotStartWithUnderscore
+      expression: "{{not (hasPrefix `_` .Name)}}"
+      message: package name must not start with an underscore
+```
+</TabItem>
+</Tabs>
 
 ```next
 // This will error
@@ -808,27 +1119,36 @@ package _test;
 
 </div>
 
-###### .Field {#user-content-Grammar_Struct__Field}
+###### .Disabled {#user-content-Grammar_Struct__Disabled}
 <div className="property-container">
 
-`.Field` represents the [StructField](#user-content-Grammar_StructField) grammar rules for the struct declaration.
-
-</div>
-
-###### .Off {#user-content-Grammar_Struct__Off}
-<div className="property-container">
-
-`.Off` represents the struct declaration is off or not. If the struct declaration is off, the struct declaration is not allowed in the next files.
+`.Disabled` represents the struct declaration is off or not. If the struct declaration is off, the struct declaration is not allowed in the next files.
 
 Example:
 
+<Tabs
+	defaultValue="yaml"
+	values={[
+		{label: 'YAML', value: 'yaml'},
+		{label: 'JSON', value: 'json'},
+	]}
+>
+<TabItem value="json">
 ```json
 {
-  "Struct": {
-    "Off": true
+  "struct": {
+    "disabled": true
   }
 }
 ```
+</TabItem>
+<TabItem value="yaml">
+```yaml
+struct:
+  disabled: true
+```
+</TabItem>
+</Tabs>
 
 ```next
 package demo;
@@ -843,6 +1163,13 @@ struct User {
 
 </div>
 
+###### .Field {#user-content-Grammar_Struct__Field}
+<div className="property-container">
+
+`.Field` represents the [StructField](#user-content-Grammar_StructField) grammar rules for the struct declaration.
+
+</div>
+
 ###### .Validators {#user-content-Grammar_Struct__Validators}
 <div className="property-container">
 
@@ -850,19 +1177,38 @@ struct User {
 
 Example:
 
+<Tabs
+	defaultValue="yaml"
+	values={[
+		{label: 'YAML', value: 'yaml'},
+		{label: 'JSON', value: 'json'},
+	]}
+>
+<TabItem value="json">
 ```json
 {
-  "Struct": {
-    "Validators": [
+  "struct": {
+    "validators": [
       {
-        "Name": "StructNameMustBeCapitalized",
-        "Expression": "{{eq .Name (.Name | capitalize)}}",
-        "Message": "struct name must be capitalized"
+        "name": "StructNameMustBeCapitalized",
+        "expression": "{{eq .Name (.Name | capitalize)}}",
+        "message": "struct name must be capitalized"
       }
     ]
   }
 }
 ```
+</TabItem>
+<TabItem value="yaml">
+```yaml
+struct:
+  validators:
+    - name: StructNameMustBeCapitalized
+      expression: "{{eq .Name (.Name | capitalize)}}"
+      message: struct name must be capitalized
+```
+</TabItem>
+</Tabs>
 
 ```next
 package demo;
@@ -901,21 +1247,41 @@ struct point {
 
 Example:
 
+<Tabs
+	defaultValue="yaml"
+	values={[
+		{label: 'YAML', value: 'yaml'},
+		{label: 'JSON', value: 'json'},
+	]}
+>
+<TabItem value="json">
 ```json
 {
-  "Struct": {
-    "Field": {
-      "Validators": [
+  "struct": {
+    "field": {
+      "validators": [
         {
-          "Name": "StructFieldNameMustNotBeCapitalized",
-          "Expression": "{{ne .Name (capitalize .Name)}}",
-          "Message": "struct field name must not be capitalized"
+          "name": "StructFieldNameMustNotBeCapitalized",
+          "expression": "{{ne .Name (capitalize .Name)}}",
+          "message": "struct field name must not be capitalized"
         }
       ]
     }
   }
 }
 ```
+</TabItem>
+<TabItem value="yaml">
+```yaml
+struct:
+  field:
+    validators:
+      - name: StructFieldNameMustNotBeCapitalized
+        expression: "{{ne .Name (capitalize .Name)}}"
+        message: struct field name must not be capitalized
+```
+</TabItem>
+</Tabs>
 
 ```next
 package demo;

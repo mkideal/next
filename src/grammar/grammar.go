@@ -42,9 +42,9 @@ func duplicated[S ~[]T, T comparable](s S) error {
 // Context represents the contextual data by the key-value pair.
 // The key is a string and the value is a JSON object.
 type Context struct {
-	Annotations          map[string]json.RawMessage `json:",omitempty"`
-	AnnotationParameters map[string]json.RawMessage `json:",omitempty"`
-	Validators           map[string]json.RawMessage `json:",omitempty"`
+	Annotations          map[string]json.RawMessage `json:"annotations"`
+	AnnotationParameters map[string]json.RawMessage `json:"annotation_parameters"`
+	Validators           map[string]json.RawMessage `json:"validators"`
 }
 
 // Options represents the options with the id and/or the options.
@@ -100,27 +100,42 @@ func (o *Options[T]) resolve(source map[string]json.RawMessage) error {
 // @api(Grammar) represents the custom grammar for the next files.
 //
 //	import CodeBlock from "@theme/CodeBlock";
-//	import ExampleGrammarSource from "!!raw-loader!@site/example/grammar.json";
+//	import Tabs from "@theme/Tabs";
+//	import TabItem from "@theme/TabItem";
+//	import ExampleGrammarJSONSource from "!!raw-loader!@site/example/grammar.json";
+//	import ExampleGrammarYAMLSource from "!!raw-loader!@site/example/grammar.yaml";
 //
 // The grammar is used to define a subset of the next files. It can limit the features of the next code according
-// by your requirements. The grammar is a JSON object that contains rules.
+// by your requirements. The grammar is a yaml file that contains rules.
 //
 // Here is an example of the grammar file:
 //
-//	<details open>
-//		<summary>grammar.json</summary>
-//		<CodeBlock language="json">
-//			{ExampleGrammarSource}
+//	<Tabs
+//		defaultValue="yaml"
+//		values={[
+//			{label: 'YAML', value: 'yaml'},
+//			{label: 'JSON', value: 'json'},
+//		]}
+//	>
+//	<TabItem value="json">
+//		<CodeBlock language="json" title="grammar.json">
+//			{ExampleGrammarJSONSource}
 //		</CodeBlock>
-//	</details>
+//	</TabItem>
+//	<TabItem value="yaml">
+//		<CodeBlock language="yaml" title="grammar.yaml">
+//			{ExampleGrammarYAMLSource}
+//		</CodeBlock>
+//	</TabItem>
+//	</Tabs>
 type Grammar struct {
-	Context   Context
-	Package   Package
-	Import    Import
-	Const     Const
-	Enum      Enum
-	Struct    Struct
-	Interface Interface
+	Context   Context   `json:"context"`
+	Package   Package   `json:"package"`
+	Import    Import    `json:"import"`
+	Const     Const     `json:"const"`
+	Enum      Enum      `json:"enum"`
+	Struct    Struct    `json:"struct"`
+	Interface Interface `json:"interface"`
 }
 
 type Validators []Options[Validator]
@@ -128,17 +143,17 @@ type Validators []Options[Validator]
 // @api(Grammar/Common/Validator) represents the validator for the grammar rules.
 type Validator struct {
 	// @api(Grammar/Common/Validator.Name) represents the validator name.
-	Name string
+	Name string `json:"name"`
 
 	// @api(Grammar/Common/Validator.Expression) represents the validator expression.
 	// The expression is a template string that can access the data by the `.` operator. The expression
 	// must return a boolean value.
 	//
 	// The data is the current context object. For example, **package** object for the package validator.
-	Expression string
+	Expression string `json:"expression"`
 
 	// @api(Grammar/Common/Validator.Message) represents the error message when the validator is failed.
-	Message string
+	Message string `json:"message"`
 }
 
 func (v Validator) Validate(data any) (bool, error) {
@@ -158,24 +173,32 @@ func (v Validator) Validate(data any) (bool, error) {
 //
 // Example:
 //
+//	<Tabs
+//		defaultValue="yaml"
+//		values={[
+//			{label: 'YAML', value: 'yaml'},
+//			{label: 'JSON', value: 'json'},
+//		]}
+//	>
+//	<TabItem value="json">
 //	```json
 //	{
-//	  "Struct": {
-//	    "Annotations": [
+//	  "struct": {
+//	    "annotations": [
 //	      {
-//	        "Name": "message",
-//	        "Description": "Sets the struct as a message.",
-//	        "Parameters": [
+//	        "name": "message",
+//	        "description": "Sets the struct as a message.",
+//	        "parameters": [
 //	          {
-//	            "Name": "type",
-//	            "Description": "Sets the message type id.",
-//	            "Type": "int",
-//	            "Required": true
-//	            "Validators": [
+//	            "name": "type",
+//	            "description": "Sets the message type id.",
+//	            "type": "int",
+//	            "required": true
+//	            "validators": [
 //	              {
-//	                "Name": "MessageTypeMustBePositive",
-//	                "Expression": "{{gt . 0}}",
-//	                "Message": "message type must be positive"
+//	                "name": "MessageTypeMustBePositive",
+//	                "expression": "{{gt . 0}}",
+//	                "message": "message type must be positive"
 //	              }
 //	            ]
 //	          }
@@ -185,6 +208,25 @@ func (v Validator) Validate(data any) (bool, error) {
 //	  }
 //	}
 //	```
+//	</TabItem>
+//	<TabItem value="yaml">
+//	```yaml
+//	struct:
+//	  annotations:
+//	    - name: message
+//	      description: Sets the struct as a message.
+//	      parameters:
+//	        - name: type
+//	          description: Sets the message type id.
+//	          type: int
+//	          required: true
+//	          validators:
+//	            - name: MessageTypeMustBePositive
+//	              expression: "{{gt . 0}}"
+//	              message: message type must be positive
+//	```
+//	</TabItem>
+//	</Tabs>
 //
 //	```next
 //	package demo;
@@ -222,13 +264,13 @@ func (v Validator) Validate(data any) (bool, error) {
 //	```
 type Annotation struct {
 	// @api(Grammar/Common/Annotation.Name) represents the annotation name.
-	Name string
+	Name string `json:"name"`
 
 	// @api(Grammar/Common/Annotation.Description) represents the annotation description.
-	Description string
+	Description string `json:"description"`
 
 	// @api(Grammar/Common/Annotation.Parameters) represents the annotation parameters.
-	Parameters []Options[AnnotationParameter] `json:",omitempty"`
+	Parameters []Options[AnnotationParameter] `json:"parameters"`
 }
 
 func LookupAnnotation(annotations Annotations, name string) *Annotation {
@@ -255,10 +297,10 @@ type AnnotationParameter struct {
 	// - "**type**": matches the annotation name `type`
 	// - "**x|y**": matches the annotation name `x` or `y`
 	// - "**.+_package**": matches the annotation name that ends with `_package`, for example, `cpp_package`, `java_package`, etc.
-	Name string
+	Name string `json:"name"`
 
 	// @api(Grammar/Common/AnnotationParameter.Description) represents the parameter description.
-	Description string
+	Description string `json:"description"`
 
 	// @api(Grammar/Common/AnnotationParameter.Type) represents the parameter type.
 	// The type is a string that can be one of the following types:
@@ -268,13 +310,13 @@ type AnnotationParameter struct {
 	// - **float**: float type, the value can be a positive or negative float, for example, `1.23`
 	// - **string**: string type, the value can be a string, for example, `"hello"`
 	// - **type**: any type name, for example, `int`, `float`, `string`, etc. Custom type names are supported.
-	Type string
+	Type string `json:"type"`
 
 	// @api(Grammar/Common/AnnotationParameter.Required) represents the parameter is required or not.
-	Required bool `json:",omitempty"`
+	Required bool `json:"required"`
 
 	// @api(Grammar/Common/AnnotationParameter.Validators) represents the [Validator](#Grammar/Common/Validator) for the annotation parameter.
-	Validators Validators `json:",omitempty"`
+	Validators Validators `json:"validators"`
 
 	parsed struct {
 		name *regexp.Regexp
@@ -298,7 +340,7 @@ func LookupAnnotationParameter(parameters []Options[AnnotationParameter], name s
 // @api(Grammar/Package) represents the grammar rules for the package declaration.
 type Package struct {
 	// @api(Grammar/Package.Annotations) represents the [Annotation](#Grammar/Common/Annotation) grammar rules for the package declaration.
-	Annotations Annotations `json:",omitempty"`
+	Annotations Annotations `json:"annotations"`
 
 	// @api(Grammar/Package.Validators) represents the [Validator](#Grammar/Common/Validator) for the package declaration.
 	// It's used to validate the package name. For example, You can limit the package name must be
@@ -307,42 +349,77 @@ type Package struct {
 	//
 	// Example:
 	//
+	//	<Tabs
+	//		defaultValue="yaml"
+	//		values={[
+	//			{label: 'YAML', value: 'yaml'},
+	//			{label: 'JSON', value: 'json'},
+	//		]}
+	//	>
+	//	<TabItem value="json">
 	//	```json
 	//	{
-	//	  "Package": {
-	//	    "Validators": [
+	//	  "package": {
+	//	    "validators": [
 	//	      {
-	//	        "Name": "PackageNameNotStartWithUnderscore",
-	//	        "Expression": "{{not (hasPrefix `_` .Name)}}",
-	//	        "Message": "package name must not start with an underscore"
+	//	        "name": "PackageNameNotStartWithUnderscore",
+	//	        "expression": "{{not (hasPrefix `_` .Name)}}",
+	//	        "message": "package name must not start with an underscore"
 	//	      }
 	//	    ]
 	//	  }
 	//	}
 	//	```
+	//	</TabItem>
+	//	<TabItem value="yaml">
+	//	```yaml
+	//	package:
+	//	  validators:
+	//	    - name: PackageNameNotStartWithUnderscore
+	//	      expression: "{{not (hasPrefix `_` .Name)}}"
+	//	      message: package name must not start with an underscore
+	//	```
+	//	</TabItem>
+	//	</Tabs>
 	//
 	//	```next
 	//	// This will error
 	//	package _test;
 	//	// Error: package name must not start with an underscore
 	//	```
-	Validators Validators `json:",omitempty"`
+	Validators Validators `json:"validators"`
 }
 
 // @api(Grammar/Import) represents the grammar rules for the import declaration.
 type Import struct {
-	// @api(Grammar/Import.Off) represents the import declaration is off or not.
+	// @api(Grammar/Import.Disabled) represents the import declaration is off or not.
 	// If the import declaration is off, the import declaration is not allowed in the next files.
 	//
 	// Example:
 	//
+	//	<Tabs
+	//		defaultValue="yaml"
+	//		values={[
+	//			{label: 'YAML', value: 'yaml'},
+	//			{label: 'JSON', value: 'json'},
+	//		]}
+	//	>
+	//	<TabItem value="json">
 	//	```json
 	//	{
-	//	  "Import": {
-	//	    "Off": true
+	//	  "import": {
+	//	    "disabled": true
 	//	  }
 	//	}
 	//	```
+	//	</TabItem>
+	//	<TabItem value="yaml">
+	//	```yaml
+	//	import:
+	//	  disabled: true
+	//	```
+	//	</TabItem>
+	//	</Tabs>
 	//
 	//	```next
 	//	package demo;
@@ -351,23 +428,39 @@ type Import struct {
 	//	import "other.next";
 	//	// Error: import declaration is not allowed
 	//	```
-	Off bool `json:",omitempty"`
+	Disabled bool `json:"disabled"`
 }
 
 // @api(Grammar/Const) represents the grammar rules for the const declaration.
 type Const struct {
-	// @api(Grammar/Const.Off) represents the const declaration is off or not.
+	// @api(Grammar/Const.Disabled) represents the const declaration is off or not.
 	// If the const declaration is off, the const declaration is not allowed in the next files.
 	//
 	// Example:
 	//
+	//	<Tabs
+	//		defaultValue="yaml"
+	//		values={[
+	//			{label: 'YAML', value: 'yaml'},
+	//			{label: 'JSON', value: 'json'},
+	//		]}
+	//	>
+	//	<TabItem value="json">
 	//	```json
 	//	{
-	//	  "Const": {
-	//	    "Off": true
+	//	  "const": {
+	//	    "disabled": true
 	//	  }
 	//	}
 	//	```
+	//	</TabItem>
+	//	<TabItem value="yaml">
+	//	```yaml
+	//	const:
+	//	  disabled: true
+	//	```
+	//	</TabItem>
+	//	</Tabs>
 	//
 	//	```next
 	//	package demo;
@@ -376,7 +469,7 @@ type Const struct {
 	//	const x = 1;
 	//	// Error: const declaration is not allowed
 	//	```
-	Off bool `json:",omitempty"`
+	Disabled bool `json:"disabled"`
 
 	// @api(Grammar/Const.Types) represents a list of type names that are supported in the const declaration.
 	// If no types are defined, the const declaration supports all types. Otherwise, the const declaration
@@ -391,13 +484,31 @@ type Const struct {
 	//
 	// Example:
 	//
+	//	<Tabs
+	//		defaultValue="yaml"
+	//		values={[
+	//			{label: 'YAML', value: 'yaml'},
+	//			{label: 'JSON', value: 'json'},
+	//		]}
+	//	>
+	//	<TabItem value="json">
 	//	```json
 	//	{
-	//	  "Const": {
-	//	    "Types": ["int", "float"]
+	//	  "const": {
+	//	    "types": ["int", "float"]
 	//	  }
 	//	}
 	//	```
+	//	</TabItem>
+	//	<TabItem value="yaml">
+	//	```yaml
+	//	const:
+	//	  types:
+	//	    - int
+	//	    - float
+	//	```
+	//	</TabItem>
+	//	</Tabs>
 	//
 	//	```next
 	//	package demo;
@@ -409,29 +520,48 @@ type Const struct {
 	//	const z = "hello";
 	//	// Error: string type is not allowed in the const declaration
 	//	```
-	Types []string `json:",omitempty"`
+	Types []string `json:"types"`
 
 	// @api(Grammar/Const.Annotations) represents the [Annotation](#Grammar/Common/Annotation) grammar rules for the const declaration.
-	Annotations Annotations `json:",omitempty"`
+	Annotations Annotations `json:"annotations"`
 
 	// @api(Grammar/Const.Validators) represents the [Validator](#Grammar/Common/Validator) for the const declaration.
 	// It's used to validate the const name. You can access the const name by `.Name`.
 	//
 	// Example:
 	//
+	//	<Tabs
+	//		defaultValue="yaml"
+	//		values={[
+	//			{label: 'YAML', value: 'yaml'},
+	//			{label: 'JSON', value: 'json'},
+	//		]}
+	//	>
+	//	<TabItem value="json">
 	//	```json
 	//	{
-	//	  "Const": {
-	//	    "Validators": [
+	//	  "const": {
+	//	    "validators": [
 	//	      {
-	//	        "Name": "ConstNameMustBeCapitalized",
-	//	        "Expression": "{{eq .Name (.Name | capitalize)}}",
-	//	        "Message": "const name must be capitalized"
+	//	        "name": "ConstNameMustBeCapitalized",
+	//	        "expression": "{{eq .Name (.Name | capitalize)}}",
+	//	        "message": "const name must be capitalized"
 	//	      }
 	//	    ]
 	//	  }
 	//	}
 	//	```
+	//	</TabItem>
+	//	<TabItem value="yaml">
+	//	```yaml
+	//	const:
+	//	  validators:
+	//	    - name: ConstNameMustBeCapitalized
+	//	      expression: "{{eq .Name (.Name | capitalize)}}"
+	//	      message: const name must be capitalized
+	//	```
+	//	</TabItem>
+	//	</Tabs>
 	//
 	//	```next
 	//	package demo;
@@ -442,23 +572,39 @@ type Const struct {
 	//	const world = 1;
 	//	// Error: const name must be capitalized, expected: World
 	//	```
-	Validators Validators `json:",omitempty"`
+	Validators Validators `json:"validators"`
 }
 
 // @api(Grammar/Enum) represents the grammar rules for the enum declaration.
 type Enum struct {
-	// @api(Grammar/Enum.Off) represents the enum declaration is off or not.
+	// @api(Grammar/Enum.Disabled) represents the enum declaration is off or not.
 	// If the enum declaration is off, the enum declaration is not allowed in the next files.
 	//
 	// Example:
 	//
+	//	<Tabs
+	//		defaultValue="yaml"
+	//		values={[
+	//			{label: 'YAML', value: 'yaml'},
+	//			{label: 'JSON', value: 'json'},
+	//		]}
+	//	>
+	//	<TabItem value="json">
 	//	```json
 	//	{
-	//	  "Enum": {
-	//	    "Off": true
+	//	  "enum": {
+	//	    "disabled": true
 	//	  }
 	//	}
 	//	```
+	//	</TabItem>
+	//	<TabItem value="yaml">
+	//	```yaml
+	//	enum:
+	//	  disabled: true
+	//	```
+	//	</TabItem>
+	//	</Tabs>
 	//
 	//	```next
 	//	package demo;
@@ -471,29 +617,48 @@ type Enum struct {
 	//	}
 	//	// Error: enum declaration is not allowed
 	//	```
-	Off bool `json:",omitempty"`
+	Disabled bool `json:"disabled"`
 
 	// @api(Grammar/Enum.Annotations) represents the [Annotation](#Grammar/Common/Annotation) grammar rules for the enum declaration.
-	Annotations Annotations `json:",omitempty"`
+	Annotations Annotations `json:"annotations"`
 
 	// @api(Grammar/Enum.Validators) represents the [Validator](#Grammar/Common/Validator) for the enum declaration.
 	// It's used to validate the enum name. You can access the enum name by `.Name`.
 	//
 	// Example:
 	//
+	//	<Tabs
+	//		defaultValue="yaml"
+	//		values={[
+	//			{label: 'YAML', value: 'yaml'},
+	//			{label: 'JSON', value: 'json'},
+	//		]}
+	//	>
+	//	<TabItem value="json">
 	//	```json
 	//	{
-	//	  "Enum": {
-	//	    "Validators": [
+	//	  "enum": {
+	//	    "validators": [
 	//	      {
-	//	        "Name": "EnumNameMustBeCapitalized",
-	//	        "Expression": "{{eq .Name (.Name | capitalize)}}",
-	//	        "Message": "enum name must be capitalized"
+	//	        "name": "EnumNameMustBeCapitalized",
+	//	        "expression": "{{eq .Name (.Name | capitalize)}}",
+	//	        "message": "enum name must be capitalized"
 	//	      }
 	//	    ]
 	//	  }
 	//	}
 	//	```
+	//	</TabItem>
+	//	<TabItem value="yaml">
+	//	```yaml
+	//	enum:
+	//	  validators:
+	//	    - name: EnumNameMustBeCapitalized
+	//	      expression: "{{eq .Name (.Name | capitalize)}}"
+	//	      message: enum name must be capitalized
+	//	```
+	//	</TabItem>
+	//	</Tabs>
 	//
 	//	```next
 	//	package demo;
@@ -513,10 +678,10 @@ type Enum struct {
 	//	}
 	//	// Error: enum name must be capitalized, expected: Size
 	//	```
-	Validators Validators `json:",omitempty"`
+	Validators Validators `json:"validators"`
 
 	// @api(Grammar/Enum.Member) represents the [EnumMember](#Grammar/EnumMember) grammar rules for the enum declaration.
-	Member EnumMember
+	Member EnumMember `json:"member"`
 }
 
 // @api(Grammar/EnumMember) represents the grammar rules for the enum member declaration.
@@ -534,15 +699,33 @@ type EnumMember struct {
 	//
 	// Example:
 	//
+	//	<Tabs
+	//		defaultValue="yaml"
+	//		values={[
+	//			{label: 'YAML', value: 'yaml'},
+	//			{label: 'JSON', value: 'json'},
+	//		]}
+	//	>
+	//	<TabItem value="json">
 	//	```json
 	//	{
-	//	  "Enum": {
-	//	    "Member": {
-	//	      "Types": ["int"]
+	//	  "enum": {
+	//	    "member": {
+	//	      "types": ["int"]
 	//	    }
 	//	  }
 	//	}
 	//	```
+	//	</TabItem>
+	//	<TabItem value="yaml">
+	//	```yaml
+	//	enum:
+	//	  member:
+	//	    types:
+	//	      - int
+	//	```
+	//	</TabItem>
+	//	</Tabs>
 	//
 	//	```next
 	//	package demo;
@@ -562,22 +745,39 @@ type EnumMember struct {
 	//	}
 	//	// Error: string type is not allowed in the enum declaration
 	//	```
-	Types []string `json:",omitempty"`
+	Types []string `json:"types"`
 
 	// @api(Grammar/EnumMember.ValueRequired) represents the enum member value is required or not.
 	// If the enum member value is required, the enum member value must be specified in the next files.
 	//
 	// Example:
 	//
+	//	<Tabs
+	//		defaultValue="yaml"
+	//		values={[
+	//			{label: 'YAML', value: 'yaml'},
+	//			{label: 'JSON', value: 'json'},
+	//		]}
+	//	>
+	//	<TabItem value="json">
 	//	```json
 	//	{
-	//	  "Enum": {
-	//	    "Member": {
-	//	      "ValueRequired": true
+	//	  "enum": {
+	//	    "member": {
+	//	      "value_required": true
 	//	    }
 	//	  }
 	//	}
 	//	```
+	//	</TabItem>
+	//	<TabItem value="yaml">
+	//	```yaml
+	//	enum:
+	//	  member:
+	//	    value_required: true
+	//	```
+	//	</TabItem>
+	//	</Tabs>
 	//
 	//	```next
 	//	package demo;
@@ -590,7 +790,7 @@ type EnumMember struct {
 	//	  // Error: enum member value is required
 	//	}
 	//	```
-	ValueRequired bool `json:",omitempty"`
+	ValueRequired bool `json:"value_required"`
 
 	// @api(Grammar/EnumMember.ZeroRequired) represents the enum member zero value for integer types is required or not.
 	//
@@ -598,15 +798,32 @@ type EnumMember struct {
 	//
 	// Example:
 	//
+	//	<Tabs
+	//		defaultValue="yaml"
+	//		values={[
+	//			{label: 'YAML', value: 'yaml'},
+	//			{label: 'JSON', value: 'json'},
+	//		]}
+	//	>
+	//	<TabItem value="json">
 	//	```json
 	//	{
-	//	  "Enum": {
-	//	    "Member": {
-	//	      "ZeroRequired": true
+	//	  "enum": {
+	//	    "member": {
+	//	      "zero_required": true
 	//	    }
 	//	  }
 	//	}
 	//	```
+	//	</TabItem>
+	//	<TabItem value="yaml">
+	//	```yaml
+	//	enum:
+	//	  member:
+	//	    zero_required: true
+	//	```
+	//	</TabItem>
+	//	</Tabs>
 	//
 	//	```next
 	//	package demo;
@@ -624,10 +841,10 @@ type EnumMember struct {
 	//	//   Large = 2
 	//	// }
 	//	```
-	ZeroRequired bool `json:",omitempty"`
+	ZeroRequired bool `json:"zero_required"`
 
 	// @api(Grammar/EnumMember.Annotations) represents the [Annotation](#Grammar/Common/Annotation) grammar rules for the enum member declaration.
-	Annotations Annotations `json:",omitempty"`
+	Annotations Annotations `json:"annotations"`
 
 	// @api(Grammar/EnumMember.Validators) represents the [Validator](#Grammar/Common/Validator) for the enum member declaration.
 	//
@@ -635,21 +852,41 @@ type EnumMember struct {
 	//
 	// Example:
 	//
+	//	<Tabs
+	//		defaultValue="yaml"
+	//		values={[
+	//			{label: 'YAML', value: 'yaml'},
+	//			{label: 'JSON', value: 'json'},
+	//		]}
+	//	>
+	//	<TabItem value="json">
 	//	```json
 	//	{
-	//	  "Enum": {
-	//	    "Member": {
-	//	      "Validators": [
+	//	  "enum": {
+	//	    "member": {
+	//	      "validators": [
 	//	        {
-	//	          "Name": "EnumMemberNameMustBeCapitalized",
-	//	          "Expression": "{{eq .Name (.Name | capitalize)}}",
-	//	          "Message": "enum member name must be capitalized"
+	//	          "name": "EnumMemberNameMustBeCapitalized",
+	//	          "expression": "{{eq .Name (.Name | capitalize)}}",
+	//	          "message": "enum member name must be capitalized"
 	//	        }
 	//	      ]
 	//	    }
 	//	  }
 	//	}
 	//	```
+	//	</TabItem>
+	//	<TabItem value="yaml">
+	//	```yaml
+	//	enum:
+	//	  member:
+	//	    validators:
+	//	      - name: EnumMemberNameMustBeCapitalized
+	//	        expression: "{{eq .Name (.Name | capitalize)}}"
+	//	        message: enum member name must be capitalized
+	//	```
+	//	</TabItem>
+	//	</Tabs>
 	//
 	//	```next
 	//	package demo;
@@ -662,23 +899,39 @@ type EnumMember struct {
 	//	  // Error: enum member name must be capitalized, expected: Large
 	//	}
 	//	```
-	Validators Validators `json:",omitempty"`
+	Validators Validators `json:"validators"`
 }
 
 // @api(Grammar/Struct) represents the grammar rules for the struct declaration.
 type Struct struct {
-	// @api(Grammar/Struct.Off) represents the struct declaration is off or not.
+	// @api(Grammar/Struct.Disabled) represents the struct declaration is off or not.
 	// If the struct declaration is off, the struct declaration is not allowed in the next files.
 	//
 	// Example:
 	//
+	//	<Tabs
+	//		defaultValue="yaml"
+	//		values={[
+	//			{label: 'YAML', value: 'yaml'},
+	//			{label: 'JSON', value: 'json'},
+	//		]}
+	//	>
+	//	<TabItem value="json">
 	//	```json
 	//	{
-	//	  "Struct": {
-	//	    "Off": true
+	//	  "struct": {
+	//	    "disabled": true
 	//	  }
 	//	}
 	//	```
+	//	</TabItem>
+	//	<TabItem value="yaml">
+	//	```yaml
+	//	struct:
+	//	  disabled: true
+	//	```
+	//	</TabItem>
+	//	</Tabs>
 	//
 	//	```next
 	//	package demo;
@@ -690,29 +943,48 @@ type Struct struct {
 	//	}
 	//	// Error: struct declaration is not allowed
 	//	```
-	Off bool `json:",omitempty"`
+	Disabled bool `json:"disabled"`
 
 	// @api(Grammar/Struct.Annotations) represents the [Annotation](#Grammar/Common/Annotation) grammar rules for the struct declaration.
-	Annotations Annotations `json:",omitempty"`
+	Annotations Annotations `json:"annotations"`
 
 	// @api(Grammar/Struct.Validators) represents the [Validator](#Grammar/Common/Validator) for the struct declaration.
 	// It's used to validate the struct name. You can access the struct name by `.Name`.
 	//
 	// Example:
 	//
+	//	<Tabs
+	//		defaultValue="yaml"
+	//		values={[
+	//			{label: 'YAML', value: 'yaml'},
+	//			{label: 'JSON', value: 'json'},
+	//		]}
+	//	>
+	//	<TabItem value="json">
 	//	```json
 	//	{
-	//	  "Struct": {
-	//	    "Validators": [
+	//	  "struct": {
+	//	    "validators": [
 	//	      {
-	//	        "Name": "StructNameMustBeCapitalized",
-	//	        "Expression": "{{eq .Name (.Name | capitalize)}}",
-	//	        "Message": "struct name must be capitalized"
+	//	        "name": "StructNameMustBeCapitalized",
+	//	        "expression": "{{eq .Name (.Name | capitalize)}}",
+	//	        "message": "struct name must be capitalized"
 	//	      }
 	//	    ]
 	//	  }
 	//	}
 	//	```
+	//	</TabItem>
+	//	<TabItem value="yaml">
+	//	```yaml
+	//	struct:
+	//	  validators:
+	//	    - name: StructNameMustBeCapitalized
+	//	      expression: "{{eq .Name (.Name | capitalize)}}"
+	//	      message: struct name must be capitalized
+	//	```
+	//	</TabItem>
+	//	</Tabs>
 	//
 	//	```next
 	//	package demo;
@@ -730,37 +1002,57 @@ type Struct struct {
 	//	}
 	//	// Error: struct name must be capitalized, expected: Point
 	//	```
-	Validators Validators `json:",omitempty"`
+	Validators Validators `json:"validators"`
 
 	// @api(Grammar/Struct.Field) represents the [StructField](#Grammar/StructField) grammar rules for the struct declaration.
-	Field StructField
+	Field StructField `json:"field"`
 }
 
 // @api(Grammar/StructField) represents the grammar rules for the struct field declaration.
 type StructField struct {
 	// @api(Grammar/StructField.Annotations) represents the [Annotation](#Grammar/Common/Annotation) grammar rules for the struct field declaration.
-	Annotations Annotations `json:",omitempty"`
+	Annotations Annotations `json:"annotations"`
 
 	// @api(Grammar/StructField.Validators) represents the [Validator](#Grammar/Common/Validator) for the struct field declaration.
 	// It's used to validate the struct field name. You can access the struct field name by `.Name`.
 	//
 	// Example:
 	//
+	//	<Tabs
+	//		defaultValue="yaml"
+	//		values={[
+	//			{label: 'YAML', value: 'yaml'},
+	//			{label: 'JSON', value: 'json'},
+	//		]}
+	//	>
+	//	<TabItem value="json">
 	//	```json
 	//	{
-	//	  "Struct": {
-	//	    "Field": {
-	//	      "Validators": [
+	//	  "struct": {
+	//	    "field": {
+	//	      "validators": [
 	//	        {
-	//	          "Name": "StructFieldNameMustNotBeCapitalized",
-	//	          "Expression": "{{ne .Name (capitalize .Name)}}",
-	//	          "Message": "struct field name must not be capitalized"
+	//	          "name": "StructFieldNameMustNotBeCapitalized",
+	//	          "expression": "{{ne .Name (capitalize .Name)}}",
+	//	          "message": "struct field name must not be capitalized"
 	//	        }
 	//	      ]
 	//	    }
 	//	  }
 	//	}
 	//	```
+	//	</TabItem>
+	//	<TabItem value="yaml">
+	//	```yaml
+	//	struct:
+	//	  field:
+	//	    validators:
+	//	      - name: StructFieldNameMustNotBeCapitalized
+	//	        expression: "{{ne .Name (capitalize .Name)}}"
+	//	        message: struct field name must not be capitalized
+	//	```
+	//	</TabItem>
+	//	</Tabs>
 	//
 	//	```next
 	//	package demo;
@@ -772,23 +1064,39 @@ type StructField struct {
 	//	  // Error: struct field name must not be capitalized, expected: name
 	//	}
 	//	```
-	Validators Validators `json:",omitempty"`
+	Validators Validators `json:"validators"`
 }
 
 // @api(Grammar/Interface) represents the grammar rules for the interface declaration.
 type Interface struct {
-	// @api(Grammar/Interface.Off) represents the interface declaration is off or not.
+	// @api(Grammar/Interface.Disabled) represents the interface declaration is off or not.
 	// If the interface declaration is off, the interface declaration is not allowed in the next files.
 	//
 	// Example:
 	//
+	//	<Tabs
+	//		defaultValue="yaml"
+	//		values={[
+	//			{label: 'YAML', value: 'yaml'},
+	//			{label: 'JSON', value: 'json'},
+	//		]}
+	//	>
+	//	<TabItem value="json">
 	//	```json
 	//	{
-	//	  "Interface": {
-	//	    "Off": true
+	//	  "interface": {
+	//	    "disabled": true
 	//	  }
 	//	}
 	//	```
+	//	</TabItem>
+	//	<TabItem value="yaml">
+	//	```yaml
+	//	interface:
+	//	  disabled: true
+	//	```
+	//	</TabItem>
+	//	</Tabs>
 	//
 	//	```next
 	//	package demo;
@@ -799,29 +1107,48 @@ type Interface struct {
 	//	}
 	//	// Error: interface declaration is not allowed
 	//	```
-	Off bool `json:",omitempty"`
+	Disabled bool `json:"disabled"`
 
 	// @api(Grammar/Interface.Annotations) represents the [Annotation](#Grammar/Common/Annotation) grammar rules for the interface declaration.
-	Annotations Annotations `json:",omitempty"`
+	Annotations Annotations `json:"annotations"`
 
 	// @api(Grammar/Interface.Validators) represents the [Validator](#Grammar/Common/Validator) for the interface declaration.
 	// It's used to validate the interface name. You can access the interface name by `.Name`.
 	//
 	// Example:
 	//
+	//	<Tabs
+	//		defaultValue="yaml"
+	//		values={[
+	//			{label: 'YAML', value: 'yaml'},
+	//			{label: 'JSON', value: 'json'},
+	//		]}
+	//	>
+	//	<TabItem value="json">
 	//	```json
 	//	{
-	//	  "Interface": {
-	//	    "Validators": [
+	//	  "interface": {
+	//	    "validators": [
 	//	      {
-	//	        "Name": "InterfaceNameMustBeCapitalized",
-	//	        "Expression": "{{eq .Name (.Name | capitalize)}}",
-	//	        "Message": "interface name must be capitalized"
+	//	        "name": "InterfaceNameMustBeCapitalized",
+	//	        "expression": "{{eq .Name (.Name | capitalize)}}",
+	//	        "message": "interface name must be capitalized"
 	//	      }
 	//	    ]
 	//	  }
 	//	}
 	//	```
+	//	</TabItem>
+	//	<TabItem value="yaml">
+	//	```yaml
+	//	interface:
+	//	  validators:
+	//	    - name: InterfaceNameMustBeCapitalized
+	//	      expression: "{{eq .Name (.Name | capitalize)}}"
+	//	      message: interface name must be capitalized
+	//	```
+	//	</TabItem>
+	//	</Tabs>
 	//
 	//	```next
 	//	package demo;
@@ -837,65 +1164,99 @@ type Interface struct {
 	//	}
 	//	// Error: interface name must be capitalized, expected: User
 	//	```
-	Validators Validators `json:",omitempty"`
+	Validators Validators `json:"validators"`
 
 	// @api(Grammar/Interface.Method) represents the [InterfaceMethod](#Grammar/InterfaceMethod) grammar rules for the interface declaration.
-	Method InterfaceMethod
+	Method InterfaceMethod `json:"method"`
 }
 
 // @api(Grammar/InterfaceMethod) represents the grammar rules for the interface method declaration.
 //
 // Example:
 //
+//	<Tabs
+//		defaultValue="yaml"
+//		values={[
+//			{label: 'YAML', value: 'yaml'},
+//			{label: 'JSON', value: 'json'},
+//		]}
+//	>
+//	<TabItem value="json">
 //	```json
 //	{
-//	  "Interface": {
-//	    "Method": {
-//	      "Annotations": [
+//	  "interface": {
+//	    "method": {
+//	      "annotations": [
 //	        {
-//	          "Name": "http",
-//	          "Description": "Sets the method as an HTTP handler.",
-//	          "Parameters": [
+//	          "name": "http",
+//	          "description": "Sets the method as an HTTP handler.",
+//	          "parameters": [
 //	            {
-//	              "Name": "method",
-//	              "Description": "Sets the HTTP method.",
-//	              "Type": "string",
-//	              "Required": true
-//	              "Validators": [
+//	              "name": "method",
+//	              "description": "Sets the HTTP method.",
+//	              "type": "string",
+//	              "required": true
+//	              "validators": [
 //	                {
-//	                  "Name": "HTTPMethodMustBeValid",
-//	                  "Expression": "{{includes (list `GET` `POST` `PUT` `DELETE` `PATCH` `HEAD` `OPTIONS` `TRACE` `CONNECT`) .}}",
-//	                  "Message": "http method must be valid"
+//	                  "name": "HTTPMethodMustBeValid",
+//	                  "expression": "{{includes (list `GET` `POST` `PUT` `DELETE` `PATCH` `HEAD` `OPTIONS` `TRACE` `CONNECT`) .}}",
+//	                  "message": "http method must be valid"
 //	                }
 //	              ]
 //	            }
 //	          ]
 //	        }
 //	      ],
-//	      "Validators": [
+//	      "validators": [
 //	        {
-//	          "Name": "MethodNameMustBeCapitalized",
-//	          "Expression": "{{eq .Name (.Name | capitalize)}}",
-//	          "Message": "method name must be capitalized"
+//	          "name": "MethodNameMustBeCapitalized",
+//	          "expression": "{{eq .Name (.Name | capitalize)}}",
+//	          "message": "method name must be capitalized"
 //	        }
 //	      ]
 //	    }
 //	  }
 //	}
 //	```
+//	</TabItem>
+//	<TabItem value="yaml">
+//	```yaml
+//	interface:
+//	  method:
+//	    annotations:
+//	      - name: http
+//	        description: Sets the method as an HTTP handler.
+//	        parameters:
+//	          - name: method
+//	            description: Sets the HTTP method.
+//	            type: string
+//	            required: true
+//	            validators:
+//	              - name: HTTPMethodMustBeValid
+//	                expression: "{{includes (list `GET` `POST` `PUT` `DELETE` `PATCH` `HEAD` `OPTIONS` `TRACE` `CONNECT`) .}}"
+//	                message: http method must be valid
+//	    validators:
+//	      - name: MethodNameMustBeCapitalized
+//	        expression: "{{eq .Name (.Name | capitalize)}}"
+//	        message: method name must be capitalized
+//	```
+//	</TabItem>
+//	</Tabs>
 type InterfaceMethod struct {
 	// @api(Grammar/InterfaceMethod.Annotations) represents the [Annotation](#Grammar/Common/Annotation) grammar rules for the interface method declaration.
-	Annotations Annotations `json:",omitempty"`
+	Annotations Annotations `json:"annotations"`
 	// @api(Grammar/InterfaceMethod.Validators) represents the [Validator](#Grammar/Common/Validator) for the interface method declaration.
-	Validators Validators `json:",omitempty"`
+	Validators Validators `json:"validators"`
+	// @api(Grammar/InterfaceMethod.Parameter) represents the [InterfaceMethodParameter](#Grammar/InterfaceMethodParameter) grammar rules for the interface method declaration.
+	Parameter InterfaceMethodParameter `json:"parameter"`
+}
 
-	// @api(Grammar/InterfaceMethod/Parameter) represents the grammar rules for the interface method parameter declaration.
-	Parameter struct {
-		// @api(Grammar/InterfaceMethod/Parameter.Annotations) represents the [Annotation](#Grammar/Common/Annotation) grammar rules for the interface method parameter declaration.
-		Annotations Annotations `json:",omitempty"`
-		// @api(Grammar/InterfaceMethod/Parameter.Validators) represents the [Validator](#Grammar/Common/Validator) for the interface method parameter declaration.
-		Validators Validators `json:",omitempty"`
-	}
+// @api(Grammar/InterfaceMethodParameter) represents the grammar rules for the interface method parameter declaration.
+type InterfaceMethodParameter struct {
+	// @api(Grammar/InterfaceMethodParameter.Annotations) represents the [Annotation](#Grammar/Common/Annotation) grammar rules for the interface method parameter declaration.
+	Annotations Annotations `json:"annotations"`
+	// @api(Grammar/InterfaceMethodParameter.Validators) represents the [Validator](#Grammar/Common/Validator) for the interface method parameter declaration.
+	Validators Validators `json:"validators"`
 }
 
 // Resolve resolves the grammar rules.
@@ -1160,7 +1521,7 @@ func LANG_type() AnnotationParameter {
 //	Run the following command to generate the default grammar:
 //
 //	```sh
-//	next grammar grammar.json
+//	next grammar grammar.yaml
 //	```
 //
 //	You can use this grammar as a starting point for your own grammar.
@@ -1217,10 +1578,7 @@ var Default = Grammar{
 		Annotations: at("next@interface", "deprecated"),
 		Method: InterfaceMethod{
 			Annotations: at("next@interface.method", "deprecated"),
-			Parameter: struct {
-				Annotations Annotations `json:",omitempty"`
-				Validators  Validators  `json:",omitempty"`
-			}{
+			Parameter: InterfaceMethodParameter{
 				Annotations: at("next@interface.method.parameter", "deprecated"),
 			},
 		},

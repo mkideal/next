@@ -68,21 +68,21 @@ func createSearchDirs(platform Platform) []string {
 
 // Genertate generates files for each language specified in the flags.outputs.
 func Generate(c *Compiler) error {
-	if len(c.flags.outputs) == 0 {
+	if len(c.options.Output) == 0 {
 		return nil
 	}
-	c.Trace("flags.envs: ", c.flags.envs)
-	c.Trace("flags.outputs: ", c.flags.outputs)
-	c.Trace("flags.templates: ", c.flags.templates)
-	c.Trace("flags.mappings: ", c.flags.mappings)
+	c.Trace("flags.envs: ", c.options.Env)
+	c.Trace("flags.outputs: ", c.options.Output)
+	c.Trace("flags.templates: ", c.options.Templates)
+	c.Trace("flags.mappings: ", c.options.Mapping)
 
-	if c.flags.outputs.Get("next") != "" {
+	if c.options.Output.Get("next") != "" {
 		return fmt.Errorf("output language 'next' is not supported")
 	}
 
 	// Check whether the template directory or file exists for each language
-	for lang := range c.flags.outputs {
-		for _, tmplPath := range c.flags.templates[lang] {
+	for lang := range c.options.Output {
+		for _, tmplPath := range c.options.Templates[lang] {
 			if c.platform.IsNotExist(tmplPath) {
 				return fmt.Errorf("template path %q not found: %q", lang, tmplPath)
 			}
@@ -91,16 +91,16 @@ func Generate(c *Compiler) error {
 
 	// Load all mappings from all map files
 	m := make(flags.Map)
-	for lang := range c.flags.outputs {
+	for lang := range c.options.Output {
 		if err := loadMap(c, m, lang); err != nil {
 			return err
 		}
 	}
-	for k, v := range c.flags.mappings {
+	for k, v := range c.options.Mapping {
 		m[k] = v
 	}
-	c.flags.mappings = m
-	if c.flags.verbose >= verboseTrace {
+	c.options.Mapping = m
+	if c.options.Verbose >= verboseTrace {
 		keys := make([]string, 0, len(m))
 		for k := range m {
 			keys = append(keys, k)
@@ -112,15 +112,15 @@ func Generate(c *Compiler) error {
 	}
 
 	// Generate files for each language
-	langs := make([]string, 0, len(c.flags.outputs))
-	for lang := range c.flags.outputs {
+	langs := make([]string, 0, len(c.options.Output))
+	for lang := range c.options.Output {
 		langs = append(langs, lang)
 	}
 	slices.Sort(langs)
 	for _, lang := range langs {
-		dir := c.flags.outputs[lang]
-		ext := op.Or(c.flags.mappings[lang+".ext"], "."+lang)
-		tempPaths := c.flags.templates[lang]
+		dir := c.options.Output[lang]
+		ext := op.Or(c.options.Mapping[lang+".ext"], "."+lang)
+		tempPaths := c.options.Templates[lang]
 		if len(tempPaths) == 0 {
 			return fmt.Errorf("no template directory specified for %q", lang)
 		}
@@ -490,7 +490,7 @@ func gen[T Decl](tc *templateContext, t *template.Template, decl T, content []by
 	}
 
 	// Do not write the generated content to the output file if the test flag is set
-	if tc.compiler.flags.test {
+	if tc.compiler.options.test {
 		return nil
 	}
 

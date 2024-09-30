@@ -597,8 +597,8 @@ func (c *Compiler) solveAnnotations() error {
 	parser := shellwords.NewParser()
 	parser.ParseEnv = true
 	programs := make(map[string][][]string)
-	keys := make([]string, 0, len(c.flags.solvers))
-	for name, solvers := range c.flags.solvers {
+	keys := make([]string, 0, len(c.options.Solvers))
+	for name, solvers := range c.options.Solvers {
 		if name == "next" {
 			return fmt.Errorf("'next' is a reserved annotation for the next compiler, please don't use solvers for it")
 		}

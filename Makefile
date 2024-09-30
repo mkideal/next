@@ -117,7 +117,7 @@ example/gen:
 		-O php=${EXAMPLE_DIR}/gen/php -T php=${EXAMPLE_DIR}/templates/php \
 		-O lua=${EXAMPLE_DIR}/gen/lua -T lua=${EXAMPLE_DIR}/templates/lua \
 		-M "c.vector=void*" -M "c.map=void*" \
-		-s -g ${EXAMPLE_DIR}/grammar.json \
+		-s -g ${EXAMPLE_DIR}/grammar.yaml \
 		${EXAMPLE_DIR}/next/
 	@if [ -d ${EXAMPLE_DIR}/gen/rust ]; then cd ${EXAMPLE_DIR}/gen/rust && cargo init --vcs none -q; fi
 

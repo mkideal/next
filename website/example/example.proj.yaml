@@ -1,0 +1,53 @@
+# This is a project configuration file. Usage: next run example.proj.yaml
+
+# Enable the strict mode, like the -s flag
+strict: true
+
+# Verbose level, like the -v flag
+# 0: quiet, 1: normal, 2: verbose
+verbose: 0
+
+# Grammar file, like the -g flag
+grammar: grammar.yaml
+
+# Variables, like the -d flag
+env:
+  PROJECT_NAME: demo
+
+# Output directories for target languages, like the -O flag
+output:
+  go: gen/go
+  java: gen/java
+  cpp: gen/cpp
+  csharp: gen/csharp
+  c: gen/c
+  rust: gen/rust/src
+  protobuf: gen/protobuf
+  js: gen/js
+  ts: gen/ts
+  python: gen/python
+  php: gen/php
+  lua: gen/lua
+
+# Templates for target languages, like the -T flag
+templates:
+  go: [templates/go]
+  java: [templates/java]
+  cpp: [templates/cpp]
+  csharp: [templates/csharp]
+  c: [templates/c]
+  rust: [templates/rust]
+  protobuf: [templates/protobuf]
+  js: [templates/js]
+  ts: [templates/ts]
+  python: [templates/python]
+  php: [templates/php]
+  lua: [templates/lua]
+
+# Features or types mapping, like the -M flag
+mapping:
+  c.vector: void*
+  c.map: void*
+
+# Source directories or files, like the rest arguments in the command line
+sources: [next]

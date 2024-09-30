@@ -8,6 +8,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -16,9 +17,12 @@ import (
 	"text/template"
 
 	"github.com/gopherd/core/builder"
+	"github.com/gopherd/core/encoding"
 	"github.com/gopherd/core/flags"
 	"github.com/gopherd/core/op"
 	"github.com/gopherd/core/term"
+	"gopkg.in/yaml.v3"
+
 	"github.com/next/next/src/grammar"
 	"github.com/next/next/src/internal/fsutil"
 	"github.com/next/next/src/parser"
@@ -38,20 +42,12 @@ const website = "https://next.as"
 const repository = "https://github.com/next/next"
 
 type command struct {
-	desc string
-	fn   func(io.Writer, []string) error
+	description string
+	run         func(*Compiler, []string) error
 }
 
-func newCommand(desc string, fn func(io.Writer, []string) error) *command {
-	return &command{desc: desc, fn: fn}
-}
-
-func (c *command) description() string {
-	return c.desc
-}
-
-func (c *command) run(stderr io.Writer, args []string) error {
-	return c.fn(stderr, args)
+func newCommand(desc string, run func(*Compiler, []string) error) *command {
+	return &command{description: desc, run: run}
 }
 
 var commands = map[string]*command{
@@ -69,47 +65,147 @@ var commands = map[string]*command{
 	//	```
 	//	next v0.0.4(main: 51864a35de7890d63bfd8acecdb62d20372ca963) built at 2024/09/27T22:58:21+0800 by go1.23.0
 	//	```
-	"version": newCommand("print the version of the next compiler", func(stderr io.Writer, _ []string) error {
-		builder.PrintInfo()
-		unwrap(stderr, 0)
-		return nil
-	}),
+	"version": newCommand(
+		"Print the version of the next compiler",
+		func(c *Compiler, _ []string) error {
+			builder.PrintInfo()
+			unwrap(c.platform.Stderr(), 0)
+			return nil
+		},
+	),
 
 	// @api(CommandLine/Command/grammar) command generates the default grammar for the next files.
 	//
 	// Example:
 	//
 	//	```sh
-	//	next grammar grammar.json
+	//	next grammar # generate the default grammar to the standard output with YAML format
+	//	next grammar grammar.yaml # generate the default grammar with YAML format
+	//	next grammar grammar.yml # generate the default grammar with YAML format
+	//	next grammar grammar.json # generate the default grammar with JSON format
 	//	```
 	//
-	// Or you can run the following command to generate the default grammar to the standard output:
+	//	:::note
+	//	The default grammar is generated in YAML format if the file extension is not provided.
+	//	Currently, the supported file extensions are `.json`, `.yaml`, and `.yml` (alias of `.yaml`).
+	//	:::
+	"grammar": newCommand(
+		"Generate the default grammar for the next files: next grammar [filename]",
+		func(_ *Compiler, args []string) error {
+			var path string
+			var ext string
+			if len(args) > 2 {
+				return fmt.Errorf("too many arguments: next %s [filename]", args[0])
+			}
+			if len(args) == 2 {
+				path = args[1]
+				ext = filepath.Ext(path)
+			}
+
+			content, err := json.MarshalIndent(grammar.Default, "", "  ")
+			if err == nil {
+				switch ext {
+				case ".json":
+				case "", ".yaml", ".yml":
+					var buf bytes.Buffer
+					enc := yaml.NewEncoder(&buf)
+					enc.SetIndent(2)
+					content, err = encoding.Transform(content, json.Unmarshal, func(x any) ([]byte, error) {
+						if err := enc.Encode(x); err != nil {
+							return nil, err
+						}
+						return buf.Bytes(), nil
+					})
+				default:
+					return fmt.Errorf("unsupported file extension: %q, use .json, .yaml, or .yml", ext)
+				}
+			}
+			if err != nil {
+				return err
+			}
+			if path != "" {
+				return os.WriteFile(path, content, 0644)
+			}
+			fmt.Println(string(content))
+			return nil
+		},
+	),
+
+	// @api(CommandLine/Command/run) command runs a next project.
+	// It reads the project file and compiles the source files according to the project configuration.
+	// The project file is a YAML file that contains the project [Configuration](#CommandLine/Configuration).
+	//
+	// Example:
+	//
 	//	```sh
-	//	next grammar
+	//	next run demo.yaml
 	//	```
-	"grammar": newCommand("generate the default grammar for the next files", func(stderr io.Writer, args []string) error {
-		if len(args) > 2 {
-			return fmt.Errorf("too many arguments: next %s [filename]", args[0])
-		}
-		content, err := json.MarshalIndent(grammar.Default, "", "  ")
-		if err != nil {
-			return err
-		}
-		if len(args) == 2 {
-			return os.WriteFile(args[1], content, 0644)
-		}
-		fmt.Println(string(content))
-		return nil
-	}),
+	"run": newCommand(
+		"Run a next project: next run <project_file>",
+		func(c *Compiler, args []string) error {
+			if len(args) != 2 {
+				return fmt.Errorf("wrong number of arguments: next run <project_file>")
+			}
+			path := args[1]
+			content, err := os.ReadFile(path)
+			if err != nil {
+				return fmt.Errorf("failed to read %q: %w", path, err)
+			}
+			var options struct {
+				*Configuration `yaml:",inline"`
+
+				// @api(CommandLine/Configuration.sources) represents the source directories or files.
+				//
+				// Example:
+				//
+				//	```yaml
+				//	sources:
+				//	  - demo.next
+				//	  - src/next/
+				//	```
+				Sources []string `yaml:"sources" json:"sources"`
+			}
+			options.Configuration = &c.options
+			var unmarshaler func([]byte, any) error
+			ext := filepath.Ext(path)
+			switch ext {
+			case ".json":
+				unmarshaler = json.Unmarshal
+			case "", ".yaml", ".yml":
+				unmarshaler = yaml.Unmarshal
+			default:
+				return fmt.Errorf("unsupported file extension: %q, use .json, .yaml, or .yml", ext)
+			}
+			if err := unmarshaler(content, &options); err != nil {
+				return fmt.Errorf("failed to parse %q: %v", path, err)
+			}
+			options.resolvePath(filepath.Dir(path))
+			var files []string
+			for _, arg := range options.Sources {
+				arg = filepath.Join(filepath.Dir(path), arg)
+				file, err := fsutil.AppendFiles(files, arg, nextExt, false)
+				if err != nil {
+					return fmt.Errorf("failed to read %q: %v", arg, err)
+				}
+				files = result(c.platform.Stderr(), file, err)
+			}
+			if len(files) == 0 {
+				return fmt.Errorf("no source files")
+			}
+			doCompile(c, files, nil)
+			return nil
+		},
+	),
 }
 
 // Compile compiles the next files.
 func Compile(platform Platform, builtin FileSystem, args []string) {
+	compiler := NewCompiler(platform, builtin)
 	stdin, stderr := platform.Stdin(), platform.Stderr()
 
 	if len(args) >= 2 {
 		if cmd, ok := commands[args[1]]; ok {
-			unwrap(stderr, cmd.run(stderr, args[1:]))
+			unwrap(stderr, cmd.run(compiler, args[1:]))
 			unwrap(stderr, 0)
 		}
 	}
@@ -117,7 +213,6 @@ func Compile(platform Platform, builtin FileSystem, args []string) {
 	flagSet := flag.NewFlagSet(args[0], flag.ContinueOnError)
 	flagSet.Usage = func() {}
 
-	compiler := NewCompiler(platform, builtin)
 	compiler.SetupCommandFlags(flagSet, flags.UseUsage(flagSet.Output(), flags.NameColor(term.Bold)))
 
 	// set output color for error messages
@@ -129,8 +224,18 @@ func Compile(platform Platform, builtin FileSystem, args []string) {
 		term.Fprint(flagSet.Output(), "Usage:\n")
 		term.Fprintf(flagSet.Output(), "  %s [Options] [source_dirs_or_files...] (default: current directory)\n", name)
 		term.Fprintf(flagSet.Output(), "  %s [Options] <stdin>\n", name)
-		term.Fprintf(flagSet.Output(), "  %s version            # print the version of the next compiler\n", name)
-		term.Fprintf(flagSet.Output(), "  %s grammar [filename] # generate the default grammar\n", name)
+		term.Fprintf(flagSet.Output(), "  %s <Command> [Command-Args]\n", name)
+		term.Fprintf(flagSet.Output(), "\nCommands:\n")
+
+		var maxCommandLength int
+		for _, name := range slices.Sorted(maps.Keys(commands)) {
+			maxCommandLength = max(maxCommandLength, len(name))
+		}
+		maxCommandLength += 4 // add 4 spaces for padding
+		for _, name := range slices.Sorted(maps.Keys(commands)) {
+			term.Fprintf(flagSet.Output(), "  %s%s%s\n", term.BrightMagenta.Colorize(name), strings.Repeat(" ", maxCommandLength-len(name)), commands[name].description)
+		}
+
 		term.Fprintf(flagSet.Output(), "\nOptions:\n")
 		flagSet.PrintDefaults()
 		term.Fprintf(flagSet.Output(), `For more information:
@@ -179,9 +284,17 @@ func Compile(platform Platform, builtin FileSystem, args []string) {
 			files = result(stderr, path, err)
 		}
 	}
+
 	if len(files) == 0 {
 		usage(flagSet, stderr, "no source files")
 	}
+
+	doCompile(compiler, files, source)
+}
+
+func doCompile(compiler *Compiler, files []string, source io.Reader) {
+	platform := compiler.platform
+	stderr := compiler.platform.Stderr()
 
 	// compute absolute path and remove duplicated files
 	if source == nil {
@@ -198,13 +311,22 @@ func Compile(platform Platform, builtin FileSystem, args []string) {
 	}
 
 	// read grammar file
-	if compiler.flags.grammar != "" {
-		content, err := platform.ReadFile(compiler.flags.grammar)
+	if compiler.options.Grammar != "" {
+		content, err := platform.ReadFile(compiler.options.Grammar)
 		content = result(stderr, content, err)
-		unwrap(stderr, json.Unmarshal(content, &compiler.grammar))
+		switch ext := filepath.Ext(compiler.options.Grammar); ext {
+		case ".json":
+		case "", ".yaml", ".yml":
+			content, err = encoding.Transform(content, yaml.Unmarshal, json.Marshal)
+			content = result(stderr, content, err)
+		default:
+			unwrap(stderr, fmt.Sprintf("unsupported file extension: %q, use .json, .yaml, or .yml", ext))
+		}
 		if err := compiler.grammar.Resolve(); err != nil {
 			return
 		}
+		unwrap(stderr, json.Unmarshal(content, &compiler.grammar))
+		unwrap(stderr, compiler.grammar.Resolve())
 	} else {
 		compiler.grammar = grammar.Default
 	}
