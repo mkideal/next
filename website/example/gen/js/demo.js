@@ -52,10 +52,10 @@ export class User {
         this.coordinates = [];
         /** @type { 'Array<'Array<Number>'>' } */
         this.matrix = [];
-        /** @type { 'number' } */
-        this.favoriteColor = Color[Object.keys(Color)[0]];
         /** @type { String } */
         this.email = "";
+        /** @type { 'number' } */
+        this.favoriteColor = Color[Object.keys(Color)[0]];
         /** @type { 'Object' } */
         this.extra = null;
     }

@@ -44,8 +44,8 @@ export class User {
     scores: Map<string, number> = new Map();
     coordinates: Array<number> = [];
     matrix: Array<Array<number>> = [];
-    favoriteColor: Color = 0 as Color;
     email: string = "";
+    favoriteColor: Color = 0 as Color;
     extra: any = null;
 }
 

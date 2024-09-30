@@ -40,8 +40,8 @@ class User
     public array $scores;
     public array $coordinates;
     public array $matrix;
-    public Color $favoriteColor;
     public string $email;
+    public Color $favoriteColor;
     public mixed $extra;
 
     public function __construct()
@@ -52,8 +52,8 @@ class User
         $this->scores = [];
         $this->coordinates = [];
         $this->matrix = [];
-        $this->favoriteColor = Color::RED;
         $this->email = "";
+        $this->favoriteColor = Color::RED;
         $this->extra = null;
     }
 }

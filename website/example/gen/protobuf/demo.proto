@@ -31,8 +31,8 @@ message User {
     map<string, int32> scores = 4;
     repeated double coordinates = 5;
     repeated int32 matrix = 6;
-    Color favoriteColor = 7;
-    string email = 8 [deprecated = true];
+    string email = 7 [deprecated = true];
+    Color favoriteColor = 8 [deprecated = true];
     google.protobuf.Any extra = 9;
 }
 

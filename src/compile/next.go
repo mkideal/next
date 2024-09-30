@@ -19,8 +19,8 @@ import (
 	"github.com/gopherd/core/flags"
 	"github.com/gopherd/core/op"
 	"github.com/gopherd/core/term"
-	"github.com/next/next/src/fsutil"
 	"github.com/next/next/src/grammar"
+	"github.com/next/next/src/internal/fsutil"
 	"github.com/next/next/src/parser"
 	"github.com/next/next/src/scanner"
 )

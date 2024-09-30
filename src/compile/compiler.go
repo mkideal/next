@@ -16,6 +16,7 @@ import (
 	"github.com/next/next/src/ast"
 	"github.com/next/next/src/constant"
 	"github.com/next/next/src/grammar"
+	"github.com/next/next/src/internal/stringutil"
 	"github.com/next/next/src/scanner"
 	"github.com/next/next/src/token"
 )
@@ -950,7 +951,15 @@ func (c *Compiler) validateAnnotations(node Node, annotations grammar.Annotation
 	for name, annotation := range node.Annotations() {
 		ga := grammar.LookupAnnotation(annotations, name)
 		if ga == nil {
-			c.addErrorf(annotation.Pos().pos, "annotation %s not supported", name)
+			s, score := stringutil.FindBestMatchFunc(slices.All(annotations), name, stringutil.DefaultSimilarityThreshold, func(i int, a grammar.Options[grammar.Annotation]) string {
+				return a.Value().Name
+			})
+			if score > 0 {
+				fmt.Printf("FIXME: score=%v\n", score)
+				c.addErrorf(annotation.Pos().pos, "annotation %s not supported, did you mean %s?", name, s)
+			} else {
+				c.addErrorf(annotation.Pos().pos, "annotation %s not supported", name)
+			}
 			continue
 		}
 		for p, v := range annotation {
@@ -960,7 +969,24 @@ func (c *Compiler) validateAnnotations(node Node, annotations grammar.Annotation
 			}
 			gp := grammar.LookupAnnotationParameter(ga.Parameters, p)
 			if gp == nil {
-				c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s not supported", name, p)
+				s, score := stringutil.FindBestMatchFunc(slices.All(ga.Parameters), p, stringutil.DefaultSimilarityThreshold, func(i int, a grammar.Options[grammar.AnnotationParameter]) string {
+					name := a.Value().Name
+					if strings.HasPrefix(name, ".+_") {
+						if index := strings.Index(p, "_"); index > 0 {
+							return p[:index] + strings.TrimPrefix(name, ".+")
+						}
+					} else if strings.HasSuffix(name, "_.+") {
+						if index := strings.LastIndex(p, "_"); index > 0 {
+							return strings.TrimSuffix(name, "_.+") + p[index:]
+						}
+					}
+					return name
+				})
+				if score > 0 {
+					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s not supported, did you mean %s?", name, p, s)
+				} else {
+					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s not supported", name, p)
+				}
 				continue
 			}
 			rv := reflect.ValueOf(v)

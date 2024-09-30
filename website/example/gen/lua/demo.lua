@@ -48,8 +48,8 @@ function User:new()
         scores = {},
         coordinates = {},
         matrix = {},
-        favoriteColor = nil,
         email = "",
+        favoriteColor = nil,
         extra = nil
     }
     setmetatable(obj, self)

@@ -46,8 +46,9 @@ struct User {
     map<string, int> scores;
     array<float64, 3> coordinates;
     array<array<int, 2>, 3> matrix;
-    Color favoriteColor;
     @deprecated string email;
+    @deprecated(message="favoriteColor is deprecated, use tags instead")
+    Color favoriteColor;
     any extra;
 }
 

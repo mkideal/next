@@ -70,16 +70,6 @@ public class User {
         this.matrix = matrix;
     }
 
-    private Color favoriteColor;
-
-    public Color getFavoriteColor() {
-        return favoriteColor;
-    }
-
-    public void setFavoriteColor(Color favoriteColor) {
-        this.favoriteColor = favoriteColor;
-    }
-
     private String email;
 
     public String getEmail() {
@@ -88,6 +78,16 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    private Color favoriteColor;
+
+    public Color getFavoriteColor() {
+        return favoriteColor;
+    }
+
+    public void setFavoriteColor(Color favoriteColor) {
+        this.favoriteColor = favoriteColor;
     }
 
     private Object extra;

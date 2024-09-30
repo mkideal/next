@@ -10,6 +10,7 @@ import (
 
 	"github.com/gopherd/core/container/iters"
 	"github.com/gopherd/core/text/templates"
+	"github.com/next/next/src/internal/stringutil"
 )
 
 const (
@@ -278,30 +279,6 @@ type AnnotationParameter struct {
 	parsed struct {
 		name *regexp.Regexp
 	} `json:"-"`
-}
-
-func isIdentifer(s string) bool {
-	r := []rune(s)
-	if len(r) == 0 {
-		return false
-	}
-	if !isLetter(r[0]) || r[0] == '_' {
-		return false
-	}
-	for i := 1; i < len(r); i++ {
-		if !isLetter(r[i]) && !isDigit(r[i]) && r[i] != '_' {
-			return false
-		}
-	}
-	return true
-}
-
-func isDigit(r rune) bool {
-	return '0' <= r && r <= '9'
-}
-
-func isLetter(r rune) bool {
-	return 'a' <= r && r <= 'z' || 'A' <= r && r <= 'Z'
 }
 
 func LookupAnnotationParameter(parameters []Options[AnnotationParameter], name string) *AnnotationParameter {
@@ -1032,7 +1009,7 @@ func (p *AnnotationParameter) validate() error {
 	if p.Name == "" {
 		return fmt.Errorf("parameter name is required")
 	}
-	if !isIdentifer(p.Name) {
+	if !stringutil.IsIdentifer(p.Name) {
 		pattern, err := regexp.Compile("^" + p.Name + "$")
 		if err != nil {
 			return fmt.Errorf("invalid parameter name pattern %q: %w", p.Name, err)

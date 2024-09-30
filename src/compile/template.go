@@ -22,7 +22,8 @@ import (
 	"github.com/gopherd/core/text/document"
 	"github.com/gopherd/core/text/templates"
 
-	"github.com/next/next/src/fsutil"
+	"github.com/next/next/src/internal/fsutil"
+	"github.com/next/next/src/internal/stringutil"
 )
 
 // StubPrefix is the prefix for stub templates.
@@ -39,26 +40,8 @@ func (m Meta) lookup(key string) pair.Pair[string, bool] {
 	return pair.New(v, ok)
 }
 
-func isIdentifer(s string) bool {
-	if len(s) == 0 {
-		return false
-	}
-	for i, r := range s {
-		if i == 0 {
-			if !('a' <= r && r <= 'z' || 'A' <= r && r <= 'Z' || r == '_') {
-				return false
-			}
-		} else {
-			if !('a' <= r && r <= 'z' || 'A' <= r && r <= 'Z' || '0' <= r && r <= '9' || r == '_') {
-				return false
-			}
-		}
-	}
-	return true
-}
-
 func validMetaKey(key string) error {
-	if !isIdentifer(key) {
+	if !stringutil.IsIdentifer(key) {
 		return fmt.Errorf("must be a valid identifier")
 	}
 	if strings.HasPrefix(key, "_") || key == "this" || key == "path" || key == "skip" {

@@ -44,8 +44,8 @@ class User:
         self.scores = {}
         self.coordinates = [0 for _ in range(3)]
         self.matrix = [[0 for _ in range(2)] for _ in range(3)]
-        self.favorite_color = Color(0)
         self.email = ""
+        self.favorite_color = Color(0)
         self.extra = None
 
 """

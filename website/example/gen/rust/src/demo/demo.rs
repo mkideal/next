@@ -76,8 +76,8 @@ pub struct User {
     pub scores: HashMap<String, i32>,
     pub coordinates: [f64; 3],
     pub matrix: [[i32; 2]; 3],
-    pub favorite_color: Color,
     pub email: String,
+    pub favorite_color: Color,
     pub extra: Box<dyn Any>,
 }
 

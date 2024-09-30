@@ -86,8 +86,8 @@ public:
     std::unordered_map<std::string, int> scores;
     std::array<double, 3> coordinates = {0.0};
     std::array<std::array<int, 2>, 3> matrix;
-    Color favoriteColor = {Color(0)};
     std::string email = {""};
+    Color favoriteColor = {Color(0)};
     std::any extra;
 public:
     User() = default;
