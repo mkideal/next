@@ -171,10 +171,10 @@ var commands = map[string]*command{
 			switch ext {
 			case ".json":
 				unmarshaler = json.Unmarshal
-			case "", ".yaml", ".yml":
+			case "", ".yaml", ".yml", ".nextproj":
 				unmarshaler = yaml.Unmarshal
 			default:
-				return fmt.Errorf("unsupported file extension: %q, use .json, .yaml, or .yml", ext)
+				return fmt.Errorf("unsupported file extension: %q, use .json, .yaml, .yml, or .nextproj (alias of .yaml)", ext)
 			}
 			if err := unmarshaler(content, &options); err != nil {
 				return fmt.Errorf("failed to parse %q: %v", path, err)

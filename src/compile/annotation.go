@@ -515,11 +515,6 @@ func (a Annotation) setPos(key string, pos Position) {
 //	};
 //	```
 
-type locatedAnnotation struct {
-	key     string
-	declPos token.Pos
-}
-
 // linkedAnnotation represents an annotation linked to a declaration.
 type linkedAnnotation struct {
 	name       string

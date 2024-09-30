@@ -138,13 +138,13 @@ const config: Config = {
           sidebarId: "api",
           label: "API",
         },
-        {
-          type: "docSidebar",
-          position: "left",
-          sidebarId: "showcase",
-          label: "Showcase",
-        },
-        //{ to: "/blog", label: "Blog", position: "left" },
+        // TODO: add showcase
+        //{
+        //  type: "docSidebar",
+        //  position: "left",
+        //  sidebarId: "showcase",
+        //  label: "Showcase",
+        //},
         // Right links
         {
           href: REPO,
@@ -152,6 +152,7 @@ const config: Config = {
           className: "header-github-link",
           "aria-label": "GitHub repository",
         },
+        // TODO: add algolia search
       ],
     },
     footer: {

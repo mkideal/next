@@ -120,15 +120,6 @@ func createTemplate(name, content string, funcs ...template.FuncMap) (*template.
 	return t.Parse(content)
 }
 
-// executeTemplate executes a template content with the given data.
-func executeTemplate(t *template.Template, data any) (string, error) {
-	var buf bytes.Buffer
-	if err := t.Execute(&buf, data); err != nil {
-		return "", err
-	}
-	return buf.String(), nil
-}
-
 // templateContextInfo represents the context information of a template.
 type templateContextInfo struct {
 	compiler *Compiler
@@ -775,7 +766,8 @@ func (tc *templateContext) loadTemplate(path string, fs FileSystem) (*template.T
 	var err error
 
 	if fs != nil {
-		f, err := fs.Open(path)
+		var f io.ReadCloser
+		f, err = fs.Open(path)
 		if err != nil {
 			if !os.IsNotExist(err) {
 				return nil, err
