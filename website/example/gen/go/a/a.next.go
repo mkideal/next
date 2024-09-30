@@ -2,9 +2,7 @@
 
 package a
 
-import "strconv"
 
-var _ = strconv.FormatInt
 
 // XX constant
 // XX value 2
@@ -62,28 +60,6 @@ const (
     ColorWhite = 7
 )
 
-func (x Color) String() string {
-    switch x {
-    case ColorRed:
-        return "Red"
-    case ColorGreen:
-        return "Green"
-    case ColorBlue:
-        return "Blue"
-    case ColorAlpha:
-        return "Alpha"
-    case ColorYellow:
-        return "Yellow"
-    case ColorCyan:
-        return "Cyan"
-    case ColorMagenta:
-        return "Magenta"
-    case ColorWhite:
-        return "White"
-    }
-    return "Color(" + strconv.FormatInt(int64(x), 10) + ")"
-}
-
 // Enum with complex iota usage
 type FilePermission int32
 
@@ -106,40 +82,6 @@ const (
     FilePermissionAll = 76695844
 )
 
-func (x FilePermission) String() string {
-    switch x {
-    case FilePermissionNone:
-        return "None"
-    case FilePermissionExecute:
-        return "Execute"
-    case FilePermissionWrite:
-        return "Write"
-    case FilePermissionRead:
-        return "Read"
-    case FilePermissionUserRead:
-        return "UserRead"
-    case FilePermissionUserWrite:
-        return "UserWrite"
-    case FilePermissionUserExecute:
-        return "UserExecute"
-    case FilePermissionGroupRead:
-        return "GroupRead"
-    case FilePermissionGroupWrite:
-        return "GroupWrite"
-    case FilePermissionGroupExecute:
-        return "GroupExecute"
-    case FilePermissionOthersRead:
-        return "OthersRead"
-    case FilePermissionOthersWrite:
-        return "OthersWrite"
-    case FilePermissionOthersExecute:
-        return "OthersExecute"
-    case FilePermissionAll:
-        return "All"
-    }
-    return "FilePermission(" + strconv.FormatInt(int64(x), 10) + ")"
-}
-
 type Day int32
 
 const (
@@ -153,30 +95,6 @@ const (
     DayWeekday = 31
     DayWeekend = 96
 )
-
-func (x Day) String() string {
-    switch x {
-    case DayMonday:
-        return "Monday"
-    case DayTuesday:
-        return "Tuesday"
-    case DayWednesday:
-        return "Wednesday"
-    case DayThursday:
-        return "Thursday"
-    case DayFriday:
-        return "Friday"
-    case DaySaturday:
-        return "Saturday"
-    case DaySunday:
-        return "Sunday"
-    case DayWeekday:
-        return "Weekday"
-    case DayWeekend:
-        return "Weekend"
-    }
-    return "Day(" + strconv.FormatInt(int64(x), 10) + ")"
-}
 
 type Month int32
 
@@ -199,44 +117,6 @@ const (
     MonthQ4 = 3584
 )
 
-func (x Month) String() string {
-    switch x {
-    case MonthJanuary:
-        return "January"
-    case MonthFebruary:
-        return "February"
-    case MonthMarch:
-        return "March"
-    case MonthApril:
-        return "April"
-    case MonthMay:
-        return "May"
-    case MonthJune:
-        return "June"
-    case MonthJuly:
-        return "July"
-    case MonthAugust:
-        return "August"
-    case MonthSeptember:
-        return "September"
-    case MonthOctober:
-        return "October"
-    case MonthNovember:
-        return "November"
-    case MonthDecember:
-        return "December"
-    case MonthQ1:
-        return "Q1"
-    case MonthQ2:
-        return "Q2"
-    case MonthQ3:
-        return "Q3"
-    case MonthQ4:
-        return "Q4"
-    }
-    return "Month(" + strconv.FormatInt(int64(x), 10) + ")"
-}
-
 // Test cases for iota
 type IotatestEnum int32
 
@@ -249,26 +129,6 @@ const (
     IotatestEnumF = 1 // 1
     IotatestEnumG = 0 // 0
 )
-
-func (x IotatestEnum) String() string {
-    switch x {
-    case IotatestEnumA:
-        return "A"
-    case IotatestEnumB:
-        return "B"
-    case IotatestEnumC:
-        return "C"
-    case IotatestEnumD:
-        return "D"
-    case IotatestEnumE:
-        return "E"
-    case IotatestEnumF:
-        return "F"
-    case IotatestEnumG:
-        return "G"
-    }
-    return "IotatestEnum(" + strconv.FormatInt(int64(x), 10) + ")"
-}
 
 // Struct types
 type Point2D struct {

@@ -6,7 +6,19 @@ pagination_next: null
 
 `Grammar` represents the custom grammar for the next files.
 
+import CodeBlock from "@theme/CodeBlock";
+import ExampleGrammarSource from "!!raw-loader!@site/example/grammar.json";
+
 The grammar is used to define a subset of the next files. It can limit the features of the next code according by your requirements. The grammar is a JSON object that contains rules.
+
+Here is an example of the grammar file:
+
+<details open>
+	<summary>grammar.json</summary>
+	<CodeBlock language="json">
+		{ExampleGrammarSource}
+	</CodeBlock>
+</details>
 
 ###### .default {#user-content-Grammar__default}
 <div className="property-container">
@@ -168,6 +180,10 @@ Example:
 `.Validators` represents the [Validator](#user-content-Grammar_Common_Validator) for the annotation parameter.
 
 </div>
+
+### Annotations {#user-content-Grammar_Common_Annotations}
+
+`Annotations` represents a list of annotations.
 
 ### Validator {#user-content-Grammar_Common_Validator}
 
@@ -819,8 +835,8 @@ package demo;
 
 // This will error
 struct User {
-  ID int;
-  Name string;
+  int id;
+  string name;
 }
 // Error: struct declaration is not allowed
 ```

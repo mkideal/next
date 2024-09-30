@@ -13,7 +13,7 @@ GOBUILD = go build -ldflags " \
 
 BUILD_DIR = ./build
 BUILD_BIN_DIR=${BUILD_DIR}/bin
-TESTDATA_DIR = ./website/testdata
+EXAMPLE_DIR = ./website/example
 
 .PHONY: all
 all: build
@@ -91,28 +91,35 @@ test/src: autogen go/vet
 	@echo "Running tests..."
 	@go test -v ./...
 
-.PHONY: test/template
-test/template: install
-	@echo "Running template tests..."
-	@rm -rf ${TESTDATA_DIR}/gen
-	@NEXTNOCOPYBUILTIN=1 next \
+.PHONY: example
+example: example/clean build example/gen
+
+.PHONY: example/clean
+example/clean:
+	@if [ -d ${EXAMPLE_DIR}/gen ]; then rm -r ${EXAMPLE_DIR}/gen; fi
+
+.PHONY: example/gen
+example/gen:
+	@echo "Running generate example..."
+	@rm -rf ${EXAMPLE_DIR}/gen
+	@NEXTNOCOPYBUILTIN=1 ${BUILD_BIN_DIR}/next \
 		-D PROJECT_NAME=demo \
-		-grammar ${TESTDATA_DIR}/grammar.json \
-		-O go=${TESTDATA_DIR}/gen/go -T go=${TESTDATA_DIR}/templates/go \
-		-O java=${TESTDATA_DIR}/gen/java -T java=${TESTDATA_DIR}/templates/java \
-		-O cpp=${TESTDATA_DIR}/gen/cpp -T cpp=${TESTDATA_DIR}/templates/cpp \
-		-O csharp=${TESTDATA_DIR}/gen/csharp -T csharp=${TESTDATA_DIR}/templates/csharp \
-		-O c=${TESTDATA_DIR}/gen/c -T c=${TESTDATA_DIR}/templates/c \
-		-O rust=${TESTDATA_DIR}/gen/rust/src -T rust=${TESTDATA_DIR}/templates/rust \
-		-O protobuf=${TESTDATA_DIR}/gen/protobuf -T protobuf=${TESTDATA_DIR}/templates/protobuf \
-		-O js=${TESTDATA_DIR}/gen/js -T js=${TESTDATA_DIR}/templates/js \
-		-O ts=${TESTDATA_DIR}/gen/ts -T ts=${TESTDATA_DIR}/templates/ts \
-		-O python=${TESTDATA_DIR}/gen/python -T python=${TESTDATA_DIR}/templates/python \
-		-O php=${TESTDATA_DIR}/gen/php -T php=${TESTDATA_DIR}/templates/php \
-		-O lua=${TESTDATA_DIR}/gen/lua -T lua=${TESTDATA_DIR}/templates/lua \
+		-grammar ${EXAMPLE_DIR}/grammar.json \
+		-O go=${EXAMPLE_DIR}/gen/go -T go=${EXAMPLE_DIR}/templates/go \
+		-O java=${EXAMPLE_DIR}/gen/java -T java=${EXAMPLE_DIR}/templates/java \
+		-O cpp=${EXAMPLE_DIR}/gen/cpp -T cpp=${EXAMPLE_DIR}/templates/cpp \
+		-O csharp=${EXAMPLE_DIR}/gen/csharp -T csharp=${EXAMPLE_DIR}/templates/csharp \
+		-O c=${EXAMPLE_DIR}/gen/c -T c=${EXAMPLE_DIR}/templates/c \
+		-O rust=${EXAMPLE_DIR}/gen/rust/src -T rust=${EXAMPLE_DIR}/templates/rust \
+		-O protobuf=${EXAMPLE_DIR}/gen/protobuf -T protobuf=${EXAMPLE_DIR}/templates/protobuf \
+		-O js=${EXAMPLE_DIR}/gen/js -T js=${EXAMPLE_DIR}/templates/js \
+		-O ts=${EXAMPLE_DIR}/gen/ts -T ts=${EXAMPLE_DIR}/templates/ts \
+		-O python=${EXAMPLE_DIR}/gen/python -T python=${EXAMPLE_DIR}/templates/python \
+		-O php=${EXAMPLE_DIR}/gen/php -T php=${EXAMPLE_DIR}/templates/php \
+		-O lua=${EXAMPLE_DIR}/gen/lua -T lua=${EXAMPLE_DIR}/templates/lua \
 		-M "c.vector=void*" -M "c.map=void*" \
-		${TESTDATA_DIR}/next/
-	@cd ${TESTDATA_DIR}/gen/rust && cargo init --vcs none
+		${EXAMPLE_DIR}/next/
+	@cd ${EXAMPLE_DIR}/gen/rust && cargo init --vcs none -q
 
 .PHONY: clean
 clean:

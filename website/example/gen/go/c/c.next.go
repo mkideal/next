@@ -2,11 +2,9 @@
 
 package c
 
-import "strconv"
-import a "github.com/next/next/website/testdata/gen/go/a"
-import b "github.com/next/next/website/testdata/gen/go/b"
+import a "github.com/next/next/website/example/gen/go/a"
+import b "github.com/next/next/website/example/gen/go/b"
 
-var _ = strconv.FormatInt
 var _ = (*a.Color)(nil)
 var _ = (*b.TestEnum)(nil)
 
@@ -23,18 +21,6 @@ const (
     ColorBlue = 2
 )
 
-func (x Color) String() string {
-    switch x {
-    case ColorRed:
-        return "Red"
-    case ColorGreen:
-        return "Green"
-    case ColorBlue:
-        return "Blue"
-    }
-    return "Color(" + strconv.FormatInt(int64(x), 10) + ")"
-}
-
 type LoginType int32
 
 const (
@@ -42,32 +28,12 @@ const (
     LoginTypeEmail = 2
 )
 
-func (x LoginType) String() string {
-    switch x {
-    case LoginTypeUsername:
-        return "Username"
-    case LoginTypeEmail:
-        return "Email"
-    }
-    return "LoginType(" + strconv.FormatInt(int64(x), 10) + ")"
-}
-
 type UserType int32
 
 const (
     UserTypeAdmin = 1
     UserTypeUser = 2
 )
-
-func (x UserType) String() string {
-    switch x {
-    case UserTypeAdmin:
-        return "Admin"
-    case UserTypeUser:
-        return "User"
-    }
-    return "UserType(" + strconv.FormatInt(int64(x), 10) + ")"
-}
 
 type User struct {
     Type UserType

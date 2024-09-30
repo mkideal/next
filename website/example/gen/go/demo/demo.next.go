@@ -2,13 +2,11 @@
 
 package demo
 
-import "strconv"
 import "fmt"
 import "net/http"
 
-var _ = strconv.FormatInt
 var _ = (*fmt.Stringer)(nil)
-var _ = http.HandlerFunc
+var _ = (http.HandlerFunc)(nil)
 
 const Version = "1.0.0" // String constant
 const MaxRetries = 3 // Integer constant
@@ -25,20 +23,6 @@ const (
     ColorYellow = 8
 )
 
-func (x Color) String() string {
-    switch x {
-    case ColorRed:
-        return "Red"
-    case ColorGreen:
-        return "Green"
-    case ColorBlue:
-        return "Blue"
-    case ColorYellow:
-        return "Yellow"
-    }
-    return "Color(" + strconv.FormatInt(int64(x), 10) + ")"
-}
-
 // MathConstants represents mathematical constants
 type MathConstants float64
 
@@ -46,16 +30,6 @@ const (
     MathConstantsPi = 3.14159265358979323846
     MathConstantsE = 2.71828182845904523536
 )
-
-func (x MathConstants) String() string {
-    switch x {
-    case MathConstantsPi:
-        return "Pi"
-    case MathConstantsE:
-        return "E"
-    }
-    return fmt.Sprintf("MathConstants(%v)", x)
-}
 
 // OperatingSystem represents different operating systems
 type OperatingSystem string
@@ -67,10 +41,6 @@ const (
     OperatingSystemAndroid = "android"
     OperatingSystemIOS = "ios"
 )
-
-func (x OperatingSystem) String() string {
-    return string(x)
-}
 
 // User represents a user in the system
 type User struct {

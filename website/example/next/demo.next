@@ -1,7 +1,7 @@
 @next(
-    go_package="github.com/next/next/website/testdata/gen/go/demo",
+    go_package="github.com/next/next/website/example/gen/go/demo",
     // Import statements for go_imports:
-    // - "net/http" is imported for go_alias "net/http.HandlerFunc"
+    // - "net/http" is imported for go_alias "*net/http.HandlerFunc"
     // - "fmt" is imported to demonstrate importing with go type
     //
     // Format for go_imports:
@@ -9,7 +9,7 @@
     // - *path/to/pkg.Type (for types, "*" is required for importing types)
     //
     // Note: Avoid duplicating import paths. Use comma separation for multiple imports.
-    go_imports="net/http.HandlerFunc,*fmt.Stringer",
+    go_imports="*net/http.HandlerFunc,*fmt.Stringer",
     cpp_package="demo",
     c_package="DEMO_",
     java_package="com.example.demo",

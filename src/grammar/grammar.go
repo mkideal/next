@@ -2,11 +2,13 @@
 package grammar
 
 import (
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"slices"
 	"strconv"
 
+	"github.com/gopherd/core/container/iters"
 	"github.com/gopherd/core/text/templates"
 )
 
@@ -36,11 +38,82 @@ func duplicated[S ~[]T, T comparable](s S) error {
 	return nil
 }
 
+// Context represents the contextual data by the key-value pair.
+// The key is a string and the value is a JSON object.
+type Context struct {
+	Annotations          map[string]json.RawMessage `json:",omitempty"`
+	AnnotationParameters map[string]json.RawMessage `json:",omitempty"`
+	Validators           map[string]json.RawMessage `json:",omitempty"`
+}
+
+// Options represents the options with the id and/or the options.
+// If the id is empty, the options are used. Otherwise, the id is used.
+// The options are resolved by the context using the id as the key.
+type Options[T any] struct {
+	id    string
+	value T
+}
+
+func opt[T any](options T) Options[T] {
+	return Options[T]{value: options}
+}
+
+func at(ids ...string) Annotations {
+	return slices.Collect(iters.Map(slices.Values(ids), func(id string) Options[Annotation] {
+		return Options[Annotation]{id: id}
+	}))
+}
+
+func (o Options[T]) Value() T {
+	return o.value
+}
+
+func (o Options[T]) MarshalJSON() ([]byte, error) {
+	if o.id == "" {
+		return json.Marshal(o.value)
+	}
+	return json.Marshal(o.id)
+}
+
+func (o *Options[T]) UnmarshalJSON(data []byte) error {
+	if len(data) == 0 {
+		return nil
+	}
+	if data[0] == '"' {
+		return json.Unmarshal(data, &o.id)
+	}
+	return json.Unmarshal(data, &o.value)
+}
+
+func (o *Options[T]) resolve(source map[string]json.RawMessage) error {
+	if o.id == "" {
+		return nil
+	}
+	v, ok := source[o.id]
+	if !ok {
+		return fmt.Errorf("options %q not found", o.id)
+	}
+	return json.Unmarshal(v, &o.value)
+}
+
 // @api(Grammar) represents the custom grammar for the next files.
+//
+//	import CodeBlock from "@theme/CodeBlock";
+//	import ExampleGrammarSource from "!!raw-loader!@site/example/grammar.json";
 //
 // The grammar is used to define a subset of the next files. It can limit the features of the next code according
 // by your requirements. The grammar is a JSON object that contains rules.
+//
+// Here is an example of the grammar file:
+//
+//	<details open>
+//		<summary>grammar.json</summary>
+//		<CodeBlock language="json">
+//			{ExampleGrammarSource}
+//		</CodeBlock>
+//	</details>
 type Grammar struct {
+	Context   Context
 	Package   Package
 	Import    Import
 	Const     Const
@@ -48,6 +121,8 @@ type Grammar struct {
 	Struct    Struct
 	Interface Interface
 }
+
+type Validators []Options[Validator]
 
 // @api(Grammar/Common/Validator) represents the validator for the grammar rules.
 type Validator struct {
@@ -152,18 +227,21 @@ type Annotation struct {
 	Description string
 
 	// @api(Grammar/Common/Annotation.Parameters) represents the annotation parameters.
-	Parameters []AnnotationParameter `json:",omitempty"`
+	Parameters []Options[AnnotationParameter] `json:",omitempty"`
 }
 
-func LookupAnnotation(annotations []Annotation, name string) *Annotation {
+func LookupAnnotation(annotations Annotations, name string) *Annotation {
 	for i := range annotations {
-		a := &annotations[i]
+		a := &annotations[i].value
 		if a.Name == name {
 			return a
 		}
 	}
 	return nil
 }
+
+// @api(Grammar/Common/Annotations) represents a list of annotations.
+type Annotations []Options[Annotation]
 
 // @api(Grammar/Common/AnnotationParameter) represents the annotation parameter grammar rules.
 // If no parameters are defined, the annotation does not have any parameters.
@@ -195,7 +273,7 @@ type AnnotationParameter struct {
 	Required bool `json:",omitempty"`
 
 	// @api(Grammar/Common/AnnotationParameter.Validators) represents the [Validator](#Grammar/Common/Validator) for the annotation parameter.
-	Validators []Validator `json:",omitempty"`
+	Validators Validators `json:",omitempty"`
 
 	parsed struct {
 		name *regexp.Regexp
@@ -226,9 +304,9 @@ func isLetter(r rune) bool {
 	return 'a' <= r && r <= 'z' || 'A' <= r && r <= 'Z'
 }
 
-func LookupAnnotationParameter(parameters []AnnotationParameter, name string) *AnnotationParameter {
+func LookupAnnotationParameter(parameters []Options[AnnotationParameter], name string) *AnnotationParameter {
 	for i := range parameters {
-		p := &parameters[i]
+		p := &parameters[i].value
 		if p.parsed.name != nil {
 			if p.parsed.name.MatchString(name) {
 				return p
@@ -243,7 +321,7 @@ func LookupAnnotationParameter(parameters []AnnotationParameter, name string) *A
 // @api(Grammar/Package) represents the grammar rules for the package declaration.
 type Package struct {
 	// @api(Grammar/Package.Annotations) represents the [Annotation](#Grammar/Common/Annotation) grammar rules for the package declaration.
-	Annotations []Annotation `json:",omitempty"`
+	Annotations Annotations `json:",omitempty"`
 
 	// @api(Grammar/Package.Validators) represents the [Validator](#Grammar/Common/Validator) for the package declaration.
 	// It's used to validate the package name. For example, You can limit the package name must be
@@ -271,7 +349,7 @@ type Package struct {
 	//	package _test;
 	//	// Error: package name must not start with an underscore
 	//	```
-	Validators []Validator `json:",omitempty"`
+	Validators Validators `json:",omitempty"`
 }
 
 // @api(Grammar/Import) represents the grammar rules for the import declaration.
@@ -357,7 +435,7 @@ type Const struct {
 	Types []string `json:",omitempty"`
 
 	// @api(Grammar/Const.Annotations) represents the [Annotation](#Grammar/Common/Annotation) grammar rules for the const declaration.
-	Annotations []Annotation `json:",omitempty"`
+	Annotations Annotations `json:",omitempty"`
 
 	// @api(Grammar/Const.Validators) represents the [Validator](#Grammar/Common/Validator) for the const declaration.
 	// It's used to validate the const name. You can access the const name by `.Name`.
@@ -387,7 +465,7 @@ type Const struct {
 	//	const world = 1;
 	//	// Error: const name must be capitalized, expected: World
 	//	```
-	Validators []Validator `json:",omitempty"`
+	Validators Validators `json:",omitempty"`
 }
 
 // @api(Grammar/Enum) represents the grammar rules for the enum declaration.
@@ -419,7 +497,7 @@ type Enum struct {
 	Off bool `json:",omitempty"`
 
 	// @api(Grammar/Enum.Annotations) represents the [Annotation](#Grammar/Common/Annotation) grammar rules for the enum declaration.
-	Annotations []Annotation `json:",omitempty"`
+	Annotations Annotations `json:",omitempty"`
 
 	// @api(Grammar/Enum.Validators) represents the [Validator](#Grammar/Common/Validator) for the enum declaration.
 	// It's used to validate the enum name. You can access the enum name by `.Name`.
@@ -458,7 +536,7 @@ type Enum struct {
 	//	}
 	//	// Error: enum name must be capitalized, expected: Size
 	//	```
-	Validators []Validator `json:",omitempty"`
+	Validators Validators `json:",omitempty"`
 
 	// @api(Grammar/Enum.Member) represents the [EnumMember](#Grammar/EnumMember) grammar rules for the enum declaration.
 	Member EnumMember
@@ -572,7 +650,7 @@ type EnumMember struct {
 	ZeroRequired bool `json:",omitempty"`
 
 	// @api(Grammar/EnumMember.Annotations) represents the [Annotation](#Grammar/Common/Annotation) grammar rules for the enum member declaration.
-	Annotations []Annotation `json:",omitempty"`
+	Annotations Annotations `json:",omitempty"`
 
 	// @api(Grammar/EnumMember.Validators) represents the [Validator](#Grammar/Common/Validator) for the enum member declaration.
 	//
@@ -607,7 +685,7 @@ type EnumMember struct {
 	//	  // Error: enum member name must be capitalized, expected: Large
 	//	}
 	//	```
-	Validators []Validator `json:",omitempty"`
+	Validators Validators `json:",omitempty"`
 }
 
 // @api(Grammar/Struct) represents the grammar rules for the struct declaration.
@@ -630,15 +708,15 @@ type Struct struct {
 	//
 	//	// This will error
 	//	struct User {
-	//	  ID int;
-	//	  Name string;
+	//	  int id;
+	//	  string name;
 	//	}
 	//	// Error: struct declaration is not allowed
 	//	```
 	Off bool `json:",omitempty"`
 
 	// @api(Grammar/Struct.Annotations) represents the [Annotation](#Grammar/Common/Annotation) grammar rules for the struct declaration.
-	Annotations []Annotation `json:",omitempty"`
+	Annotations Annotations `json:",omitempty"`
 
 	// @api(Grammar/Struct.Validators) represents the [Validator](#Grammar/Common/Validator) for the struct declaration.
 	// It's used to validate the struct name. You can access the struct name by `.Name`.
@@ -675,7 +753,7 @@ type Struct struct {
 	//	}
 	//	// Error: struct name must be capitalized, expected: Point
 	//	```
-	Validators []Validator `json:",omitempty"`
+	Validators Validators `json:",omitempty"`
 
 	// @api(Grammar/Struct.Field) represents the [StructField](#Grammar/StructField) grammar rules for the struct declaration.
 	Field StructField
@@ -684,7 +762,7 @@ type Struct struct {
 // @api(Grammar/StructField) represents the grammar rules for the struct field declaration.
 type StructField struct {
 	// @api(Grammar/StructField.Annotations) represents the [Annotation](#Grammar/Common/Annotation) grammar rules for the struct field declaration.
-	Annotations []Annotation `json:",omitempty"`
+	Annotations Annotations `json:",omitempty"`
 
 	// @api(Grammar/StructField.Validators) represents the [Validator](#Grammar/Common/Validator) for the struct field declaration.
 	// It's used to validate the struct field name. You can access the struct field name by `.Name`.
@@ -717,7 +795,7 @@ type StructField struct {
 	//	  // Error: struct field name must not be capitalized, expected: name
 	//	}
 	//	```
-	Validators []Validator `json:",omitempty"`
+	Validators Validators `json:",omitempty"`
 }
 
 // @api(Grammar/Interface) represents the grammar rules for the interface declaration.
@@ -747,7 +825,7 @@ type Interface struct {
 	Off bool `json:",omitempty"`
 
 	// @api(Grammar/Interface.Annotations) represents the [Annotation](#Grammar/Common/Annotation) grammar rules for the interface declaration.
-	Annotations []Annotation `json:",omitempty"`
+	Annotations Annotations `json:",omitempty"`
 
 	// @api(Grammar/Interface.Validators) represents the [Validator](#Grammar/Common/Validator) for the interface declaration.
 	// It's used to validate the interface name. You can access the interface name by `.Name`.
@@ -782,7 +860,7 @@ type Interface struct {
 	//	}
 	//	// Error: interface name must be capitalized, expected: User
 	//	```
-	Validators []Validator `json:",omitempty"`
+	Validators Validators `json:",omitempty"`
 
 	// @api(Grammar/Interface.Method) represents the [InterfaceMethod](#Grammar/InterfaceMethod) grammar rules for the interface declaration.
 	Method InterfaceMethod
@@ -830,26 +908,26 @@ type Interface struct {
 //	```
 type InterfaceMethod struct {
 	// @api(Grammar/InterfaceMethod.Annotations) represents the [Annotation](#Grammar/Common/Annotation) grammar rules for the interface method declaration.
-	Annotations []Annotation `json:",omitempty"`
+	Annotations Annotations `json:",omitempty"`
 	// @api(Grammar/InterfaceMethod.Validators) represents the [Validator](#Grammar/Common/Validator) for the interface method declaration.
-	Validators []Validator `json:",omitempty"`
+	Validators Validators `json:",omitempty"`
 
 	// @api(Grammar/InterfaceMethod/Parameter) represents the grammar rules for the interface method parameter declaration.
 	Parameter struct {
 		// @api(Grammar/InterfaceMethod/Parameter.Annotations) represents the [Annotation](#Grammar/Common/Annotation) grammar rules for the interface method parameter declaration.
-		Annotations []Annotation `json:",omitempty"`
+		Annotations Annotations `json:",omitempty"`
 		// @api(Grammar/InterfaceMethod/Parameter.Validators) represents the [Validator](#Grammar/Common/Validator) for the interface method parameter declaration.
-		Validators []Validator `json:",omitempty"`
+		Validators Validators `json:",omitempty"`
 	}
 }
 
-// Validate validates the grammar rules.
-func (g *Grammar) Validate() error {
-	// Validate package
-	if err := validateAnnotations("package", g.Package.Annotations); err != nil {
+// Resolve resolves the grammar rules.
+func (g *Grammar) Resolve() error {
+	// Resolve package
+	if err := g.doResolve("package", g.Package.Annotations, g.Package.Validators); err != nil {
 		return err
 	}
-	// Validate const
+	// Resolve const
 	for _, v := range g.Const.Types {
 		if !slices.Contains(validateConstTypes, v) {
 			return fmt.Errorf("const type %q must be one of %v", v, validateConstTypes)
@@ -858,11 +936,11 @@ func (g *Grammar) Validate() error {
 	if err := duplicated(g.Const.Types); err != nil {
 		return fmt.Errorf("const types: %w", err)
 	}
-	if err := validateAnnotations("const", g.Const.Annotations); err != nil {
+	if err := g.doResolve("const", g.Const.Annotations, g.Const.Validators); err != nil {
 		return err
 	}
-	// Validate enum
-	if err := validateAnnotations("enum", g.Enum.Annotations); err != nil {
+	// Resolve enum
+	if err := g.doResolve("enum", g.Enum.Annotations, g.Enum.Validators); err != nil {
 		return err
 	}
 	for _, v := range g.Enum.Member.Types {
@@ -873,33 +951,64 @@ func (g *Grammar) Validate() error {
 	if err := duplicated(g.Enum.Member.Types); err != nil {
 		return fmt.Errorf("enum member types: %w", err)
 	}
-	if err := validateAnnotations("enum member", g.Enum.Member.Annotations); err != nil {
+	if err := g.doResolve("enum member", g.Enum.Member.Annotations, g.Enum.Member.Validators); err != nil {
 		return err
 	}
-	// Validate struct
-	if err := validateAnnotations("struct", g.Struct.Annotations); err != nil {
+	// Resolve struct
+	if err := g.doResolve("struct", g.Struct.Annotations, g.Struct.Validators); err != nil {
 		return err
 	}
-	if err := validateAnnotations("struct field", g.Struct.Field.Annotations); err != nil {
+	if err := g.doResolve("struct field", g.Struct.Field.Annotations, g.Struct.Field.Validators); err != nil {
 		return err
 	}
-	// Validate interface
-	if err := validateAnnotations("interface", g.Interface.Annotations); err != nil {
+	// Resolve interface
+	if err := g.doResolve("interface", g.Interface.Annotations, g.Interface.Validators); err != nil {
 		return err
 	}
-	if err := validateAnnotations("interface method", g.Interface.Method.Annotations); err != nil {
+	if err := g.doResolve("interface method", g.Interface.Method.Annotations, g.Interface.Method.Validators); err != nil {
 		return err
 	}
-	if err := validateAnnotations("interface method parameter", g.Interface.Method.Parameter.Annotations); err != nil {
+	if err := g.doResolve("interface method parameter", g.Interface.Method.Parameter.Annotations, g.Interface.Method.Parameter.Validators); err != nil {
 		return err
 	}
 	return nil
 }
 
-func validateAnnotations(node string, annotations []Annotation) error {
+func (g *Grammar) doResolve(node string, annotations Annotations, validators Validators) error {
+	if err := g.resolveAnnotations(node, annotations); err != nil {
+		return err
+	}
+	if err := g.resolveValidators(node, validators); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (g *Grammar) resolveAnnotations(node string, annotations Annotations) error {
 	for i := range annotations {
-		a := &annotations[i]
+		if err := annotations[i].resolve(g.Context.Annotations); err != nil {
+			return fmt.Errorf("%s: %w", node, err)
+		}
+		a := &annotations[i].value
+		for j := range a.Parameters {
+			if err := a.Parameters[j].resolve(g.Context.AnnotationParameters); err != nil {
+				return fmt.Errorf("%s: %w", node, err)
+			}
+			p := &a.Parameters[j].value
+			if err := g.resolveValidators(node, p.Validators); err != nil {
+				return fmt.Errorf("%s: %w", node, err)
+			}
+		}
 		if err := a.validate(); err != nil {
+			return fmt.Errorf("%s: %w", node, err)
+		}
+	}
+	return nil
+}
+
+func (g *Grammar) resolveValidators(node string, validators Validators) error {
+	for i := range validators {
+		if err := validators[i].resolve(g.Context.Validators); err != nil {
 			return fmt.Errorf("%s: %w", node, err)
 		}
 	}
@@ -911,7 +1020,7 @@ func (a *Annotation) validate() error {
 		return fmt.Errorf("annotation name is required")
 	}
 	for i := range a.Parameters {
-		p := &a.Parameters[i]
+		p := &a.Parameters[i].value
 		if err := p.validate(); err != nil {
 			return fmt.Errorf("annotation %q: %w", a.Name, err)
 		}
@@ -941,24 +1050,34 @@ func (p *AnnotationParameter) validate() error {
 
 const notEmpty = "{{ne . ``}}"
 
-func next(parameters ...AnnotationParameter) Annotation {
-	return Annotation{
+func toJSON(v any) json.RawMessage {
+	b, err := json.Marshal(v)
+	if err != nil {
+		panic(err)
+	}
+	return b
+}
+
+func next(parameters ...string) Options[Annotation] {
+	return opt(Annotation{
 		Name:        "next",
 		Description: "Built-in annotation for the next compiler.",
-		Parameters:  parameters,
-	}
+		Parameters: slices.Collect(iters.Map(slices.Values(parameters), func(id string) Options[AnnotationParameter] {
+			return Options[AnnotationParameter]{id: id}
+		})),
+	})
 }
 
 func deprecated() Annotation {
 	return Annotation{
 		Name:        "deprecated",
 		Description: "Sets the declaration as deprecated.",
-		Parameters: []AnnotationParameter{
-			{
+		Parameters: []Options[AnnotationParameter]{
+			opt(AnnotationParameter{
 				Name:        "message",
 				Description: "Sets the deprecation message.",
 				Type:        String,
-			},
+			}),
 		},
 	}
 }
@@ -974,48 +1093,48 @@ func optional() Annotation {
 	return Annotation{
 		Name:        "optional",
 		Description: "Sets the field as optional.",
-		Parameters:  []AnnotationParameter{default_()},
+		Parameters:  []Options[AnnotationParameter]{default_()},
 	}
 }
 
-func default_() AnnotationParameter {
-	return AnnotationParameter{
+func default_() Options[AnnotationParameter] {
+	return opt(AnnotationParameter{
 		Name:        "default",
 		Description: "Sets the default value for optional fields.",
 		Type:        String,
-	}
+	})
 }
 
-func available() AnnotationParameter {
-	return AnnotationParameter{
+func available() Options[AnnotationParameter] {
+	return opt(AnnotationParameter{
 		Name:        "available",
 		Description: "Sets the available expression for the declaration.",
 		Type:        String,
-	}
+	})
 }
 
-func mut() AnnotationParameter {
-	return AnnotationParameter{
+func mut() Options[AnnotationParameter] {
+	return opt(AnnotationParameter{
 		Name:        "mut",
 		Description: "Sets object or parameter as mutable.",
 		Type:        Bool,
-	}
+	})
 }
 
-func error_() AnnotationParameter {
-	return AnnotationParameter{
+func error_() Options[AnnotationParameter] {
+	return opt(AnnotationParameter{
 		Name:        "error",
 		Description: "Indicates the method returns an error.",
 		Type:        Bool,
-	}
+	})
 }
 
-func type_() AnnotationParameter {
-	return AnnotationParameter{
+func type_() Options[AnnotationParameter] {
+	return opt(AnnotationParameter{
 		Name:        "type",
 		Description: "Sets the type for enum members.",
 		Type:        Type,
-	}
+	})
 }
 
 func LANG_package() AnnotationParameter {
@@ -1023,12 +1142,12 @@ func LANG_package() AnnotationParameter {
 		Name:        ".+_package",
 		Description: "Sets the package name for target languages.",
 		Type:        String,
-		Validators: []Validator{
-			{
+		Validators: Validators{
+			opt(Validator{
 				Name:       "LangPackageMustNotBeEmpty",
 				Expression: notEmpty,
 				Message:    "must not be empty",
-			},
+			}),
 		},
 	}
 }
@@ -1052,7 +1171,7 @@ func LANG_alias() AnnotationParameter {
 func LANG_type() AnnotationParameter {
 	return AnnotationParameter{
 		Name:        ".+_type",
-		Description: "Sets the field type name for target languages.",
+		Description: "Sets the type name for target languages.",
 		Type:        String,
 	}
 }
@@ -1071,72 +1190,69 @@ func LANG_type() AnnotationParameter {
 //
 //	:::
 var Default = Grammar{
-	Package: Package{
-		Annotations: []Annotation{
-			next(available(), LANG_package(), LANG_imports()),
-			deprecated(),
+	Context: Context{
+		Annotations: map[string]json.RawMessage{
+			"next@package":                    toJSON(next("available", "*_package", "*_imports")),
+			"next@const":                      toJSON(next("available")),
+			"next@enum":                       toJSON(next("available", "type")),
+			"next@enum.member":                toJSON(next("available")),
+			"next@struct":                     toJSON(next("available", "*_alias")),
+			"next@struct.field":               toJSON(next("available", "*_type")),
+			"next@interface":                  toJSON(next("available", "*_alias")),
+			"next@interface.method":           toJSON(next("available", "mut", "error")),
+			"next@interface.method.parameter": toJSON(next("mut", "*_type")),
+			"deprecated":                      toJSON(deprecated()),
+			"required":                        toJSON(required()),
+			"optional":                        toJSON(optional()),
 		},
+		AnnotationParameters: map[string]json.RawMessage{
+			"available": toJSON(available()),
+			"mut":       toJSON(mut()),
+			"error":     toJSON(error_()),
+			"type":      toJSON(type_()),
+			"*_package": toJSON(LANG_package()),
+			"*_imports": toJSON(LANG_imports()),
+			"*_alias":   toJSON(LANG_alias()),
+			"*_type":    toJSON(LANG_type()),
+		},
+	},
+	Package: Package{
+		Annotations: at("next@package", "deprecated"),
 	},
 	Const: Const{
-		Types: []string{Bool, Int, Float, String},
-		Annotations: []Annotation{
-			next(available()),
-			deprecated(),
-		},
+		Types:       []string{Bool, Int, Float, String},
+		Annotations: at("next@const", "deprecated"),
 	},
 	Enum: Enum{
-		Annotations: []Annotation{
-			next(available(), type_()),
-			deprecated(),
-		},
+		Annotations: at("next@enum", "deprecated"),
 		Member: EnumMember{
-			Types: []string{Int, Float, String},
-			Annotations: []Annotation{
-				next(available()),
-				deprecated(),
-			},
+			Types:       []string{Int, Float, String},
+			Annotations: at("next@enum.member", "deprecated"),
 		},
 	},
 	Struct: Struct{
-		Annotations: []Annotation{
-			next(available(), LANG_alias()),
-			deprecated(),
-		},
+		Annotations: at("next@struct", "deprecated"),
 		Field: StructField{
-			Annotations: []Annotation{
-				next(available(), LANG_type()),
-				deprecated(),
-				required(),
-				optional(),
-			},
+			Annotations: at("next@struct.field", "deprecated", "required", "optional"),
 		},
 	},
 	Interface: Interface{
-		Annotations: []Annotation{
-			next(available(), LANG_alias()),
-			deprecated(),
-		},
+		Annotations: at("next@interface", "deprecated"),
 		Method: InterfaceMethod{
-			Annotations: []Annotation{
-				next(available(), mut(), error_()),
-				deprecated(),
-			},
+			Annotations: at("next@interface.method", "deprecated"),
 			Parameter: struct {
-				Annotations []Annotation `json:",omitempty"`
-				Validators  []Validator  `json:",omitempty"`
+				Annotations Annotations `json:",omitempty"`
+				Validators  Validators  `json:",omitempty"`
 			}{
-				Annotations: []Annotation{
-					next(available(), mut()),
-					deprecated(),
-				},
+				Annotations: at("next@interface.method.parameter", "deprecated"),
 			},
 		},
 	},
 }
 
 func init() {
-	// Ensure the default grammar is valid
-	if err := Default.Validate(); err != nil {
+	// Resolve the default grammar
+	if err := Default.Resolve(); err != nil {
 		panic(err)
 	}
 }

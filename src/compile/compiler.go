@@ -935,18 +935,18 @@ func (c *Compiler) validateInterfaceGrammar(x *Interface) error {
 	return nil
 }
 
-func (c *Compiler) executeValidators(node Node, validators []grammar.Validator) error {
+func (c *Compiler) executeValidators(node Node, validators grammar.Validators) error {
 	for _, v := range validators {
-		if ok, err := v.Validate(node); err != nil {
+		if ok, err := v.Value().Validate(node); err != nil {
 			return fmt.Errorf("%s: failed to validate %s %s: %w", node.NamePos(), node.Typeof(), node.Name(), err)
 		} else if !ok {
-			c.addErrorf(node.NamePos().pos, "%s %s: %s", node.Typeof(), node.Name(), v.Message)
+			c.addErrorf(node.NamePos().pos, "%s %s: %s", node.Typeof(), node.Name(), v.Value().Message)
 		}
 	}
 	return nil
 }
 
-func (c *Compiler) validateAnnotations(node Node, annotations []grammar.Annotation) error {
+func (c *Compiler) validateAnnotations(node Node, annotations grammar.Annotations) error {
 	for name, annotation := range node.Annotations() {
 		ga := grammar.LookupAnnotation(annotations, name)
 		if ga == nil {
@@ -989,19 +989,19 @@ func (c *Compiler) validateAnnotations(node Node, annotations []grammar.Annotati
 				return fmt.Errorf("unexpected parameter type %s", gp.Type)
 			}
 			for _, va := range gp.Validators {
-				if ok, err := va.Validate(v); err != nil {
+				if ok, err := va.Value().Validate(v); err != nil {
 					return fmt.Errorf("%s: failed to validate annotation %s parameter %s: %w", annotation.NamePos(p), name, p, err)
 				} else if !ok {
-					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s: %s", name, p, va.Message)
+					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s: %s", name, p, va.Value().Message)
 				}
 			}
 		}
 		for _, gp := range ga.Parameters {
-			if !gp.Required {
+			if !gp.Value().Required {
 				continue
 			}
-			if _, ok := annotation[gp.Name]; !ok {
-				c.addErrorf(annotation.Pos().pos, "annotation %s: missing required parameter %s", name, gp.Name)
+			if _, ok := annotation[gp.Value().Name]; !ok {
+				c.addErrorf(annotation.Pos().pos, "annotation %s: missing required parameter %s", name, gp.Value().Name)
 			}
 		}
 	}

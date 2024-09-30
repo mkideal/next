@@ -1,0 +1,207 @@
+{
+  "Context": {
+    "Annotations": {
+      "message": {
+        "Name": "message",
+        "Description": "Sets the declaration as a message.",
+        "Parameters": [
+          {
+            "Name": "type",
+            "Description": "Sets the message type id",
+            "Type": "int",
+            "Validators": [
+              {
+                "Name": "MessageTypeMustBePositive",
+                "Expression": "{{gt . 0}}",
+                "Message": "must be positive"
+              }
+            ]
+          },
+          {
+            "Name": "req",
+            "Description": "Sets the message as a request.",
+            "Type": "bool"
+          }
+        ]
+      },
+      "deprecated": {
+        "Name": "deprecated",
+        "Description": "Sets the declaration as deprecated.",
+        "Parameters": [
+          {
+            "Name": "message",
+            "Description": "Sets the deprecation message.",
+            "Type": "string"
+          }
+        ]
+      },
+      "next@const": {
+        "Name": "next",
+        "Description": "Built-in annotation for the next compiler.",
+        "Parameters": [
+          "available"
+        ]
+      },
+      "next@enum": {
+        "Name": "next",
+        "Description": "Built-in annotation for the next compiler.",
+        "Parameters": [
+          "available",
+          "type"
+        ]
+      },
+      "next@enum.member": {
+        "Name": "next",
+        "Description": "Built-in annotation for the next compiler.",
+        "Parameters": [
+          "available"
+        ]
+      },
+      "next@interface": {
+        "Name": "next",
+        "Description": "Built-in annotation for the next compiler.",
+        "Parameters": [
+          "available",
+          "*_alias"
+        ]
+      },
+      "next@interface.method": {
+        "Name": "next",
+        "Description": "Built-in annotation for the next compiler.",
+        "Parameters": [
+          "available",
+          "mut",
+          "error"
+        ]
+      },
+      "next@interface.method.parameter": {
+        "Name": "next",
+        "Description": "Built-in annotation for the next compiler.",
+        "Parameters": [
+          "mut",
+          "*_type"
+        ]
+      },
+      "next@package": {
+        "Name": "next",
+        "Description": "Built-in annotation for the next compiler.",
+        "Parameters": [
+          "available",
+          "*_package",
+          "*_imports"
+        ]
+      },
+      "next@struct": {
+        "Name": "next",
+        "Description": "Built-in annotation for the next compiler.",
+        "Parameters": [
+          "available",
+          "*_alias"
+        ]
+      },
+      "next@struct.field": {
+        "Name": "next",
+        "Description": "Built-in annotation for the next compiler.",
+        "Parameters": [
+          "available",
+          "*_type"
+        ]
+      },
+      "optional": {
+        "Name": "optional",
+        "Description": "Sets the field as optional.",
+        "Parameters": [
+          {
+            "Name": "default",
+            "Description": "Sets the default value for optional fields.",
+            "Type": "string"
+          }
+        ]
+      },
+      "required": {
+        "Name": "required",
+        "Description": "Sets the field as required."
+      }
+    },
+    "AnnotationParameters": {
+      "*_alias": {
+        "Name": ".+_alias",
+        "Description": "Sets the alias name for target languages.",
+        "Type": "string"
+      },
+      "*_imports": {
+        "Name": ".+_imports",
+        "Description": "Sets the import declarations for target languages.",
+        "Type": "string"
+      },
+      "*_package": {
+        "Name": ".+_package",
+        "Description": "Sets the package name for target languages.",
+        "Type": "string",
+        "Validators": [
+          {
+            "Name": "LangPackageMustNotBeEmpty",
+            "Expression": "{{ne . ``}}",
+            "Message": "must not be empty"
+          }
+        ]
+      },
+      "*_type": {
+        "Name": ".+_type",
+        "Description": "Sets the type name for target languages.",
+        "Type": "string"
+      },
+      "available": {
+        "Name": "available",
+        "Description": "Sets the available expression for the declaration.",
+        "Type": "string"
+      },
+      "error": {
+        "Name": "error",
+        "Description": "Indicates the method returns an error.",
+        "Type": "bool"
+      },
+      "mut": {
+        "Name": "mut",
+        "Description": "Sets object or parameter as mutable.",
+        "Type": "bool"
+      },
+      "type": {
+        "Name": "type",
+        "Description": "Sets the type for enum members.",
+        "Type": "type"
+      }
+    },
+    "Validators": null
+  },
+  "Package": {
+    "Annotations": [ "next@package", "deprecated" ]
+  },
+  "Import": {},
+  "Const": {
+    "Types": [ "bool", "int", "float", "string" ],
+    "Annotations": [ "next@const", "deprecated" ]
+  },
+  "Enum": {
+    "Annotations": [ "next@enum", "deprecated" ],
+    "Member": {
+      "Types": [ "int", "float", "string" ],
+      "Annotations": [ "next@enum.member", "deprecated" ]
+    }
+  },
+  "Struct": {
+    "Annotations": [ "next@struct", "deprecated", "message" ],
+    "Field": {
+      "Annotations": [ "next@struct.field", "deprecated", "required", "optional" ]
+    }
+  },
+  "Interface": {
+    "Annotations": [ "next@interface", "deprecated" ],
+    "Method": {
+      "Annotations": [ "next@interface.method", "deprecated" ],
+      "Parameter": {
+        "Annotations": [ "next@interface.method.parameter", "deprecated" ]
+      }
+    }
+  }
+}

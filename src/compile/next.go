@@ -202,7 +202,7 @@ func Compile(platform Platform, builtin FileSystem, args []string) {
 		content, err := platform.ReadFile(compiler.flags.grammar)
 		content = result(stderr, content, err)
 		unwrap(stderr, json.Unmarshal(content, &compiler.grammar))
-		if err := compiler.grammar.Validate(); err != nil {
+		if err := compiler.grammar.Resolve(); err != nil {
 			return
 		}
 	} else {

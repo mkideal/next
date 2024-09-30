@@ -4,7 +4,7 @@ syntax = "proto3";
 
 package c;
 
-option go_package = "github.com/next/next/website/testdata/gen/go/c";
+option go_package = "github.com/next/next/website/example/gen/go/c";
 option java_package = "com.example.c";
 import "a.proto";
 import "b.proto";

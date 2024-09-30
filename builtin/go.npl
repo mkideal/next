@@ -35,7 +35,6 @@ import "time"
 ```
 */}}
 {{- define "next/go/imports:decl"}}
-import "strconv"
 {{- if .Decl.Annotations.next.go_imports}}
 {{- range (.Decl.Annotations.next.go_imports | split "," | map (trim | split "." | first | trimPrefix "*") | sort | uniq)}}
 import "{{.}}"
@@ -73,7 +72,6 @@ var _ = time.Now
 */}}
 {{- define "next/go/imports:unused" -}}
 {{_}}
-var _ = strconv.FormatInt
 {{- if .Decl.Annotations.next.go_imports}}
 {{- range (.Decl.Annotations.next.go_imports | split "," | sort | uniq)}}
 {{- $pkg := . | split "." | first}}
@@ -119,7 +117,7 @@ var _ = (*{{.Target.Package.Name}}.{{next (index (.Target.Package.Types) 0)}})(n
 const {{render "const:name" .}} = {{next .Value}}{{next .Comment}}
 {{end}}
 
-{{/* next/go/enum: Generates an enum type declaration, constants, and String method */}}
+{{/* next/go/enum: Generates an enum type declaration, constants */}}
 {{- define "next/go/enum" -}}
 {{- next .Doc -}}
 type {{next .Type}} {{render "enum:member.type" .}}
@@ -127,24 +125,6 @@ type {{next .Type}} {{render "enum:member.type" .}}
 const (
     {{next .Members | align -}}
 )
-
-func (x {{next .Type}}) String() string {
-{{- if .MemberType.Kind.IsString}}
-    return string(x)
-{{- else}}
-    switch x {
-    {{- range .Members.List}}
-    case {{render "enum.member:name" .}}:
-        return "{{.Name}}"
-    {{- end}}
-    }
-{{- if .MemberType.Kind.IsInteger}}
-    return "{{next $.Type}}(" + strconv.FormatInt(int64(x), 10) + ")"
-{{- else}}
-    return fmt.Sprintf("{{next $.Type}}(%v)", x)
-{{- end}}
-{{- end}}
-}
 {{end}}
 
 {{/* next/go/enum.member: Generates a constant declaration for an enum member */}}
