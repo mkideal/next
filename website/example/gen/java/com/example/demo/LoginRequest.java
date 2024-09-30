@@ -32,7 +32,7 @@ public class LoginRequest {
     }
 
     /**
-     * @optional annotation is a custom annotation that marks a field as optional.
+     * @optional annotation is a builtin annotation that marks a field as optional.
      */
     private String device;
 

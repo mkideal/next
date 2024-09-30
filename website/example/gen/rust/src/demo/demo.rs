@@ -92,7 +92,7 @@ pub struct Contract {
 pub struct LoginRequest {
     pub username: String,
     pub password: String,
-    /// @optional annotation is a custom annotation that marks a field as optional.
+    /// @optional annotation is a builtin annotation that marks a field as optional.
     pub device: String,
     pub os: OperatingSystem,
     pub timestamp: i64,

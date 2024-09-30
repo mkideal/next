@@ -123,7 +123,7 @@ func (c *Compiler) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 		"`VERBOSE` levels: "+b("0")+"=error,  "+b("1")+"=debug, "+b("2")+"=trace.\n"+
 		"Usually, the trace message used for debugging the compiler itself.\n"+
 		"Levels "+b("1")+" (debug) and above enable execution of:\n"+
-		" -"+b("print")+" and "+b("printf")+" in Next source filesa (.next).\n"+
+		" -"+b("print")+" and "+b("printf")+" in Next source files (.next).\n"+
 		" -"+b("debug")+" in Next template files (.npl).\n",
 	))
 

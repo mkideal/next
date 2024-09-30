@@ -55,7 +55,7 @@ message Contract {
 message LoginRequest {
     string username = 1;
     string password = 2;
-    // @optional annotation is a custom annotation that marks a field as optional.
+    // @optional annotation is a builtin annotation that marks a field as optional.
     optional string device = 3;
     fixed64 timestamp = 5;
 }

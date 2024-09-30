@@ -107,8 +107,8 @@ message {{next .Type}} {
 {{/* next/protobuf/struct.field:type: Handles custom field type if specified */}}
 {{- define "next/protobuf/struct.field:type" -}}
 {{- $type := "" -}}
-{{- if .Annotations.next.proto_type -}}
-    {{- $type = .Annotations.next.proto_type -}}
+{{- if .Annotations.next.protobuf_type -}}
+    {{- $type = .Annotations.next.protobuf_type -}}
 {{- else -}}
     {{- $type = next .Type -}}
 {{- end -}}

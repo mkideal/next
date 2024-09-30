@@ -104,7 +104,8 @@ enum OperatingSystem {
 struct LoginRequest {
     string username;
     string password;
-    // @optional annotation is a custom annotation that marks a field as optional.
+
+    // @optional annotation is a builtin annotation that marks a field as optional.
     @optional string device;
     @next(available="!protobuf")
     @optional(default=OperatingSystem.IOS) OperatingSystem os;
@@ -116,7 +117,7 @@ struct LoginRequest {
     //  @optional vector<string> tags;
     //  @optional map<string, int> scores;
 
-    @next(proto_type="fixed64")
+    @next(protobuf_type="fixed64")
     int64 timestamp;
 }
 

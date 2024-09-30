@@ -117,7 +117,7 @@ function LoginRequest:new()
     local obj = {
         username = "",
         password = "",
-        -- @optional annotation is a custom annotation that marks a field as optional.
+        -- @optional annotation is a builtin annotation that marks a field as optional.
         device = "",
         os = nil,
         timestamp = 0

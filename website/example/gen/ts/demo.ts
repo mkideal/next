@@ -90,7 +90,7 @@ export class LoginRequest {
     username: string = "";
     password: string = "";
     /**
-     * @optional annotation is a custom annotation that marks a field as optional.
+     * @optional annotation is a builtin annotation that marks a field as optional.
      * @type { string }
      */
     device: string = "";

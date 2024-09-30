@@ -121,7 +121,7 @@ class LoginRequest
     public string $username;
     public string $password;
     /**
-     * @optional annotation is a custom annotation that marks a field as optional.
+     * @optional annotation is a builtin annotation that marks a field as optional.
      */
     public string $device;
     public OperatingSystem $os;
