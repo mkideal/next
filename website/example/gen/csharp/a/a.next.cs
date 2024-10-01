@@ -34,7 +34,7 @@ namespace a
     public const int IntFromBool = 1;
     public const int IntFromFloat = 3;
     public const float FloatFromInt = 42.0;
-    public const float FloatFromBool = 0;
+    public const float FloatFromBool = 0.0;
     public const bool BoolFromInt = true;
     public const bool BoolFromString = true;
     public const string FormattedString1 = "The answer is 42";

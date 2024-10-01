@@ -123,7 +123,7 @@ typedef unsigned char _Bool;
 
 {{/* next/c/const:name: Generates the name for a constant */}}
 {{- define "next/c/const:name" -}}
-{{render "decl.name" (.Name | snakeCase) | upper}}
+{{- render "decl.name" (render "node:snake.case.name" .) | upper}}
 {{- end}}
 
 {{/* next/c/enum: Generates an enum type declaration */}}
@@ -154,7 +154,7 @@ typedef struct {{next .Type}} {
 {{- define "next/c/enum.member" -}}
 {{- next .Doc -}}
 {{- if .Decl.MemberType.Kind.IsInteger -}}
-{{next .Decl.Type}}_{{render "enum.member:name" .}} = {{next .Value}},{{next .Comment}}
+{{- next .Decl.Type}}_{{render "enum.member:name" .}} = {{next .Value}},{{next .Comment}}
 {{- else -}}
 #define {{next .Decl.Type}}_{{render "enum.member:name" .}} (({{next .Decl.Type}}){ {{- next .Value -}} }){{next .Comment}}
 {{- end}}
@@ -173,6 +173,10 @@ typedef struct {{next .Type}} {
 {{- next .Doc -}}
 {{render "dict:struct.field.decl" (dict "type" .Type "name" (render "struct.field:name" .))}};{{next .Comment}}
 {{end}}
+
+{{- define "next/c/struct.field:name" -}}
+{{- render "node:snake.case.name" .}}
+{{- end}}
 
 {{- define "next/c/dict:struct.field.decl" -}}
 {{- $type := .type -}}
@@ -205,12 +209,12 @@ struct {{next .Type}} {
 
 {{/* next/c/interface.method:name: Generates the name for an interface method */}}
 {{- define "next/c/interface.method:name" -}}
-{{snakeCase .Name}}
+{{- render "node:snake.case.name" .}}
 {{- end}}
 
 {{/* next/c/interface.method.param: Generates a parameter declaration for an interface method */}}
 {{- define "next/c/interface.method.param" -}}
-{{next .Type}} {{render "interface.method.param:name" .}}
+{{- next .Type}} {{render "interface.method.param:name" .}}
 {{- end}}
 
 {{/* next/c/interface.method.param:name: Generates the name for an interface method parameter */}}

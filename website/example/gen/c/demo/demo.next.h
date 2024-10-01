@@ -76,7 +76,7 @@ typedef struct DEMO_User {
     double coordinates[3];
     int32_t matrix[3][2];
     char* email;
-    DEMO_Color favoriteColor;
+    DEMO_Color favorite_color;
     void* extra;
 } DEMO_User;
 

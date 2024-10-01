@@ -1,4 +1,4 @@
-# This is a project configuration file. Usage: next run example.proj.yaml
+# This is a project configuration file.
 
 # Enable the strict mode, like the -s flag
 strict: true

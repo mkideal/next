@@ -104,14 +104,14 @@ namespace Demo
         // - For C++: The parameter is non-const, allowing modification
         // - For other languages: This annotation may not have a direct effect,
         //   but indicates that the buffer content may be modified
-        int read(ref byte[] buffer);
+        int Read(ref byte[] buffer);
     }
 
     // HTTPClient provides HTTP request functionality
     public interface HTTPClient
     {
         // Available for all languages
-        string request(string url, string method, string body);
-        string request2(string url, string method, string body);
+        string Request(string url, string method, string body);
+        string Request2(string url, string method, string body);
     }
 }

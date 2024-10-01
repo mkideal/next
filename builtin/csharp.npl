@@ -73,8 +73,8 @@ public {{next .Type}} {{render "struct.field:name" .}} { get; set; }{{next .Comm
 {{end}}
 
 {{/* next/csharp/struct.field.name: Generates the name for a class property */}}
-{{- define "next/csharp/struct.field.name" -}}
-{{- .String | pascalCase}}
+{{- define "next/csharp/struct.field:name" -}}
+{{- render "node:camel.case.name" .}}
 {{- end}}
 
 {{/* next/csharp/interface: Generates an interface declaration */}}
@@ -91,6 +91,10 @@ public interface {{next .Type}}
 {{- next .Doc -}}
 {{- next .Result}} {{render "interface.method:name" .}}({{next .Params}});{{next .Comment}}
 {{end}}
+
+{{- define "next/csharp/interface.method:name" -}}
+{{- render "node:pascal.case.name" .}}
+{{- end}}
 
 {{/* next/csharp/interface.method.result: Generates the return type for an interface method */}}
 {{- define "next/csharp/interface.method.result" -}}

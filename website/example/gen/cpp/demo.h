@@ -87,7 +87,7 @@ public:
     std::array<double, 3> coordinates = {0.0};
     std::array<std::array<int, 2>, 3> matrix;
     std::string email = {""};
-    Color favoriteColor = {Color(0)};
+    Color favorite_color = {Color(0)};
     std::any extra;
 public:
     User() = default;

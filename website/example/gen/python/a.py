@@ -41,7 +41,7 @@ Constants using built-in functions
 INT_FROM_BOOL = 1
 INT_FROM_FLOAT = 3
 FLOAT_FROM_INT = 42.0
-FLOAT_FROM_BOOL = 0
+FLOAT_FROM_BOOL = 0.0
 BOOL_FROM_INT = True
 BOOL_FROM_STRING = True
 FORMATTED_STRING_1 = "The answer is 42"

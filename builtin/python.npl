@@ -35,8 +35,12 @@ from {{.File.Package.Name}} import *
 {{/* next/python/const: Generates a constant declaration */}}
 {{- define "next/python/const" -}}
 {{- next .Doc -}}
-{{- render "const:name" . | snakeCase | upper}} = {{next .Value}}{{next .Comment}}
+{{- render "const:name" .}} = {{next .Value}}{{next .Comment}}
 {{end}}
+
+{{- define "next/python/const:name" -}}
+{{- render "node:snake.case.name" . | upper}}
+{{- end}}
 
 {{/* next/python/enum: Generates an enum class declaration */}}
 {{- define "next/python/enum" -}}
@@ -53,7 +57,7 @@ class {{next .Type}}:
 
 {{/* next/python/enum.member:name: Generates the name for an enum member */}}
 {{- define "next/python/enum.member:name" -}}
-{{- .Name | snakeCase | upper}}
+{{- render "node:snake.case.name" . | upper}}
 {{- end}}
 
 {{/* next/python/struct: Generates a class declaration */}}
@@ -72,7 +76,7 @@ self.{{render "struct.field:name" .}} = {{render "type:zero" .Type}}{{next .Comm
 
 {{/* next/python/struct.field:name: Generates the name for a class field */}}
 {{- define "next/python/struct.field:name" -}}
-{{- .Name | snakeCase}}
+{{- render "node:snake.case.name" .}}
 {{- end}}
 
 {{/* next/python/interface: Generates an abstract base class declaration */}}
@@ -108,12 +112,16 @@ def {{render "interface.method:name" .}}(self{{if .Params.List}}, {{next .Params
 
 {{/* next/python/interface.method:name: Generates the name for an interface method */}}
 {{- define "next/python/interface.method:name" -}}
-{{- snakeCase .Name}}
+{{- render "node:snake.case.name" .}}
 {{- end}}
 
 {{/* next/python/interface.method.param: Generates a parameter for an interface method */}}
 {{- define "next/python/interface.method.param" -}}
 {{- render "interface.method.param:name" .}}: {{next .Type}}
+{{- end}}
+
+{{- define "next/python/interface.method.param:name" -}}
+{{- render "node:snake.case.name" .}}
 {{- end}}
 
 {{/* next/python/interface.method.result: Generates the return type for an interface method */}}

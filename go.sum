@@ -1,11 +1,8 @@
-github.com/gopherd/core v0.0.0-20240910100354-67545f7f6988 h1:dVwwih1R+YstDYuNGqCu6Lh60X0VPcRJRhKaFLva0aY=
-github.com/gopherd/core v0.0.0-20240910100354-67545f7f6988/go.mod h1:KfAPtxaKLEFiby8PpGwdgp86auCmLU82+khBzHhUTaM=
-github.com/gopherd/core v0.0.0-20240917090738-f0030410387d h1:g0hyjPKZHRRjkJE5vAcPNovwY+vommXGd3++jj2c3f8=
-github.com/gopherd/core v0.0.0-20240917090738-f0030410387d/go.mod h1:KfAPtxaKLEFiby8PpGwdgp86auCmLU82+khBzHhUTaM=
-github.com/gopherd/core v0.0.0-20240926071129-6d591f1f639c h1:jMKV3OIqDnGW6VlIdLopqvRx0AxD0XgPNAu9r0zvrxU=
-github.com/gopherd/core v0.0.0-20240926071129-6d591f1f639c/go.mod h1:KfAPtxaKLEFiby8PpGwdgp86auCmLU82+khBzHhUTaM=
+github.com/gopherd/core v0.0.0-20241001084907-0c9e2deb8cb5 h1:dBfpJJLIVh38gGc8I0D2W3eZtJdwhMLdQ9pXNX5C8sA=
+github.com/gopherd/core v0.0.0-20241001084907-0c9e2deb8cb5/go.mod h1:KfAPtxaKLEFiby8PpGwdgp86auCmLU82+khBzHhUTaM=
 github.com/mattn/go-shellwords v1.0.12 h1:M2zGm7EW6UQJvDeQxo4T51eKPurbeFbe8WtebGE2xrk=
 github.com/mattn/go-shellwords v1.0.12/go.mod h1:EZzvwXDESEeg03EKmM+RmDnNOPKG4lLtQsUlTZDWQ8Y=
+gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
 gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=

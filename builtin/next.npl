@@ -6,18 +6,10 @@
 
 {{/* next/decls: Generates code for all declarations in a file, including constants, enums, structs, and interfaces */}}
 {{- define "next/decls" -}}
-{{- if .Consts}}
     {{- next .Consts}}
-{{- end}}
-{{- if .Enums}}
     {{- next .Enums}}
-{{- end}}
-{{- if .Structs}}
     {{- next .Structs}}
-{{- end}}
-{{- if .Interfaces}}
     {{- next .Interfaces}}
-{{- end}}
 {{- end}}
 
 {{/* next/comment: Generates formatted comment text */}}
@@ -32,6 +24,10 @@
 
 {{- define "next/doc:clike" -}}
 {{- .Format " * " "/**\n" " */"}}
+{{- end}}
+
+{{- define "next/package:name" -}}
+{{- .Name}}
 {{- end}}
 
 {{/* next/imports: Generates code for all import statements in a file */}}
@@ -301,5 +297,43 @@ false
 ""
 {{- else if .Kind.IsBool -}}
 {{render "false" .}}
+{{- end}}
+{{- end}}
+
+{{- define "next/node:snake.case.name"}}
+{{- with .Annotations.next.snake_case}}
+    {{- .}}
+{{- else}}
+    {{- $.Name | snakeCase}}
+{{- end}}
+{{- end}}
+
+{{- define "next/node:pascal.case.name"}}
+{{- with .Annotations.next.pascal_case}}
+    {{- .}}
+{{- else with .Annotations.next.snake_case}}
+    {{- . | snakeCase | split "_" | map capitalize | join ""}}
+{{- else}}
+    {{- $.Name | pascalCase}}
+{{- end}}
+{{- end}}
+
+{{- define "next/node:camel.case.name"}}
+{{- with .Annotations.next.camel_case}}
+    {{- .}}
+{{- else with .Annotations.next.snake_case}}
+    {{- . | snakeCase | split "_" | map capitalize | join "" | uncapitalize}}
+{{- else}}
+    {{- $.Name | camelCase}}
+{{- end}}
+{{- end}}
+
+{{- define "next/node:kebab.case.name"}}
+{{- with .Annotations.next.kebab_case}}
+    {{- .}}
+{{- else with .Annotations.next.snake_case}}
+    {{- . | snakeCase | replace "_" "-"}}
+{{- else}}
+    {{- $.Name | kebabCase}}
 {{- end}}
 {{- end}}

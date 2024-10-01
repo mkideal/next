@@ -3,7 +3,6 @@
 package b
 
 import a "github.com/next/next/website/example/gen/go/a"
-
 var _ = (*a.Color)(nil)
 
 type TestEnum int32

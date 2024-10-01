@@ -63,7 +63,7 @@ _M_.{{next .Type}} = {{next .Type}}
 
 {{/* next/lua/enum.member:name: Generates the name for an enum member */}}
 {{- define "next/lua/enum.member:name" -}}
-{{- .Name | snakeCase | upper}}
+{{- render "node:snake.case.name" . | upper}}
 {{- end}}
 
 {{/* next/lua/struct: Generates a table-based class declaration */}}
@@ -90,7 +90,7 @@ end
 
 {{/* next/lua/struct.field:name: Generates the name for a class field */}}
 {{- define "next/lua/struct.field:name" -}}
-{{- .Name | camelCase}}
+{{- render "node:camel.case.name" .}}
 {{- end}}
 
 {{/* next/lua/interface: Generates an interface-like table declaration */}}
@@ -112,7 +112,7 @@ end{{next .Comment}}
 
 {{/* next/lua/interface.method:name: Generates the name for an interface method */}}
 {{- define "next/lua/interface.method:name" -}}
-{{- .Name | camelCase}}
+{{- render "node:camel.case.name" .}}
 {{- end}}
 
 {{/* next/lua/interface.method.param: Generates a parameter for an interface method */}}

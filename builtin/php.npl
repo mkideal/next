@@ -33,8 +33,12 @@ use {{render "package:name" .Target.Package}};
 {{/* next/php/const: Generates a constant declaration */}}
 {{- define "next/php/const" -}}
 {{- next .Doc -}}
-const {{render "const:name" . | snakeCase | upper}} = {{next .Value}};{{next .Comment}}
+const {{render "const:name" .}} = {{next .Value}};{{next .Comment}}
 {{end}}
+
+{{- define "next/php/const:name" -}}
+{{- render "node:snake.case.name" . | upper}}
+{{- end}}
 
 {{/* next/php/enum: Generates an enum class declaration */}}
 {{- define "next/php/enum" -}}
@@ -59,7 +63,7 @@ case {{render "enum.member:name" .}} = {{next .Value}};{{next .Comment}}
 
 {{/* next/php/enum.member:name: Generates the name for an enum member */}}
 {{- define "next/php/enum.member:name" -}}
-{{- .Name | snakeCase | upper}}
+{{- render "node:snake.case.name" . | upper}}
 {{- end}}
 
 {{/* next/php/struct: Generates a class declaration */}}
@@ -84,7 +88,7 @@ public {{next .Type}} ${{render "struct.field:name" .}};{{next .Comment}}
 
 {{/* next/php/struct.field:name: Generates the name for a class field */}}
 {{- define "next/php/struct.field:name" -}}
-{{- .Name | camelCase}}
+{{- render "node:camel.case.name" .}}
 {{- end}}
 
 {{/* next/php/interface: Generates an interface declaration */}}
@@ -103,7 +107,7 @@ public function {{render "interface.method:name" .}}({{next .Params}}){{next .Re
 
 {{/* next/php/interface.method:name: Generates the name for an interface method */}}
 {{- define "next/php/interface.method:name" -}}
-{{- camelCase .Name}}
+{{- render "node:camel.case.name" .}}
 {{- end}}
 
 {{/* next/php/interface.method.param: Generates a parameter for an interface method */}}

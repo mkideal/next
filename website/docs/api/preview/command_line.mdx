@@ -4,6 +4,30 @@ pagination_next: null
 ---
 # CommandLine {#user-content-CommandLine}
 ## Command {#user-content-CommandLine_Command}
+### build {#user-content-CommandLine_Command_build}
+
+`build` command builds a next project file or runs all next project files in a directory. It reads the project file and compiles the source files according to the project configuration. The project file is a YAML or JSON file that contains the project [Configuration](#user-content-CommandLine_Configuration).
+
+Example:
+
+```sh
+# build all .nextproj files in the current directory
+next build
+
+# build the example.nextproj file
+next build example.nextproj
+
+# build all .nextproj files in the example directory
+next build example/
+
+# build multiple project files or directories
+next build example1.nextproj example2.nextproj example
+```
+
+:::tip
+**.nextproj** is recommended for the Next project file.
+:::
+
 ### grammar {#user-content-CommandLine_Command_grammar}
 
 `grammar` command generates the default grammar for the next files.
@@ -21,18 +45,6 @@ next grammar grammar.json # generate the default grammar with JSON format
 The default grammar is generated in YAML format if the file extension is not provided.
 Currently, the supported file extensions are `.json`, `.yaml`, and `.yml` (alias of `.yaml`).
 :::
-
-### run {#user-content-CommandLine_Command_run}
-
-`run` command runs a next project. It reads the project file and compiles the source files according to the project configuration. The project file is a YAML or JSON file that contains the project [Configuration](#user-content-CommandLine_Configuration).
-
-Example:
-
-```sh
-next run example.yaml
-next run example.json
-next run example.nextproj # .nextproj is an alias of .yaml
-```
 
 ### version {#user-content-CommandLine_Command_version}
 
@@ -53,18 +65,18 @@ next v0.0.4(main: 51864a35de7890d63bfd8acecdb62d20372ca963) built at 2024/09/27T
 ## Configuration {#user-content-CommandLine_Configuration}
 
 import CodeBlock from "@theme/CodeBlock";
-import ExampleProjSource from "!!raw-loader!@site/example/example.proj.yaml";
+import ExampleNextProjSource from "!!raw-loader!@site/example/example.nextproj";
 
 Configuration represents the configuration of the Next project. The configuration is used to mamange the compiler options, such as verbosity, output directories, and custom templates. If the configuration is provided, you can generate code like this:
 
 ```sh
-next run example.proj.yaml
+next build example.nextproj
 ```
 
-The configuration file is a YAML or JSON file that contains the compiler options. Here is an example of the configuration file:
+The configuration file is a YAML or JSON (for .json extension) file that contains the compiler options. Here is an example of the configuration file:
 
-<CodeBlock language="yaml" title="example.proj.yaml">
-	{ExampleProjSource}
+<CodeBlock language="yaml" title="example.nextproj">
+	{ExampleNextProjSource}
 </CodeBlock>
 
 ###### .env {#user-content-CommandLine_Configuration__env}

@@ -173,8 +173,12 @@ public:
 {{- $zero := render "type:zero" .Type -}}
 {{- if $zero}}{{$zero = printf " = {%s}" $zero}}{{end -}}
 {{- next .Doc -}}
-{{- next .Type}} {{render "struct.field:name" . | camelCase}}{{$zero}};{{next .Comment}}
+{{- next .Type}} {{render "struct.field:name" .}}{{$zero}};{{next .Comment}}
 {{end}}
+
+{{- define "next/cpp/struct.field:name" -}}
+{{- render "node:snake.case.name" .}}
+{{- end}}
 
 {{/* next/cpp/interface: Generates an abstract base class declaration (interface in C++ is typically implemented as an abstract class) */}}
 {{- define "next/cpp/interface" -}}
@@ -194,12 +198,16 @@ virtual {{next .Result}} {{render "interface.method:name" .}}({{next .Params}}) 
 
 {{/* next/cpp/interface.method:name: Generates the name for an interface method */}}
 {{- define "next/cpp/interface.method:name" -}}
-{{- snakeCase .Name}}
+{{- render "node:snake.case.name" .}}
 {{- end}}
 
 {{/* next/cpp/interface.method.param: Generates a parameter for an interface method */}}
 {{- define "next/cpp/interface.method.param" -}}
 {{- if not .Annotations.next.mut}}const {{end}}{{next .Type}}& {{render "interface.method.param:name" .}}
+{{- end}}
+
+{{- define "next/cpp/interface.method.param:name" -}}
+{{- render "node:snake.case.name" .}}
 {{- end}}
 
 {{/* next/cpp/interface.method.result: Generates the return type for an interface method */}}

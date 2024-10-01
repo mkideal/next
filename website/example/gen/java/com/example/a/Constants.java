@@ -42,7 +42,7 @@ public class Constants {
     public static final int INT_FROM_BOOL = 1;
     public static final int INT_FROM_FLOAT = 3;
     public static final float FLOAT_FROM_INT = 42.0F;
-    public static final float FLOAT_FROM_BOOL = 0F;
+    public static final float FLOAT_FROM_BOOL = 0.0F;
     public static final boolean BOOL_FROM_INT = true;
     public static final boolean BOOL_FROM_STRING = true;
     public static final String FORMATTED_STRING_1 = "The answer is 42";

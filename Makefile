@@ -102,23 +102,7 @@ example/clean:
 example/gen:
 	@echo "Running generate example..."
 	@rm -rf ${EXAMPLE_DIR}/gen
-	@NEXTNOCOPYBUILTIN=1 ${BUILD_BIN_DIR}/next \
-		-D PROJECT_NAME=demo \
-		-O go=${EXAMPLE_DIR}/gen/go -T go=${EXAMPLE_DIR}/templates/go \
-		-O java=${EXAMPLE_DIR}/gen/java -T java=${EXAMPLE_DIR}/templates/java \
-		-O cpp=${EXAMPLE_DIR}/gen/cpp -T cpp=${EXAMPLE_DIR}/templates/cpp \
-		-O csharp=${EXAMPLE_DIR}/gen/csharp -T csharp=${EXAMPLE_DIR}/templates/csharp \
-		-O c=${EXAMPLE_DIR}/gen/c -T c=${EXAMPLE_DIR}/templates/c \
-		-O rust=${EXAMPLE_DIR}/gen/rust/src -T rust=${EXAMPLE_DIR}/templates/rust \
-		-O protobuf=${EXAMPLE_DIR}/gen/protobuf -T protobuf=${EXAMPLE_DIR}/templates/protobuf \
-		-O js=${EXAMPLE_DIR}/gen/js -T js=${EXAMPLE_DIR}/templates/js \
-		-O ts=${EXAMPLE_DIR}/gen/ts -T ts=${EXAMPLE_DIR}/templates/ts \
-		-O python=${EXAMPLE_DIR}/gen/python -T python=${EXAMPLE_DIR}/templates/python \
-		-O php=${EXAMPLE_DIR}/gen/php -T php=${EXAMPLE_DIR}/templates/php \
-		-O lua=${EXAMPLE_DIR}/gen/lua -T lua=${EXAMPLE_DIR}/templates/lua \
-		-M "c.vector=void*" -M "c.map=void*" \
-		-s -g ${EXAMPLE_DIR}/grammar.yaml \
-		${EXAMPLE_DIR}/next/
+	@NEXTNOCOPYBUILTIN=1 ${BUILD_BIN_DIR}/next build ${EXAMPLE_DIR}
 	@if [ -d ${EXAMPLE_DIR}/gen/rust ]; then cd ${EXAMPLE_DIR}/gen/rust && cargo init --vcs none -q; fi
 
 .PHONY: clean

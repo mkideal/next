@@ -59,7 +59,7 @@ inline constexpr auto MaxValue = 5673;
 inline constexpr auto IntFromBool = 1;
 inline constexpr auto IntFromFloat = 3;
 inline constexpr auto FloatFromInt = 42.0F;
-inline constexpr auto FloatFromBool = 0F;
+inline constexpr auto FloatFromBool = 0.0F;
 inline constexpr auto BoolFromInt = true;
 inline constexpr auto BoolFromString = true;
 inline constexpr auto FormattedString1 = "The answer is 42";
@@ -167,8 +167,8 @@ public:
 
 class Rectangle {
 public:
-    Point2D topLeft;
-    Point2D bottomRight;
+    Point2D top_left;
+    Point2D bottom_right;
 public:
     Rectangle() = default;
     ~Rectangle() = default;
@@ -178,19 +178,19 @@ public:
 class ComplexStruct {
 public:
     bool flag = {false};
-    int8_t tinyInt = {0};
-    int16_t smallInt = {0};
-    int32_t mediumInt = {0};
-    int64_t bigInt = {0};
-    int defaultInt = {0};
-    float singlePrecision = {0.0};
-    double doublePrecision = {0.0};
+    int8_t tiny_int = {0};
+    int16_t small_int = {0};
+    int32_t medium_int = {0};
+    int64_t big_int = {0};
+    int default_int = {0};
+    float single_precision = {0.0};
+    double double_precision = {0.0};
     std::string text = {""};
-    unsigned char singleByte = {0};
-    std::vector<unsigned char> byteArray;
-    std::array<int, 5> fixedArray = {0};
-    std::vector<std::string> dynamicArray;
-    std::vector<int> intArray;
+    unsigned char single_byte = {0};
+    std::vector<unsigned char> byte_array;
+    std::array<int, 5> fixed_array = {0};
+    std::vector<std::string> dynamic_array;
+    std::vector<int> int_array;
     std::unordered_map<std::string, int> dictionary;
 public:
     ComplexStruct() = default;
@@ -202,8 +202,8 @@ public:
     int64_t id = {0};
     std::string username = {""};
     std::string email = {""};
-    Day preferredDay = {Day(0)};
-    Month birthMonth = {Month(0)};
+    Day preferred_day = {Day(0)};
+    Month birth_month = {Month(0)};
 public:
     User() = default;
     ~User() = default;
@@ -212,8 +212,8 @@ public:
 class UserProfile {
 public:
     User user;
-    std::string firstName = {""};
-    std::string lastName = {""};
+    std::string first_name = {""};
+    std::string last_name = {""};
     int age = {0};
     std::vector<std::string> interests;
 public:
@@ -226,8 +226,8 @@ class LoginRequest {
 public:
     std::string username = {""};
     std::string password = {""};
-    std::string deviceId = {""};
-    std::string twoFactorToken = {""};
+    std::string device_id = {""};
+    std::string two_factor_token = {""};
 
     static inline int message_type() { return 201; }
 public:
@@ -238,8 +238,8 @@ public:
 class LoginResponse {
 public:
     bool success = {false};
-    std::string errorMessage = {""};
-    std::string authenticationToken = {""};
+    std::string error_message = {""};
+    std::string authentication_token = {""};
     User user;
 
     static inline int message_type() { return 202; }
@@ -250,7 +250,7 @@ public:
 
 class GenericRequest {
 public:
-    std::string requestId = {""};
+    std::string request_id = {""};
     int64_t timestamp = {0};
 public:
     GenericRequest() = default;
@@ -259,11 +259,11 @@ public:
 
 class GenericResponse {
 public:
-    std::string requestId = {""};
+    std::string request_id = {""};
     int64_t timestamp = {0};
     bool success = {false};
-    std::string errorCode = {""};
-    std::string errorMessage = {""};
+    std::string error_code = {""};
+    std::string error_message = {""};
 public:
     GenericResponse() = default;
     ~GenericResponse() = default;

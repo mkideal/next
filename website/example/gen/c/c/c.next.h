@@ -53,8 +53,8 @@ typedef struct DEMO_C_User {
     int32_t id;
     char* username;
     char* password;
-    char* deviceId;
-    char* twoFactorToken;
+    char* device_id;
+    char* two_factor_token;
     void* roles;
     void* metadata;
     int32_t scores[4];
@@ -64,14 +64,14 @@ typedef struct DEMO_C_LoginRequest {
     DEMO_C_LoginType type;
     char* username;
     char* password;
-    char* deviceId;
-    char* twoFactorToken;
+    char* device_id;
+    char* two_factor_token;
 } DEMO_C_LoginRequest;
 
 typedef struct DEMO_C_LoginResponse {
     _Bool success;
-    char* errorMessage;
-    char* authenticationToken;
+    char* error_message;
+    char* authentication_token;
     DEMO_C_User user;
 } DEMO_C_LoginResponse;
 

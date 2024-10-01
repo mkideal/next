@@ -5,9 +5,9 @@ package demo
 import "fmt"
 import "net/http"
 
-var _ = (*fmt.Stringer)(nil)
-var _ = (http.HandlerFunc)(nil)
 
+var _ = (*fmt.Stringer)(nil)
+var _ = (*http.HandlerFunc)(nil)
 const Version = "1.0.0" // String constant
 const MaxRetries = 3 // Integer constant
 const Timeout = 3000.0 // Float constant expression
@@ -104,21 +104,21 @@ type Reader interface {
     // - For C++: The parameter is non-const, allowing modification
     // - For other languages: This annotation may not have a direct effect,
     //   but indicates that the buffer content may be modified
-    read(buffer []byte) (int, error)
+    Read(buffer []byte) (int, error)
 }
 
 type HTTPServer interface {
     // @next(error) indicates that the method may return an error:
     // - For Go: The method returns (LoginResponse, error)
     // - For C++/Java: The method throws an exception
-    handle(path string, handler http.Handler) error
+    Handle(path string, handler http.Handler) error
 }
 
 // HTTPClient provides HTTP request functionality
 type HTTPClient interface {
     // Available for all languages
-    request(url string, method string, body string) string
-    request2(url string, method string, body string) string
+    Request(url string, method string, body string) string
+    Request2(url string, method string, body string) string
     // Available for Go and Java
-    get(url string) (string, error)
+    Get(url string) (string, error)
 }

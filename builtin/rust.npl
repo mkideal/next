@@ -51,8 +51,12 @@ use {{.}};
 {{/* next/rust/const: Generates a constant declaration */}}
 {{- define "next/rust/const" -}}
 {{- next .Doc -}}
-pub const {{render "const:name" . | snakeCase | upper}}: {{render "const:type" .}} = {{next .Value}};{{next .Comment}}
+pub const {{render "const:name" .}}: {{render "const:type" .}} = {{next .Value}};{{next .Comment}}
 {{end}}
+
+{{- define "next/rust/const:name" -}}
+{{- render "node:snake.case.name" . | upper}}
+{{- end}}
 
 {{/* next/rust/const.type: Adjusts the type of the constant */}}
 {{- define "next/rust/const:type" -}}
@@ -114,7 +118,7 @@ impl {{next .Type}} {
 
 {{/* next/rust/enum.member:name: Generates an enum member name */}}
 {{- define "next/rust/enum.member:name" -}}
-{{- .Name | pascalCase}}
+{{- render "node:pascal.case.name" .}}
 {{- end}}
 
 {{/* next/rust/struct: Generates a struct type declaration */}}
@@ -132,7 +136,7 @@ pub {{render "struct.field:name" .}}: {{next .Type}}{{next .Comment}},
 {{end}}
 
 {{- define "next/rust/struct.field:name" -}}
-{{- .Name | snakeCase}}
+{{- render "node:snake.case.name" .}}
 {{- end}}
 
 {{/* next/rust/interface: Generates a trait declaration */}}
@@ -150,7 +154,7 @@ fn {{render "interface.method:name" .}}({{next .Params}}){{next .Result}};{{next
 {{end}}
 
 {{- define "next/rust/interface.method:name" -}}
-{{- .Name | snakeCase}}
+{{- render "node:snake.case.name" .}}
 {{- end}}
 
 {{/* next/rust/interface.method.params: Generates parameters for a trait method */}}

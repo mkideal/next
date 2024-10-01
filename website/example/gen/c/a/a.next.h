@@ -72,7 +72,7 @@ typedef struct DEMO_A_GenericResponse DEMO_A_GenericResponse;
 #define DEMO_A_INT_FROM_BOOL 1
 #define DEMO_A_INT_FROM_FLOAT 3
 #define DEMO_A_FLOAT_FROM_INT 42.0F
-#define DEMO_A_FLOAT_FROM_BOOL 0F
+#define DEMO_A_FLOAT_FROM_BOOL 0.0F
 #define DEMO_A_BOOL_FROM_INT 1
 #define DEMO_A_BOOL_FROM_STRING 1
 #define DEMO_A_FORMATTED_STRING_1 "The answer is 42"
@@ -183,8 +183,8 @@ typedef struct DEMO_A_Point3D {
 } DEMO_A_Point3D;
 
 typedef struct DEMO_A_Rectangle {
-    DEMO_A_Point2D topLeft;
-    DEMO_A_Point2D bottomRight;
+    DEMO_A_Point2D top_left;
+    DEMO_A_Point2D bottom_right;
 } DEMO_A_Rectangle;
 
 /**
@@ -192,19 +192,19 @@ typedef struct DEMO_A_Rectangle {
  */
 typedef struct DEMO_A_ComplexStruct {
     _Bool flag;
-    int8_t tinyInt;
-    int16_t smallInt;
-    int32_t mediumInt;
-    int64_t bigInt;
-    int32_t defaultInt;
-    float singlePrecision;
-    double doublePrecision;
+    int8_t tiny_int;
+    int16_t small_int;
+    int32_t medium_int;
+    int64_t big_int;
+    int32_t default_int;
+    float single_precision;
+    double double_precision;
     char* text;
-    uint8_t singleByte;
-    uint8_t* byteArray;
-    int32_t fixedArray[5];
-    void* dynamicArray;
-    void* intArray;
+    uint8_t single_byte;
+    uint8_t* byte_array;
+    int32_t fixed_array[5];
+    void* dynamic_array;
+    void* int_array;
     void* dictionary;
 } DEMO_A_ComplexStruct;
 
@@ -212,14 +212,14 @@ typedef struct DEMO_A_User {
     int64_t id;
     char* username;
     char* email;
-    DEMO_A_Day preferredDay;
-    DEMO_A_Month birthMonth;
+    DEMO_A_Day preferred_day;
+    DEMO_A_Month birth_month;
 } DEMO_A_User;
 
 typedef struct DEMO_A_UserProfile {
     DEMO_A_User user;
-    char* firstName;
-    char* lastName;
+    char* first_name;
+    char* last_name;
     int32_t age;
     void* interests;
 } DEMO_A_UserProfile;
@@ -230,32 +230,32 @@ typedef struct DEMO_A_UserProfile {
 typedef struct DEMO_A_LoginRequest {
     char* username;
     char* password;
-    char* deviceId;
-    char* twoFactorToken;
+    char* device_id;
+    char* two_factor_token;
 } DEMO_A_LoginRequest;
 
 static inline int DEMO_A_LoginRequest_message_type() { return 201; }
 
 typedef struct DEMO_A_LoginResponse {
     _Bool success;
-    char* errorMessage;
-    char* authenticationToken;
+    char* error_message;
+    char* authentication_token;
     DEMO_A_User user;
 } DEMO_A_LoginResponse;
 
 static inline int DEMO_A_LoginResponse_message_type() { return 202; }
 
 typedef struct DEMO_A_GenericRequest {
-    char* requestId;
+    char* request_id;
     int64_t timestamp;
 } DEMO_A_GenericRequest;
 
 typedef struct DEMO_A_GenericResponse {
-    char* requestId;
+    char* request_id;
     int64_t timestamp;
     _Bool success;
-    char* errorCode;
-    char* errorMessage;
+    char* error_code;
+    char* error_message;
 } DEMO_A_GenericResponse;
 
 #endif /* DEMO_A_A_H */

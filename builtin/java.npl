@@ -49,8 +49,12 @@ import {{render "package:name" .Target.Package}}.*;
 {{/* next/java/const: Generates a single constant declaration */}}
 {{- define "next/java/const" -}}
 {{- next .Doc -}}
-public static final {{next .Type}} {{render "const:name" . | snakeCase | upper}} = {{next .Value}};{{next .Comment}}
+public static final {{next .Type}} {{render "const:name" .}} = {{next .Value}};{{next .Comment}}
 {{end}}
+
+{{- define "next/java/const:name" -}}
+{{- render "node:snake.case.name" . | upper}}
+{{- end}}
 
 {{/* next/java/enum: Generates a single enum declaration */}}
 {{- define "next/java/enum" -}}

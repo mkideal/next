@@ -11,21 +11,21 @@ import (
 // @api(CommandLine/Configuration)
 //
 //	import CodeBlock from "@theme/CodeBlock";
-//	import ExampleProjSource from "!!raw-loader!@site/example/example.proj.yaml";
+//	import ExampleNextProjSource from "!!raw-loader!@site/example/example.nextproj";
 //
 // Configuration represents the configuration of the Next project.
 // The configuration is used to mamange the compiler options, such as verbosity, output directories, and custom templates.
 // If the configuration is provided, you can generate code like this:
 //
 //	```sh
-//	next run example.proj.yaml
+//	next build example.nextproj
 //	```
 //
-// The configuration file is a YAML or JSON file that contains the compiler options.
+// The configuration file is a YAML or JSON (for .json extension) file that contains the compiler options.
 // Here is an example of the configuration file:
 //
-//	<CodeBlock language="yaml" title="example.proj.yaml">
-//		{ExampleProjSource}
+//	<CodeBlock language="yaml" title="example.nextproj">
+//		{ExampleNextProjSource}
 //	</CodeBlock>
 type Configuration struct {
 	test bool `yaml:"-" json:"-"`

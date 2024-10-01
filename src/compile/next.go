@@ -41,12 +41,17 @@ const nextExt = ".next"
 const website = "https://next.as"
 const repository = "https://github.com/next/next"
 
-type command struct {
-	description string
-	run         func(*Compiler, []string) error
+type commandContext struct {
+	platform Platform
+	builtin  FileSystem
 }
 
-func newCommand(desc string, run func(*Compiler, []string) error) *command {
+type command struct {
+	description string
+	run         func(*commandContext, []string) error
+}
+
+func newCommand(desc string, run func(*commandContext, []string) error) *command {
 	return &command{description: desc, run: run}
 }
 
@@ -67,9 +72,9 @@ var commands = map[string]*command{
 	//	```
 	"version": newCommand(
 		"Print the version of the next compiler",
-		func(c *Compiler, _ []string) error {
+		func(ctx *commandContext, _ []string) error {
 			builder.PrintInfo()
-			unwrap(c.platform.Stderr(), 0)
+			unwrap(ctx.platform.Stderr(), 0)
 			return nil
 		},
 	),
@@ -91,7 +96,7 @@ var commands = map[string]*command{
 	//	:::
 	"grammar": newCommand(
 		"Generate the default grammar for the next files: next grammar [filename]",
-		func(_ *Compiler, args []string) error {
+		func(_ *commandContext, args []string) error {
 			var path string
 			var ext string
 			if len(args) > 2 {
@@ -134,70 +139,96 @@ var commands = map[string]*command{
 		},
 	),
 
-	// @api(CommandLine/Command/run) command runs a next project.
+	// @api(CommandLine/Command/build) command builds a next project file or runs all next project files in a directory.
 	// It reads the project file and compiles the source files according to the project configuration.
 	// The project file is a YAML or JSON file that contains the project [Configuration](#CommandLine/Configuration).
 	//
 	// Example:
 	//
 	//	```sh
-	//	next run example.yaml
-	//	next run example.json
-	//	next run example.nextproj # .nextproj is an alias of .yaml
+	//	# build all .nextproj files in the current directory
+	//	next build
+	//
+	//	# build the example.nextproj file
+	//	next build example.nextproj
+	//
+	//	# build all .nextproj files in the example directory
+	//	next build example/
+	//
+	//	# build multiple project files or directories
+	//	next build example1.nextproj example2.nextproj example
 	//	```
-	"run": newCommand(
-		"Run a next project: next run <project_file>",
-		func(c *Compiler, args []string) error {
-			if len(args) != 2 {
-				return fmt.Errorf("wrong number of arguments: next run <project_file>")
+	//
+	//	:::tip
+	//	**.nextproj** is recommended for the Next project file.
+	//	:::
+	"build": newCommand(
+		"Run a next project: next build [file_or_dirs...]",
+		func(ctx *commandContext, args []string) error {
+			if len(args) == 1 {
+				args = append(args, ".")
 			}
-			path := args[1]
-			content, err := os.ReadFile(path)
-			if err != nil {
-				return fmt.Errorf("failed to read %q: %w", path, err)
-			}
-			var options struct {
-				*Configuration `yaml:",inline"`
-
-				// @api(CommandLine/Configuration.sources) represents the source directories or files.
-				//
-				// Example:
-				//
-				//	```yaml
-				//	sources:
-				//	  - demo.next
-				//	  - src/next/
-				//	```
-				Sources []string `yaml:"sources" json:"sources"`
-			}
-			options.Configuration = &c.options
-			var unmarshaler func([]byte, any) error
-			ext := filepath.Ext(path)
-			switch ext {
-			case ".json":
-				unmarshaler = json.Unmarshal
-			case "", ".yaml", ".yml", ".nextproj":
-				unmarshaler = yaml.Unmarshal
-			default:
-				return fmt.Errorf("unsupported file extension: %q, use .json, .yaml, .yml, or .nextproj (alias of .yaml)", ext)
-			}
-			if err := unmarshaler(content, &options); err != nil {
-				return fmt.Errorf("failed to parse %q: %v", path, err)
-			}
-			options.resolvePath(filepath.Dir(path))
-			var files []string
-			for _, arg := range options.Sources {
-				arg = filepath.Join(filepath.Dir(path), arg)
-				file, err := fsutil.AppendFiles(files, arg, nextExt, false)
+			var projects []string
+			for _, arg := range args[1:] {
+				files, err := fsutil.AppendFiles(projects, arg, ".nextproj", true)
 				if err != nil {
 					return fmt.Errorf("failed to read %q: %v", arg, err)
 				}
-				files = result(c.platform.Stderr(), file, err)
+				projects = append(projects, files...)
 			}
-			if len(files) == 0 {
-				return fmt.Errorf("no source files")
+			if len(projects) == 0 {
+				return fmt.Errorf("no project files")
 			}
-			doCompile(c, files, nil)
+			for _, project := range projects {
+				content, err := os.ReadFile(project)
+				if err != nil {
+					return fmt.Errorf("failed to read %q: %w", project, err)
+				}
+				compiler := NewCompiler(ctx.platform, ctx.builtin)
+				var options struct {
+					*Configuration `yaml:",inline"`
+
+					// @api(CommandLine/Configuration.sources) represents the source directories or files.
+					//
+					// Example:
+					//
+					//	```yaml
+					//	sources:
+					//	  - demo.next
+					//	  - src/next/
+					//	```
+					Sources []string `yaml:"sources" json:"sources"`
+				}
+				options.Configuration = &compiler.options
+				var unmarshaler func([]byte, any) error
+				ext := filepath.Ext(project)
+				switch ext {
+				case ".json":
+					unmarshaler = json.Unmarshal
+				case "", ".yaml", ".yml", ".nextproj":
+					unmarshaler = yaml.Unmarshal
+				default:
+					return fmt.Errorf("unsupported file extension: %q, use .json, .yaml, .yml, or .nextproj (alias of .yaml)", ext)
+				}
+				if err := unmarshaler(content, &options); err != nil {
+					return fmt.Errorf("failed to parse %q: %v", project, err)
+				}
+				options.resolvePath(filepath.Dir(project))
+				var files []string
+				for _, arg := range options.Sources {
+					arg = filepath.Join(filepath.Dir(project), arg)
+					file, err := fsutil.AppendFiles(files, arg, nextExt, false)
+					if err != nil {
+						return fmt.Errorf("failed to read %q: %v", arg, err)
+					}
+					files = result(compiler.platform.Stderr(), file, err)
+				}
+				if len(files) == 0 {
+					term.Fprintf(ctx.platform.Stderr(), "%s: %s\n", project, term.BrightYellow.Colorize("no source files"))
+					continue
+				}
+				doCompile(compiler, files, nil)
+			}
 			return nil
 		},
 	),
@@ -205,19 +236,20 @@ var commands = map[string]*command{
 
 // Compile compiles the next files.
 func Compile(platform Platform, builtin FileSystem, args []string) {
-	compiler := NewCompiler(platform, builtin)
-	stdin, stderr := platform.Stdin(), platform.Stderr()
+	ctx := &commandContext{platform: platform, builtin: builtin}
 
 	if len(args) >= 2 {
 		if cmd, ok := commands[args[1]]; ok {
-			unwrap(stderr, cmd.run(compiler, args[1:]))
-			unwrap(stderr, 0)
+			unwrap(ctx.platform.Stderr(), cmd.run(ctx, args[1:]))
+			unwrap(ctx.platform.Stderr(), 0)
 		}
 	}
 
 	flagSet := flag.NewFlagSet(args[0], flag.ContinueOnError)
 	flagSet.Usage = func() {}
 
+	stdin, stderr := platform.Stdin(), platform.Stderr()
+	compiler := NewCompiler(platform, builtin)
 	compiler.SetupCommandFlags(flagSet, flags.UseUsage(flagSet.Output(), flags.NameColor(term.Bold)))
 
 	// set output color for error messages

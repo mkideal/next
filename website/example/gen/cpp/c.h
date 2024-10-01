@@ -51,8 +51,8 @@ public:
     int id = {0};
     std::string username = {""};
     std::string password = {""};
-    std::string deviceId = {""};
-    std::string twoFactorToken = {""};
+    std::string device_id = {""};
+    std::string two_factor_token = {""};
     std::vector<std::string> roles;
     std::unordered_map<std::string, std::string> metadata;
     std::array<int, 4> scores = {0};
@@ -66,8 +66,8 @@ public:
     LoginType type = {LoginType(0)};
     std::string username = {""};
     std::string password = {""};
-    std::string deviceId = {""};
-    std::string twoFactorToken = {""};
+    std::string device_id = {""};
+    std::string two_factor_token = {""};
 public:
     LoginRequest() = default;
     ~LoginRequest() = default;
@@ -76,8 +76,8 @@ public:
 class LoginResponse {
 public:
     bool success = {false};
-    std::string errorMessage = {""};
-    std::string authenticationToken = {""};
+    std::string error_message = {""};
+    std::string authentication_token = {""};
     User user;
 public:
     LoginResponse() = default;

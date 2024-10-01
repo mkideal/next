@@ -45,8 +45,10 @@ import "{{.Target.Name}}.proto";
 
 {{/* next/protobuf/consts: Skips constant declarations as they're not directly supported in Protocol Buffers */}}
 {{- define "next/protobuf/consts"}}
+{{- if .}}
 // {{len .List}} Constant{{if gt (len .List) 1}}s{{end}} skipped.
-{{end -}}
+{{end}}
+{{- end}}
 
 {{/* next/protobuf/enum: Generates an enum declaration */}}
 {{- define "next/protobuf/enum" -}}
@@ -77,7 +79,7 @@ import "{{.Target.Name}}.proto";
 
 {{/* next/protobuf/enum.member:name: Generates the name for an enum member */}}
 {{- define "next/protobuf/enum.member:name" -}}
-{{- .Name | snakeCase | upper}}
+{{- render "node:snake.case.name" . | upper}}
 {{- end}}
 
 {{/* next/protobuf/struct: Generates a message declaration */}}

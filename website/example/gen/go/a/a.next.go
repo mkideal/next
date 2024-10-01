@@ -3,7 +3,6 @@
 package a
 
 
-
 // XX constant
 // XX value 2
 const XX = 1 // XX value
@@ -33,7 +32,7 @@ const MaxValue = 5673
 const IntFromBool = 1
 const IntFromFloat = 3
 const FloatFromInt = 42.0
-const FloatFromBool = 0
+const FloatFromBool = 0.0
 const BoolFromInt = true
 const BoolFromString = true
 const FormattedString1 = "The answer is 42"

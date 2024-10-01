@@ -150,7 +150,7 @@ func (x floatVal) String() string {
 
 	// If the number is zero
 	if f.Sign() == 0 {
-		return "0"
+		return "0.0"
 	}
 
 	// For numbers in scientific notation
@@ -172,10 +172,7 @@ func (x floatVal) String() string {
 
 	// For regular numbers, remove trailing zeros
 	if strings.Contains(s, ".") {
-		s = strings.TrimRight(s, "0")
-		if strings.HasSuffix(s, ".") {
-			s = s[:len(s)-1]
-		}
+		s = strings.TrimSuffix(strings.TrimRight(s, "0"), ".")
 	}
 
 	// If the number is an integer, add a trailing ".0"

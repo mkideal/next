@@ -4,7 +4,6 @@ package c
 
 import a "github.com/next/next/website/example/gen/go/a"
 import b "github.com/next/next/website/example/gen/go/b"
-
 var _ = (*a.Color)(nil)
 var _ = (*b.TestEnum)(nil)
 
