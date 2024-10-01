@@ -1,15 +1,15 @@
 {{/* next/file: Generates code for a complete file, including imports and declarations */}}
 {{- define "next/file" -}}
-{{- next .Imports}}
-{{- next .Decls}}
+{{- next .Imports | linespace}}
+{{- next .Decls | linespace}}
 {{- end}}
 
 {{/* next/decls: Generates code for all declarations in a file, including constants, enums, structs, and interfaces */}}
 {{- define "next/decls" -}}
-    {{- next .Consts}}
-    {{- next .Enums}}
-    {{- next .Structs}}
-    {{- next .Interfaces}}
+	{{- next .Consts | linespace}}
+	{{- next .Enums | linespace}}
+	{{- next .Structs | linespace}}
+	{{- next .Interfaces | linespace}}
 {{- end}}
 
 {{/* next/comment: Generates formatted comment text */}}
@@ -38,22 +38,24 @@
 {{- end}}
 
 {{/* next/import: Generates code for a single import statement */}}
-{{- define "next/import" -}}
+{{- define "next/import"}}
 import "{{.Path}}";
 {{- end}}
 
 {{/* next/consts: Generates code for all constant declarations in a file */}}
 {{- define "next/consts" -}}
+{{- if .List}}
 {{- range .List}}
 {{- next .}}
 {{- end}}
 {{- end}}
+{{- end}}
 
 {{/* next/const: Generates code for a single constant declaration */}}
-{{- define "next/const" -}}
-{{- next .Doc -}}
+{{- define "next/const"}}
+{{next .Doc -}}
 const {{render "const:name" .}} = {{next .Value}};{{next .Comment}}
-{{end}}
+{{- end}}
 
 {{/* next/const.name: Generates the name of a constant */}}
 {{- define "next/const:name" -}}
@@ -71,18 +73,18 @@ const {{render "const:name" .}} = {{next .Value}};{{next .Comment}}
 {{- end}}
 
 {{/* next/enum: Generates code for a single enum declaration */}}
-{{- define "next/enum" -}}
+{{- define "next/enum"}}
 enum {{next .Type}} {
-    {{next .Members | align -}}
+	{{- next .Members | indent | linespace -}}
 }
 {{end}}
 
 {{/* next/enum:member.type: Determines the underlying type for an enum */}}
 {{- define "next/enum:member.type" -}}
 {{- if .Annotations.next.type}}
-    {{- next .Annotations.next.type}}
+	{{- next .Annotations.next.type}}
 {{- else}}
-    {{- next .MemberType}}
+	{{- next .MemberType}}
 {{- end}}
 {{- end}}
 
@@ -99,10 +101,10 @@ enum {{next .Type}} {
 {{- end}}
 
 {{/* next/enum.member: Generates code for a single enum member */}}
-{{- define "next/enum.member" -}}
-{{- next .Doc -}}
+{{- define "next/enum.member"}}
+{{next .Doc -}}
 {{- render "enum.member:name" .}} = {{next .Value}},{{next .Comment}}
-{{end}}
+{{- end}}
 
 {{/* next/enum.member.name: Generates the name of an enum member */}}
 {{- define "next/enum.member:name" -}}
@@ -120,10 +122,10 @@ enum {{next .Type}} {
 {{- end}}
 
 {{/* next/struct: Generates code for a single struct declaration */}}
-{{- define "next/struct" -}}
-{{- next .Doc -}}
+{{- define "next/struct"}}
+{{next .Doc -}}
 struct {{next .Type}} {
-    {{next .Fields | align -}}
+	{{- next .Fields | indent | linespace -}}
 }
 {{end}}
 
@@ -140,10 +142,10 @@ struct {{next .Type}} {
 {{- end}}
 
 {{/* next/struct.field: Generates code for a single struct field */}}
-{{- define "next/struct.field" -}}
-{{- next .Doc -}}
+{{- define "next/struct.field"}}
+{{next .Doc -}}
 {{- next .Type}} {{render "struct.field:name" .}};{{next .Comment}}
-{{end}}
+{{- end}}
 
 {{/* next/struct.field.name: Generates the name of a struct field */}}
 {{- define "next/struct.field:name" -}}
@@ -157,22 +159,20 @@ struct {{next .Type}} {
 
 {{/* next/decl:internal.types: Generates code for type declarations, handling potential aliases */}}
 {{- define "next/decl:internal.types" -}}
-{{- $n := 0 -}}
 {{- range .List}}
-    {{- if or (not .Annotations.next) (not (index .Annotations.next (printf "%s_alias" lang))) -}}
-        {{- println}}
-        {{- next .}}
-    {{- end}}
-    {{- $n = add 1 $n}}
+	{{- if or (not .Annotations.next) (not (index .Annotations.next (printf "%s_alias" lang))) -}}
+		{{- next .}}
+	{{- end}}
 {{- end}}
 {{- end}}
 
 {{/* next/interface: Generates code for a single interface declaration */}}
-{{- define "next/interface" -}}
-{{next .Doc}}interface {{next .Type}} {
-    {{- next .Methods}}
+{{- define "next/interface"}}
+{{next .Doc -}}
+interface {{next .Type}} {
+	{{- next .Methods | indent | linespace -}}
 }
-{{- end}}
+{{end}}
 
 {{/* next/interface.type: Generates the type name for an interface */}}
 {{- define "next/interface.type" -}}
@@ -187,10 +187,10 @@ struct {{next .Type}} {
 {{- end}}
 
 {{/* next/interface.method: Generates code for a single interface method */}}
-{{- define "next/interface.method" -}}
-{{- next .Doc -}}
+{{- define "next/interface.method"}}
+{{next .Doc -}}
 {{- render "interface.method:name" .}}({{next .Params}}){{next .Result}}{{next .Comment}}
-{{end}}
+{{- end}}
 
 {{/* next/interface.method.name: Generates the name of an interface method */}}
 {{- define "next/interface.method:name" -}}
@@ -200,7 +200,7 @@ struct {{next .Type}} {
 {{/* next/interface.method.params: Generates code for all parameters of an interface method */}}
 {{- define "next/interface.method.params" -}}
 {{- range $i, $p := .List}}
-    {{- if $i}}, {{end}}{{next . -}}
+	{{- if $i}}, {{end}}{{next . -}}
 {{- end}}
 {{- end}}
 
@@ -246,18 +246,18 @@ struct {{next .Type}} {
 {{/* next/value: Generates a value */}}
 {{- define "next/value" -}}
 {{- if .Type.Kind.IsBool}}
-    {{- if .Any}}{{render "true" .}}{{else}}{{render "false" .}}{{end}}
+	{{- if .Any}}{{render "true" .}}{{else}}{{render "false" .}}{{end}}
 {{- else}}
-    {{- .}}{{render "type:literal.suffix" .Type}}
+	{{- .}}{{render "type:literal.suffix" .Type}}
 {{- end}}
 {{- end}}
 
 {{- define "next/type:literal.suffix.clike" -}}
 {{- $kind := .Kind.String | lower -}}
 {{- if eq $kind "int64" -}}
-    L{{- if or (eq "c" lang) (eq "cpp" lang)}}L{{- end -}}
+	L{{- if or (eq "c" lang) (eq "cpp" lang)}}L{{- end -}}
 {{- else if eq $kind "float32" -}}
-    F
+	F
 {{- end -}}
 {{- end}}
 
@@ -302,38 +302,38 @@ false
 
 {{- define "next/node:snake.case.name"}}
 {{- with .Annotations.next.snake_case}}
-    {{- .}}
+	{{- .}}
 {{- else}}
-    {{- $.Name | snakeCase}}
+	{{- $.Name | snakeCase}}
 {{- end}}
 {{- end}}
 
 {{- define "next/node:pascal.case.name"}}
 {{- with .Annotations.next.pascal_case}}
-    {{- .}}
+	{{- .}}
 {{- else with .Annotations.next.snake_case}}
-    {{- . | snakeCase | split "_" | map capitalize | join ""}}
+	{{- . | snakeCase | split "_" | map capitalize | join ""}}
 {{- else}}
-    {{- $.Name | pascalCase}}
+	{{- $.Name | pascalCase}}
 {{- end}}
 {{- end}}
 
 {{- define "next/node:camel.case.name"}}
 {{- with .Annotations.next.camel_case}}
-    {{- .}}
+	{{- .}}
 {{- else with .Annotations.next.snake_case}}
-    {{- . | snakeCase | split "_" | map capitalize | join "" | uncapitalize}}
+	{{- . | snakeCase | split "_" | map capitalize | join "" | uncapitalize}}
 {{- else}}
-    {{- $.Name | camelCase}}
+	{{- $.Name | camelCase}}
 {{- end}}
 {{- end}}
 
 {{- define "next/node:kebab.case.name"}}
 {{- with .Annotations.next.kebab_case}}
-    {{- .}}
+	{{- .}}
 {{- else with .Annotations.next.snake_case}}
-    {{- . | snakeCase | replace "_" "-"}}
+	{{- . | snakeCase | replace "_" "-"}}
 {{- else}}
-    {{- $.Name | kebabCase}}
+	{{- $.Name | kebabCase}}
 {{- end}}
 {{- end}}

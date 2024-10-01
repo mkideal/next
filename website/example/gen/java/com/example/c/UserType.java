@@ -3,16 +3,16 @@
 package com.example.c;
 
 public enum UserType {
-    Admin((int) 1),
-    User((int) 2);
+	Admin((int) 1),
+	User((int) 2);
 
-    private final int value;
+	private final int value;
 
-    UserType(int value) {
-        this.value = value;
-    }
+	UserType(int value) {
+		this.value = value;
+	}
 
-    public int getValue() {
-        return value;
-    }
+	public int getValue() {
+		return value;
+	}
 }

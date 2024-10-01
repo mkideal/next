@@ -7,16 +7,16 @@ import java.util.Map;
 import java.util.Arrays;
 
 public class TestStruct {
-    private com.example.a.Point2D point;
+	private com.example.a.Point2D point;
 
-    public com.example.a.Point2D getPoint() {
-        return point;
-    }
+	public com.example.a.Point2D getPoint() {
+		return point;
+	}
 
-    public void setPoint(com.example.a.Point2D point) {
-        this.point = point;
-    }
+	public void setPoint(com.example.a.Point2D point) {
+		this.point = point;
+	}
 
-    public TestStruct() {
-    }
+	public TestStruct() {
+	}
 }

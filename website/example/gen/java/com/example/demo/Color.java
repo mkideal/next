@@ -7,18 +7,18 @@ package com.example.demo;
  * Values: Red (1), Green (2), Blue (4), Yellow (8)
  */
 public enum Color {
-    Red((byte) 1),
-    Green((byte) 2),
-    Blue((byte) 4),
-    Yellow((byte) 8);
+	Red((byte) 1),
+	Green((byte) 2),
+	Blue((byte) 4),
+	Yellow((byte) 8);
 
-    private final byte value;
+	private final byte value;
 
-    Color(byte value) {
-        this.value = value;
-    }
+	Color(byte value) {
+		this.value = value;
+	}
 
-    public byte getValue() {
-        return value;
-    }
+	public byte getValue() {
+		return value;
+	}
 }

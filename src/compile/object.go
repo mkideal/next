@@ -330,17 +330,19 @@ type Structs = List[*Struct]
 type Interfaces = List[*Interface]
 
 // @api(Object/Decls) holds all top-level declarations in a file.
-type Decls struct {
-	compiler   *Compiler
+type Decls[T Decl] struct {
+	lang     string
+	compiler *Compiler
+
 	consts     Consts
 	enums      Enums
 	structs    Structs
 	interfaces Interfaces
 
-	lang string
+	Decl T
 }
 
-func (d *Decls) resolve(c *Compiler, file *File) {
+func (d *Decls[T]) resolve(c *Compiler, file *File) {
 	if d == nil {
 		return
 	}
@@ -359,7 +361,7 @@ func (d *Decls) resolve(c *Compiler, file *File) {
 }
 
 // @api(Object/Decls.Consts) represents the [List](#Object/Common/List) of [Const](#Object/Const) declarations.
-func (d *Decls) Consts() Consts {
+func (d *Decls[T]) Consts() Consts {
 	if d == nil {
 		return nil
 	}
@@ -367,7 +369,7 @@ func (d *Decls) Consts() Consts {
 }
 
 // @api(Object/Decls.Enums) represents the [List](#Object/Common/List) of [Enum](#Object/Enum) declarations.
-func (d *Decls) Enums() Enums {
+func (d *Decls[T]) Enums() Enums {
 	if d == nil {
 		return nil
 	}
@@ -375,7 +377,7 @@ func (d *Decls) Enums() Enums {
 }
 
 // @api(Object/Decls.Structs) represents the [List](#Object/Common/List) of [Struct](#Object/Struct) declarations.
-func (d *Decls) Structs() Structs {
+func (d *Decls[T]) Structs() Structs {
 	if d == nil {
 		return nil
 	}
@@ -383,7 +385,7 @@ func (d *Decls) Structs() Structs {
 }
 
 // @api(Object/Decls.Interfaces) represents the [List](#Object/Common/List) of [Interface](#Object/Interface) declarations.
-func (d *Decls) Interfaces() Interfaces {
+func (d *Decls[T]) Interfaces() Interfaces {
 	if d == nil {
 		return nil
 	}

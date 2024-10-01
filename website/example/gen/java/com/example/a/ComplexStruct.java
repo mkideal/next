@@ -10,156 +10,156 @@ import java.util.Arrays;
  * Struct with various field types
  */
 public class ComplexStruct {
-    private boolean flag;
+	private boolean flag;
 
-    public boolean getFlag() {
-        return flag;
-    }
+	public boolean getFlag() {
+		return flag;
+	}
 
-    public void setFlag(boolean flag) {
-        this.flag = flag;
-    }
+	public void setFlag(boolean flag) {
+		this.flag = flag;
+	}
 
-    private byte tinyInt;
+	private byte tinyInt;
 
-    public byte getTinyInt() {
-        return tinyInt;
-    }
+	public byte getTinyInt() {
+		return tinyInt;
+	}
 
-    public void setTinyInt(byte tinyInt) {
-        this.tinyInt = tinyInt;
-    }
+	public void setTinyInt(byte tinyInt) {
+		this.tinyInt = tinyInt;
+	}
 
-    private short smallInt;
+	private short smallInt;
 
-    public short getSmallInt() {
-        return smallInt;
-    }
+	public short getSmallInt() {
+		return smallInt;
+	}
 
-    public void setSmallInt(short smallInt) {
-        this.smallInt = smallInt;
-    }
+	public void setSmallInt(short smallInt) {
+		this.smallInt = smallInt;
+	}
 
-    private int mediumInt;
+	private int mediumInt;
 
-    public int getMediumInt() {
-        return mediumInt;
-    }
+	public int getMediumInt() {
+		return mediumInt;
+	}
 
-    public void setMediumInt(int mediumInt) {
-        this.mediumInt = mediumInt;
-    }
+	public void setMediumInt(int mediumInt) {
+		this.mediumInt = mediumInt;
+	}
 
-    private long bigInt;
+	private long bigInt;
 
-    public long getBigInt() {
-        return bigInt;
-    }
+	public long getBigInt() {
+		return bigInt;
+	}
 
-    public void setBigInt(long bigInt) {
-        this.bigInt = bigInt;
-    }
+	public void setBigInt(long bigInt) {
+		this.bigInt = bigInt;
+	}
 
-    private int defaultInt;
+	private int defaultInt;
 
-    public int getDefaultInt() {
-        return defaultInt;
-    }
+	public int getDefaultInt() {
+		return defaultInt;
+	}
 
-    public void setDefaultInt(int defaultInt) {
-        this.defaultInt = defaultInt;
-    }
+	public void setDefaultInt(int defaultInt) {
+		this.defaultInt = defaultInt;
+	}
 
-    private float singlePrecision;
+	private float singlePrecision;
 
-    public float getSinglePrecision() {
-        return singlePrecision;
-    }
+	public float getSinglePrecision() {
+		return singlePrecision;
+	}
 
-    public void setSinglePrecision(float singlePrecision) {
-        this.singlePrecision = singlePrecision;
-    }
+	public void setSinglePrecision(float singlePrecision) {
+		this.singlePrecision = singlePrecision;
+	}
 
-    private double doublePrecision;
+	private double doublePrecision;
 
-    public double getDoublePrecision() {
-        return doublePrecision;
-    }
+	public double getDoublePrecision() {
+		return doublePrecision;
+	}
 
-    public void setDoublePrecision(double doublePrecision) {
-        this.doublePrecision = doublePrecision;
-    }
+	public void setDoublePrecision(double doublePrecision) {
+		this.doublePrecision = doublePrecision;
+	}
 
-    private String text;
+	private String text;
 
-    public String getText() {
-        return text;
-    }
+	public String getText() {
+		return text;
+	}
 
-    public void setText(String text) {
-        this.text = text;
-    }
+	public void setText(String text) {
+		this.text = text;
+	}
 
-    private byte singleByte;
+	private byte singleByte;
 
-    public byte getSingleByte() {
-        return singleByte;
-    }
+	public byte getSingleByte() {
+		return singleByte;
+	}
 
-    public void setSingleByte(byte singleByte) {
-        this.singleByte = singleByte;
-    }
+	public void setSingleByte(byte singleByte) {
+		this.singleByte = singleByte;
+	}
 
-    private byte[] byteArray;
+	private byte[] byteArray;
 
-    public byte[] getByteArray() {
-        return byteArray;
-    }
+	public byte[] getByteArray() {
+		return byteArray;
+	}
 
-    public void setByteArray(byte[] byteArray) {
-        this.byteArray = byteArray;
-    }
+	public void setByteArray(byte[] byteArray) {
+		this.byteArray = byteArray;
+	}
 
-    private int[] fixedArray;
+	private int[] fixedArray;
 
-    public int[] getFixedArray() {
-        return fixedArray;
-    }
+	public int[] getFixedArray() {
+		return fixedArray;
+	}
 
-    public void setFixedArray(int[] fixedArray) {
-        this.fixedArray = fixedArray;
-    }
+	public void setFixedArray(int[] fixedArray) {
+		this.fixedArray = fixedArray;
+	}
 
-    private List<String> dynamicArray;
+	private List<String> dynamicArray;
 
-    public List<String> getDynamicArray() {
-        return dynamicArray;
-    }
+	public List<String> getDynamicArray() {
+		return dynamicArray;
+	}
 
-    public void setDynamicArray(List<String> dynamicArray) {
-        this.dynamicArray = dynamicArray;
-    }
+	public void setDynamicArray(List<String> dynamicArray) {
+		this.dynamicArray = dynamicArray;
+	}
 
-    private List<Integer> intArray;
+	private List<Integer> intArray;
 
-    public List<Integer> getIntArray() {
-        return intArray;
-    }
+	public List<Integer> getIntArray() {
+		return intArray;
+	}
 
-    public void setIntArray(List<Integer> intArray) {
-        this.intArray = intArray;
-    }
+	public void setIntArray(List<Integer> intArray) {
+		this.intArray = intArray;
+	}
 
-    private Map<String, Integer> dictionary;
+	private Map<String, Integer> dictionary;
 
-    public Map<String, Integer> getDictionary() {
-        return dictionary;
-    }
+	public Map<String, Integer> getDictionary() {
+		return dictionary;
+	}
 
-    public void setDictionary(Map<String, Integer> dictionary) {
-        this.dictionary = dictionary;
-    }
+	public void setDictionary(Map<String, Integer> dictionary) {
+		this.dictionary = dictionary;
+	}
 
-    public ComplexStruct() {
-    }
+	public ComplexStruct() {
+	}
 }

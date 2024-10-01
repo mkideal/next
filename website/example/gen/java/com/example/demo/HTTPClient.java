@@ -10,13 +10,13 @@ import java.util.Arrays;
  * HTTPClient provides HTTP request functionality
  */
 public interface HTTPClient {
-    /**
-     * Available for all languages
-     */
-    String request(String url, String method, String body);
-    String request2(String url, String method, String body);
-    /**
-     * Available for Go and Java
-     */
-    String get(String url) throws Exception;
+	/**
+	 * Available for all languages
+	 */
+	String request(String url, String method, String body);
+	String request2(String url, String method, String body);
+	/**
+	 * Available for Go and Java
+	 */
+	String get(String url) throws Exception;
 }

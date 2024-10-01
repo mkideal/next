@@ -1,11 +1,11 @@
 {{- /* Overrides "next/cpp/struct.fields": add method 'message_type' for each message after fields */ -}}
 {{- define "cpp/struct.fields" -}}
-{{super .}}
-{{- if .Decl.Annotations.message.type}}
-static inline int message_type() { return {{.Decl.Annotations.message.type}}; }
-{{end}}
-{{- end -}}
+{{super . | linespace}}
+{{- with .Decl.Annotations.message.type}}
+static inline int message_type() { return {{.}}; }
+{{- end}}
+{{- end}}
 
-{{head}}
+{{- head}}
 
 {{next this}}

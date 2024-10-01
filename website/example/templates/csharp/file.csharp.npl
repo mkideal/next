@@ -3,12 +3,12 @@
 
 {{- /* Overrides "next/csharp/struct.fields": add method 'MessageType' for each message after fields */ -}}
 {{- define "csharp/struct.fields" -}}
-{{- super .}}
+{{- super . | linespace}}
 {{- with .Decl.Annotations.message.type}}
 public static int MessageType() { return {{.}}; }
-{{end}}
-{{- end -}}
+{{- end}}
+{{- end}}
 
-{{head}}
+{{- head}}
 
 {{next this}}

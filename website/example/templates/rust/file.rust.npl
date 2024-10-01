@@ -11,9 +11,9 @@ use crate::{{.File.Package.Name}}::{{.File.Name}};
 {{- super .}}
 {{- with .Annotations.message.type}}
 impl {{next $.Type}} {
-    pub fn message_type() -> i32 {
-        {{.}}
-    }
+	pub fn message_type() -> i32 {
+		{{.}}
+	}
 }
 {{end}}
 {{- end -}}

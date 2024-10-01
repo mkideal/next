@@ -10,7 +10,7 @@ import (
 type Package struct {
 	name    string
 	files   []*File
-	decls   *Decls
+	decls   *Decls[*Package]
 	types   []Type
 	imports *Imports[*Package]
 
@@ -20,15 +20,20 @@ type Package struct {
 
 func newPackage(c *Compiler, name string) *Package {
 	p := &Package{
-		name:  name,
-		decls: &Decls{compiler: c},
+		name: name,
 	}
+	p.decls = &Decls[*Package]{Decl: p, compiler: c}
 	p.imports = &Imports[*Package]{Decl: p}
 	return p
 }
 
 // @api(Object/Package.Decls) represents the top-level declarations in the package.
-func (p *Package) Decls() *Decls { return p.decls }
+func (p *Package) Decls() *Decls[*Package] {
+	if p == nil {
+		return nil
+	}
+	return p.decls
+}
 
 func (p *Package) Pos() Position { return Position{} }
 

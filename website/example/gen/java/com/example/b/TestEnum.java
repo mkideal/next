@@ -3,21 +3,21 @@
 package com.example.b;
 
 public enum TestEnum {
-    A((int) 1),
-    B((int) 5),
-    C((int) 5),
-    D((int) 10),
-    E((int) 20),
-    F((int) 1),
-    G((int) 2);
+	A((int) 1),
+	B((int) 5),
+	C((int) 5),
+	D((int) 10),
+	E((int) 20),
+	F((int) 1),
+	G((int) 2);
 
-    private final int value;
+	private final int value;
 
-    TestEnum(int value) {
-        this.value = value;
-    }
+	TestEnum(int value) {
+		this.value = value;
+	}
 
-    public int getValue() {
-        return value;
-    }
+	public int getValue() {
+		return value;
+	}
 }

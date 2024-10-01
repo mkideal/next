@@ -10,96 +10,96 @@ import java.util.Arrays;
  * User represents a user in the system
  */
 public class User {
-    private long id;
+	private long id;
 
-    public long getId() {
-        return id;
-    }
+	public long getId() {
+		return id;
+	}
 
-    public void setId(long id) {
-        this.id = id;
-    }
+	public void setId(long id) {
+		this.id = id;
+	}
 
-    private String username;
+	private String username;
 
-    public String getUsername() {
-        return username;
-    }
+	public String getUsername() {
+		return username;
+	}
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+	public void setUsername(String username) {
+		this.username = username;
+	}
 
-    private List<String> tags;
+	private List<String> tags;
 
-    public List<String> getTags() {
-        return tags;
-    }
+	public List<String> getTags() {
+		return tags;
+	}
 
-    public void setTags(List<String> tags) {
-        this.tags = tags;
-    }
+	public void setTags(List<String> tags) {
+		this.tags = tags;
+	}
 
-    private Map<String, Integer> scores;
+	private Map<String, Integer> scores;
 
-    public Map<String, Integer> getScores() {
-        return scores;
-    }
+	public Map<String, Integer> getScores() {
+		return scores;
+	}
 
-    public void setScores(Map<String, Integer> scores) {
-        this.scores = scores;
-    }
+	public void setScores(Map<String, Integer> scores) {
+		this.scores = scores;
+	}
 
-    private double[] coordinates;
+	private double[] coordinates;
 
-    public double[] getCoordinates() {
-        return coordinates;
-    }
+	public double[] getCoordinates() {
+		return coordinates;
+	}
 
-    public void setCoordinates(double[] coordinates) {
-        this.coordinates = coordinates;
-    }
+	public void setCoordinates(double[] coordinates) {
+		this.coordinates = coordinates;
+	}
 
-    private int[][] matrix;
+	private int[][] matrix;
 
-    public int[][] getMatrix() {
-        return matrix;
-    }
+	public int[][] getMatrix() {
+		return matrix;
+	}
 
-    public void setMatrix(int[][] matrix) {
-        this.matrix = matrix;
-    }
+	public void setMatrix(int[][] matrix) {
+		this.matrix = matrix;
+	}
 
-    private String email;
+	private String email;
 
-    public String getEmail() {
-        return email;
-    }
+	public String getEmail() {
+		return email;
+	}
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+	public void setEmail(String email) {
+		this.email = email;
+	}
 
-    private Color favoriteColor;
+	private Color favoriteColor;
 
-    public Color getFavoriteColor() {
-        return favoriteColor;
-    }
+	public Color getFavoriteColor() {
+		return favoriteColor;
+	}
 
-    public void setFavoriteColor(Color favoriteColor) {
-        this.favoriteColor = favoriteColor;
-    }
+	public void setFavoriteColor(Color favoriteColor) {
+		this.favoriteColor = favoriteColor;
+	}
 
-    private Object extra;
+	private Object extra;
 
-    public Object getExtra() {
-        return extra;
-    }
+	public Object getExtra() {
+		return extra;
+	}
 
-    public void setExtra(Object extra) {
-        this.extra = extra;
-    }
+	public void setExtra(Object extra) {
+		this.extra = extra;
+	}
 
-    public User() {
-    }
+	public User() {
+	}
 }

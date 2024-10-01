@@ -3,57 +3,57 @@
 package com.example.a;
 
 public class Constants {
-    /**
-     * XX constant
-     * XX value 2
-     */
-    public static final int X_X = 1; // XX value
-    /**
-     * Constants
-     */
-    public static final String SERVER_NAME = "Comprehensive Test Server";
-    public static final String VERSION = "1.0.0";
-    public static final int MAX_CONNECTIONS = 1000;
-    public static final double PI = 3.14159265358979323846;
-    public static final long MAX_INT_64 = 9223372036854775807L; // 2^63 - 1
-    public static final long MIN_INT_64 = -9223372036854775808L; // -2^63
-    /**
-     * Constants with complex expressions
-     */
-    public static final int A = 1;
-    public static final int B = 3;
-    public static final int C = 9;
-    public static final int D = 7;
-    public static final int E = 28;
-    public static final int F = 1052;
-    public static final int G = 1052;
-    public static final int H = 5672;
-    public static final double I = 5673.618; // Approximation of golden ratio
-    public static final double J = 47.28015; // 120 is 5!
-    /**
-     * Constants with function calls
-     */
-    public static final int STRING_LENGTH = 13;
-    public static final int MIN_VALUE = 1;
-    public static final int MAX_VALUE = 5673;
-    /**
-     * Constants using built-in functions
-     */
-    public static final int INT_FROM_BOOL = 1;
-    public static final int INT_FROM_FLOAT = 3;
-    public static final float FLOAT_FROM_INT = 42.0F;
-    public static final float FLOAT_FROM_BOOL = 0.0F;
-    public static final boolean BOOL_FROM_INT = true;
-    public static final boolean BOOL_FROM_STRING = true;
-    public static final String FORMATTED_STRING_1 = "The answer is 42";
-    public static final String FORMATTED_STRING_2 = "Pi is approximately 3.14";
-    public static final String FORMATTED_STRING_3 = "Hello World\n";
-    /**
-     * Constants for testing complex expressions and bitwise operations
-     */
-    public static final int COMPLEX_1 = 5673;
-    public static final int COMPLEX_2 = 78547;
-    public static final int COMPLEX_3 = 31;
-    public static final int COMPLEX_4 = 31;
-    public static final int COMPLEX_5 = 31;
+	/**
+	 * XX constant
+	 * XX value 2
+	 */
+	public static final int XX = 1; // XX value
+	/**
+	 * Constants
+	 */
+	public static final String SERVER_NAME = "Comprehensive Test Server";
+	public static final String VERSION = "1.0.0";
+	public static final int MAX_CONNECTIONS = 1000;
+	public static final double PI = 3.14159265358979323846;
+	public static final long MAX_INT_64 = 9223372036854775807L; // 2^63 - 1
+	public static final long MIN_INT_64 = -9223372036854775808L; // -2^63
+	/**
+	 * Constants with complex expressions
+	 */
+	public static final int A = 1;
+	public static final int B = 3;
+	public static final int C = 9;
+	public static final int D = 7;
+	public static final int E = 28;
+	public static final int F = 1052;
+	public static final int G = 1052;
+	public static final int H = 5672;
+	public static final double I = 5673.618; // Approximation of golden ratio
+	public static final double J = 47.28015; // 120 is 5!
+	/**
+	 * Constants with function calls
+	 */
+	public static final int STRING_LENGTH = 13;
+	public static final int MIN_VALUE = 1;
+	public static final int MAX_VALUE = 5673;
+	/**
+	 * Constants using built-in functions
+	 */
+	public static final int INT_FROM_BOOL = 1;
+	public static final int INT_FROM_FLOAT = 3;
+	public static final float FLOAT_FROM_INT = 42.0F;
+	public static final float FLOAT_FROM_BOOL = 0.0F;
+	public static final boolean BOOL_FROM_INT = true;
+	public static final boolean BOOL_FROM_STRING = true;
+	public static final String FORMATTED_STRING_1 = "The answer is 42";
+	public static final String FORMATTED_STRING_2 = "Pi is approximately 3.14";
+	public static final String FORMATTED_STRING_3 = "Hello World\n";
+	/**
+	 * Constants for testing complex expressions and bitwise operations
+	 */
+	public static final int COMPLEX_1 = 5673;
+	public static final int COMPLEX_2 = 78547;
+	public static final int COMPLEX_3 = 31;
+	public static final int COMPLEX_4 = 31;
+	public static final int COMPLEX_5 = 31;
 }

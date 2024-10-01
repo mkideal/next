@@ -7,96 +7,96 @@ import java.util.Map;
 import java.util.Arrays;
 
 public class User {
-    private UserType type;
+	private UserType type;
 
-    public UserType getType() {
-        return type;
-    }
+	public UserType getType() {
+		return type;
+	}
 
-    public void setType(UserType type) {
-        this.type = type;
-    }
+	public void setType(UserType type) {
+		this.type = type;
+	}
 
-    private int id;
+	private int id;
 
-    public int getId() {
-        return id;
-    }
+	public int getId() {
+		return id;
+	}
 
-    public void setId(int id) {
-        this.id = id;
-    }
+	public void setId(int id) {
+		this.id = id;
+	}
 
-    private String username;
+	private String username;
 
-    public String getUsername() {
-        return username;
-    }
+	public String getUsername() {
+		return username;
+	}
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+	public void setUsername(String username) {
+		this.username = username;
+	}
 
-    private String password;
+	private String password;
 
-    public String getPassword() {
-        return password;
-    }
+	public String getPassword() {
+		return password;
+	}
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+	public void setPassword(String password) {
+		this.password = password;
+	}
 
-    private String deviceId;
+	private String deviceId;
 
-    public String getDeviceId() {
-        return deviceId;
-    }
+	public String getDeviceId() {
+		return deviceId;
+	}
 
-    public void setDeviceId(String deviceId) {
-        this.deviceId = deviceId;
-    }
+	public void setDeviceId(String deviceId) {
+		this.deviceId = deviceId;
+	}
 
-    private String twoFactorToken;
+	private String twoFactorToken;
 
-    public String getTwoFactorToken() {
-        return twoFactorToken;
-    }
+	public String getTwoFactorToken() {
+		return twoFactorToken;
+	}
 
-    public void setTwoFactorToken(String twoFactorToken) {
-        this.twoFactorToken = twoFactorToken;
-    }
+	public void setTwoFactorToken(String twoFactorToken) {
+		this.twoFactorToken = twoFactorToken;
+	}
 
-    private List<String> roles;
+	private List<String> roles;
 
-    public List<String> getRoles() {
-        return roles;
-    }
+	public List<String> getRoles() {
+		return roles;
+	}
 
-    public void setRoles(List<String> roles) {
-        this.roles = roles;
-    }
+	public void setRoles(List<String> roles) {
+		this.roles = roles;
+	}
 
-    private Map<String, String> metadata;
+	private Map<String, String> metadata;
 
-    public Map<String, String> getMetadata() {
-        return metadata;
-    }
+	public Map<String, String> getMetadata() {
+		return metadata;
+	}
 
-    public void setMetadata(Map<String, String> metadata) {
-        this.metadata = metadata;
-    }
+	public void setMetadata(Map<String, String> metadata) {
+		this.metadata = metadata;
+	}
 
-    private int[] scores;
+	private int[] scores;
 
-    public int[] getScores() {
-        return scores;
-    }
+	public int[] getScores() {
+		return scores;
+	}
 
-    public void setScores(int[] scores) {
-        this.scores = scores;
-    }
+	public void setScores(int[] scores) {
+		this.scores = scores;
+	}
 
-    public User() {
-    }
+	public User() {
+	}
 }

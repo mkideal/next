@@ -7,46 +7,46 @@ import java.util.Map;
 import java.util.Arrays;
 
 public class LoginResponse {
-    private boolean success;
+	private boolean success;
 
-    public boolean getSuccess() {
-        return success;
-    }
+	public boolean getSuccess() {
+		return success;
+	}
 
-    public void setSuccess(boolean success) {
-        this.success = success;
-    }
+	public void setSuccess(boolean success) {
+		this.success = success;
+	}
 
-    private String errorMessage;
+	private String errorMessage;
 
-    public String getErrorMessage() {
-        return errorMessage;
-    }
+	public String getErrorMessage() {
+		return errorMessage;
+	}
 
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
-    }
+	public void setErrorMessage(String errorMessage) {
+		this.errorMessage = errorMessage;
+	}
 
-    private String authenticationToken;
+	private String authenticationToken;
 
-    public String getAuthenticationToken() {
-        return authenticationToken;
-    }
+	public String getAuthenticationToken() {
+		return authenticationToken;
+	}
 
-    public void setAuthenticationToken(String authenticationToken) {
-        this.authenticationToken = authenticationToken;
-    }
+	public void setAuthenticationToken(String authenticationToken) {
+		this.authenticationToken = authenticationToken;
+	}
 
-    private User user;
+	private User user;
 
-    public User getUser() {
-        return user;
-    }
+	public User getUser() {
+		return user;
+	}
 
-    public void setUser(User user) {
-        this.user = user;
-    }
+	public void setUser(User user) {
+		this.user = user;
+	}
 
-    public LoginResponse() {
-    }
+	public LoginResponse() {
+	}
 }

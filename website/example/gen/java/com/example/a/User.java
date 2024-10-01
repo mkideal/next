@@ -7,56 +7,56 @@ import java.util.Map;
 import java.util.Arrays;
 
 public class User {
-    private long id;
+	private long id;
 
-    public long getId() {
-        return id;
-    }
+	public long getId() {
+		return id;
+	}
 
-    public void setId(long id) {
-        this.id = id;
-    }
+	public void setId(long id) {
+		this.id = id;
+	}
 
-    private String username;
+	private String username;
 
-    public String getUsername() {
-        return username;
-    }
+	public String getUsername() {
+		return username;
+	}
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+	public void setUsername(String username) {
+		this.username = username;
+	}
 
-    private String email;
+	private String email;
 
-    public String getEmail() {
-        return email;
-    }
+	public String getEmail() {
+		return email;
+	}
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+	public void setEmail(String email) {
+		this.email = email;
+	}
 
-    private Day preferredDay;
+	private Day preferredDay;
 
-    public Day getPreferredDay() {
-        return preferredDay;
-    }
+	public Day getPreferredDay() {
+		return preferredDay;
+	}
 
-    public void setPreferredDay(Day preferredDay) {
-        this.preferredDay = preferredDay;
-    }
+	public void setPreferredDay(Day preferredDay) {
+		this.preferredDay = preferredDay;
+	}
 
-    private Month birthMonth;
+	private Month birthMonth;
 
-    public Month getBirthMonth() {
-        return birthMonth;
-    }
+	public Month getBirthMonth() {
+		return birthMonth;
+	}
 
-    public void setBirthMonth(Month birthMonth) {
-        this.birthMonth = birthMonth;
-    }
+	public void setBirthMonth(Month birthMonth) {
+		this.birthMonth = birthMonth;
+	}
 
-    public User() {
-    }
+	public User() {
+	}
 }

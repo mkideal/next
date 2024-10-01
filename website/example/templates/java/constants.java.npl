@@ -7,7 +7,7 @@
 package {{render "package:name" .}};
 
 public class {{meta._class}} {
-    {{next .Decls.Consts | align -}}
+	{{- next .Decls.Consts | indent | linespace -}}
 }
 {{end -}}
 

@@ -6,20 +6,20 @@ package b;
 
 option go_package = "github.com/next/next/website/example/gen/go/b";
 option java_package = "com.example.b";
+
 import "a.proto";
 
-
 enum TestEnum {
-    TEST_ENUM_UNSPECIFIED = 0;
-    A = 1;
-    B = 5;
-    C = 5;
-    D = 10;
-    E = 20;
-    F = 1;
-    G = 2;
+	TEST_ENUM_UNSPECIFIED = 0;
+	A = 1;
+	B = 5;
+	C = 5;
+	D = 10;
+	E = 20;
+	F = 1;
+	G = 2;
 }
 
 message TestStruct {
-    a.Point2D point = 1;
+	a.Point2D point = 1;
 }

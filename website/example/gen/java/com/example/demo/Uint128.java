@@ -12,26 +12,26 @@ import java.util.Arrays;
  * - In other languages, it is represented as a struct with low and high 64-bit integers.
  */
 public class Uint128 {
-    private long low;
+	private long low;
 
-    public long getLow() {
-        return low;
-    }
+	public long getLow() {
+		return low;
+	}
 
-    public void setLow(long low) {
-        this.low = low;
-    }
+	public void setLow(long low) {
+		this.low = low;
+	}
 
-    private long high;
+	private long high;
 
-    public long getHigh() {
-        return high;
-    }
+	public long getHigh() {
+		return high;
+	}
 
-    public void setHigh(long high) {
-        this.high = high;
-    }
+	public void setHigh(long high) {
+		this.high = high;
+	}
 
-    public Uint128() {
-    }
+	public Uint128() {
+	}
 }

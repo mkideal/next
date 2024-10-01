@@ -4,21 +4,20 @@
 {{/* Overrides "next/java/struct": add package and imports before struct */}}
 {{- define "java/struct" -}}
 package {{render "package:name" .Package}};
-
-{{next .File.Imports -}}
+{{next .File.Imports | linespace -}}
 {{super .}}
 {{- end -}}
 
 {{- /* Overrides "next/java/struct.fields": add method 'MessageType' for each message after fields */ -}}
 {{- define "java/struct.fields" -}}
-{{- super .}}
+{{- super . | linespace}}
 {{- with .Decl.Annotations.message.type}}
 public static int MessageType() {
-    return {{.}};
+	return {{.}};
 }
 {{end}}
-{{- end -}}
+{{- end}}
 
-{{head}}
+{{- head}}
 
 {{next this}}

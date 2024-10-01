@@ -11,63 +11,63 @@ import java.util.Arrays;
  * @message annotation is a custom annotation that generates message types.
  */
 public class LoginRequest {
-    private String username;
+	private String username;
 
-    public String getUsername() {
-        return username;
-    }
+	public String getUsername() {
+		return username;
+	}
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+	public void setUsername(String username) {
+		this.username = username;
+	}
 
-    private String password;
+	private String password;
 
-    public String getPassword() {
-        return password;
-    }
+	public String getPassword() {
+		return password;
+	}
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+	public void setPassword(String password) {
+		this.password = password;
+	}
 
-    /**
-     * @optional annotation is a builtin annotation that marks a field as optional.
-     */
-    private String device;
+	/**
+	 * @optional annotation is a builtin annotation that marks a field as optional.
+	 */
+	private String device;
 
-    public String getDevice() {
-        return device;
-    }
+	public String getDevice() {
+		return device;
+	}
 
-    public void setDevice(String device) {
-        this.device = device;
-    }
+	public void setDevice(String device) {
+		this.device = device;
+	}
 
-    private OperatingSystem os;
+	private OperatingSystem os;
 
-    public OperatingSystem getOs() {
-        return os;
-    }
+	public OperatingSystem getOs() {
+		return os;
+	}
 
-    public void setOs(OperatingSystem os) {
-        this.os = os;
-    }
+	public void setOs(OperatingSystem os) {
+		this.os = os;
+	}
 
-    private long timestamp;
+	private long timestamp;
 
-    public long getTimestamp() {
-        return timestamp;
-    }
+	public long getTimestamp() {
+		return timestamp;
+	}
 
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
-    }
+	public void setTimestamp(long timestamp) {
+		this.timestamp = timestamp;
+	}
 
-    public static int MessageType() {
-        return 101;
-    }
+	public static int MessageType() {
+		return 101;
+	}
 
-    public LoginRequest() {
-    }
+	public LoginRequest() {
+	}
 }

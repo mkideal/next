@@ -3,10 +3,9 @@
 
 {{- define "java/enum" -}}
 package {{render "package:name" .Package}};
-
 {{super .}}
-{{- end -}}
+{{- end}}
 
-{{head}}
+{{- head}}
 
 {{next this}}

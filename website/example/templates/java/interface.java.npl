@@ -4,11 +4,10 @@
 {{- /* Overrides "next/java/interface": add package and imports before interface */ -}}
 {{- define "java/interface" -}}
 package {{render "package:name" .Package}};
-
-{{next .File.Imports -}}
+{{next .File.Imports | linespace -}}
 {{super .}}
-{{- end -}}
+{{- end}}
 
-{{head}}
+{{- head}}
 
 {{next this}}

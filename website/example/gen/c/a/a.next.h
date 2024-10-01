@@ -37,7 +37,7 @@ typedef struct DEMO_A_GenericResponse DEMO_A_GenericResponse;
  * XX constant
  * XX value 2
  */
-#define DEMO_A_X_X 1 /* XX value */
+#define DEMO_A_XX 1 /* XX value */
 /**
  * Constants
  */
@@ -91,171 +91,171 @@ typedef struct DEMO_A_GenericResponse DEMO_A_GenericResponse;
  * Enum with iota
  */
 typedef enum DEMO_A_Color {
-    DEMO_A_Color_Red = 1,
-    DEMO_A_Color_Green = 2,
-    DEMO_A_Color_Blue = 4,
-    DEMO_A_Color_Alpha = 8,
-    DEMO_A_Color_Yellow = 3,
-    DEMO_A_Color_Cyan = 6,
-    DEMO_A_Color_Magenta = 5,
-    DEMO_A_Color_White = 7,
+	DEMO_A_Color_Red = 1,
+	DEMO_A_Color_Green = 2,
+	DEMO_A_Color_Blue = 4,
+	DEMO_A_Color_Alpha = 8,
+	DEMO_A_Color_Yellow = 3,
+	DEMO_A_Color_Cyan = 6,
+	DEMO_A_Color_Magenta = 5,
+	DEMO_A_Color_White = 7,
 } DEMO_A_Color;
 
 /**
  * Enum with complex iota usage
  */
 typedef enum DEMO_A_FilePermission {
-    DEMO_A_FilePermission_None = 0,
-    DEMO_A_FilePermission_Execute = 1,
-    DEMO_A_FilePermission_Write = 2,
-    DEMO_A_FilePermission_Read = 4,
-    DEMO_A_FilePermission_UserRead = 4,
-    DEMO_A_FilePermission_UserWrite = 32,
-    DEMO_A_FilePermission_UserExecute = 256,
-    DEMO_A_FilePermission_GroupRead = 2048,
-    DEMO_A_FilePermission_GroupWrite = 16384,
-    DEMO_A_FilePermission_GroupExecute = 131072,
-    DEMO_A_FilePermission_OthersRead = 1048576,
-    DEMO_A_FilePermission_OthersWrite = 8388608,
-    DEMO_A_FilePermission_OthersExecute = 67108864,
-    /**
-     * 4|32|256|2048|16384|131072|1048576|8388608|67108864
-     * 4 + 32 + 256 + 2048 + 16384 + 131072 + 1048576 + 8388608 + 67108864
-     */
-    DEMO_A_FilePermission_All = 76695844,
+	DEMO_A_FilePermission_None = 0,
+	DEMO_A_FilePermission_Execute = 1,
+	DEMO_A_FilePermission_Write = 2,
+	DEMO_A_FilePermission_Read = 4,
+	DEMO_A_FilePermission_UserRead = 4,
+	DEMO_A_FilePermission_UserWrite = 32,
+	DEMO_A_FilePermission_UserExecute = 256,
+	DEMO_A_FilePermission_GroupRead = 2048,
+	DEMO_A_FilePermission_GroupWrite = 16384,
+	DEMO_A_FilePermission_GroupExecute = 131072,
+	DEMO_A_FilePermission_OthersRead = 1048576,
+	DEMO_A_FilePermission_OthersWrite = 8388608,
+	DEMO_A_FilePermission_OthersExecute = 67108864,
+	/**
+	 * 4|32|256|2048|16384|131072|1048576|8388608|67108864
+	 * 4 + 32 + 256 + 2048 + 16384 + 131072 + 1048576 + 8388608 + 67108864
+	 */
+	DEMO_A_FilePermission_All = 76695844,
 } DEMO_A_FilePermission;
 
 typedef enum DEMO_A_Day {
-    DEMO_A_Day_Monday = 1,
-    DEMO_A_Day_Tuesday = 2,
-    DEMO_A_Day_Wednesday = 4,
-    DEMO_A_Day_Thursday = 8,
-    DEMO_A_Day_Friday = 16,
-    DEMO_A_Day_Saturday = 32,
-    DEMO_A_Day_Sunday = 64,
-    DEMO_A_Day_Weekday = 31,
-    DEMO_A_Day_Weekend = 96,
+	DEMO_A_Day_Monday = 1,
+	DEMO_A_Day_Tuesday = 2,
+	DEMO_A_Day_Wednesday = 4,
+	DEMO_A_Day_Thursday = 8,
+	DEMO_A_Day_Friday = 16,
+	DEMO_A_Day_Saturday = 32,
+	DEMO_A_Day_Sunday = 64,
+	DEMO_A_Day_Weekday = 31,
+	DEMO_A_Day_Weekend = 96,
 } DEMO_A_Day;
 
 typedef enum DEMO_A_Month {
-    DEMO_A_Month_January = 1,
-    DEMO_A_Month_February = 2,
-    DEMO_A_Month_March = 4,
-    DEMO_A_Month_April = 8,
-    DEMO_A_Month_May = 16,
-    DEMO_A_Month_June = 32,
-    DEMO_A_Month_July = 64,
-    DEMO_A_Month_August = 128,
-    DEMO_A_Month_September = 256,
-    DEMO_A_Month_October = 512,
-    DEMO_A_Month_November = 1024,
-    DEMO_A_Month_December = 2048,
-    DEMO_A_Month_Q1 = 7,
-    DEMO_A_Month_Q2 = 56,
-    DEMO_A_Month_Q3 = 448,
-    DEMO_A_Month_Q4 = 3584,
+	DEMO_A_Month_January = 1,
+	DEMO_A_Month_February = 2,
+	DEMO_A_Month_March = 4,
+	DEMO_A_Month_April = 8,
+	DEMO_A_Month_May = 16,
+	DEMO_A_Month_June = 32,
+	DEMO_A_Month_July = 64,
+	DEMO_A_Month_August = 128,
+	DEMO_A_Month_September = 256,
+	DEMO_A_Month_October = 512,
+	DEMO_A_Month_November = 1024,
+	DEMO_A_Month_December = 2048,
+	DEMO_A_Month_Q1 = 7,
+	DEMO_A_Month_Q2 = 56,
+	DEMO_A_Month_Q3 = 448,
+	DEMO_A_Month_Q4 = 3584,
 } DEMO_A_Month;
 
 /**
  * Test cases for iota
  */
 typedef enum DEMO_A_IotatestEnum {
-    DEMO_A_IotatestEnum_A = 0, /* 0 */
-    DEMO_A_IotatestEnum_B = 1, /* 1 */
-    DEMO_A_IotatestEnum_C = 0, /* 0 */
-    DEMO_A_IotatestEnum_D = 2, /* 2 */
-    DEMO_A_IotatestEnum_E = 0, /* 0 */
-    DEMO_A_IotatestEnum_F = 1, /* 1 */
-    DEMO_A_IotatestEnum_G = 0, /* 0 */
+	DEMO_A_IotatestEnum_A = 0, /* 0 */
+	DEMO_A_IotatestEnum_B = 1, /* 1 */
+	DEMO_A_IotatestEnum_C = 0, /* 0 */
+	DEMO_A_IotatestEnum_D = 2, /* 2 */
+	DEMO_A_IotatestEnum_E = 0, /* 0 */
+	DEMO_A_IotatestEnum_F = 1, /* 1 */
+	DEMO_A_IotatestEnum_G = 0, /* 0 */
 } DEMO_A_IotatestEnum;
 
 /**
  * Struct types
  */
 typedef struct DEMO_A_Point2D {
-    double x;
-    double y;
+	double x;
+	double y;
 } DEMO_A_Point2D;
 
 typedef struct DEMO_A_Point3D {
-    DEMO_A_Point2D point;
-    double z;
+	DEMO_A_Point2D point;
+	double z;
 } DEMO_A_Point3D;
 
 typedef struct DEMO_A_Rectangle {
-    DEMO_A_Point2D top_left;
-    DEMO_A_Point2D bottom_right;
+	DEMO_A_Point2D top_left;
+	DEMO_A_Point2D bottom_right;
 } DEMO_A_Rectangle;
 
 /**
  * Struct with various field types
  */
 typedef struct DEMO_A_ComplexStruct {
-    _Bool flag;
-    int8_t tiny_int;
-    int16_t small_int;
-    int32_t medium_int;
-    int64_t big_int;
-    int32_t default_int;
-    float single_precision;
-    double double_precision;
-    char* text;
-    uint8_t single_byte;
-    uint8_t* byte_array;
-    int32_t fixed_array[5];
-    void* dynamic_array;
-    void* int_array;
-    void* dictionary;
+	_Bool flag;
+	int8_t tiny_int;
+	int16_t small_int;
+	int32_t medium_int;
+	int64_t big_int;
+	int32_t default_int;
+	float single_precision;
+	double double_precision;
+	char* text;
+	uint8_t single_byte;
+	uint8_t* byte_array;
+	int32_t fixed_array[5];
+	void* dynamic_array;
+	void* int_array;
+	void* dictionary;
 } DEMO_A_ComplexStruct;
 
 typedef struct DEMO_A_User {
-    int64_t id;
-    char* username;
-    char* email;
-    DEMO_A_Day preferred_day;
-    DEMO_A_Month birth_month;
+	int64_t id;
+	char* username;
+	char* email;
+	DEMO_A_Day preferred_day;
+	DEMO_A_Month birth_month;
 } DEMO_A_User;
 
 typedef struct DEMO_A_UserProfile {
-    DEMO_A_User user;
-    char* first_name;
-    char* last_name;
-    int32_t age;
-    void* interests;
+	DEMO_A_User user;
+	char* first_name;
+	char* last_name;
+	int32_t age;
+	void* interests;
 } DEMO_A_UserProfile;
 
 /**
  * message types
  */
 typedef struct DEMO_A_LoginRequest {
-    char* username;
-    char* password;
-    char* device_id;
-    char* two_factor_token;
+	char* username;
+	char* password;
+	char* device_id;
+	char* two_factor_token;
 } DEMO_A_LoginRequest;
 
 static inline int DEMO_A_LoginRequest_message_type() { return 201; }
 
 typedef struct DEMO_A_LoginResponse {
-    _Bool success;
-    char* error_message;
-    char* authentication_token;
-    DEMO_A_User user;
+	_Bool success;
+	char* error_message;
+	char* authentication_token;
+	DEMO_A_User user;
 } DEMO_A_LoginResponse;
 
 static inline int DEMO_A_LoginResponse_message_type() { return 202; }
 
 typedef struct DEMO_A_GenericRequest {
-    char* request_id;
-    int64_t timestamp;
+	char* request_id;
+	int64_t timestamp;
 } DEMO_A_GenericRequest;
 
 typedef struct DEMO_A_GenericResponse {
-    char* request_id;
-    int64_t timestamp;
-    _Bool success;
-    char* error_code;
-    char* error_message;
+	char* request_id;
+	int64_t timestamp;
+	_Bool success;
+	char* error_code;
+	char* error_message;
 } DEMO_A_GenericResponse;
 
 #endif /* DEMO_A_A_H */

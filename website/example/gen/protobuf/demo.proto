@@ -10,58 +10,57 @@ option java_package = "com.example.demo";
 
 import "google/protobuf/any.proto";
 
-
 // 3 Constants skipped.
 
 // Color represents different color options
 // Values: Red (1), Green (2), Blue (4), Yellow (8)
 enum Color {
-    COLOR_UNSPECIFIED = 0;
-    RED = 1;
-    GREEN = 2;
-    BLUE = 4;
-    YELLOW = 8;
+	COLOR_UNSPECIFIED = 0;
+	RED = 1;
+	GREEN = 2;
+	BLUE = 4;
+	YELLOW = 8;
 }
 
 // User represents a user in the system
 message User {
-    int64 id = 1;
-    string username = 2;
-    repeated string tags = 3;
-    map<string, int32> scores = 4;
-    repeated double coordinates = 5;
-    repeated int32 matrix = 6;
-    string email = 7 [deprecated = true];
-    Color favoriteColor = 8 [deprecated = true];
-    google.protobuf.Any extra = 9;
+	int64 id = 1;
+	string username = 2;
+	repeated string tags = 3;
+	map<string, int32> scores = 4;
+	repeated double coordinates = 5;
+	repeated int32 matrix = 6;
+	string email = 7 [deprecated = true];
+	Color favoriteColor = 8 [deprecated = true];
+	google.protobuf.Any extra = 9;
 }
 
 // uint128 represents a 128-bit unsigned integer.
 // - In rust, it is aliased as u128
 // - In other languages, it is represented as a struct with low and high 64-bit integers.
 message Uint128 {
-    uint64 low = 1;
-    uint64 high = 2;
+	uint64 low = 1;
+	uint64 high = 2;
 }
 
 // Contract represents a smart contract
 message Contract {
-    Uint128 address = 1;
-    google.protobuf.Any data = 2;
+	Uint128 address = 1;
+	google.protobuf.Any data = 2;
 }
 
 // LoginRequest represents a login request message (type 101)
 // @message annotation is a custom annotation that generates message types.
 message LoginRequest {
-    string username = 1;
-    string password = 2;
-    // @optional annotation is a builtin annotation that marks a field as optional.
-    optional string device = 3;
-    fixed64 timestamp = 5;
+	string username = 1;
+	string password = 2;
+	// @optional annotation is a builtin annotation that marks a field as optional.
+	optional string device = 3;
+	fixed64 timestamp = 5;
 }
 
 // LoginResponse represents a login response message (type 102)
 message LoginResponse {
-    string token = 1;
-    User user = 2;
+	string token = 1;
+	User user = 2;
 }

@@ -1,33 +1,27 @@
 {{/* next/lua/file: Generates the main structure for a Lua file */}}
 {{- define "next/lua/file" -}}
 -- Package: {{render "package:name" .Package}}
-
-{{next .Imports -}}
-
+{{next .Imports | linespace}}
 local _M_ = {}
-{{next .Decls -}}
+{{next .Decls | linespace}}
 return _M_
-{{- end}}
+{{end}}
 
 {{/* next/lua/imports: Generates require statements for Lua files */}}
 {{- define "next/lua/imports" -}}
-{{- if .TrimmedList}}
 {{- range .TrimmedList}}
-{{next .}}
+	{{- next .}}
 {{- end}}
-{{end}}
-{{end}}
+{{- end}}
 
 {{/* next/lua/import: Generates a require statement for a specific module */}}
-{{- define "next/lua/import" -}}
+{{- define "next/lua/import"}}
 local {{render "package:name" .Target.Package}}_{{.Target.Name}} = require("{{render "package:name" .Target.Package}}.{{.Target.Name}}")
-{{end}}
+{{- end}}
 
 {{/* next/lua/comment: Generates line comments for Python */}}
 {{- define "next/lua/comment" -}}
-{{- with .Text -}}
-{{_}} -- {{.}}
-{{- end}}
+{{- with .Text | trim}} -- {{.}}{{end}}
 {{- end}}
 
 {{/* next/lua/doc: Generates documentation comments for Lua */}}
@@ -41,25 +35,25 @@ local {{render "package:name" .Target.Package}}_{{.Target.Name}} = require("{{re
 {{- end}}
 
 {{/* next/lua/const: Generates a constant declaration */}}
-{{- define "next/lua/const" -}}
-{{- next .Doc -}}
+{{- define "next/lua/const"}}
+{{next .Doc -}}
 _M_.{{render "const:name" .}} = {{next .Value}}{{next .Comment}}
-{{end}}
+{{- end}}
 
 {{/* next/lua/enum: Generates an enum-like table declaration */}}
-{{- define "next/lua/enum" -}}
-{{- next .Doc -}}
+{{- define "next/lua/enum"}}
+{{next .Doc -}}
 local {{next .Type}} = {
-    {{next .Members | align -}}
+	{{- next .Members | indent | linespace -}}
 }
 _M_.{{next .Type}} = {{next .Type}}
 {{end}}
 
 {{/* next/lua/enum.member: Generates an enum member */}}
-{{- define "next/lua/enum.member" -}}
-{{- next .Doc -}}
+{{- define "next/lua/enum.member"}}
+{{next .Doc -}}
 {{- render "enum.member:name" .}} = {{next .Value}}{{if not .IsLast}},{{end}}{{next .Comment}}
-{{end}}
+{{- end}}
 
 {{/* next/lua/enum.member:name: Generates the name for an enum member */}}
 {{- define "next/lua/enum.member:name" -}}
@@ -67,26 +61,26 @@ _M_.{{next .Type}} = {{next .Type}}
 {{- end}}
 
 {{/* next/lua/struct: Generates a table-based class declaration */}}
-{{- define "next/lua/struct" -}}
-{{- next .Doc -}}
+{{- define "next/lua/struct"}}
+{{next .Doc -}}
 local {{next .Type}} = {}
 _M_.{{next .Type}} = {{next .Type}}
 {{next .Type}}.__index = {{next .Type}}
 
 function {{next .Type}}:new()
-    local obj = {
-        {{next .Fields | align -}}
-{{_}}    }
-    setmetatable(obj, self)
-    return obj
+	local obj = {
+		{{- next .Fields | indent 2 | linespace -}}
+{{_}}	}
+	setmetatable(obj, self)
+	return obj
 end
 {{end}}
 
 {{/* next/lua/struct.field: Generates a field declaration within a class */}}
-{{- define "next/lua/struct.field" -}}
-{{- next .Doc -}}
+{{- define "next/lua/struct.field"}}
+{{next .Doc -}}
 {{render "struct.field:name" .}} = {{render "type:zero" .Type}}{{if not .IsLast}},{{end}}{{next .Comment}}
-{{end}}
+{{- end}}
 
 {{/* next/lua/struct.field:name: Generates the name for a class field */}}
 {{- define "next/lua/struct.field:name" -}}
@@ -94,20 +88,19 @@ end
 {{- end}}
 
 {{/* next/lua/interface: Generates an interface-like table declaration */}}
-{{- define "next/lua/interface" -}}
-{{- next .Doc -}}local {{next .Type}} = {}
+{{- define "next/lua/interface"}}
+{{next .Doc -}}local {{next .Type}} = {}
 _M_.{{next .Type}} = {{next .Type}}
 {{next .Type}}.__index = {{next .Type}}
-
-{{next .Methods | align -}}
+{{next .Methods | linespace -}}
 {{- end}}
 
 {{/* next/lua/interface.method: Generates a method declaration in an interface */}}
-{{- define "next/lua/interface.method" -}}
-{{- next .Doc -}}
+{{- define "next/lua/interface.method"}}
+{{next .Doc -}}
 function {{next $.Decl.Type}}:{{render "interface.method:name" .}}({{next .Params}})
-    error("Method not implemented")
-end{{next .Comment}}
+	error("Method not implemented")
+end
 {{end}}
 
 {{/* next/lua/interface.method:name: Generates the name for an interface method */}}

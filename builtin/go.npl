@@ -6,8 +6,8 @@ package {{.Package.Name}}
 
 {{/* next/go/imports: Generates import declarations and unused import statements */}}
 {{- define "next/go/imports" -}}
-{{- render "imports:decl" .}}
-{{- render "imports:unused" .}}
+{{- render "imports:declarations" . | linespace}}
+{{- render "imports:unused" . | linespace}}
 {{- end}}
 
 {{/*
@@ -34,34 +34,36 @@ import "net/http"
 import "time"
 ```
 */}}
-{{- define "next/go/imports:decl"}}
-{{- if .Decl.Annotations.next.go_imports}}
-{{range (.Decl.Annotations.next.go_imports | split "," | map (trim | removeExt | trimPrefix "*") | sort | uniq)}}
-{{- $parts := split " " . | map trim }}
-{{- if eq 1 (len $parts)}}
-{{- /* import "xxx" */}}
-{{- render "dict:import.statement" (dict "value" (index $parts 0))}}
-{{- else if eq 2 (len $parts)}}
-{{- /* import name "xxx" */}}
-{{- render "dict:import.statement" (dict "name" (index $parts 0) "value" (index $parts 1))}}
-{{- end}}
-{{- end}}
-{{- end}}
-{{range .TrimmedList}}
-{{- if .Target.Package.Types}}
-{{- next .}}
-{{- end}}
-{{- end}}
+{{- define "next/go/imports:declarations"}}
+	{{- with .Decl.Annotations.next.go_imports }}
+		{{- range (split "," . | map (trim | removeExt | trimPrefix "*") | sort | uniq)}}
+			{{- $parts := split " " . | map trim }}
+			{{- if eq 1 (len $parts)}}
+				{{- /* import "xxx" */}}
+				{{- render "dict:import.statement" (dict "value" (index $parts 0))}}
+			{{- else if eq 2 (len $parts)}}
+				{{- /* import name "xxx" */}}
+				{{- render "dict:import.statement" (dict "name" (index $parts 0) "value" (index $parts 1))}}
+			{{- end}}
+		{{- end}}
+	{{- end}}
+
+	{{- range .TrimmedList}}
+		{{- if .Target.Package.Types}}
+			{{- next .}}
+		{{- end}}
+	{{- end}}
 {{- end}}
 
-{{- define "next/go/dict:import.statement" -}}
+
+{{- define "next/go/dict:import.statement"}}
 import {{with .name}}{{.}} {{end}}"{{.value}}"
-{{end}}
+{{- end}}
 
 {{/* next/go/import: Generates an import statement for a specific package */}}
-{{- define "next/go/import" -}}
+{{- define "next/go/import"}}
 import {{.Target.Package.Name}} "{{.Target.Package.Annotations.next.go_package}}"
-{{end}}
+{{- end}}
 
 {{/*
 next/go/imports:unused: Generates unused variable declarations for imports to prevent compiler errors.
@@ -95,17 +97,17 @@ var _ = {{$pkg}}.{{$val}}
 {{- end}}
 {{- end}}
 {{- end}}
-    {{- range .TrimmedList}}
-        {{- if len .Target.Package.Types}}
-            {{- render "import:unused" .}}
-        {{- end}}
-    {{- end}}
+	{{- range .TrimmedList}}
+		{{- if len .Target.Package.Types}}
+			{{- render "import:unused" .}}
+		{{- end}}
+	{{- end}}
 {{- end}}
 
 {{/* next/go/import:unused: Generates an unused variable declaration for a specific import */}}
-{{- define "next/go/import:unused" -}}
+{{- define "next/go/import:unused"}}
 var _ = (*{{.Target.Package.Name}}.{{next (index (.Target.Package.Types) 0)}})(nil)
-{{end}}
+{{- end}}
 
 {{/* next/go/used.type: Generates a fully qualified type name, including package name if necessary */}}
 {{- define "next/go/used.type" -}}
@@ -115,55 +117,49 @@ var _ = (*{{.Target.Package.Name}}.{{next (index (.Target.Package.Types) 0)}})(n
 {{next .Type}}
 {{- end}}
 
-{{- define "next/go/consts"}}
-{{- if .}}
-{{super .}}
-{{- end}}
-{{- end}}
-
 {{/* next/go/const: Generates a constant declaration */}}
-{{- define "next/go/const" -}}
-{{- next .Doc -}}
+{{- define "next/go/const"}}
+{{next .Doc -}}
 const {{render "const:name" .}} = {{next .Value}}{{next .Comment}}
-{{end}}
+{{- end}}
 
 {{- define "next/go/const:name" -}}
 {{- render "node:pascal.case.name" .}}
 {{- end}}
 
 {{/* next/go/enum: Generates an enum type declaration, constants */}}
-{{- define "next/go/enum" -}}
-{{- next .Doc -}}
+{{- define "next/go/enum"}}
+{{next .Doc -}}
 type {{next .Type}} {{render "enum:member.type" .}}
 
 const (
-    {{next .Members | align -}}
+	{{- next .Members | indent | linespace -}}
 )
 {{end}}
 
 {{/* next/go/enum.member: Generates a constant declaration for an enum member */}}
-{{- define "next/go/enum.member" -}}
-{{- next .Doc -}}
+{{- define "next/go/enum.member"}}
+{{next .Doc -}}
 {{- render "enum.member:name" .}} = {{next .Value}}{{next .Comment}}
-{{end}}
+{{- end}}
 
 {{- define "next/go/enum.member:name" -}}
 {{- next .Decl.Type}}{{render "node:pascal.case.name" .}}
 {{- end}}
 
 {{/* next/go/struct: Generates a struct type declaration */}}
-{{- define "next/go/struct" -}}
-{{- next .Doc -}}
+{{- define "next/go/struct"}}
+{{next .Doc -}}
 type {{next .Type}} struct {
-    {{next .Fields | align -}}
+	{{- next .Fields | indent | linespace -}}
 }
 {{end}}
 
 {{/* next/go/struct.field: Generates a struct field declaration */}}
-{{- define "next/go/struct.field" -}}
-{{- next .Doc -}}
+{{- define "next/go/struct.field"}}
+{{next .Doc -}}
 {{- render "struct.field:name" .}} {{next .Type}}{{render "struct.field.tag" .}}{{next .Comment}}
-{{end}}
+{{- end}}
 
 {{/* next/go/struct.field.tag: Placeholder for generating struct field tags */}}
 {{- define "next/go/struct.field.tag" -}}
@@ -176,10 +172,10 @@ type {{next .Type}} struct {
 {{- end}}
 
 {{/* next/go/interface: Generates an interface type declaration */}}
-{{- define "next/go/interface" -}}
-{{- next .Doc -}}
+{{- define "next/go/interface"}}
+{{next .Doc -}}
 type {{next .Type}} interface {
-    {{next .Methods | align -}}
+	{{- next .Methods | indent | linespace -}}
 }
 {{end}}
 
@@ -225,7 +221,7 @@ package demo;
 interface HTTPHandler {}
 
 interface HTTPServer {
-    func ServeHTTP(handler HTTPHandler)
+	func ServeHTTP(handler HTTPHandler)
 }
 ```
 
@@ -233,7 +229,7 @@ This will generate:
 
 ```go
 type HTTPServer interface {
-    ServeHTTP(handler http.Handler)
+	ServeHTTP(handler http.Handler)
 }
 ```
 */}}
@@ -241,14 +237,14 @@ type HTTPServer interface {
 {{- $alias := .Decl.Annotations.next.go_alias -}}
 {{- $parts := split "." $alias -}}
 {{- if eq 1 (len $parts) -}}
-    {{index $parts 0}}
+	{{index $parts 0}}
 {{- else if eq 2 (len $parts) -}}
-    {{- $pkg := (index $parts 0) -}}
-    {{- $typ := (index $parts 1) -}}
-    {{- $ptr := (hasPrefix "*" $pkg) -}}
-    {{- $pkg = (split "/" $pkg | last | trimPrefix "*") -}}
-    {{- if $ptr -}}*{{- end -}}
-    {{$pkg}}.{{$typ}}
+	{{- $pkg := (index $parts 0) -}}
+	{{- $typ := (index $parts 1) -}}
+	{{- $ptr := (hasPrefix "*" $pkg) -}}
+	{{- $pkg = (split "/" $pkg | last | trimPrefix "*") -}}
+	{{- if $ptr -}}*{{- end -}}
+	{{$pkg}}.{{$typ}}
 {{- else }}
 {{- error "%s: invalid format of %q: MUST be in the form of '[[*]path/to/pkg.]TypeName'" (.Decl.Annotations.next.ValuePos "go_alias") $alias}}
 {{- end -}}

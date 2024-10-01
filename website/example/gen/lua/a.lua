@@ -2,8 +2,8 @@
 
 -- Package: a
 
-
 local _M_ = {}
+
 -- XX constant
 -- XX value 2
 _M_.XX = 1 -- XX value
@@ -48,80 +48,80 @@ _M_.Complex5 = 31
 
 -- Enum with iota
 local Color = {
-    RED = 1,
-    GREEN = 2,
-    BLUE = 4,
-    ALPHA = 8,
-    YELLOW = 3,
-    CYAN = 6,
-    MAGENTA = 5,
-    WHITE = 7
+	RED = 1,
+	GREEN = 2,
+	BLUE = 4,
+	ALPHA = 8,
+	YELLOW = 3,
+	CYAN = 6,
+	MAGENTA = 5,
+	WHITE = 7
 }
 _M_.Color = Color
 
 -- Enum with complex iota usage
 local FilePermission = {
-    NONE = 0,
-    EXECUTE = 1,
-    WRITE = 2,
-    READ = 4,
-    USER_READ = 4,
-    USER_WRITE = 32,
-    USER_EXECUTE = 256,
-    GROUP_READ = 2048,
-    GROUP_WRITE = 16384,
-    GROUP_EXECUTE = 131072,
-    OTHERS_READ = 1048576,
-    OTHERS_WRITE = 8388608,
-    OTHERS_EXECUTE = 67108864,
-    -- 4|32|256|2048|16384|131072|1048576|8388608|67108864
-    -- 4 + 32 + 256 + 2048 + 16384 + 131072 + 1048576 + 8388608 + 67108864
-    ALL = 76695844
+	NONE = 0,
+	EXECUTE = 1,
+	WRITE = 2,
+	READ = 4,
+	USER_READ = 4,
+	USER_WRITE = 32,
+	USER_EXECUTE = 256,
+	GROUP_READ = 2048,
+	GROUP_WRITE = 16384,
+	GROUP_EXECUTE = 131072,
+	OTHERS_READ = 1048576,
+	OTHERS_WRITE = 8388608,
+	OTHERS_EXECUTE = 67108864,
+	-- 4|32|256|2048|16384|131072|1048576|8388608|67108864
+	-- 4 + 32 + 256 + 2048 + 16384 + 131072 + 1048576 + 8388608 + 67108864
+	ALL = 76695844
 }
 _M_.FilePermission = FilePermission
 
 local Day = {
-    MONDAY = 1,
-    TUESDAY = 2,
-    WEDNESDAY = 4,
-    THURSDAY = 8,
-    FRIDAY = 16,
-    SATURDAY = 32,
-    SUNDAY = 64,
-    WEEKDAY = 31,
-    WEEKEND = 96
+	MONDAY = 1,
+	TUESDAY = 2,
+	WEDNESDAY = 4,
+	THURSDAY = 8,
+	FRIDAY = 16,
+	SATURDAY = 32,
+	SUNDAY = 64,
+	WEEKDAY = 31,
+	WEEKEND = 96
 }
 _M_.Day = Day
 
 local Month = {
-    JANUARY = 1,
-    FEBRUARY = 2,
-    MARCH = 4,
-    APRIL = 8,
-    MAY = 16,
-    JUNE = 32,
-    JULY = 64,
-    AUGUST = 128,
-    SEPTEMBER = 256,
-    OCTOBER = 512,
-    NOVEMBER = 1024,
-    DECEMBER = 2048,
-    Q_1 = 7,
-    Q_2 = 56,
-    Q_3 = 448,
-    Q_4 = 3584
+	JANUARY = 1,
+	FEBRUARY = 2,
+	MARCH = 4,
+	APRIL = 8,
+	MAY = 16,
+	JUNE = 32,
+	JULY = 64,
+	AUGUST = 128,
+	SEPTEMBER = 256,
+	OCTOBER = 512,
+	NOVEMBER = 1024,
+	DECEMBER = 2048,
+	Q_1 = 7,
+	Q_2 = 56,
+	Q_3 = 448,
+	Q_4 = 3584
 }
 _M_.Month = Month
 
 -- Test cases for iota
 local IotatestEnum = {
-    A = 0, -- 0
-    B = 1, -- 1
-    C = 0, -- 0
-    D = 2, -- 2
-    E = 0, -- 0
-    F = 1, -- 1
-    G = 0 -- 0
+	A = 0, -- 0
+	B = 1, -- 1
+	C = 0, -- 0
+	D = 2, -- 2
+	E = 0, -- 0
+	F = 1, -- 1
+	G = 0 -- 0
 }
 _M_.IotatestEnum = IotatestEnum
 
@@ -131,12 +131,12 @@ _M_.Point2D = Point2D
 Point2D.__index = Point2D
 
 function Point2D:new()
-    local obj = {
-        x = 0,
-        y = 0
-    }
-    setmetatable(obj, self)
-    return obj
+	local obj = {
+		x = 0,
+		y = 0
+	}
+	setmetatable(obj, self)
+	return obj
 end
 
 local Point3D = {}
@@ -144,12 +144,12 @@ _M_.Point3D = Point3D
 Point3D.__index = Point3D
 
 function Point3D:new()
-    local obj = {
-        point = Point2D:new(),
-        z = 0
-    }
-    setmetatable(obj, self)
-    return obj
+	local obj = {
+		point = Point2D:new(),
+		z = 0
+	}
+	setmetatable(obj, self)
+	return obj
 end
 
 local Rectangle = {}
@@ -157,12 +157,12 @@ _M_.Rectangle = Rectangle
 Rectangle.__index = Rectangle
 
 function Rectangle:new()
-    local obj = {
-        topLeft = Point2D:new(),
-        bottomRight = Point2D:new()
-    }
-    setmetatable(obj, self)
-    return obj
+	local obj = {
+		topLeft = Point2D:new(),
+		bottomRight = Point2D:new()
+	}
+	setmetatable(obj, self)
+	return obj
 end
 
 -- Struct with various field types
@@ -171,25 +171,25 @@ _M_.ComplexStruct = ComplexStruct
 ComplexStruct.__index = ComplexStruct
 
 function ComplexStruct:new()
-    local obj = {
-        flag = false,
-        tinyInt = 0,
-        smallInt = 0,
-        mediumInt = 0,
-        bigInt = 0,
-        defaultInt = 0,
-        singlePrecision = 0,
-        doublePrecision = 0,
-        text = "",
-        singleByte = 0,
-        byteArray = "",
-        fixedArray = {},
-        dynamicArray = {},
-        intArray = {},
-        dictionary = {}
-    }
-    setmetatable(obj, self)
-    return obj
+	local obj = {
+		flag = false,
+		tinyInt = 0,
+		smallInt = 0,
+		mediumInt = 0,
+		bigInt = 0,
+		defaultInt = 0,
+		singlePrecision = 0,
+		doublePrecision = 0,
+		text = "",
+		singleByte = 0,
+		byteArray = "",
+		fixedArray = {},
+		dynamicArray = {},
+		intArray = {},
+		dictionary = {}
+	}
+	setmetatable(obj, self)
+	return obj
 end
 
 local User = {}
@@ -197,15 +197,15 @@ _M_.User = User
 User.__index = User
 
 function User:new()
-    local obj = {
-        id = 0,
-        username = "",
-        email = "",
-        preferredDay = nil,
-        birthMonth = nil
-    }
-    setmetatable(obj, self)
-    return obj
+	local obj = {
+		id = 0,
+		username = "",
+		email = "",
+		preferredDay = nil,
+		birthMonth = nil
+	}
+	setmetatable(obj, self)
+	return obj
 end
 
 local UserProfile = {}
@@ -213,15 +213,15 @@ _M_.UserProfile = UserProfile
 UserProfile.__index = UserProfile
 
 function UserProfile:new()
-    local obj = {
-        user = User:new(),
-        firstName = "",
-        lastName = "",
-        age = 0,
-        interests = {}
-    }
-    setmetatable(obj, self)
-    return obj
+	local obj = {
+		user = User:new(),
+		firstName = "",
+		lastName = "",
+		age = 0,
+		interests = {}
+	}
+	setmetatable(obj, self)
+	return obj
 end
 
 -- message types
@@ -230,14 +230,14 @@ _M_.LoginRequest = LoginRequest
 LoginRequest.__index = LoginRequest
 
 function LoginRequest:new()
-    local obj = {
-        username = "",
-        password = "",
-        deviceId = "",
-        twoFactorToken = ""
-    }
-    setmetatable(obj, self)
-    return obj
+	local obj = {
+		username = "",
+		password = "",
+		deviceId = "",
+		twoFactorToken = ""
+	}
+	setmetatable(obj, self)
+	return obj
 end
 
 local LoginResponse = {}
@@ -245,14 +245,14 @@ _M_.LoginResponse = LoginResponse
 LoginResponse.__index = LoginResponse
 
 function LoginResponse:new()
-    local obj = {
-        success = false,
-        errorMessage = "",
-        authenticationToken = "",
-        user = User:new()
-    }
-    setmetatable(obj, self)
-    return obj
+	local obj = {
+		success = false,
+		errorMessage = "",
+		authenticationToken = "",
+		user = User:new()
+	}
+	setmetatable(obj, self)
+	return obj
 end
 
 local GenericRequest = {}
@@ -260,12 +260,12 @@ _M_.GenericRequest = GenericRequest
 GenericRequest.__index = GenericRequest
 
 function GenericRequest:new()
-    local obj = {
-        requestId = "",
-        timestamp = 0
-    }
-    setmetatable(obj, self)
-    return obj
+	local obj = {
+		requestId = "",
+		timestamp = 0
+	}
+	setmetatable(obj, self)
+	return obj
 end
 
 local GenericResponse = {}
@@ -273,14 +273,15 @@ _M_.GenericResponse = GenericResponse
 GenericResponse.__index = GenericResponse
 
 function GenericResponse:new()
-    local obj = {
-        requestId = "",
-        timestamp = 0,
-        success = false,
-        errorCode = "",
-        errorMessage = ""
-    }
-    setmetatable(obj, self)
-    return obj
+	local obj = {
+		requestId = "",
+		timestamp = 0,
+		success = false,
+		errorCode = "",
+		errorMessage = ""
+	}
+	setmetatable(obj, self)
+	return obj
 end
+
 return _M_

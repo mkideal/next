@@ -4,6 +4,7 @@ package c
 
 import a "github.com/next/next/website/example/gen/go/a"
 import b "github.com/next/next/website/example/gen/go/b"
+
 var _ = (*a.Color)(nil)
 var _ = (*b.TestEnum)(nil)
 
@@ -15,48 +16,48 @@ const D = true
 type Color int32
 
 const (
-    ColorRed = 0
-    ColorGreen = 1
-    ColorBlue = 2
+	ColorRed = 0
+	ColorGreen = 1
+	ColorBlue = 2
 )
 
 type LoginType int32
 
 const (
-    LoginTypeUsername = 1
-    LoginTypeEmail = 2
+	LoginTypeUsername = 1
+	LoginTypeEmail = 2
 )
 
 type UserType int32
 
 const (
-    UserTypeAdmin = 1
-    UserTypeUser = 2
+	UserTypeAdmin = 1
+	UserTypeUser = 2
 )
 
 type User struct {
-    Type UserType
-    Id int
-    Username string
-    Password string
-    DeviceId string
-    TwoFactorToken string
-    Roles []string
-    Metadata map[string]string
-    Scores [4]int
+	Type UserType
+	Id int
+	Username string
+	Password string
+	DeviceId string
+	TwoFactorToken string
+	Roles []string
+	Metadata map[string]string
+	Scores [4]int
 }
 
 type LoginRequest struct {
-    Type LoginType
-    Username string
-    Password string
-    DeviceId string
-    TwoFactorToken string
+	Type LoginType
+	Username string
+	Password string
+	DeviceId string
+	TwoFactorToken string
 }
 
 type LoginResponse struct {
-    Success bool
-    ErrorMessage string
-    AuthenticationToken string
-    User User
+	Success bool
+	ErrorMessage string
+	AuthenticationToken string
+	User User
 }

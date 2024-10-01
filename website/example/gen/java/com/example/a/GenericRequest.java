@@ -7,26 +7,26 @@ import java.util.Map;
 import java.util.Arrays;
 
 public class GenericRequest {
-    private String requestId;
+	private String requestId;
 
-    public String getRequestId() {
-        return requestId;
-    }
+	public String getRequestId() {
+		return requestId;
+	}
 
-    public void setRequestId(String requestId) {
-        this.requestId = requestId;
-    }
+	public void setRequestId(String requestId) {
+		this.requestId = requestId;
+	}
 
-    private long timestamp;
+	private long timestamp;
 
-    public long getTimestamp() {
-        return timestamp;
-    }
+	public long getTimestamp() {
+		return timestamp;
+	}
 
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
-    }
+	public void setTimestamp(long timestamp) {
+		this.timestamp = timestamp;
+	}
 
-    public GenericRequest() {
-    }
+	public GenericRequest() {
+	}
 }

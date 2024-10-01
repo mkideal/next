@@ -1,17 +1,7 @@
-{{/* next/js/file: Generates the main structure for a JavaScript file */}}
-{{- define "next/js/file" -}}
-{{next .Imports -}}
-{{next .Decls -}}
-{{- end}}
-
-{{- define "next/js/imports" -}}
-{{super .}}
-{{end}}
-
 {{/* next/js/import: Generates an import statement for a module */}}
-{{- define "next/js/import" -}}
+{{- define "next/js/import"}}
 import * as {{.Target.Name}} from './{{.Target.Name}}.js';
-{{end}}
+{{- end}}
 
 {{/* next/js/doc: Generates documentation comments for JavaScript (uses C-like doc style) */}}
 {{- define "next/js/doc" -}}
@@ -27,38 +17,38 @@ import * as {{.Target.Name}} from './{{.Target.Name}}.js';
 {{- end}}
 
 {{/* next/js/const: Generates a constant declaration */}}
-{{- define "next/js/const" -}}
-{{- next .Doc -}}
+{{- define "next/js/const"}}
+{{next .Doc -}}
 export const {{render "const:name" .}} = {{next .Value}};{{next .Comment}}
-{{end}}
+{{- end}}
 
 {{/* next/js/enum: Generates an enum as a frozen object */}}
-{{- define "next/js/enum" -}}
-{{- next .Doc -}}
+{{- define "next/js/enum"}}
+{{next .Doc -}}
 export const {{next .Type}} = Object.freeze({
-    {{next .Members | align -}}
+	{{- next .Members | indent | linespace -}}
 });
 {{end}}
 
 {{/* next/js/enum.member: Generates an individual enum member */}}
-{{- define "next/js/enum.member" -}}
-{{- next .Doc -}}
+{{- define "next/js/enum.member"}}
+{{next .Doc -}}
 {{- render "enum.member:name" .}}: {{next .Value}}{{if not .IsLast}},{{end}}{{next .Comment}}
-{{end}}
+{{- end}}
 
 {{/* next/js/struct: Generates a class declaration (struct in JavaScript is implemented as a class) */}}
-{{- define "next/js/struct" -}}
-{{- next .Doc -}}
+{{- define "next/js/struct"}}
+{{next .Doc -}}
 export class {{next .Type}} {
-    constructor() {
-        {{next .Fields | align -}}
-{{_}}    }
+	constructor() {
+		{{- next .Fields | indent 2 | linespace -}}
+{{_}}	}
 }
 {{end}}
 
 {{/* next/js/struct.field: Generates a single field declaration with JSDoc */}}
-{{- define "next/js/struct.field" -}}
-{{- if .Doc.Text -}}
+{{- define "next/js/struct.field"}}
+{{if .Doc.Text -}}
 /**
 {{.Doc.Format " * " -}}
 {{_}} * @type { {{render "type:doc" .Type}} }
@@ -67,18 +57,18 @@ export class {{next .Type}} {
 /** @type { {{render "type:doc" .Type}} } */
 {{- end}}
 this.{{render "struct.field:name" .}} = {{render "type:zero" .Type}};{{next .Comment}}
-{{end}}
+{{- end}}
 
 {{/* next/js/interface: Generates an interface as a class with unimplemented methods */}}
-{{- define "next/js/interface" -}}
-{{- next .Doc -}}
+{{- define "next/js/interface"}}
+{{next .Doc -}}
 export class {{next .Type}} {
-    {{next .Methods -}}
+	{{- next .Methods | indent | linespace -}}
 }
 {{end}}
 
 {{/* next/js/interface.method: Generates a single method declaration with JSDoc */}}
-{{- define "next/js/interface.method" -}}
+{{- define "next/js/interface.method"}}
 /**
 {{if .Doc.Text -}}
 {{.Doc.Format " * " -}}
@@ -94,9 +84,9 @@ export class {{next .Type}} {
 {{- end}}
  */
 {{render "interface.method:name" .}}({{next .Params}}) {
-    throw new Error('Method not implemented.');
+	throw new Error('Method not implemented.');
 }
-{{end}}
+{{- end}}
 
 {{/* next/js/interface.method.param: Generates a parameter for an interface method */}}
 {{- define "next/js/interface.method.param" -}}

@@ -10,30 +10,30 @@ import java.util.Arrays;
  * LoginResponse represents a login response message (type 102)
  */
 public class LoginResponse {
-    private String token;
+	private String token;
 
-    public String getToken() {
-        return token;
-    }
+	public String getToken() {
+		return token;
+	}
 
-    public void setToken(String token) {
-        this.token = token;
-    }
+	public void setToken(String token) {
+		this.token = token;
+	}
 
-    private User user;
+	private User user;
 
-    public User getUser() {
-        return user;
-    }
+	public User getUser() {
+		return user;
+	}
 
-    public void setUser(User user) {
-        this.user = user;
-    }
+	public void setUser(User user) {
+		this.user = user;
+	}
 
-    public static int MessageType() {
-        return 102;
-    }
+	public static int MessageType() {
+		return 102;
+	}
 
-    public LoginResponse() {
-    }
+	public LoginResponse() {
+	}
 }

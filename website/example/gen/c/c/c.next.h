@@ -33,46 +33,46 @@ typedef struct DEMO_C_LoginResponse DEMO_C_LoginResponse;
 #define DEMO_C_D 1
 
 typedef enum DEMO_C_Color {
-    DEMO_C_Color_Red = 0,
-    DEMO_C_Color_Green = 1,
-    DEMO_C_Color_Blue = 2,
+	DEMO_C_Color_Red = 0,
+	DEMO_C_Color_Green = 1,
+	DEMO_C_Color_Blue = 2,
 } DEMO_C_Color;
 
 typedef enum DEMO_C_LoginType {
-    DEMO_C_LoginType_Username = 1,
-    DEMO_C_LoginType_Email = 2,
+	DEMO_C_LoginType_Username = 1,
+	DEMO_C_LoginType_Email = 2,
 } DEMO_C_LoginType;
 
 typedef enum DEMO_C_UserType {
-    DEMO_C_UserType_Admin = 1,
-    DEMO_C_UserType_User = 2,
+	DEMO_C_UserType_Admin = 1,
+	DEMO_C_UserType_User = 2,
 } DEMO_C_UserType;
 
 typedef struct DEMO_C_User {
-    DEMO_C_UserType type;
-    int32_t id;
-    char* username;
-    char* password;
-    char* device_id;
-    char* two_factor_token;
-    void* roles;
-    void* metadata;
-    int32_t scores[4];
+	DEMO_C_UserType type;
+	int32_t id;
+	char* username;
+	char* password;
+	char* device_id;
+	char* two_factor_token;
+	void* roles;
+	void* metadata;
+	int32_t scores[4];
 } DEMO_C_User;
 
 typedef struct DEMO_C_LoginRequest {
-    DEMO_C_LoginType type;
-    char* username;
-    char* password;
-    char* device_id;
-    char* two_factor_token;
+	DEMO_C_LoginType type;
+	char* username;
+	char* password;
+	char* device_id;
+	char* two_factor_token;
 } DEMO_C_LoginRequest;
 
 typedef struct DEMO_C_LoginResponse {
-    _Bool success;
-    char* error_message;
-    char* authentication_token;
-    DEMO_C_User user;
+	_Bool success;
+	char* error_message;
+	char* authentication_token;
+	DEMO_C_User user;
 } DEMO_C_LoginResponse;
 
 #endif /* DEMO_C_C_H */

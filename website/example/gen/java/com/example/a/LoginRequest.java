@@ -10,50 +10,50 @@ import java.util.Arrays;
  * message types
  */
 public class LoginRequest {
-    private String username;
+	private String username;
 
-    public String getUsername() {
-        return username;
-    }
+	public String getUsername() {
+		return username;
+	}
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+	public void setUsername(String username) {
+		this.username = username;
+	}
 
-    private String password;
+	private String password;
 
-    public String getPassword() {
-        return password;
-    }
+	public String getPassword() {
+		return password;
+	}
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+	public void setPassword(String password) {
+		this.password = password;
+	}
 
-    private String deviceId;
+	private String deviceId;
 
-    public String getDeviceId() {
-        return deviceId;
-    }
+	public String getDeviceId() {
+		return deviceId;
+	}
 
-    public void setDeviceId(String deviceId) {
-        this.deviceId = deviceId;
-    }
+	public void setDeviceId(String deviceId) {
+		this.deviceId = deviceId;
+	}
 
-    private String twoFactorToken;
+	private String twoFactorToken;
 
-    public String getTwoFactorToken() {
-        return twoFactorToken;
-    }
+	public String getTwoFactorToken() {
+		return twoFactorToken;
+	}
 
-    public void setTwoFactorToken(String twoFactorToken) {
-        this.twoFactorToken = twoFactorToken;
-    }
+	public void setTwoFactorToken(String twoFactorToken) {
+		this.twoFactorToken = twoFactorToken;
+	}
 
-    public static int MessageType() {
-        return 201;
-    }
+	public static int MessageType() {
+		return 201;
+	}
 
-    public LoginRequest() {
-    }
+	public LoginRequest() {
+	}
 }

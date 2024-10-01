@@ -2,8 +2,8 @@
 
 -- Package: demo
 
-
 local _M_ = {}
+
 _M_.Version = "1.0.0" -- String constant
 _M_.MaxRetries = 3 -- Integer constant
 _M_.Timeout = 3000.0 -- Float constant expression
@@ -11,27 +11,27 @@ _M_.Timeout = 3000.0 -- Float constant expression
 -- Color represents different color options
 -- Values: Red (1), Green (2), Blue (4), Yellow (8)
 local Color = {
-    RED = 1,
-    GREEN = 2,
-    BLUE = 4,
-    YELLOW = 8
+	RED = 1,
+	GREEN = 2,
+	BLUE = 4,
+	YELLOW = 8
 }
 _M_.Color = Color
 
 -- MathConstants represents mathematical constants
 local MathConstants = {
-    PI = 3.14159265358979323846,
-    E = 2.71828182845904523536
+	PI = 3.14159265358979323846,
+	E = 2.71828182845904523536
 }
 _M_.MathConstants = MathConstants
 
 -- OperatingSystem represents different operating systems
 local OperatingSystem = {
-    WINDOWS = "windows",
-    LINUX = "linux",
-    MAC_O_S = "macos",
-    ANDROID = "android",
-    I_O_S = "ios"
+	WINDOWS = "windows",
+	LINUX = "linux",
+	MAC_O_S = "macos",
+	ANDROID = "android",
+	I_O_S = "ios"
 }
 _M_.OperatingSystem = OperatingSystem
 
@@ -41,19 +41,19 @@ _M_.User = User
 User.__index = User
 
 function User:new()
-    local obj = {
-        id = 0,
-        username = "",
-        tags = {},
-        scores = {},
-        coordinates = {},
-        matrix = {},
-        email = "",
-        favoriteColor = nil,
-        extra = nil
-    }
-    setmetatable(obj, self)
-    return obj
+	local obj = {
+		id = 0,
+		username = "",
+		tags = {},
+		scores = {},
+		coordinates = {},
+		matrix = {},
+		email = "",
+		favoriteColor = nil,
+		extra = nil
+	}
+	setmetatable(obj, self)
+	return obj
 end
 
 -- uint64 represents a 64-bit unsigned integer.
@@ -69,12 +69,12 @@ _M_.Uint64 = Uint64
 Uint64.__index = Uint64
 
 function Uint64:new()
-    local obj = {
-        low = 0,
-        high = 0
-    }
-    setmetatable(obj, self)
-    return obj
+	local obj = {
+		low = 0,
+		high = 0
+	}
+	setmetatable(obj, self)
+	return obj
 end
 
 -- uint128 represents a 128-bit unsigned integer.
@@ -85,12 +85,12 @@ _M_.Uint128 = Uint128
 Uint128.__index = Uint128
 
 function Uint128:new()
-    local obj = {
-        low = Uint64:new(),
-        high = Uint64:new()
-    }
-    setmetatable(obj, self)
-    return obj
+	local obj = {
+		low = Uint64:new(),
+		high = Uint64:new()
+	}
+	setmetatable(obj, self)
+	return obj
 end
 
 -- Contract represents a smart contract
@@ -99,12 +99,12 @@ _M_.Contract = Contract
 Contract.__index = Contract
 
 function Contract:new()
-    local obj = {
-        address = Uint128:new(),
-        data = nil
-    }
-    setmetatable(obj, self)
-    return obj
+	local obj = {
+		address = Uint128:new(),
+		data = nil
+	}
+	setmetatable(obj, self)
+	return obj
 end
 
 -- LoginRequest represents a login request message (type 101)
@@ -114,16 +114,16 @@ _M_.LoginRequest = LoginRequest
 LoginRequest.__index = LoginRequest
 
 function LoginRequest:new()
-    local obj = {
-        username = "",
-        password = "",
-        -- @optional annotation is a builtin annotation that marks a field as optional.
-        device = "",
-        os = nil,
-        timestamp = 0
-    }
-    setmetatable(obj, self)
-    return obj
+	local obj = {
+		username = "",
+		password = "",
+		-- @optional annotation is a builtin annotation that marks a field as optional.
+		device = "",
+		os = nil,
+		timestamp = 0
+	}
+	setmetatable(obj, self)
+	return obj
 end
 
 -- LoginResponse represents a login response message (type 102)
@@ -132,12 +132,12 @@ _M_.LoginResponse = LoginResponse
 LoginResponse.__index = LoginResponse
 
 function LoginResponse:new()
-    local obj = {
-        token = "",
-        user = User:new()
-    }
-    setmetatable(obj, self)
-    return obj
+	local obj = {
+		token = "",
+		user = User:new()
+	}
+	setmetatable(obj, self)
+	return obj
 end
 
 -- Reader provides reading functionality
@@ -158,7 +158,7 @@ Reader.__index = Reader
 -- - For other languages: This annotation may not have a direct effect,
 --   but indicates that the buffer content may be modified
 function Reader:read(buffer)
-    error("Method not implemented")
+	error("Method not implemented")
 end
 
 -- HTTPClient provides HTTP request functionality
@@ -168,9 +168,11 @@ HTTPClient.__index = HTTPClient
 
 -- Available for all languages
 function HTTPClient:request(url, method, body)
-    error("Method not implemented")
+	error("Method not implemented")
 end
+
 function HTTPClient:request2(url, method, body)
-    error("Method not implemented")
+	error("Method not implemented")
 end
+
 return _M_

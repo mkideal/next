@@ -1,9 +1,3 @@
-{{/* next/rust/file: Generates the module declaration and content for a Rust file */}}
-{{- define "next/rust/file" -}}
-{{next .Imports}}
-{{next .Decls}}
-{{- end}}
-
 {{/* next/rust/imports: Generates use statements and handles the @next(rust_imports) annotation */}}
 {{- define "next/rust/imports" -}}
 use std::vec::Vec;
@@ -36,8 +30,8 @@ use crate::utils::helper_function;
 ```
 */}}
 {{- define "next/rust/imports:decl" -}}
-{{- if .Decl.Annotations.next.rust_imports}}
-{{- range (.Decl.Annotations.next.rust_imports | split "," | map (trim) | sort | uniq)}}
+{{- with .Decl.Annotations.next.rust_imports}}
+{{- range (split "," . | map (trim) | sort | uniq)}}
 use {{.}};
 {{end}}
 {{- end}}
@@ -49,10 +43,10 @@ use {{.}};
 {{- end}}
 
 {{/* next/rust/const: Generates a constant declaration */}}
-{{- define "next/rust/const" -}}
-{{- next .Doc -}}
+{{- define "next/rust/const"}}
+{{next .Doc -}}
 pub const {{render "const:name" .}}: {{render "const:type" .}} = {{next .Value}};{{next .Comment}}
-{{end}}
+{{- end}}
 
 {{- define "next/rust/const:name" -}}
 {{- render "node:snake.case.name" . | upper}}
@@ -61,60 +55,57 @@ pub const {{render "const:name" .}}: {{render "const:type" .}} = {{next .Value}}
 {{/* next/rust/const.type: Adjusts the type of the constant */}}
 {{- define "next/rust/const:type" -}}
 {{- if .Type.Kind.IsString -}}
-&'static str
-{{- else -}}
-{{- next .Type}}
+	&'static str
+{{- else}}
+	{{- next .Type}}
 {{- end}}
 {{- end}}
 
 {{/* next/rust/enum: Generates an enum type declaration */}}
-{{- define "next/rust/enum" -}}
-{{- next .Doc -}}
+{{- define "next/rust/enum"}}
+{{next .Doc -}}
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum {{next .Type}} {
-    {{next .Members | align -}}
+	{{- next .Members | indent | linespace -}}
 }
-{{- if .MemberType.Kind.IsFloat}}
-
+{{if .MemberType.Kind.IsFloat}}
 impl {{next .Type}} {
-    pub fn value(&self) -> f64 {
-        match self {
-            {{- range .Members.List}}
-            {{next $.Type}}::{{render "enum.member:name" .}} => {{next .Value}},
-            {{- end}}
-        }
-    }
+	pub fn value(&self) -> f64 {
+		match self {
+			{{- range .Members.List}}
+			{{next $.Type}}::{{render "enum.member:name" .}} => {{next .Value}},
+			{{- end}}
+		}
+	}
 }
 {{- else if .MemberType.Kind.IsString}}
-
 impl {{next .Type}} {
-    pub fn value(&self) -> &'static str {
-        match self {
-            {{- range .Members.List}}
-            {{next $.Type}}::{{render "enum.member:name" .}} => {{next .Value}},
-            {{- end}}
-        }
-    }
+	pub fn value(&self) -> &'static str {
+		match self {
+			{{- range .Members.List}}
+			{{next $.Type}}::{{render "enum.member:name" .}} => {{next .Value}},
+			{{- end}}
+		}
+	}
 }
 {{- else}}
-
 impl {{next .Type}} {
-    pub fn value(&self) -> {{next .MemberType}} {
-        match self {
-            {{- range .Members.List}}
-            {{next $.Type}}::{{render "enum.member:name" .}} => {{next .Value}},
-            {{- end}}
-        }
-    }
+	pub fn value(&self) -> {{next .MemberType}} {
+		match self {
+			{{- range .Members.List}}
+			{{next $.Type}}::{{render "enum.member:name" .}} => {{next .Value}},
+			{{- end}}
+		}
+	}
 }
 {{- end}}
 {{end}}
 
 {{/* next/rust/enum.member: Generates an enum variant with value */}}
-{{- define "next/rust/enum.member" -}}
-{{- next .Doc -}}
-{{- render "enum.member:name" .}}{{if .Decl.MemberType.Kind.IsInteger}} = {{next .Value}}{{end}}{{next .Comment}},
-{{end}}
+{{- define "next/rust/enum.member"}}
+{{next .Doc -}}
+{{render "enum.member:name" .}}{{if .Decl.MemberType.Kind.IsInteger}} = {{next .Value}}{{end}}{{next .Comment}},
+{{- end}}
 
 {{/* next/rust/enum.member:name: Generates an enum member name */}}
 {{- define "next/rust/enum.member:name" -}}
@@ -122,36 +113,36 @@ impl {{next .Type}} {
 {{- end}}
 
 {{/* next/rust/struct: Generates a struct type declaration */}}
-{{- define "next/rust/struct" -}}
-{{- next .Doc -}}
+{{- define "next/rust/struct"}}
+{{next .Doc -}}
 pub struct {{next .Type}} {
-    {{next .Fields | align -}}
+	{{- next .Fields | indent | linespace -}}
 }
 {{end}}
 
 {{/* next/rust/struct.field: Generates a struct field declaration */}}
-{{- define "next/rust/struct.field" -}}
-{{- next .Doc -}}
+{{- define "next/rust/struct.field"}}
+{{next .Doc -}}
 pub {{render "struct.field:name" .}}: {{next .Type}}{{next .Comment}},
-{{end}}
+{{- end}}
 
 {{- define "next/rust/struct.field:name" -}}
 {{- render "node:snake.case.name" .}}
 {{- end}}
 
 {{/* next/rust/interface: Generates a trait declaration */}}
-{{- define "next/rust/interface" -}}
-{{- next .Doc -}}
+{{- define "next/rust/interface"}}
+{{next .Doc -}}
 pub trait {{next .Type}} {
-    {{next .Methods | align -}}
+	{{- next .Methods | indent | linespace -}}
 }
 {{end}}
 
 {{/* next/rust/interface.method: Generates a method signature in a trait */}}
-{{- define "next/rust/interface.method" -}}
-{{- next .Doc -}}
+{{- define "next/rust/interface.method"}}
+{{next .Doc -}}
 fn {{render "interface.method:name" .}}({{next .Params}}){{next .Result}};{{next .Comment}}
-{{end}}
+{{- end}}
 
 {{- define "next/rust/interface.method:name" -}}
 {{- render "node:snake.case.name" .}}
@@ -160,12 +151,12 @@ fn {{render "interface.method:name" .}}({{next .Params}}){{next .Result}};{{next
 {{/* next/rust/interface.method.params: Generates parameters for a trait method */}}
 {{- define "next/rust/interface.method.params" -}}
 {{- if .Decl.Annotations.next.mut -}}
-    &mut self
+	&mut self
 {{- else -}}
-    &self
+	&self
 {{- end -}}
 {{- range .List -}}
-, {{next .}}
+	, {{next .}}
 {{- end -}}
 {{- end}}
 
@@ -176,25 +167,23 @@ fn {{render "interface.method:name" .}}({{next .Params}}){{next .Result}};{{next
 
 {{/* next/rust/interface.method.result: Generates the return type */}}
 {{- define "next/rust/interface.method.result" -}}
-{{- if .Type -}}
- -> {{next .Type}}
-{{- end}}
+{{- if .Type}} -> {{next .Type}}{{end}}
 {{- end}}
 
 {{/* next/rust/used.type: Generates a type name, including module path if necessary */}}
 {{- define "next/rust/used.type" -}}
 {{- if not (.File.Package.Contains .Type)}}
-    {{.Type.Decl.File.Package.Name}}::{{next .Type}}
-{{- else -}}
-    {{next .Type}}
+	{{- .Type.Decl.File.Package.Name}}::{{next .Type}}
+{{- else}}
+	{{- next .Type}}
 {{- end}}
 {{- end}}
 
 {{/* next/rust/decl.type:internal.alias: Handles type aliasing via annotations */}}
 {{- define "next/rust/decl.type:internal.alias" -}}
 {{- with .Decl.Annotations.next.rust_alias}}
-    {{- .}}
+	{{- .}}
 {{- else}}
-    {{- render "decl.type" .}}
+	{{- render "decl.type" .}}
 {{- end}}
 {{- end}}

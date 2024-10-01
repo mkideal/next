@@ -9,31 +9,15 @@ pagination_next: null
 import CodeBlock from "@theme/CodeBlock";
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
-import ExampleGrammarJSONSource from "!!raw-loader!@site/example/grammar.json";
 import ExampleGrammarYAMLSource from "!!raw-loader!@site/example/grammar.yaml";
 
 The grammar is used to define a subset of the next files. It can limit the features of the next code according by your requirements. The grammar is a yaml file that contains rules.
 
 Here is an example of the grammar file:
 
-<Tabs
-	defaultValue="yaml"
-	values={[
-		{label: 'YAML', value: 'yaml'},
-		{label: 'JSON', value: 'json'},
-	]}
->
-<TabItem value="json">
-	<CodeBlock language="json" title="grammar.json">
-		{ExampleGrammarJSONSource}
-	</CodeBlock>
-</TabItem>
-<TabItem value="yaml">
-	<CodeBlock language="yaml" title="grammar.yaml">
-		{ExampleGrammarYAMLSource}
-	</CodeBlock>
-</TabItem>
-</Tabs>
+<CodeBlock language="yaml" title="grammar.yaml">
+	{ExampleGrammarYAMLSource}
+</CodeBlock>
 
 ###### .default {#user-content-Grammar__default}
 <div className="property-container">

@@ -3,27 +3,27 @@
 syntax = "proto3";
 
 package {{this.Package.Name}};
-{{render "next/protobuf/package:options" this.Package}}
-{{next .Imports}}
-{{next .Decls}}
+{{render "next/protobuf/package:options" this.Package | linespace -}}
+{{next .Imports | linespace -}}
+{{next .Decls | linespace -}}
 {{- end}}
 
 {{/* next/protobuf/package:options: Handles package-level options based on annotations */}}
 {{- define "next/protobuf/package:options"}}
 {{- if .Annotations.Contains "next" }}
-{{- range $key, $value := .Annotations.next }}
-    {{- if not (hasSuffix "_package" $key) -}}
-        {{- continue -}}
-    {{- end -}}
-    {{- $lang := $key | trimSuffix "_package" -}}
-    {{- if eq $lang "go" }}
-option go_package = "{{$value}}";
-    {{- else if eq $lang "java" }}
-option java_package = "{{$value}}";
-    {{- else if eq $lang "csharp" }}
-option csharp_namespace = "{{$value}}";
-    {{- end }}
-{{- end }}
+	{{- range $key, $value := .Annotations.next }}
+		{{- if not (hasSuffix "_package" $key)}}
+			{{- continue -}}
+		{{- end -}}
+		{{- $lang := $key | trimSuffix "_package"}}
+		{{- if eq $lang "go" -}}
+			{{println}}option go_package = "{{$value}}";
+		{{- else if eq $lang "java" -}}
+			{{println}}option java_package = "{{$value}}";
+		{{- else if eq $lang "csharp" -}}
+			{{println}}option csharp_namespace = "{{$value}}";
+		{{- end }}
+	{{- end }}
 {{- end }}
 {{- end }}
 
@@ -32,50 +32,47 @@ option csharp_namespace = "{{$value}}";
 {{- if this.UsedKinds.Contains "any"}}
 import "google/protobuf/any.proto";
 {{end}}
-
-{{- range .List}}
-{{- next .}}
-{{- end}}
+{{- super .}}
 {{- end}}
 
 {{/* next/protobuf/import: Generates an import statement for a specific .proto file */}}
-{{- define "next/protobuf/import" -}}
+{{- define "next/protobuf/import"}}
 import "{{.Target.Name}}.proto";
-{{end}}
+{{- end}}
 
 {{/* next/protobuf/consts: Skips constant declarations as they're not directly supported in Protocol Buffers */}}
 {{- define "next/protobuf/consts"}}
 {{- if .}}
 // {{len .List}} Constant{{if gt (len .List) 1}}s{{end}} skipped.
-{{end}}
+{{- end}}
 {{- end}}
 
 {{/* next/protobuf/enum: Generates an enum declaration */}}
-{{- define "next/protobuf/enum" -}}
-{{- if .MemberType.Kind.IsInteger -}}
-{{- next .Doc}}enum {{next .Type}} {
-    {{- $hasZero := false -}}
-    {{- range .Members.List}}
-        {{- if eq .Value.Any 0 -}}
-            {{- $hasZero = true -}}
-            {{- break -}}
-        {{- end -}}
-    {{- end}}
-    {{- if not $hasZero}}
-    {{next .Type | snakeCase | upper}}_UNSPECIFIED = 0;
-    {{- end}}
-    {{next .Members | align -}}
-}
-{{- else -}}
-{{error "%s: enum type must be an integer" .Pos}}
+{{- define "next/protobuf/enum"}}
+{{- if not .MemberType.Kind.IsInteger -}}
+	{{- error "%s: enum type must be an integer" .Pos}}
 {{- end}}
+{{next .Doc -}}
+enum {{next .Type}} {
+	{{- $hasZero := false -}}
+	{{- range .Members.List}}
+		{{- if eq .Value.Any 0 -}}
+			{{- $hasZero = true -}}
+			{{- break -}}
+		{{- end -}}
+	{{- end}}
+	{{- if not $hasZero}}
+	{{next .Type | snakeCase | upper}}_UNSPECIFIED = 0;
+	{{- end}}
+	{{- next .Members | indent | linespace -}}
+}
 {{end}}
 
 {{/* next/protobuf/enum.member: Generates an enum member */}}
-{{- define "next/protobuf/enum.member" -}}
-{{- next .Doc -}}
+{{- define "next/protobuf/enum.member"}}
+{{next .Doc -}}
 {{- render "enum.member:name" .}} = {{next .Value}};
-{{end}}
+{{- end}}
 
 {{/* next/protobuf/enum.member:name: Generates the name for an enum member */}}
 {{- define "next/protobuf/enum.member:name" -}}
@@ -83,18 +80,18 @@ import "{{.Target.Name}}.proto";
 {{- end}}
 
 {{/* next/protobuf/struct: Generates a message declaration */}}
-{{- define "next/protobuf/struct" -}}
-{{- next .Doc -}}
+{{- define "next/protobuf/struct"}}
+{{next .Doc -}}
 message {{next .Type}} {
-    {{next .Fields | align -}}
+	{{- next .Fields | indent | linespace -}}
 }
 {{end}}
 
 {{/* next/protobuf/struct.field: Generates a field declaration within a message */}}
-{{- define "next/protobuf/struct.field" -}}
-{{- next .Doc -}}
+{{- define "next/protobuf/struct.field"}}
+{{next .Doc -}}
 {{render "struct.field:type" .}} {{render "struct.field:name" .}} = {{render "struct.field:tag" .}}{{render "struct.field:deprecated" .}};{{next .Comment}}
-{{end}}
+{{- end}}
 
 {{/* next/protobuf/struct.field:deprecated: Adds the deprecated option to a field if necessary */}}
 {{- define "next/protobuf/struct.field:deprecated" -}}
@@ -108,67 +105,68 @@ message {{next .Type}} {
 
 {{/* next/protobuf/struct.field:type: Handles custom field type if specified */}}
 {{- define "next/protobuf/struct.field:type" -}}
-{{- $type := "" -}}
-{{- if .Annotations.next.protobuf_type -}}
-    {{- $type = .Annotations.next.protobuf_type -}}
-{{- else -}}
-    {{- $type = next .Type -}}
-{{- end -}}
+{{- $type := ""}}
+{{- with .Annotations.next.protobuf_type}}
+	{{- $type = .}}
+{{- else}}
+	{{- $type = next $.Type}}
+{{- end}}
 
-{{- if .Annotations.Contains "optional" -}}
-    {{- if .Type.Kind.IsArray -}}
-        {{error "%s: @optional annotation is not supported for array field" .Pos -}}
-    {{- else if .Type.Kind.IsVector -}}
-        {{error "%s: @optional annotation is not supported for vector field" .Pos -}}
-    {{- else if .Type.Kind.IsMap -}}
-        {{error "%s: @optional annotation is not supported for map field" .Pos -}}
-    {{- else -}}
-        {{- $type = printf "optional %s" $type -}}
-    {{- end -}}
-{{- end -}}
+{{- if .Annotations.Contains "optional"}}
+	{{- if .Type.Kind.IsArray}}
+		{{- error "%s: @optional annotation is not supported for array field" .Pos}}
+	{{- else if .Type.Kind.IsVector}}
+		{{- error "%s: @optional annotation is not supported for vector field" .Pos}}
+	{{- else if .Type.Kind.IsMap}}
+		{{- error "%s: @optional annotation is not supported for map field" .Pos}}
+	{{- else}}
+		{{- $type = printf "optional %s" $type}}
+	{{- end}}
+{{- end}}
 
-{{- $type -}}
+{{- $type}}
 {{- end -}}
 
 {{/* next/protobuf/interface: Generates a service declaration */}}
-{{- define "next/protobuf/interface" -}}
-{{- next .Doc -}}service {{next .Type}} {
-    {{next .Methods | align -}}
+{{- define "next/protobuf/interface"}}
+{{next .Doc -}}
+service {{next .Type}} {
+	{{- next .Methods | indent | linespace -}}
 }
 {{- end}}
 
 {{/* next/protobuf/interface.method: Generates an RPC method declaration within a service */}}
-{{- define "next/protobuf/interface.method" -}}
-{{- next .Doc -}}
+{{- define "next/protobuf/interface.method"}}
+{{next .Doc -}}
 rpc {{render "interface.method:name" .}} ({{render "interface.method:param.type" .}}) returns ({{next .Result}});
-{{end}}
+{{- end}}
 
 {{/* next/protobuf/interface.method:param.type: Determines the input type for an RPC method */}}
 {{- define "next/protobuf/interface.method:param.type" -}}
-{{- if .Params.List -}}
-{{- if eq (len .Params.List) 1 -}}
-{{- next (index .Params.List 0).Type -}}
-{{- else -}}
-{{- render "interface.method:name" .}}Request
-{{- end -}}
-{{- else -}}
-google.protobuf.Empty
-{{- end}}
+	{{- with .Params.List}}
+		{{- if eq (len .) 1}}
+			{{- next (index . 0).Type}}
+		{{- else}}
+			{{- render "interface.method:name" $}}Request
+		{{- end}}
+	{{- else -}}
+		google.protobuf.Empty
+	{{- end}}
 {{- end}}
 
 {{/* next/protobuf/interface.method.result: Determines the return type for an RPC method */}}
 {{- define "next/protobuf/interface.method.result" -}}
 {{- if .Type -}}
-{{- next .Type -}}
+	{{- next .Type -}}
 {{- else -}}
-google.protobuf.Empty
+	google.protobuf.Empty
 {{- end}}
 {{- end}}
 
 {{/* next/protobuf/used.type: Generates a fully qualified type name, including package name if necessary */}}
 {{- define "next/protobuf/used.type" -}}
 {{- if not (.File.Package.Contains .Type) -}}
-    {{.Type.File.Package.Name}}.
+	{{.Type.File.Package.Name}}.
 {{- end}}
 {{- next .Type -}}
 {{- end}}

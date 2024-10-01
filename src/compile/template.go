@@ -239,6 +239,20 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		//	```
 		"lang": func() string { return tc.lang },
 
+		// @api(Context/indent) adds an indent to each non-empty line of the given text.
+		// The indent is defined in the command line flag `-M <lang>.indent` or `LANG.map` file (e.g., cpp.map).
+		//
+		// Example:
+		//
+		//	```npl
+		//	{{- define "next/enum" -}}
+		//	enum {{next .Type}} {
+		//	    {{- next .Members | indent | blockspace}}
+		//	}
+		//	{{end}}
+		//	```
+		"indent": tc.indent,
+
 		// @api(Context/meta) represents the metadata of entrypoint template file by flag `-T`.
 		// To define a meta, you should define a template with the name `meta/<key>`.
 		// Currently, the following meta keys are used by the code generator:
@@ -550,6 +564,54 @@ func (tc *templateContext) lazyInit() error {
 		}
 	}
 	return nil
+}
+
+func (tc *templateContext) indent(args ...reflect.Value) (string, error) {
+	var times int
+	var s string
+	switch len(args) {
+	case 1:
+		if args[0].Kind() != reflect.String {
+			return "", fmt.Errorf("invalid argument type %q, expected string", args[0].Kind())
+		}
+		times = 1
+		s = args[0].String()
+	case 2:
+		if args[0].CanInt() {
+			times = int(args[0].Int())
+		} else if args[0].CanUint() {
+			times = int(args[0].Uint())
+		} else {
+			return "", fmt.Errorf("invalid argument type %q, first argument must be int", args[0].Kind())
+		}
+		if times < 0 {
+			return "", fmt.Errorf("invalid argument %d, first argument must be non-negative", times)
+		}
+		if args[1].Kind() != reflect.String {
+			return "", fmt.Errorf("invalid argument type %q, second argument must be string", args[1].Kind())
+		}
+		s = args[1].String()
+	default:
+		return "", fmt.Errorf("wrong number of arguments: expected <int, string> or <string>")
+	}
+	if s == "" {
+		return "", nil
+	}
+	var indent string
+	if times > 0 {
+		indent = tc.compiler.options.Mapping.Get(tc.lang + ".indent")
+		if indent == "" || indent == "tab" {
+			indent = "\t"
+		} else {
+			i, err := strconv.Atoi(indent)
+			if i < 0 || err != nil {
+				return s, fmt.Errorf("invalid indent %q of language %q", indent, tc.lang)
+			}
+			indent = strings.Repeat(" ", i)
+		}
+		indent = strings.Repeat(indent, times)
+	}
+	return tc.alignWithIndent(indent, s), nil
 }
 
 func (tc *templateContext) this() reflect.Value {
@@ -1015,6 +1077,10 @@ func (tc *templateContext) align(text string) string {
 		}
 		return r
 	}, lastLine)
+	return tc.alignWithIndent(indent, text)
+}
+
+func (tc *templateContext) alignWithIndent(indent, text string) string {
 	lines := strings.Split(text, "\n")
 	if len(lines) <= 1 {
 		return text

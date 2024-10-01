@@ -3,16 +3,16 @@
 package com.example.c;
 
 public enum LoginType {
-    Username((int) 1),
-    Email((int) 2);
+	Username((int) 1),
+	Email((int) 2);
 
-    private final int value;
+	private final int value;
 
-    LoginType(int value) {
-        this.value = value;
-    }
+	LoginType(int value) {
+		this.value = value;
+	}
 
-    public int getValue() {
-        return value;
-    }
+	public int getValue() {
+		return value;
+	}
 }

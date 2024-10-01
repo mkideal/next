@@ -18,7 +18,7 @@ enum class Day;
 enum class Month;
 enum class IotatestEnum;
 
-// Structs forward declarations
+// Classes forward declarations
 class Point2D;
 class Point3D;
 class Rectangle;
@@ -74,199 +74,208 @@ inline constexpr auto Complex5 = 31;
 
 // Enum with iota
 enum class Color : int32_t {
-    Red = 1,
-    Green = 2,
-    Blue = 4,
-    Alpha = 8,
-    Yellow = 3,
-    Cyan = 6,
-    Magenta = 5,
-    White = 7,
+	Red = 1,
+	Green = 2,
+	Blue = 4,
+	Alpha = 8,
+	Yellow = 3,
+	Cyan = 6,
+	Magenta = 5,
+	White = 7,
 };
 
 // Enum with complex iota usage
 enum class FilePermission : int32_t {
-    None = 0,
-    Execute = 1,
-    Write = 2,
-    Read = 4,
-    UserRead = 4,
-    UserWrite = 32,
-    UserExecute = 256,
-    GroupRead = 2048,
-    GroupWrite = 16384,
-    GroupExecute = 131072,
-    OthersRead = 1048576,
-    OthersWrite = 8388608,
-    OthersExecute = 67108864,
-    // 4|32|256|2048|16384|131072|1048576|8388608|67108864
-    // 4 + 32 + 256 + 2048 + 16384 + 131072 + 1048576 + 8388608 + 67108864
-    All = 76695844,
+	None = 0,
+	Execute = 1,
+	Write = 2,
+	Read = 4,
+	UserRead = 4,
+	UserWrite = 32,
+	UserExecute = 256,
+	GroupRead = 2048,
+	GroupWrite = 16384,
+	GroupExecute = 131072,
+	OthersRead = 1048576,
+	OthersWrite = 8388608,
+	OthersExecute = 67108864,
+	// 4|32|256|2048|16384|131072|1048576|8388608|67108864
+	// 4 + 32 + 256 + 2048 + 16384 + 131072 + 1048576 + 8388608 + 67108864
+	All = 76695844,
 };
 
 enum class Day : int32_t {
-    Monday = 1,
-    Tuesday = 2,
-    Wednesday = 4,
-    Thursday = 8,
-    Friday = 16,
-    Saturday = 32,
-    Sunday = 64,
-    Weekday = 31,
-    Weekend = 96,
+	Monday = 1,
+	Tuesday = 2,
+	Wednesday = 4,
+	Thursday = 8,
+	Friday = 16,
+	Saturday = 32,
+	Sunday = 64,
+	Weekday = 31,
+	Weekend = 96,
 };
 
 enum class Month : int32_t {
-    January = 1,
-    February = 2,
-    March = 4,
-    April = 8,
-    May = 16,
-    June = 32,
-    July = 64,
-    August = 128,
-    September = 256,
-    October = 512,
-    November = 1024,
-    December = 2048,
-    Q1 = 7,
-    Q2 = 56,
-    Q3 = 448,
-    Q4 = 3584,
+	January = 1,
+	February = 2,
+	March = 4,
+	April = 8,
+	May = 16,
+	June = 32,
+	July = 64,
+	August = 128,
+	September = 256,
+	October = 512,
+	November = 1024,
+	December = 2048,
+	Q1 = 7,
+	Q2 = 56,
+	Q3 = 448,
+	Q4 = 3584,
 };
 
 // Test cases for iota
 enum class IotatestEnum : int32_t {
-    A = 0, // 0
-    B = 1, // 1
-    C = 0, // 0
-    D = 2, // 2
-    E = 0, // 0
-    F = 1, // 1
-    G = 0, // 0
+	A = 0, // 0
+	B = 1, // 1
+	C = 0, // 0
+	D = 2, // 2
+	E = 0, // 0
+	F = 1, // 1
+	G = 0, // 0
 };
 
 // Struct types
 class Point2D {
 public:
-    double x = {0.0};
-    double y = {0.0};
+	double x = {0.0};
+	double y = {0.0};
+
 public:
-    Point2D() = default;
-    ~Point2D() = default;
+	Point2D() = default;
+	~Point2D() = default;
 };
 
 class Point3D {
 public:
-    Point2D point;
-    double z = {0.0};
+	Point2D point;
+	double z = {0.0};
+
 public:
-    Point3D() = default;
-    ~Point3D() = default;
+	Point3D() = default;
+	~Point3D() = default;
 };
 
 class Rectangle {
 public:
-    Point2D top_left;
-    Point2D bottom_right;
+	Point2D top_left;
+	Point2D bottom_right;
+
 public:
-    Rectangle() = default;
-    ~Rectangle() = default;
+	Rectangle() = default;
+	~Rectangle() = default;
 };
 
 // Struct with various field types
 class ComplexStruct {
 public:
-    bool flag = {false};
-    int8_t tiny_int = {0};
-    int16_t small_int = {0};
-    int32_t medium_int = {0};
-    int64_t big_int = {0};
-    int default_int = {0};
-    float single_precision = {0.0};
-    double double_precision = {0.0};
-    std::string text = {""};
-    unsigned char single_byte = {0};
-    std::vector<unsigned char> byte_array;
-    std::array<int, 5> fixed_array = {0};
-    std::vector<std::string> dynamic_array;
-    std::vector<int> int_array;
-    std::unordered_map<std::string, int> dictionary;
+	bool flag = {false};
+	int8_t tiny_int = {0};
+	int16_t small_int = {0};
+	int32_t medium_int = {0};
+	int64_t big_int = {0};
+	int default_int = {0};
+	float single_precision = {0.0};
+	double double_precision = {0.0};
+	std::string text = {""};
+	unsigned char single_byte = {0};
+	std::vector<unsigned char> byte_array;
+	std::array<int, 5> fixed_array = {0};
+	std::vector<std::string> dynamic_array;
+	std::vector<int> int_array;
+	std::unordered_map<std::string, int> dictionary;
+
 public:
-    ComplexStruct() = default;
-    ~ComplexStruct() = default;
+	ComplexStruct() = default;
+	~ComplexStruct() = default;
 };
 
 class User {
 public:
-    int64_t id = {0};
-    std::string username = {""};
-    std::string email = {""};
-    Day preferred_day = {Day(0)};
-    Month birth_month = {Month(0)};
+	int64_t id = {0};
+	std::string username = {""};
+	std::string email = {""};
+	Day preferred_day = {Day(0)};
+	Month birth_month = {Month(0)};
+
 public:
-    User() = default;
-    ~User() = default;
+	User() = default;
+	~User() = default;
 };
 
 class UserProfile {
 public:
-    User user;
-    std::string first_name = {""};
-    std::string last_name = {""};
-    int age = {0};
-    std::vector<std::string> interests;
+	User user;
+	std::string first_name = {""};
+	std::string last_name = {""};
+	int age = {0};
+	std::vector<std::string> interests;
+
 public:
-    UserProfile() = default;
-    ~UserProfile() = default;
+	UserProfile() = default;
+	~UserProfile() = default;
 };
 
 // message types
 class LoginRequest {
 public:
-    std::string username = {""};
-    std::string password = {""};
-    std::string device_id = {""};
-    std::string two_factor_token = {""};
+	std::string username = {""};
+	std::string password = {""};
+	std::string device_id = {""};
+	std::string two_factor_token = {""};
 
-    static inline int message_type() { return 201; }
+	static inline int message_type() { return 201; }
+
 public:
-    LoginRequest() = default;
-    ~LoginRequest() = default;
+	LoginRequest() = default;
+	~LoginRequest() = default;
 };
 
 class LoginResponse {
 public:
-    bool success = {false};
-    std::string error_message = {""};
-    std::string authentication_token = {""};
-    User user;
+	bool success = {false};
+	std::string error_message = {""};
+	std::string authentication_token = {""};
+	User user;
 
-    static inline int message_type() { return 202; }
+	static inline int message_type() { return 202; }
+
 public:
-    LoginResponse() = default;
-    ~LoginResponse() = default;
+	LoginResponse() = default;
+	~LoginResponse() = default;
 };
 
 class GenericRequest {
 public:
-    std::string request_id = {""};
-    int64_t timestamp = {0};
+	std::string request_id = {""};
+	int64_t timestamp = {0};
+
 public:
-    GenericRequest() = default;
-    ~GenericRequest() = default;
+	GenericRequest() = default;
+	~GenericRequest() = default;
 };
 
 class GenericResponse {
 public:
-    std::string request_id = {""};
-    int64_t timestamp = {0};
-    bool success = {false};
-    std::string error_code = {""};
-    std::string error_message = {""};
-public:
-    GenericResponse() = default;
-    ~GenericResponse() = default;
-};
+	std::string request_id = {""};
+	int64_t timestamp = {0};
+	bool success = {false};
+	std::string error_code = {""};
+	std::string error_message = {""};
 
+public:
+	GenericResponse() = default;
+	~GenericResponse() = default;
+};
 } // namespace demo::a

@@ -16,7 +16,7 @@ type File struct {
 	src      *ast.File // the original AST
 
 	imports *Imports[*File]     // import declarations
-	decls   *Decls              // top-level declarations: const, enum, struct, interface
+	decls   *Decls[*File]       // top-level declarations: const, enum, struct, interface
 	stmts   []Stmt              // top-level statements
 	symbols map[string]Symbol   // symbol table: name -> Symbol(Type|Value)
 	objects map[ast.Node]Object // AST node -> Node
@@ -38,11 +38,11 @@ func newFile(c *Compiler, src *ast.File, path string) *File {
 		src:      src,
 		pos:      src.Pos(),
 		doc:      newDoc(src.Doc),
-		decls:    &Decls{compiler: c},
 		symbols:  make(map[string]Symbol),
 		objects:  make(map[ast.Node]Object),
 		Path:     path,
 	}
+	f.decls = &Decls[*File]{Decl: f, compiler: c}
 	f.imports = &Imports[*File]{Decl: f}
 	f.unresolved.annotations = src.Annotations
 
@@ -88,7 +88,7 @@ func (x *File) Name() string { return strings.TrimSuffix(filepath.Base(x.Path), 
 func (f *File) Imports() *Imports[*File] { return f.imports }
 
 // @api(Object/File.Decls) returns the file's all top-level declarations.
-func (f *File) Decls() *Decls {
+func (f *File) Decls() *Decls[*File] {
 	if f == nil {
 		return nil
 	}

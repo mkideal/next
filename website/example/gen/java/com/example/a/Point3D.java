@@ -7,26 +7,26 @@ import java.util.Map;
 import java.util.Arrays;
 
 public class Point3D {
-    private Point2D point;
+	private Point2D point;
 
-    public Point2D getPoint() {
-        return point;
-    }
+	public Point2D getPoint() {
+		return point;
+	}
 
-    public void setPoint(Point2D point) {
-        this.point = point;
-    }
+	public void setPoint(Point2D point) {
+		this.point = point;
+	}
 
-    private double z;
+	private double z;
 
-    public double getZ() {
-        return z;
-    }
+	public double getZ() {
+		return z;
+	}
 
-    public void setZ(double z) {
-        this.z = z;
-    }
+	public void setZ(double z) {
+		this.z = z;
+	}
 
-    public Point3D() {
-    }
+	public Point3D() {
+	}
 }

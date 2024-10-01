@@ -10,26 +10,26 @@ import java.util.Arrays;
  * Struct types
  */
 public class Point2D {
-    private double x;
+	private double x;
 
-    public double getX() {
-        return x;
-    }
+	public double getX() {
+		return x;
+	}
 
-    public void setX(double x) {
-        this.x = x;
-    }
+	public void setX(double x) {
+		this.x = x;
+	}
 
-    private double y;
+	private double y;
 
-    public double getY() {
-        return y;
-    }
+	public double getY() {
+		return y;
+	}
 
-    public void setY(double y) {
-        this.y = y;
-    }
+	public void setY(double y) {
+		this.y = y;
+	}
 
-    public Point2D() {
-    }
+	public Point2D() {
+	}
 }

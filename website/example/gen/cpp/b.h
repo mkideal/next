@@ -9,33 +9,32 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include "a.h"
 
+#include "a.h"
 
 namespace demo::b {
 // Enums forward declarations
 enum class TestEnum;
 
-// Structs forward declarations
+// Classes forward declarations
 class TestStruct;
 
-
 enum class TestEnum : int32_t {
-    A = 1,
-    B = 5,
-    C = 5,
-    D = 10,
-    E = 20,
-    F = 1,
-    G = 2,
+	A = 1,
+	B = 5,
+	C = 5,
+	D = 10,
+	E = 20,
+	F = 1,
+	G = 2,
 };
 
 class TestStruct {
 public:
-    demo::a::Point2D point;
-public:
-    TestStruct() = default;
-    ~TestStruct() = default;
-};
+	demo::a::Point2D point;
 
+public:
+	TestStruct() = default;
+	~TestStruct() = default;
+};
 } // namespace demo::b

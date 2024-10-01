@@ -7,161 +7,160 @@ package a;
 option go_package = "github.com/next/next/website/example/gen/go/a";
 option java_package = "com.example.a";
 
-
 // 34 Constants skipped.
 
 // Enum with iota
 enum Color {
-    COLOR_UNSPECIFIED = 0;
-    RED = 1;
-    GREEN = 2;
-    BLUE = 4;
-    ALPHA = 8;
-    YELLOW = 3;
-    CYAN = 6;
-    MAGENTA = 5;
-    WHITE = 7;
+	COLOR_UNSPECIFIED = 0;
+	RED = 1;
+	GREEN = 2;
+	BLUE = 4;
+	ALPHA = 8;
+	YELLOW = 3;
+	CYAN = 6;
+	MAGENTA = 5;
+	WHITE = 7;
 }
 
 // Enum with complex iota usage
 enum FilePermission {
-    NONE = 0;
-    EXECUTE = 1;
-    WRITE = 2;
-    READ = 4;
-    USER_READ = 4;
-    USER_WRITE = 32;
-    USER_EXECUTE = 256;
-    GROUP_READ = 2048;
-    GROUP_WRITE = 16384;
-    GROUP_EXECUTE = 131072;
-    OTHERS_READ = 1048576;
-    OTHERS_WRITE = 8388608;
-    OTHERS_EXECUTE = 67108864;
-    // 4|32|256|2048|16384|131072|1048576|8388608|67108864
-    // 4 + 32 + 256 + 2048 + 16384 + 131072 + 1048576 + 8388608 + 67108864
-    ALL = 76695844;
+	NONE = 0;
+	EXECUTE = 1;
+	WRITE = 2;
+	READ = 4;
+	USER_READ = 4;
+	USER_WRITE = 32;
+	USER_EXECUTE = 256;
+	GROUP_READ = 2048;
+	GROUP_WRITE = 16384;
+	GROUP_EXECUTE = 131072;
+	OTHERS_READ = 1048576;
+	OTHERS_WRITE = 8388608;
+	OTHERS_EXECUTE = 67108864;
+	// 4|32|256|2048|16384|131072|1048576|8388608|67108864
+	// 4 + 32 + 256 + 2048 + 16384 + 131072 + 1048576 + 8388608 + 67108864
+	ALL = 76695844;
 }
 
 enum Day {
-    DAY_UNSPECIFIED = 0;
-    MONDAY = 1;
-    TUESDAY = 2;
-    WEDNESDAY = 4;
-    THURSDAY = 8;
-    FRIDAY = 16;
-    SATURDAY = 32;
-    SUNDAY = 64;
-    WEEKDAY = 31;
-    WEEKEND = 96;
+	DAY_UNSPECIFIED = 0;
+	MONDAY = 1;
+	TUESDAY = 2;
+	WEDNESDAY = 4;
+	THURSDAY = 8;
+	FRIDAY = 16;
+	SATURDAY = 32;
+	SUNDAY = 64;
+	WEEKDAY = 31;
+	WEEKEND = 96;
 }
 
 enum Month {
-    MONTH_UNSPECIFIED = 0;
-    JANUARY = 1;
-    FEBRUARY = 2;
-    MARCH = 4;
-    APRIL = 8;
-    MAY = 16;
-    JUNE = 32;
-    JULY = 64;
-    AUGUST = 128;
-    SEPTEMBER = 256;
-    OCTOBER = 512;
-    NOVEMBER = 1024;
-    DECEMBER = 2048;
-    Q_1 = 7;
-    Q_2 = 56;
-    Q_3 = 448;
-    Q_4 = 3584;
+	MONTH_UNSPECIFIED = 0;
+	JANUARY = 1;
+	FEBRUARY = 2;
+	MARCH = 4;
+	APRIL = 8;
+	MAY = 16;
+	JUNE = 32;
+	JULY = 64;
+	AUGUST = 128;
+	SEPTEMBER = 256;
+	OCTOBER = 512;
+	NOVEMBER = 1024;
+	DECEMBER = 2048;
+	Q_1 = 7;
+	Q_2 = 56;
+	Q_3 = 448;
+	Q_4 = 3584;
 }
 
 // Test cases for iota
 enum IotatestEnum {
-    A = 0;
-    B = 1;
-    C = 0;
-    D = 2;
-    E = 0;
-    F = 1;
-    G = 0;
+	A = 0;
+	B = 1;
+	C = 0;
+	D = 2;
+	E = 0;
+	F = 1;
+	G = 0;
 }
 
 // Struct types
 message Point2D {
-    double x = 1;
-    double y = 2;
+	double x = 1;
+	double y = 2;
 }
 
 message Point3D {
-    Point2D point = 1;
-    double z = 2;
+	Point2D point = 1;
+	double z = 2;
 }
 
 message Rectangle {
-    Point2D topLeft = 1;
-    Point2D bottomRight = 2;
+	Point2D topLeft = 1;
+	Point2D bottomRight = 2;
 }
 
 // Struct with various field types
 message ComplexStruct {
-    bool flag = 1;
-    int32 tinyInt = 2;
-    int32 smallInt = 3;
-    int32 mediumInt = 4;
-    int64 bigInt = 5;
-    int32 defaultInt = 6;
-    float singlePrecision = 7;
-    double doublePrecision = 8;
-    string text = 9;
-    int8 singleByte = 10;
-    bytes byteArray = 11;
-    repeated int32 fixedArray = 12;
-    repeated string dynamicArray = 13;
-    repeated int32 intArray = 14;
-    map<string, int32> dictionary = 15;
+	bool flag = 1;
+	int32 tinyInt = 2;
+	int32 smallInt = 3;
+	int32 mediumInt = 4;
+	int64 bigInt = 5;
+	int32 defaultInt = 6;
+	float singlePrecision = 7;
+	double doublePrecision = 8;
+	string text = 9;
+	int8 singleByte = 10;
+	bytes byteArray = 11;
+	repeated int32 fixedArray = 12;
+	repeated string dynamicArray = 13;
+	repeated int32 intArray = 14;
+	map<string, int32> dictionary = 15;
 }
 
 message User {
-    int64 id = 1;
-    string username = 2;
-    string email = 3;
-    Day preferredDay = 4;
-    Month birthMonth = 5;
+	int64 id = 1;
+	string username = 2;
+	string email = 3;
+	Day preferredDay = 4;
+	Month birthMonth = 5;
 }
 
 message UserProfile {
-    User user = 1;
-    string firstName = 2;
-    string lastName = 3;
-    int32 age = 4;
-    repeated string interests = 5;
+	User user = 1;
+	string firstName = 2;
+	string lastName = 3;
+	int32 age = 4;
+	repeated string interests = 5;
 }
 
 // message types
 message LoginRequest {
-    string username = 1;
-    string password = 2;
-    string deviceId = 3;
-    optional string twoFactorToken = 4;
+	string username = 1;
+	string password = 2;
+	string deviceId = 3;
+	optional string twoFactorToken = 4;
 }
 
 message LoginResponse {
-    bool success = 1;
-    string errorMessage = 2;
-    string authenticationToken = 3;
-    User user = 4;
+	bool success = 1;
+	string errorMessage = 2;
+	string authenticationToken = 3;
+	User user = 4;
 }
 
 message GenericRequest {
-    string requestId = 1;
-    int64 timestamp = 2;
+	string requestId = 1;
+	int64 timestamp = 2;
 }
 
 message GenericResponse {
-    string requestId = 1;
-    int64 timestamp = 2;
-    bool success = 3;
-    string errorCode = 4;
-    string errorMessage = 5;
+	string requestId = 1;
+	int64 timestamp = 2;
+	bool success = 3;
+	string errorCode = 4;
+	string errorMessage = 5;
 }

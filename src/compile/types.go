@@ -84,7 +84,7 @@ var _ Object = (*Doc)(nil)
 var _ Object = (*Comment)(nil)
 var _ Object = (*Imports[Decl])(nil)
 var _ Object = (*Import)(nil)
-var _ Object = (*Decls)(nil)
+var _ Object = (*Decls[Decl])(nil)
 var _ Object = (*Value)(nil)
 var _ Object = (*UsedType)(nil)
 var _ Object = (*PrimitiveType)(nil)
@@ -125,7 +125,7 @@ func (*Doc) Typeof() string        { return "doc" }
 func (*Comment) Typeof() string    { return "comment" }
 func (*Imports[T]) Typeof() string { return "imports" }
 func (*Import) Typeof() string     { return "import" }
-func (*Decls) Typeof() string      { return "decls" }
+func (*Decls[T]) Typeof() string   { return "decls" }
 func (x *Value) Typeof() string {
 	if x.enum.decl == nil {
 		return "const.value"

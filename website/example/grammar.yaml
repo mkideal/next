@@ -44,17 +44,41 @@ context:
       required: false
       type: string
       validators: null
+    camel_case:
+      description: Sets the camelCase name for the declaration.
+      name: camel_case
+      required: false
+      type: string
+      validators: null
     error:
       description: Indicates the method returns an error.
       name: error
       required: false
       type: bool
       validators: null
+    kebab_case:
+      description: Sets the kebab-case name for the declaration.
+      name: kebab_case
+      required: false
+      type: string
+      validators: null
     mut:
       description: Sets object or parameter as mutable.
       name: mut
       required: false
       type: bool
+      validators: null
+    pascal_case:
+      description: Sets the PascalCase name for the declaration.
+      name: pascal_case
+      required: false
+      type: string
+      validators: null
+    snake_case:
+      description: Sets the snake_case name for the declaration.
+      name: snake_case
+      required: false
+      type: string
       validators: null
     type:
       description: Sets the type for enum members.
@@ -94,6 +118,10 @@ context:
       name: next
       parameters:
         - available
+        - snake_case
+        - camel_case
+        - pascal_case
+        - kebab_case
     next@enum:
       description: Built-in annotation for the next compiler.
       name: next
@@ -105,6 +133,10 @@ context:
       name: next
       parameters:
         - available
+        - snake_case
+        - camel_case
+        - pascal_case
+        - kebab_case
     next@interface:
       description: Built-in annotation for the next compiler.
       name: next
@@ -118,12 +150,20 @@ context:
         - available
         - mut
         - error
+        - snake_case
+        - camel_case
+        - pascal_case
+        - kebab_case
     next@interface.method.parameter:
       description: Built-in annotation for the next compiler.
       name: next
       parameters:
         - mut
         - '*_type'
+        - snake_case
+        - camel_case
+        - pascal_case
+        - kebab_case
     next@package:
       description: Built-in annotation for the next compiler.
       name: next
@@ -131,6 +171,10 @@ context:
         - available
         - '*_package'
         - '*_imports'
+        - snake_case
+        - camel_case
+        - pascal_case
+        - kebab_case
     next@struct:
       description: Built-in annotation for the next compiler.
       name: next
@@ -143,6 +187,10 @@ context:
       parameters:
         - available
         - '*_type'
+        - snake_case
+        - camel_case
+        - pascal_case
+        - kebab_case
     optional:
       description: Sets the field as optional.
       name: optional
@@ -199,9 +247,9 @@ package:
   validators: null
 struct:
   annotations:
-    - message
     - next@struct
     - deprecated
+    - message
   disabled: false
   field:
     annotations:

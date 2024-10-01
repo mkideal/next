@@ -2,9 +2,8 @@
 {{- define "next/php/file" -}}
 <?php
 namespace {{render "package:name" .File.Package}};
-
-{{next .Imports -}}
-{{next .Decls -}}
+{{next .Imports | linespace -}}
+{{next .Decls | linespace -}}
 {{- end}}
 
 {{- define "next/php/package:name" -}}
@@ -13,17 +12,15 @@ namespace {{render "package:name" .File.Package}};
 
 {{/* next/php/imports: Generates use statements for PHP */}}
 {{- define "next/php/imports" -}}
-{{- if .TrimmedList}}
 {{- range .TrimmedList}}
-{{- next .}}
+	{{- next .}}
 {{- end}}
-{{end}}
 {{- end}}
 
 {{/* next/php/import: Generates a use statement for a specific namespace */}}
-{{- define "next/php/import" -}}
+{{- define "next/php/import"}}
 use {{render "package:name" .Target.Package}};
-{{end}}
+{{- end}}
 
 {{/* next/php/doc: Generates documentation comments for PHP */}}
 {{- define "next/php/doc" -}}
@@ -31,18 +28,18 @@ use {{render "package:name" .Target.Package}};
 {{- end}}
 
 {{/* next/php/const: Generates a constant declaration */}}
-{{- define "next/php/const" -}}
-{{- next .Doc -}}
+{{- define "next/php/const"}}
+{{next .Doc -}}
 const {{render "const:name" .}} = {{next .Value}};{{next .Comment}}
-{{end}}
+{{- end}}
 
 {{- define "next/php/const:name" -}}
 {{- render "node:snake.case.name" . | upper}}
 {{- end}}
 
 {{/* next/php/enum: Generates an enum class declaration */}}
-{{- define "next/php/enum" -}}
-{{- next .Doc -}}
+{{- define "next/php/enum"}}
+{{next .Doc -}}
 enum {{next .Type}} : {{if .MemberType.Kind.IsInteger -}}
 int
 {{- else if .MemberType.Kind.IsString -}}
@@ -51,15 +48,15 @@ string
 {{- error "%s: unsupported enum member type: %s" .Pos .MemberType.Kind -}}
 {{- end}}
 {
-    {{next .Members | align -}}
+	{{- next .Members | indent | linespace -}}
 }
 {{end}}
 
 {{/* next/php/enum.member: Generates an enum member */}}
-{{- define "next/php/enum.member" -}}
-{{- next .Doc -}}
+{{- define "next/php/enum.member"}}
+{{next .Doc -}}
 case {{render "enum.member:name" .}} = {{next .Value}};{{next .Comment}}
-{{end}}
+{{- end}}
 
 {{/* next/php/enum.member:name: Generates the name for an enum member */}}
 {{- define "next/php/enum.member:name" -}}
@@ -67,24 +64,24 @@ case {{render "enum.member:name" .}} = {{next .Value}};{{next .Comment}}
 {{- end}}
 
 {{/* next/php/struct: Generates a class declaration */}}
-{{- define "next/php/struct" -}}
-{{- next .Doc -}}class {{next .Type}}
+{{- define "next/php/struct"}}
+{{next .Doc -}}class {{next .Type}}
 {
-    {{next .Fields | align}}
-    public function __construct()
-    {
-        {{- range .Fields.List}}
-        $this->{{render "struct.field:name" .}} = {{render "type:zero" .Type}};
-        {{- end}}
-    }
+	{{- next .Fields | indent | linespace}}
+	public function __construct()
+	{
+		{{- range .Fields.List}}
+		$this->{{render "struct.field:name" .}} = {{render "type:zero" .Type}};
+		{{- end}}
+	}
 }
 {{end}}
 
 {{/* next/php/struct.field: Generates a class field declaration */}}
-{{- define "next/php/struct.field" -}}
-{{- next .Doc -}}
+{{- define "next/php/struct.field"}}
+{{next .Doc -}}
 public {{next .Type}} ${{render "struct.field:name" .}};{{next .Comment}}
-{{end}}
+{{- end}}
 
 {{/* next/php/struct.field:name: Generates the name for a class field */}}
 {{- define "next/php/struct.field:name" -}}
@@ -92,18 +89,18 @@ public {{next .Type}} ${{render "struct.field:name" .}};{{next .Comment}}
 {{- end}}
 
 {{/* next/php/interface: Generates an interface declaration */}}
-{{- define "next/php/interface" -}}
-{{- next .Doc -}}interface {{next .Type}}
+{{- define "next/php/interface"}}
+{{next .Doc -}}interface {{next .Type}}
 {
-    {{next .Methods | align -}}
+	{{- next .Methods | indent | linespace -}}
 }
 {{end}}
 
 {{/* next/php/interface.method: Generates a method declaration in an interface */}}
-{{- define "next/php/interface.method" -}}
-{{- next .Doc -}}
+{{- define "next/php/interface.method"}}
+{{next .Doc -}}
 public function {{render "interface.method:name" .}}({{next .Params}}){{next .Result}};{{next .Comment}}
-{{end}}
+{{- end}}
 
 {{/* next/php/interface.method:name: Generates the name for an interface method */}}
 {{- define "next/php/interface.method:name" -}}

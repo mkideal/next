@@ -2,9 +2,9 @@
 {{- define "meta/path"}}{{this.Package.Name}}/{{this.Name}}.next.h{{end -}}
 
 {{- /* Overrides "next/c/import" */ -}}
-{{- define "c/import" -}}
+{{- define "c/import"}}
 #include "../{{.Target.Package.Name}}/{{.Target.Name}}.next.h"
-{{end -}}
+{{- end -}}
 
 {{- /* Overrides "next/c/struct": add method 'message_type' for each message after fields */ -}}
 {{- define "c/struct" -}}

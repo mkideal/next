@@ -3,8 +3,8 @@
 package com.example.c;
 
 public class Constants {
-    public static final int A = 1;
-    public static final String B = "hello";
-    public static final double C = 3.14;
-    public static final boolean D = true;
+	public static final int A = 1;
+	public static final String B = "hello";
+	public static final double C = 3.14;
+	public static final boolean D = true;
 }

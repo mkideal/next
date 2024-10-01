@@ -7,7 +7,7 @@ use std::any::Any;
 
 /// XX constant
 /// XX value 2
-pub const X_X: i32 = 1; // XX value
+pub const XX: i32 = 1; // XX value
 /// Constants
 pub const SERVER_NAME: &'static str = "Comprehensive Test Server";
 pub const VERSION: &'static str = "1.0.0";
@@ -50,258 +50,258 @@ pub const COMPLEX_5: i32 = 31;
 /// Enum with iota
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Color {
-    Red = 1,
-    Green = 2,
-    Blue = 4,
-    Alpha = 8,
-    Yellow = 3,
-    Cyan = 6,
-    Magenta = 5,
-    White = 7,
+	Red = 1,
+	Green = 2,
+	Blue = 4,
+	Alpha = 8,
+	Yellow = 3,
+	Cyan = 6,
+	Magenta = 5,
+	White = 7,
 }
 
 impl Color {
-    pub fn value(&self) -> i32 {
-        match self {
-            Color::Red => 1,
-            Color::Green => 2,
-            Color::Blue => 4,
-            Color::Alpha => 8,
-            Color::Yellow => 3,
-            Color::Cyan => 6,
-            Color::Magenta => 5,
-            Color::White => 7,
-        }
-    }
+	pub fn value(&self) -> i32 {
+		match self {
+			Color::Red => 1,
+			Color::Green => 2,
+			Color::Blue => 4,
+			Color::Alpha => 8,
+			Color::Yellow => 3,
+			Color::Cyan => 6,
+			Color::Magenta => 5,
+			Color::White => 7,
+		}
+	}
 }
 
 /// Enum with complex iota usage
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FilePermission {
-    None = 0,
-    Execute = 1,
-    Write = 2,
-    Read = 4,
-    UserRead = 4,
-    UserWrite = 32,
-    UserExecute = 256,
-    GroupRead = 2048,
-    GroupWrite = 16384,
-    GroupExecute = 131072,
-    OthersRead = 1048576,
-    OthersWrite = 8388608,
-    OthersExecute = 67108864,
-    /// 4|32|256|2048|16384|131072|1048576|8388608|67108864
-    /// 4 + 32 + 256 + 2048 + 16384 + 131072 + 1048576 + 8388608 + 67108864
-    All = 76695844,
+	None = 0,
+	Execute = 1,
+	Write = 2,
+	Read = 4,
+	UserRead = 4,
+	UserWrite = 32,
+	UserExecute = 256,
+	GroupRead = 2048,
+	GroupWrite = 16384,
+	GroupExecute = 131072,
+	OthersRead = 1048576,
+	OthersWrite = 8388608,
+	OthersExecute = 67108864,
+	/// 4|32|256|2048|16384|131072|1048576|8388608|67108864
+	/// 4 + 32 + 256 + 2048 + 16384 + 131072 + 1048576 + 8388608 + 67108864
+	All = 76695844,
 }
 
 impl FilePermission {
-    pub fn value(&self) -> i32 {
-        match self {
-            FilePermission::None => 0,
-            FilePermission::Execute => 1,
-            FilePermission::Write => 2,
-            FilePermission::Read => 4,
-            FilePermission::UserRead => 4,
-            FilePermission::UserWrite => 32,
-            FilePermission::UserExecute => 256,
-            FilePermission::GroupRead => 2048,
-            FilePermission::GroupWrite => 16384,
-            FilePermission::GroupExecute => 131072,
-            FilePermission::OthersRead => 1048576,
-            FilePermission::OthersWrite => 8388608,
-            FilePermission::OthersExecute => 67108864,
-            FilePermission::All => 76695844,
-        }
-    }
+	pub fn value(&self) -> i32 {
+		match self {
+			FilePermission::None => 0,
+			FilePermission::Execute => 1,
+			FilePermission::Write => 2,
+			FilePermission::Read => 4,
+			FilePermission::UserRead => 4,
+			FilePermission::UserWrite => 32,
+			FilePermission::UserExecute => 256,
+			FilePermission::GroupRead => 2048,
+			FilePermission::GroupWrite => 16384,
+			FilePermission::GroupExecute => 131072,
+			FilePermission::OthersRead => 1048576,
+			FilePermission::OthersWrite => 8388608,
+			FilePermission::OthersExecute => 67108864,
+			FilePermission::All => 76695844,
+		}
+	}
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Day {
-    Monday = 1,
-    Tuesday = 2,
-    Wednesday = 4,
-    Thursday = 8,
-    Friday = 16,
-    Saturday = 32,
-    Sunday = 64,
-    Weekday = 31,
-    Weekend = 96,
+	Monday = 1,
+	Tuesday = 2,
+	Wednesday = 4,
+	Thursday = 8,
+	Friday = 16,
+	Saturday = 32,
+	Sunday = 64,
+	Weekday = 31,
+	Weekend = 96,
 }
 
 impl Day {
-    pub fn value(&self) -> i32 {
-        match self {
-            Day::Monday => 1,
-            Day::Tuesday => 2,
-            Day::Wednesday => 4,
-            Day::Thursday => 8,
-            Day::Friday => 16,
-            Day::Saturday => 32,
-            Day::Sunday => 64,
-            Day::Weekday => 31,
-            Day::Weekend => 96,
-        }
-    }
+	pub fn value(&self) -> i32 {
+		match self {
+			Day::Monday => 1,
+			Day::Tuesday => 2,
+			Day::Wednesday => 4,
+			Day::Thursday => 8,
+			Day::Friday => 16,
+			Day::Saturday => 32,
+			Day::Sunday => 64,
+			Day::Weekday => 31,
+			Day::Weekend => 96,
+		}
+	}
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Month {
-    January = 1,
-    February = 2,
-    March = 4,
-    April = 8,
-    May = 16,
-    June = 32,
-    July = 64,
-    August = 128,
-    September = 256,
-    October = 512,
-    November = 1024,
-    December = 2048,
-    Q1 = 7,
-    Q2 = 56,
-    Q3 = 448,
-    Q4 = 3584,
+	January = 1,
+	February = 2,
+	March = 4,
+	April = 8,
+	May = 16,
+	June = 32,
+	July = 64,
+	August = 128,
+	September = 256,
+	October = 512,
+	November = 1024,
+	December = 2048,
+	Q1 = 7,
+	Q2 = 56,
+	Q3 = 448,
+	Q4 = 3584,
 }
 
 impl Month {
-    pub fn value(&self) -> i32 {
-        match self {
-            Month::January => 1,
-            Month::February => 2,
-            Month::March => 4,
-            Month::April => 8,
-            Month::May => 16,
-            Month::June => 32,
-            Month::July => 64,
-            Month::August => 128,
-            Month::September => 256,
-            Month::October => 512,
-            Month::November => 1024,
-            Month::December => 2048,
-            Month::Q1 => 7,
-            Month::Q2 => 56,
-            Month::Q3 => 448,
-            Month::Q4 => 3584,
-        }
-    }
+	pub fn value(&self) -> i32 {
+		match self {
+			Month::January => 1,
+			Month::February => 2,
+			Month::March => 4,
+			Month::April => 8,
+			Month::May => 16,
+			Month::June => 32,
+			Month::July => 64,
+			Month::August => 128,
+			Month::September => 256,
+			Month::October => 512,
+			Month::November => 1024,
+			Month::December => 2048,
+			Month::Q1 => 7,
+			Month::Q2 => 56,
+			Month::Q3 => 448,
+			Month::Q4 => 3584,
+		}
+	}
 }
 
 /// Test cases for iota
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum IotatestEnum {
-    A = 0 // 0,
-    B = 1 // 1,
-    C = 0 // 0,
-    D = 2 // 2,
-    E = 0 // 0,
-    F = 1 // 1,
-    G = 0 // 0,
+	A = 0 // 0,
+	B = 1 // 1,
+	C = 0 // 0,
+	D = 2 // 2,
+	E = 0 // 0,
+	F = 1 // 1,
+	G = 0 // 0,
 }
 
 impl IotatestEnum {
-    pub fn value(&self) -> i32 {
-        match self {
-            IotatestEnum::A => 0,
-            IotatestEnum::B => 1,
-            IotatestEnum::C => 0,
-            IotatestEnum::D => 2,
-            IotatestEnum::E => 0,
-            IotatestEnum::F => 1,
-            IotatestEnum::G => 0,
-        }
-    }
+	pub fn value(&self) -> i32 {
+		match self {
+			IotatestEnum::A => 0,
+			IotatestEnum::B => 1,
+			IotatestEnum::C => 0,
+			IotatestEnum::D => 2,
+			IotatestEnum::E => 0,
+			IotatestEnum::F => 1,
+			IotatestEnum::G => 0,
+		}
+	}
 }
 
 /// Struct types
 pub struct Point2D {
-    pub x: f64,
-    pub y: f64,
+	pub x: f64,
+	pub y: f64,
 }
 
 pub struct Point3D {
-    pub point: Point2D,
-    pub z: f64,
+	pub point: Point2D,
+	pub z: f64,
 }
 
 pub struct Rectangle {
-    pub top_left: Point2D,
-    pub bottom_right: Point2D,
+	pub top_left: Point2D,
+	pub bottom_right: Point2D,
 }
 
 /// Struct with various field types
 pub struct ComplexStruct {
-    pub flag: bool,
-    pub tiny_int: i8,
-    pub small_int: i16,
-    pub medium_int: i32,
-    pub big_int: i64,
-    pub default_int: i32,
-    pub single_precision: f32,
-    pub double_precision: f64,
-    pub text: String,
-    pub single_byte: u8,
-    pub byte_array: Vec<u8>,
-    pub fixed_array: [i32; 5],
-    pub dynamic_array: Vec<String>,
-    pub int_array: Vec<i32>,
-    pub dictionary: HashMap<String, i32>,
+	pub flag: bool,
+	pub tiny_int: i8,
+	pub small_int: i16,
+	pub medium_int: i32,
+	pub big_int: i64,
+	pub default_int: i32,
+	pub single_precision: f32,
+	pub double_precision: f64,
+	pub text: String,
+	pub single_byte: u8,
+	pub byte_array: Vec<u8>,
+	pub fixed_array: [i32; 5],
+	pub dynamic_array: Vec<String>,
+	pub int_array: Vec<i32>,
+	pub dictionary: HashMap<String, i32>,
 }
 
 pub struct User {
-    pub id: i64,
-    pub username: String,
-    pub email: String,
-    pub preferred_day: Day,
-    pub birth_month: Month,
+	pub id: i64,
+	pub username: String,
+	pub email: String,
+	pub preferred_day: Day,
+	pub birth_month: Month,
 }
 
 pub struct UserProfile {
-    pub user: User,
-    pub first_name: String,
-    pub last_name: String,
-    pub age: i32,
-    pub interests: Vec<String>,
+	pub user: User,
+	pub first_name: String,
+	pub last_name: String,
+	pub age: i32,
+	pub interests: Vec<String>,
 }
 
 /// message types
 pub struct LoginRequest {
-    pub username: String,
-    pub password: String,
-    pub device_id: String,
-    pub two_factor_token: String,
+	pub username: String,
+	pub password: String,
+	pub device_id: String,
+	pub two_factor_token: String,
 }
 
 impl LoginRequest {
-    pub fn message_type() -> i32 {
-        201
-    }
+	pub fn message_type() -> i32 {
+		201
+	}
 }
 
 pub struct LoginResponse {
-    pub success: bool,
-    pub error_message: String,
-    pub authentication_token: String,
-    pub user: User,
+	pub success: bool,
+	pub error_message: String,
+	pub authentication_token: String,
+	pub user: User,
 }
 
 impl LoginResponse {
-    pub fn message_type() -> i32 {
-        202
-    }
+	pub fn message_type() -> i32 {
+		202
+	}
 }
 
 pub struct GenericRequest {
-    pub request_id: String,
-    pub timestamp: i64,
+	pub request_id: String,
+	pub timestamp: i64,
 }
 
 pub struct GenericResponse {
-    pub request_id: String,
-    pub timestamp: i64,
-    pub success: bool,
-    pub error_code: String,
-    pub error_message: String,
+	pub request_id: String,
+	pub timestamp: i64,
+	pub success: bool,
+	pub error_code: String,
+	pub error_message: String,
 }

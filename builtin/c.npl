@@ -2,64 +2,46 @@
 {{- define "next/c/file" -}}
 #ifndef {{render "this:file.header.macro" .}}
 #define {{render "this:file.header.macro" .}}
-
-#include <stdint.h>
-#include <string.h>
-{{next .Imports}}
-#if !defined(__cplusplus) && !defined(__bool_true_false_are_defined)
-#include <stdbool.h>
-#endif
-
-#if !defined(_Bool)
-typedef unsigned char _Bool;
-#endif
-
-{{render "file:forward.declarations" . -}}
+{{next .Imports | linespace -}}
+{{render "decls:forward" .Decls | linespace -}}
 {{next .Decls}}
 #endif /* {{render "this:file.header.macro" .}} */
-{{- end}}
+{{end}}
 
 {{/* next/c/file:forward.declarations: Generates forward declarations for enums and structs */}}
-{{- define "next/c/file:forward.declarations" -}}
-
-{{- $n := 0 -}}
-{{- range .Decls.Enums.List}}
-{{- if not .Annotations.next.c_alias}}
-{{- $n = add 1 $n}}
+{{- define "next/c/decls:forward" -}}
+{{- render "decls:forward.enums" . | linespace}}
+{{- render "decls:forward.structs" . | linespace}}
 {{- end}}
-{{- end}}
-
-{{- if $n -}}
-    // Enums forward declarations{{println}}
-    {{- range .Decls.Enums.List}}
-        {{- if not .Annotations.next.c_alias}}
-            {{- if .MemberType.Kind.IsInteger -}}
-                typedef enum {{next .Type}} {{next .Type}};{{println}}
-            {{- else -}}
-                typedef /* enum */ struct {{next .Type}} {{next .Type}};{{println}}
-            {{- end}}
-        {{- end}}
-    {{- end}}
-    {{- println}}
-{{- end}}
-
-{{- $n = 0 -}}
-{{- range .Decls.Structs.List}}
-{{- if not .Annotations.next.c_alias}}
-{{- $n = add 1 $n}}
-{{- end}}
+ 
+{{- define "next/c/decls:forward.enums" -}}
+	{{- $n := 0 -}}
+	{{- range .Enums.List}}
+		{{- if not .Annotations.next.c_alias}}
+			{{- if not $n -}}
+				{{println}}// Enums forward declarations
+			{{- end}}
+			{{- $n = add 1 $n -}}
+			{{- if .MemberType.Kind.IsInteger -}}
+				{{println}}typedef enum {{next .Type}} {{next .Type}};
+			{{- else -}}
+				{{println}}typedef /* enum */ struct {{next .Type}} {{next .Type}};
+			{{- end}}
+		{{- end}}
+	{{- end}}
 {{- end}}
 
-{{- if $n -}}
-    // Structs forward declarations{{println}}
-    {{- range .Decls.Structs.List}}
-        {{- if not .Annotations.next.c_alias -}}
-            typedef struct {{next .Type}} {{next .Type}};{{println}}
-        {{- end}}
-    {{- end}}
-    {{- println}}
-{{- end}}
-
+{{- define "next/c/decls:forward.structs" -}}
+	{{- $n := 0 -}}
+	{{- range .Structs.List}}
+		{{- if not .Annotations.next.c_alias}}
+			{{- if not $n -}}
+				{{println}}// Structs forward declarations
+			{{- end}}
+			{{- $n = add 1 $n -}}
+			{{println}}typedef struct {{next .Type}} {{next .Type}};
+		{{- end}}
+	{{- end}}
 {{- end}}
 
 {{/* next/c/decl.name: Generates a declaration name with the C package prefix */}}
@@ -79,34 +61,37 @@ typedef unsigned char _Bool;
 
 {{/* next/c/comment: Generates inline comments */}}
 {{- define "next/c/comment" -}}
-{{- with .Text | trim -}}
-{{_}} /* {{.}} */
-{{- end}}
+{{- with .Text | trim}} /* {{.}} */{{- end}}
 {{- end}}
 
 {{/* next/c/imports: Generates include statements for imported files */}}
-{{- define "next/c/imports" -}}
-{{- if .List}}
-{{range .List}}
-{{- next .}}
-{{- end}}
-{{- end}}
+{{- define "next/c/imports"}}
+#include <stdint.h>
+#include <string.h>
+{{super . | linespace}}
+#if !defined(__cplusplus) && !defined(__bool_true_false_are_defined)
+#include <stdbool.h>
+#endif
+
+#if !defined(_Bool)
+typedef unsigned char _Bool;
+#endif
 {{- end}}
 
 {{/* next/c/import: Generates an include statement for a specific imported file */}}
-{{- define "next/c/import" -}}
+{{- define "next/c/import"}}
 #include "{{.Target.Name}}.h"
-{{end}}
+{{- end}}
 
 {{/* next/c/used.type: Generates a fully qualified type name, including prefix if necessary */}}
 {{- define "next/c/used.type" -}}
 {{- if not (.File.Package.Contains .Type)}}
-    {{- $ns := .Type.Decl.File.Package.Annotations.next.c_package}}
-    {{- if $ns -}}
-        {{- $ns}}{{type .Type}}
-    {{- end -}}
+	{{- $ns := .Type.Decl.File.Package.Annotations.next.c_package}}
+	{{- if $ns -}}
+		{{- $ns}}{{type .Type}}
+	{{- end -}}
 {{- else -}}
-    {{- next .Type}}
+	{{- next .Type}}
 {{- end -}}
 {{- end}}
 
@@ -116,10 +101,10 @@ typedef unsigned char _Bool;
 {{- end}}
 
 {{/* next/c/const: Generates a constant definition using #define */}}
-{{- define "next/c/const" -}}
+{{- define "next/c/const"}}
 {{next .Doc -}}
 #define {{render "const:name" .}} {{next .Value}}{{next .Comment}}
-{{end}}
+{{- end}}
 
 {{/* next/c/const:name: Generates the name for a constant */}}
 {{- define "next/c/const:name" -}}
@@ -127,52 +112,51 @@ typedef unsigned char _Bool;
 {{- end}}
 
 {{/* next/c/enum: Generates an enum type declaration */}}
-{{- define "next/c/enum" -}}
-{{- next .Doc -}}
+{{- define "next/c/enum"}}
+{{next .Doc -}}
 {{- if .MemberType.Kind.IsInteger -}}
 typedef enum {{next .Type}} {
-    {{next .Members | align -}}
+	{{- next .Members | indent | linespace -}}
 } {{next .Type}};
-{{else -}}
+{{- else -}}
 typedef struct {{next .Type}} {
 {{- if .MemberType.Kind.IsString}}
-    const char* value;
+	const char* value;
 {{- else if .MemberType.Kind.IsFloat}}
-    double value;
+	double value;
 {{- else}}
-    {{error "%s: unsupported enum member type: %s" .Pos .MemberType.Kind}}
+	{{- error "%s: unsupported enum member type: %s" .Pos .MemberType.Kind}}
 {{- end}}
 } {{next .Type}};
-
 {{range .Members.List}}
 {{- next .}}
 {{- end}}
 {{- end}}
-{{- end}}
+{{end}}
 
 {{/* next/c/enum.member: Generates an enum member */}}
-{{- define "next/c/enum.member" -}}
-{{- next .Doc -}}
+{{- define "next/c/enum.member"}}
+{{next .Doc -}}
 {{- if .Decl.MemberType.Kind.IsInteger -}}
 {{- next .Decl.Type}}_{{render "enum.member:name" .}} = {{next .Value}},{{next .Comment}}
 {{- else -}}
 #define {{next .Decl.Type}}_{{render "enum.member:name" .}} (({{next .Decl.Type}}){ {{- next .Value -}} }){{next .Comment}}
 {{- end}}
-{{end}}
+{{- end}}
 
 {{/* next/c/struct: Generates a struct type declaration */}}
-{{- define "next/c/struct" -}}
-{{- next .Doc -}}
+{{- define "next/c/struct"}}
+{{next .Doc -}}
 typedef struct {{next .Type}} {
-    {{next .Fields | align -}}
+	{{- next .Fields | indent | linespace -}}
 } {{next .Type}};
 {{end}}
 
 {{/* next/c/struct.field: Generates a struct field declaration */}}
-{{- define "next/c/struct.field" -}}
-{{- next .Doc -}}
-{{render "dict:struct.field.decl" (dict "type" .Type "name" (render "struct.field:name" .))}};{{next .Comment}}
-{{end}}
+{{- define "next/c/struct.field"}}
+{{next .Doc -}}
+{{- render "dict:struct.field.decl" (dict "type" .Type "name" (render "struct.field:name" .))}};{{next .Comment}}
+{{- end}}
 
 {{- define "next/c/struct.field:name" -}}
 {{- render "node:snake.case.name" .}}
@@ -189,20 +173,20 @@ typedef struct {{next .Type}} {
 {{- end}}
 
 {{/* next/c/interface: Generates an interface declaration as a struct with function pointers */}}
-{{- define "next/c/interface" -}}
-{{- next .Doc -}}
+{{- define "next/c/interface"}}
+{{next .Doc -}}
 typedef struct {{next .Type}} {{next .Type}};
 
 struct {{next .Type}} {
-    void* context;
+	void* context;
 {{- range .Methods.List}}
-    {{next .Result}} (*{{render "interface.method:name" .}})({{next $.Type}}* self{{if .Params.List}}, {{next .Params}}{{end}});
+	{{next .Result}} (*{{render "interface.method:name" .}})({{next $.Type}}* self{{if .Params.List}}, {{next .Params}}{{end}});
 {{- end}}
 };
 {{- range .Methods.List}}
 
 {{next .Doc}}static inline {{next .Result}} {{next $.Type}}_{{render "interface.method:name" .}}({{next $.Type}}* self{{if .Params.List}}, {{next .Params}}{{end}}) {
-    return self->{{render "interface.method:name" .}}(self{{if .Params.List}}, {{render "interface.method.params:names" .Params}}{{end}});
+	return self->{{render "interface.method:name" .}}(self{{if .Params.List}}, {{render "interface.method.params:names" .Params}}{{end}});
 }
 {{- end}}
 {{end}}
@@ -230,14 +214,14 @@ struct {{next .Type}} {
 {{/* next/c/interface.method.params: Generates parameter declarations for an interface method */}}
 {{- define "next/c/interface.method.params" -}}
 {{- range $i, $p := .List -}}
-    {{if $i}}, {{end}}{{next $p -}}
+	{{if $i}}, {{end}}{{next $p -}}
 {{- end -}}
 {{- end}}
 
 {{/* next/c/interface.method.params:names: Generates parameter names for an interface method call */}}
 {{- define "next/c/interface.method.params:names" -}}
 {{- range $i, $p := .List -}}
-    {{if $i}}, {{end}}{{render "interface.method.param:name" $p -}}
+	{{if $i}}, {{end}}{{render "interface.method.param:name" $p -}}
 {{- end -}}
 {{- end}}
 

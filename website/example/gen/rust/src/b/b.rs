@@ -5,33 +5,31 @@ use std::boxed::Box;
 use std::collections::HashMap;
 use std::any::Any;
 
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TestEnum {
-    A = 1,
-    B = 5,
-    C = 5,
-    D = 10,
-    E = 20,
-    F = 1,
-    G = 2,
+	A = 1,
+	B = 5,
+	C = 5,
+	D = 10,
+	E = 20,
+	F = 1,
+	G = 2,
 }
 
 impl TestEnum {
-    pub fn value(&self) -> i32 {
-        match self {
-            TestEnum::A => 1,
-            TestEnum::B => 5,
-            TestEnum::C => 5,
-            TestEnum::D => 10,
-            TestEnum::E => 20,
-            TestEnum::F => 1,
-            TestEnum::G => 2,
-        }
-    }
+	pub fn value(&self) -> i32 {
+		match self {
+			TestEnum::A => 1,
+			TestEnum::B => 5,
+			TestEnum::C => 5,
+			TestEnum::D => 10,
+			TestEnum::E => 20,
+			TestEnum::F => 1,
+			TestEnum::G => 2,
+		}
+	}
 }
 
 pub struct TestStruct {
-    pub point: 
-        a::Point2D,
+	pub point: a::Point2D,
 }

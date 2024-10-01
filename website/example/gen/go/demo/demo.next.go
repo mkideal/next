@@ -5,9 +5,9 @@ package demo
 import "fmt"
 import "net/http"
 
-
 var _ = (*fmt.Stringer)(nil)
 var _ = (*http.HandlerFunc)(nil)
+
 const Version = "1.0.0" // String constant
 const MaxRetries = 3 // Integer constant
 const Timeout = 3000.0 // Float constant expression
@@ -17,108 +17,108 @@ const Timeout = 3000.0 // Float constant expression
 type Color int8
 
 const (
-    ColorRed = 1
-    ColorGreen = 2
-    ColorBlue = 4
-    ColorYellow = 8
+	ColorRed = 1
+	ColorGreen = 2
+	ColorBlue = 4
+	ColorYellow = 8
 )
 
 // MathConstants represents mathematical constants
 type MathConstants float64
 
 const (
-    MathConstantsPi = 3.14159265358979323846
-    MathConstantsE = 2.71828182845904523536
+	MathConstantsPi = 3.14159265358979323846
+	MathConstantsE = 2.71828182845904523536
 )
 
 // OperatingSystem represents different operating systems
 type OperatingSystem string
 
 const (
-    OperatingSystemWindows = "windows"
-    OperatingSystemLinux = "linux"
-    OperatingSystemMacOS = "macos"
-    OperatingSystemAndroid = "android"
-    OperatingSystemIOS = "ios"
+	OperatingSystemWindows = "windows"
+	OperatingSystemLinux = "linux"
+	OperatingSystemMacOS = "macos"
+	OperatingSystemAndroid = "android"
+	OperatingSystemIOS = "ios"
 )
 
 // User represents a user in the system
 type User struct {
-    Id int64
-    Username string
-    Tags []string
-    Scores map[string]int
-    Coordinates [3]float64
-    Matrix [3][2]int
-    Email string
-    FavoriteColor Color
-    Extra any
+	Id int64
+	Username string
+	Tags []string
+	Scores map[string]int
+	Coordinates [3]float64
+	Matrix [3][2]int
+	Email string
+	FavoriteColor Color
+	Extra any
 }
 
 // uint128 represents a 128-bit unsigned integer.
 // - In rust, it is aliased as u128
 // - In other languages, it is represented as a struct with low and high 64-bit integers.
 type Uint128 struct {
-    Low uint64
-    High uint64
+	Low uint64
+	High uint64
 }
 
 // Contract represents a smart contract
 type Contract struct {
-    Address Uint128
-    Data any
+	Address Uint128
+	Data any
 }
 
 // LoginRequest represents a login request message (type 101)
 // @message annotation is a custom annotation that generates message types.
 type LoginRequest struct {
-    Username string
-    Password string
-    // @optional annotation is a builtin annotation that marks a field as optional.
-    Device string
-    Os OperatingSystem
-    Timestamp int64
+	Username string
+	Password string
+	// @optional annotation is a builtin annotation that marks a field as optional.
+	Device string
+	Os OperatingSystem
+	Timestamp int64
 }
 
 func (LoginRequest) MessageType() int { return 101 }
 
 // LoginResponse represents a login response message (type 102)
 type LoginResponse struct {
-    Token string
-    User User
+	Token string
+	User User
 }
 
 func (LoginResponse) MessageType() int { return 102 }
 
 // Reader provides reading functionality
 type Reader interface {
-    // @next(error) applies to the method:
-    // - For Go: The method may return an error
-    // - For C++/Java: The method throws an exception
-    // 
-    // @next(mut) applies to the method:
-    // - For C++: The method is non-const
-    // - For other languages: This annotation may not have a direct effect
-    // 
-    // @next(mut) applies to the parameter buffer:
-    // - For C++: The parameter is non-const, allowing modification
-    // - For other languages: This annotation may not have a direct effect,
-    //   but indicates that the buffer content may be modified
-    Read(buffer []byte) (int, error)
+	// @next(error) applies to the method:
+	// - For Go: The method may return an error
+	// - For C++/Java: The method throws an exception
+	// 
+	// @next(mut) applies to the method:
+	// - For C++: The method is non-const
+	// - For other languages: This annotation may not have a direct effect
+	// 
+	// @next(mut) applies to the parameter buffer:
+	// - For C++: The parameter is non-const, allowing modification
+	// - For other languages: This annotation may not have a direct effect,
+	//   but indicates that the buffer content may be modified
+	Read(buffer []byte) (int, error)
 }
 
 type HTTPServer interface {
-    // @next(error) indicates that the method may return an error:
-    // - For Go: The method returns (LoginResponse, error)
-    // - For C++/Java: The method throws an exception
-    Handle(path string, handler http.Handler) error
+	// @next(error) indicates that the method may return an error:
+	// - For Go: The method returns (LoginResponse, error)
+	// - For C++/Java: The method throws an exception
+	Handle(path string, handler http.Handler) error
 }
 
 // HTTPClient provides HTTP request functionality
 type HTTPClient interface {
-    // Available for all languages
-    Request(url string, method string, body string) string
-    Request2(url string, method string, body string) string
-    // Available for Go and Java
-    Get(url string) (string, error)
+	// Available for all languages
+	Request(url string, method string, body string) string
+	Request2(url string, method string, body string) string
+	// Available for Go and Java
+	Get(url string) (string, error)
 }

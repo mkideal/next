@@ -11,10 +11,10 @@ const TIMEOUT = 3000.0; // Float constant expression
  */
 enum Color : int
 {
-    case RED = 1;
-    case GREEN = 2;
-    case BLUE = 4;
-    case YELLOW = 8;
+	case RED = 1;
+	case GREEN = 2;
+	case BLUE = 4;
+	case YELLOW = 8;
 }
 
 /**
@@ -22,11 +22,11 @@ enum Color : int
  */
 enum OperatingSystem : string
 {
-    case WINDOWS = "windows";
-    case LINUX = "linux";
-    case MAC_O_S = "macos";
-    case ANDROID = "android";
-    case I_O_S = "ios";
+	case WINDOWS = "windows";
+	case LINUX = "linux";
+	case MAC_O_S = "macos";
+	case ANDROID = "android";
+	case I_O_S = "ios";
 }
 
 /**
@@ -34,28 +34,28 @@ enum OperatingSystem : string
  */
 class User
 {
-    public int $id;
-    public string $username;
-    public array $tags;
-    public array $scores;
-    public array $coordinates;
-    public array $matrix;
-    public string $email;
-    public Color $favoriteColor;
-    public mixed $extra;
+	public int $id;
+	public string $username;
+	public array $tags;
+	public array $scores;
+	public array $coordinates;
+	public array $matrix;
+	public string $email;
+	public Color $favoriteColor;
+	public mixed $extra;
 
-    public function __construct()
-    {
-        $this->id = 0;
-        $this->username = "";
-        $this->tags = [];
-        $this->scores = [];
-        $this->coordinates = [];
-        $this->matrix = [];
-        $this->email = "";
-        $this->favoriteColor = Color::RED;
-        $this->extra = null;
-    }
+	public function __construct()
+	{
+		$this->id = 0;
+		$this->username = "";
+		$this->tags = [];
+		$this->scores = [];
+		$this->coordinates = [];
+		$this->matrix = [];
+		$this->email = "";
+		$this->favoriteColor = Color::RED;
+		$this->extra = null;
+	}
 }
 
 /**
@@ -70,14 +70,14 @@ class User
  */
 class Uint64
 {
-    public int $low;
-    public int $high;
+	public int $low;
+	public int $high;
 
-    public function __construct()
-    {
-        $this->low = 0;
-        $this->high = 0;
-    }
+	public function __construct()
+	{
+		$this->low = 0;
+		$this->high = 0;
+	}
 }
 
 /**
@@ -87,14 +87,14 @@ class Uint64
  */
 class Uint128
 {
-    public Uint64 $low;
-    public Uint64 $high;
+	public Uint64 $low;
+	public Uint64 $high;
 
-    public function __construct()
-    {
-        $this->low = new Uint64();
-        $this->high = new Uint64();
-    }
+	public function __construct()
+	{
+		$this->low = new Uint64();
+		$this->high = new Uint64();
+	}
 }
 
 /**
@@ -102,14 +102,14 @@ class Uint128
  */
 class Contract
 {
-    public Uint128 $address;
-    public mixed $data;
+	public Uint128 $address;
+	public mixed $data;
 
-    public function __construct()
-    {
-        $this->address = new Uint128();
-        $this->data = null;
-    }
+	public function __construct()
+	{
+		$this->address = new Uint128();
+		$this->data = null;
+	}
 }
 
 /**
@@ -118,23 +118,23 @@ class Contract
  */
 class LoginRequest
 {
-    public string $username;
-    public string $password;
-    /**
-     * @optional annotation is a builtin annotation that marks a field as optional.
-     */
-    public string $device;
-    public OperatingSystem $os;
-    public int $timestamp;
+	public string $username;
+	public string $password;
+	/**
+	 * @optional annotation is a builtin annotation that marks a field as optional.
+	 */
+	public string $device;
+	public OperatingSystem $os;
+	public int $timestamp;
 
-    public function __construct()
-    {
-        $this->username = "";
-        $this->password = "";
-        $this->device = "";
-        $this->os = OperatingSystem::WINDOWS;
-        $this->timestamp = 0;
-    }
+	public function __construct()
+	{
+		$this->username = "";
+		$this->password = "";
+		$this->device = "";
+		$this->os = OperatingSystem::WINDOWS;
+		$this->timestamp = 0;
+	}
 }
 
 /**
@@ -142,14 +142,14 @@ class LoginRequest
  */
 class LoginResponse
 {
-    public string $token;
-    public User $user;
+	public string $token;
+	public User $user;
 
-    public function __construct()
-    {
-        $this->token = "";
-        $this->user = new User();
-    }
+	public function __construct()
+	{
+		$this->token = "";
+		$this->user = new User();
+	}
 }
 
 /**
@@ -157,21 +157,21 @@ class LoginResponse
  */
 interface Reader
 {
-    /**
-     * @next(error) applies to the method:
-     * - For Go: The method may return an error
-     * - For C++/Java: The method throws an exception
-     * 
-     * @next(mut) applies to the method:
-     * - For C++: The method is non-const
-     * - For other languages: This annotation may not have a direct effect
-     * 
-     * @next(mut) applies to the parameter buffer:
-     * - For C++: The parameter is non-const, allowing modification
-     * - For other languages: This annotation may not have a direct effect,
-     *   but indicates that the buffer content may be modified
-     */
-    public function read(string $buffer): int;
+	/**
+	 * @next(error) applies to the method:
+	 * - For Go: The method may return an error
+	 * - For C++/Java: The method throws an exception
+	 * 
+	 * @next(mut) applies to the method:
+	 * - For C++: The method is non-const
+	 * - For other languages: This annotation may not have a direct effect
+	 * 
+	 * @next(mut) applies to the parameter buffer:
+	 * - For C++: The parameter is non-const, allowing modification
+	 * - For other languages: This annotation may not have a direct effect,
+	 *   but indicates that the buffer content may be modified
+	 */
+	public function read(string $buffer): int;
 }
 
 /**
@@ -179,9 +179,9 @@ interface Reader
  */
 interface HTTPClient
 {
-    /**
-     * Available for all languages
-     */
-    public function request(string $url, string $method, string $body): string;
-    public function request2(string $url, string $method, string $body): string;
+	/**
+	 * Available for all languages
+	 */
+	public function request(string $url, string $method, string $body): string;
+	public function request2(string $url, string $method, string $body): string;
 }

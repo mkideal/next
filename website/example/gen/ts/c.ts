@@ -2,50 +2,51 @@
 
 import * as a from './a';
 import * as b from './b';
+
 export const A: number = 1;
 export const B: string = "hello";
 export const C: number = 3.14;
 export const D: boolean = true;
 
 export enum Color {
-    Red = 0,
-    Green = 1,
-    Blue = 2
+	Red = 0,
+	Green = 1,
+	Blue = 2
 }
 
 export enum LoginType {
-    Username = 1,
-    Email = 2
+	Username = 1,
+	Email = 2
 }
 
 export enum UserType {
-    Admin = 1,
-    User = 2
+	Admin = 1,
+	User = 2
 }
 
 export class User {
-    type: UserType = 0 as UserType;
-    id: number = 0;
-    username: string = "";
-    password: string = "";
-    deviceId: string = "";
-    twoFactorToken: string = "";
-    roles: Array<string> = [];
-    metadata: Map<string, string> = new Map();
-    scores: Array<number> = [];
+	type: UserType = 0 as UserType;
+	id: number = 0;
+	username: string = "";
+	password: string = "";
+	deviceId: string = "";
+	twoFactorToken: string = "";
+	roles: Array<string> = [];
+	metadata: Map<string, string> = new Map();
+	scores: Array<number> = [];
 }
 
 export class LoginRequest {
-    type: LoginType = 0 as LoginType;
-    username: string = "";
-    password: string = "";
-    deviceId: string = "";
-    twoFactorToken: string = "";
+	type: LoginType = 0 as LoginType;
+	username: string = "";
+	password: string = "";
+	deviceId: string = "";
+	twoFactorToken: string = "";
 }
 
 export class LoginResponse {
-    success: boolean = false;
-    errorMessage: string = "";
-    authenticationToken: string = "";
-    user: User = new User;
+	success: boolean = false;
+	errorMessage: string = "";
+	authenticationToken: string = "";
+	user: User = new User;
 }

@@ -6,19 +6,19 @@ package com.example.demo;
  * OperatingSystem represents different operating systems
  */
 public enum OperatingSystem {
-    Windows((String) "windows"),
-    Linux((String) "linux"),
-    MacOS((String) "macos"),
-    Android((String) "android"),
-    IOS((String) "ios");
+	Windows((String) "windows"),
+	Linux((String) "linux"),
+	MacOS((String) "macos"),
+	Android((String) "android"),
+	IOS((String) "ios");
 
-    private final String value;
+	private final String value;
 
-    OperatingSystem(String value) {
-        this.value = value;
-    }
+	OperatingSystem(String value) {
+		this.value = value;
+	}
 
-    public String getValue() {
-        return value;
-    }
+	public String getValue() {
+		return value;
+	}
 }

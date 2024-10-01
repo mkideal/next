@@ -58,165 +58,165 @@ export const Complex5: number = 31;
  * Enum with iota
  */
 export enum Color {
-    Red = 1,
-    Green = 2,
-    Blue = 4,
-    Alpha = 8,
-    Yellow = 3,
-    Cyan = 6,
-    Magenta = 5,
-    White = 7
+	Red = 1,
+	Green = 2,
+	Blue = 4,
+	Alpha = 8,
+	Yellow = 3,
+	Cyan = 6,
+	Magenta = 5,
+	White = 7
 }
 
 /**
  * Enum with complex iota usage
  */
 export enum FilePermission {
-    None = 0,
-    Execute = 1,
-    Write = 2,
-    Read = 4,
-    UserRead = 4,
-    UserWrite = 32,
-    UserExecute = 256,
-    GroupRead = 2048,
-    GroupWrite = 16384,
-    GroupExecute = 131072,
-    OthersRead = 1048576,
-    OthersWrite = 8388608,
-    OthersExecute = 67108864,
-    /**
-     * 4|32|256|2048|16384|131072|1048576|8388608|67108864
-     * 4 + 32 + 256 + 2048 + 16384 + 131072 + 1048576 + 8388608 + 67108864
-     */
-    All = 76695844
+	None = 0,
+	Execute = 1,
+	Write = 2,
+	Read = 4,
+	UserRead = 4,
+	UserWrite = 32,
+	UserExecute = 256,
+	GroupRead = 2048,
+	GroupWrite = 16384,
+	GroupExecute = 131072,
+	OthersRead = 1048576,
+	OthersWrite = 8388608,
+	OthersExecute = 67108864,
+	/**
+	 * 4|32|256|2048|16384|131072|1048576|8388608|67108864
+	 * 4 + 32 + 256 + 2048 + 16384 + 131072 + 1048576 + 8388608 + 67108864
+	 */
+	All = 76695844
 }
 
 export enum Day {
-    Monday = 1,
-    Tuesday = 2,
-    Wednesday = 4,
-    Thursday = 8,
-    Friday = 16,
-    Saturday = 32,
-    Sunday = 64,
-    Weekday = 31,
-    Weekend = 96
+	Monday = 1,
+	Tuesday = 2,
+	Wednesday = 4,
+	Thursday = 8,
+	Friday = 16,
+	Saturday = 32,
+	Sunday = 64,
+	Weekday = 31,
+	Weekend = 96
 }
 
 export enum Month {
-    January = 1,
-    February = 2,
-    March = 4,
-    April = 8,
-    May = 16,
-    June = 32,
-    July = 64,
-    August = 128,
-    September = 256,
-    October = 512,
-    November = 1024,
-    December = 2048,
-    Q1 = 7,
-    Q2 = 56,
-    Q3 = 448,
-    Q4 = 3584
+	January = 1,
+	February = 2,
+	March = 4,
+	April = 8,
+	May = 16,
+	June = 32,
+	July = 64,
+	August = 128,
+	September = 256,
+	October = 512,
+	November = 1024,
+	December = 2048,
+	Q1 = 7,
+	Q2 = 56,
+	Q3 = 448,
+	Q4 = 3584
 }
 
 /**
  * Test cases for iota
  */
 export enum IotatestEnum {
-    A = 0, // 0
-    B = 1, // 1
-    C = 0, // 0
-    D = 2, // 2
-    E = 0, // 0
-    F = 1, // 1
-    G = 0 // 0
+	A = 0, // 0
+	B = 1, // 1
+	C = 0, // 0
+	D = 2, // 2
+	E = 0, // 0
+	F = 1, // 1
+	G = 0 // 0
 }
 
 /**
  * Struct types
  */
 export class Point2D {
-    x: number = 0;
-    y: number = 0;
+	x: number = 0;
+	y: number = 0;
 }
 
 export class Point3D {
-    point: Point2D = new Point2D;
-    z: number = 0;
+	point: Point2D = new Point2D;
+	z: number = 0;
 }
 
 export class Rectangle {
-    topLeft: Point2D = new Point2D;
-    bottomRight: Point2D = new Point2D;
+	topLeft: Point2D = new Point2D;
+	bottomRight: Point2D = new Point2D;
 }
 
 /**
  * Struct with various field types
  */
 export class ComplexStruct {
-    flag: boolean = false;
-    tinyInt: number = 0;
-    smallInt: number = 0;
-    mediumInt: number = 0;
-    bigInt: bigint = 0n;
-    defaultInt: number = 0;
-    singlePrecision: number = 0;
-    doublePrecision: number = 0;
-    text: string = "";
-    singleByte: number = 0;
-    byteArray: Uint8Array = new Uint8Array();
-    fixedArray: Array<number> = [];
-    dynamicArray: Array<string> = [];
-    intArray: Array<number> = [];
-    dictionary: Map<string, number> = new Map();
+	flag: boolean = false;
+	tinyInt: number = 0;
+	smallInt: number = 0;
+	mediumInt: number = 0;
+	bigInt: bigint = 0n;
+	defaultInt: number = 0;
+	singlePrecision: number = 0;
+	doublePrecision: number = 0;
+	text: string = "";
+	singleByte: number = 0;
+	byteArray: Uint8Array = new Uint8Array();
+	fixedArray: Array<number> = [];
+	dynamicArray: Array<string> = [];
+	intArray: Array<number> = [];
+	dictionary: Map<string, number> = new Map();
 }
 
 export class User {
-    id: bigint = 0n;
-    username: string = "";
-    email: string = "";
-    preferredDay: Day = 0 as Day;
-    birthMonth: Month = 0 as Month;
+	id: bigint = 0n;
+	username: string = "";
+	email: string = "";
+	preferredDay: Day = 0 as Day;
+	birthMonth: Month = 0 as Month;
 }
 
 export class UserProfile {
-    user: User = new User;
-    firstName: string = "";
-    lastName: string = "";
-    age: number = 0;
-    interests: Array<string> = [];
+	user: User = new User;
+	firstName: string = "";
+	lastName: string = "";
+	age: number = 0;
+	interests: Array<string> = [];
 }
 
 /**
  * message types
  */
 export class LoginRequest {
-    username: string = "";
-    password: string = "";
-    deviceId: string = "";
-    twoFactorToken: string = "";
+	username: string = "";
+	password: string = "";
+	deviceId: string = "";
+	twoFactorToken: string = "";
 }
 
 export class LoginResponse {
-    success: boolean = false;
-    errorMessage: string = "";
-    authenticationToken: string = "";
-    user: User = new User;
+	success: boolean = false;
+	errorMessage: string = "";
+	authenticationToken: string = "";
+	user: User = new User;
 }
 
 export class GenericRequest {
-    requestId: string = "";
-    timestamp: bigint = 0n;
+	requestId: string = "";
+	timestamp: bigint = 0n;
 }
 
 export class GenericResponse {
-    requestId: string = "";
-    timestamp: bigint = 0n;
-    success: boolean = false;
-    errorCode: string = "";
-    errorMessage: string = "";
+	requestId: string = "";
+	timestamp: bigint = 0n;
+	success: boolean = false;
+	errorCode: string = "";
+	errorMessage: string = "";
 }

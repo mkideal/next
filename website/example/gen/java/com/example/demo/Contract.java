@@ -10,26 +10,26 @@ import java.util.Arrays;
  * Contract represents a smart contract
  */
 public class Contract {
-    private Uint128 address;
+	private Uint128 address;
 
-    public Uint128 getAddress() {
-        return address;
-    }
+	public Uint128 getAddress() {
+		return address;
+	}
 
-    public void setAddress(Uint128 address) {
-        this.address = address;
-    }
+	public void setAddress(Uint128 address) {
+		this.address = address;
+	}
 
-    private Object data;
+	private Object data;
 
-    public Object getData() {
-        return data;
-    }
+	public Object getData() {
+		return data;
+	}
 
-    public void setData(Object data) {
-        this.data = data;
-    }
+	public void setData(Object data) {
+		this.data = data;
+	}
 
-    public Contract() {
-    }
+	public Contract() {
+	}
 }

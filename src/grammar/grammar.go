@@ -102,7 +102,6 @@ func (o *Options[T]) resolve(source map[string]json.RawMessage) error {
 //	import CodeBlock from "@theme/CodeBlock";
 //	import Tabs from "@theme/Tabs";
 //	import TabItem from "@theme/TabItem";
-//	import ExampleGrammarJSONSource from "!!raw-loader!@site/example/grammar.json";
 //	import ExampleGrammarYAMLSource from "!!raw-loader!@site/example/grammar.yaml";
 //
 // The grammar is used to define a subset of the next files. It can limit the features of the next code according
@@ -110,24 +109,9 @@ func (o *Options[T]) resolve(source map[string]json.RawMessage) error {
 //
 // Here is an example of the grammar file:
 //
-//	<Tabs
-//		defaultValue="yaml"
-//		values={[
-//			{label: 'YAML', value: 'yaml'},
-//			{label: 'JSON', value: 'json'},
-//		]}
-//	>
-//	<TabItem value="json">
-//		<CodeBlock language="json" title="grammar.json">
-//			{ExampleGrammarJSONSource}
-//		</CodeBlock>
-//	</TabItem>
-//	<TabItem value="yaml">
-//		<CodeBlock language="yaml" title="grammar.yaml">
-//			{ExampleGrammarYAMLSource}
-//		</CodeBlock>
-//	</TabItem>
-//	</Tabs>
+//	<CodeBlock language="yaml" title="grammar.yaml">
+//		{ExampleGrammarYAMLSource}
+//	</CodeBlock>
 type Grammar struct {
 	Context   Context   `json:"context"`
 	Package   Package   `json:"package"`
@@ -1443,6 +1427,38 @@ func default_() Options[AnnotationParameter] {
 	})
 }
 
+func snake_case() Options[AnnotationParameter] {
+	return opt(AnnotationParameter{
+		Name:        "snake_case",
+		Description: "Sets the snake_case name for the declaration.",
+		Type:        String,
+	})
+}
+
+func camel_case() Options[AnnotationParameter] {
+	return opt(AnnotationParameter{
+		Name:        "camel_case",
+		Description: "Sets the camelCase name for the declaration.",
+		Type:        String,
+	})
+}
+
+func pascal_case() Options[AnnotationParameter] {
+	return opt(AnnotationParameter{
+		Name:        "pascal_case",
+		Description: "Sets the PascalCase name for the declaration.",
+		Type:        String,
+	})
+}
+
+func kebab_case() Options[AnnotationParameter] {
+	return opt(AnnotationParameter{
+		Name:        "kebab_case",
+		Description: "Sets the kebab-case name for the declaration.",
+		Type:        String,
+	})
+}
+
 func available() Options[AnnotationParameter] {
 	return opt(AnnotationParameter{
 		Name:        "available",
@@ -1530,28 +1546,32 @@ func LANG_type() AnnotationParameter {
 var Default = Grammar{
 	Context: Context{
 		Annotations: map[string]json.RawMessage{
-			"next@package":                    toJSON(next("available", "*_package", "*_imports")),
-			"next@const":                      toJSON(next("available")),
+			"next@package":                    toJSON(next("available", "*_package", "*_imports", "snake_case", "camel_case", "pascal_case", "kebab_case")),
+			"next@const":                      toJSON(next("available", "snake_case", "camel_case", "pascal_case", "kebab_case")),
 			"next@enum":                       toJSON(next("available", "type")),
-			"next@enum.member":                toJSON(next("available")),
+			"next@enum.member":                toJSON(next("available", "snake_case", "camel_case", "pascal_case", "kebab_case")),
 			"next@struct":                     toJSON(next("available", "*_alias")),
-			"next@struct.field":               toJSON(next("available", "*_type")),
+			"next@struct.field":               toJSON(next("available", "*_type", "snake_case", "camel_case", "pascal_case", "kebab_case")),
 			"next@interface":                  toJSON(next("available", "*_alias")),
-			"next@interface.method":           toJSON(next("available", "mut", "error")),
-			"next@interface.method.parameter": toJSON(next("mut", "*_type")),
+			"next@interface.method":           toJSON(next("available", "mut", "error", "snake_case", "camel_case", "pascal_case", "kebab_case")),
+			"next@interface.method.parameter": toJSON(next("mut", "*_type", "snake_case", "camel_case", "pascal_case", "kebab_case")),
 			"deprecated":                      toJSON(deprecated()),
 			"required":                        toJSON(required()),
 			"optional":                        toJSON(optional()),
 		},
 		AnnotationParameters: map[string]json.RawMessage{
-			"available": toJSON(available()),
-			"mut":       toJSON(mut()),
-			"error":     toJSON(error_()),
-			"type":      toJSON(type_()),
-			"*_package": toJSON(LANG_package()),
-			"*_imports": toJSON(LANG_imports()),
-			"*_alias":   toJSON(LANG_alias()),
-			"*_type":    toJSON(LANG_type()),
+			"available":   toJSON(available()),
+			"mut":         toJSON(mut()),
+			"error":       toJSON(error_()),
+			"type":        toJSON(type_()),
+			"snake_case":  toJSON(snake_case()),
+			"camel_case":  toJSON(camel_case()),
+			"pascal_case": toJSON(pascal_case()),
+			"kebab_case":  toJSON(kebab_case()),
+			"*_package":   toJSON(LANG_package()),
+			"*_imports":   toJSON(LANG_imports()),
+			"*_alias":     toJSON(LANG_alias()),
+			"*_type":      toJSON(LANG_type()),
 		},
 	},
 	Package: Package{

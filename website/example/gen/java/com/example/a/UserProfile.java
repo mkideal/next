@@ -7,56 +7,56 @@ import java.util.Map;
 import java.util.Arrays;
 
 public class UserProfile {
-    private User user;
+	private User user;
 
-    public User getUser() {
-        return user;
-    }
+	public User getUser() {
+		return user;
+	}
 
-    public void setUser(User user) {
-        this.user = user;
-    }
+	public void setUser(User user) {
+		this.user = user;
+	}
 
-    private String firstName;
+	private String firstName;
 
-    public String getFirstName() {
-        return firstName;
-    }
+	public String getFirstName() {
+		return firstName;
+	}
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
 
-    private String lastName;
+	private String lastName;
 
-    public String getLastName() {
-        return lastName;
-    }
+	public String getLastName() {
+		return lastName;
+	}
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
 
-    private int age;
+	private int age;
 
-    public int getAge() {
-        return age;
-    }
+	public int getAge() {
+		return age;
+	}
 
-    public void setAge(int age) {
-        this.age = age;
-    }
+	public void setAge(int age) {
+		this.age = age;
+	}
 
-    private List<String> interests;
+	private List<String> interests;
 
-    public List<String> getInterests() {
-        return interests;
-    }
+	public List<String> getInterests() {
+		return interests;
+	}
 
-    public void setInterests(List<String> interests) {
-        this.interests = interests;
-    }
+	public void setInterests(List<String> interests) {
+		this.interests = interests;
+	}
 
-    public UserProfile() {
-    }
+	public UserProfile() {
+	}
 }

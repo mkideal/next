@@ -9,9 +9,9 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+
 #include "a.h"
 #include "b.h"
-
 
 namespace demo::c {
 // Enums forward declarations
@@ -19,7 +19,7 @@ enum class Color;
 enum class LoginType;
 enum class UserType;
 
-// Structs forward declarations
+// Classes forward declarations
 class User;
 class LoginRequest;
 class LoginResponse;
@@ -30,58 +30,60 @@ inline constexpr auto C = 3.14;
 inline constexpr auto D = true;
 
 enum class Color : int32_t {
-    Red = 0,
-    Green = 1,
-    Blue = 2,
+	Red = 0,
+	Green = 1,
+	Blue = 2,
 };
 
 enum class LoginType : int32_t {
-    Username = 1,
-    Email = 2,
+	Username = 1,
+	Email = 2,
 };
 
 enum class UserType : int32_t {
-    Admin = 1,
-    User = 2,
+	Admin = 1,
+	User = 2,
 };
 
 class User {
 public:
-    UserType type = {UserType(0)};
-    int id = {0};
-    std::string username = {""};
-    std::string password = {""};
-    std::string device_id = {""};
-    std::string two_factor_token = {""};
-    std::vector<std::string> roles;
-    std::unordered_map<std::string, std::string> metadata;
-    std::array<int, 4> scores = {0};
+	UserType type = {UserType(0)};
+	int id = {0};
+	std::string username = {""};
+	std::string password = {""};
+	std::string device_id = {""};
+	std::string two_factor_token = {""};
+	std::vector<std::string> roles;
+	std::unordered_map<std::string, std::string> metadata;
+	std::array<int, 4> scores = {0};
+
 public:
-    User() = default;
-    ~User() = default;
+	User() = default;
+	~User() = default;
 };
 
 class LoginRequest {
 public:
-    LoginType type = {LoginType(0)};
-    std::string username = {""};
-    std::string password = {""};
-    std::string device_id = {""};
-    std::string two_factor_token = {""};
+	LoginType type = {LoginType(0)};
+	std::string username = {""};
+	std::string password = {""};
+	std::string device_id = {""};
+	std::string two_factor_token = {""};
+
 public:
-    LoginRequest() = default;
-    ~LoginRequest() = default;
+	LoginRequest() = default;
+	~LoginRequest() = default;
 };
 
 class LoginResponse {
 public:
-    bool success = {false};
-    std::string error_message = {""};
-    std::string authentication_token = {""};
-    User user;
-public:
-    LoginResponse() = default;
-    ~LoginResponse() = default;
-};
+	bool success = {false};
+	std::string error_message = {""};
+	std::string authentication_token = {""};
+	User user;
 
+public:
+	LoginResponse() = default;
+	~LoginResponse() = default;
+};
 } // namespace demo::c

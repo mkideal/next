@@ -1,13 +1,7 @@
-{{/* next/ts/file: Generates the main structure for a TypeScript file */}}
-{{- define "next/ts/file" -}}
-{{next .Imports -}}
-{{next .Decls -}}
-{{- end}}
-
 {{/* next/ts/import: Generates an import statement for a module */}}
-{{- define "next/ts/import" -}}
+{{- define "next/ts/import"}}
 import * as {{.Target.Name}} from './{{.Target.Name}}';
-{{end}}
+{{- end}}
 
 {{/* next/ts/doc: Generates documentation comments for TypeScript (uses C-like doc style) */}}
 {{- define "next/ts/doc" -}}
@@ -16,68 +10,63 @@ import * as {{.Target.Name}} from './{{.Target.Name}}';
 
 {{/* next/ts/used.type: Generates a fully qualified type name, including module name if necessary */}}
 {{- define "next/ts/used.type" -}}
-{{- if and (ne .File .Type.Decl.File) (.Type.Decl.File) -}}
-{{.Type.Decl.File.Name}}.
-{{- end -}}
-{{next .Type -}}
+{{- if and (ne .File .Type.Decl.File) (.Type.Decl.File)}}
+	{{- .Type.Decl.File.Name}}.
+{{- end}}
+	{{- next .Type}}
 {{- end}}
 
 {{- define "next/ts/type:literal.suffix" -}}
-    {{- if eq .Kind.String "Int64" -}}
-        n
-    {{- end -}}
+	{{- if eq .Kind.String "Int64" -}}
+		n
+	{{- end}}
 {{- end}}
 
 {{/* next/ts/const: Generates a constant declaration with type annotation */}}
-{{- define "next/ts/const" -}}
-{{- next .Doc -}}
+{{- define "next/ts/const"}}
+{{next .Doc -}}
 export const {{render "const:name" .}}: {{next .Type}} = {{next .Value}};{{next .Comment}}
-{{end}}
+{{- end}}
 
 {{/* next/ts/enum: Generates an enum declaration */}}
-{{- define "next/ts/enum" -}}
-{{- next .Doc -}}
+{{- define "next/ts/enum"}}
+{{next .Doc -}}
 export enum {{next .Type}} {
-    {{next .Members | align -}}
+	{{- next .Members | indent | linespace -}}
 }
 {{end}}
 
 {{/* next/ts/enum.member: Generates an individual enum member */}}
-{{- define "next/ts/enum.member" -}}
-{{- next .Doc -}}
+{{- define "next/ts/enum.member"}}
+{{next .Doc -}}
 {{- render "enum.member:name" .}} = {{next .Value}}{{if not .IsLast}},{{end}}{{next .Comment}}
-{{end}}
+{{- end}}
 
 {{/* next/ts/struct: Generates a class declaration */}}
-{{- define "next/ts/struct" -}}
-{{- next .Doc -}}
+{{- define "next/ts/struct"}}
+{{next .Doc -}}
 export class {{next .Type}} {
-    {{next .Fields | align -}}
+	{{- next .Fields | indent | linespace -}}
 }
 {{end}}
 
 {{/* next/ts/struct.field: Generates a single field declaration with JSDoc */}}
-{{- define "next/ts/struct.field" -}}
-{{- if .Doc.Text -}}
-/**
-{{.Doc.Format " * " -}}
-{{_}} * @type { {{next .Type}} }
- */
-{{end}}
+{{- define "next/ts/struct.field"}}
+{{next .Doc -}}
 {{- render "struct.field:name" .}}: {{next .Type}} = {{render "type:zero" .Type}};{{next .Comment}}
-{{end}}
+{{- end}}
 
 {{/* next/ts/interface: Generates an interface declaration */}}
-{{- define "next/ts/interface" -}}
-{{- next .Doc -}}
+{{- define "next/ts/interface"}}
+{{next .Doc -}}
 export interface {{next .Type}} {
-    {{next .Methods | align -}}
+	{{- next .Methods | indent | linespace -}}
 }
 {{end}}
 
 {{/* next/ts/interface.method: Generates a single method declaration with JSDoc */}}
-{{- define "next/ts/interface.method" -}}
-{{- if .Doc.Text -}}
+{{- define "next/ts/interface.method"}}
+{{if .Doc.Text -}}
 /**
 {{.Doc.Format " * " -}}
 {{_}} *
