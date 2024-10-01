@@ -24,12 +24,14 @@ Currently, the supported file extensions are `.json`, `.yaml`, and `.yml` (alias
 
 ### run {#user-content-CommandLine_Command_run}
 
-`run` command runs a next project. It reads the project file and compiles the source files according to the project configuration. The project file is a YAML file that contains the project [Configuration](#user-content-CommandLine_Configuration).
+`run` command runs a next project. It reads the project file and compiles the source files according to the project configuration. The project file is a YAML or JSON file that contains the project [Configuration](#user-content-CommandLine_Configuration).
 
 Example:
 
 ```sh
-next run demo.yaml
+next run example.yaml
+next run example.json
+next run example.nextproj # .nextproj is an alias of .yaml
 ```
 
 ### version {#user-content-CommandLine_Command_version}

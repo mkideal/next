@@ -102,10 +102,13 @@ var commands = map[string]*command{
 				ext = filepath.Ext(path)
 			}
 
-			content, err := json.MarshalIndent(grammar.Default, "", "  ")
+			content, err := json.Marshal(grammar.Default)
 			if err == nil {
 				switch ext {
 				case ".json":
+					content, err = encoding.Transform(content, json.Unmarshal, func(x any) ([]byte, error) {
+						return json.MarshalIndent(x, "", "  ")
+					})
 				case "", ".yaml", ".yml":
 					var buf bytes.Buffer
 					enc := yaml.NewEncoder(&buf)
@@ -133,12 +136,14 @@ var commands = map[string]*command{
 
 	// @api(CommandLine/Command/run) command runs a next project.
 	// It reads the project file and compiles the source files according to the project configuration.
-	// The project file is a YAML file that contains the project [Configuration](#CommandLine/Configuration).
+	// The project file is a YAML or JSON file that contains the project [Configuration](#CommandLine/Configuration).
 	//
 	// Example:
 	//
 	//	```sh
-	//	next run demo.yaml
+	//	next run example.yaml
+	//	next run example.json
+	//	next run example.nextproj # .nextproj is an alias of .yaml
 	//	```
 	"run": newCommand(
 		"Run a next project: next run <project_file>",
