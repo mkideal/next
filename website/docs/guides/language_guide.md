@@ -198,7 +198,7 @@ Annotations can be used to provide additional metadata for structs and their fie
 struct LoginRequest {
     string username;
     @sensitive string password;
-    @optional string twoFactorToken;
+    @next(optional) string twoFactorToken;
 }
 ```
 

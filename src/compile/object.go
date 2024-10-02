@@ -668,7 +668,7 @@ type Fields[D Node, F Object] struct {
 	// - [EnumMember](#Object/EnumMember)
 	// - [StructField](#Object/StructField)
 	// - [InterfaceMethod](#Object/InterfaceMethod).
-	// - [InterfaceMethodParam](#Object/InterfaceMethodParam).
+	// - [InterfaceMethodParameter](#Object/InterfaceMethodParameter).
 	List []F
 }
 
@@ -684,9 +684,9 @@ type StructFields = Fields[*Struct, *StructField]
 // in an [Interface](#Object/Interface) declaration.
 type InterfaceMethods = Fields[*Interface, *InterfaceMethod]
 
-// @api(Object/InterfaceMethodParams) represents the [Fields](#Object/Common/Fields) of [InterfaceMethodParameter](#Object/InterfaceMethodParam)
+// @api(Object/InterfaceMethodParams) represents the [Fields](#Object/Common/Fields) of [InterfaceMethodParameter](#Object/InterfaceMethodParameter)
 // in an [InterfaceMethod](#Object/InterfaceMethod) declaration.
-type InterfaceMethodParams = Fields[*InterfaceMethod, *InterfaceMethodParam]
+type InterfaceMethodParams = Fields[*InterfaceMethod, *InterfaceMethodParameter]
 
 // @api(Object/Enum) (extends [Decl](#Object/Common/Decl)) represents an enum declaration.
 type Enum struct {
@@ -897,7 +897,7 @@ func newStructField(c *Compiler, file *File, s *Struct, src *ast.StructField, in
 
 func (f *StructField) resolve(c *Compiler, file *File, scope Scope) {
 	f.commonNode.resolve(c, file, scope)
-	f.Type = c.resolveType(file, f.unresolved.typ, false)
+	f.Type = c.resolveType(0, f, f.unresolved.typ, false)
 }
 
 // @api(Object/StructField.Index) represents the index of the struct field in the struct type.
@@ -988,7 +988,7 @@ type InterfaceMethod struct {
 	// @api(Object/InterfaceMethod.Decl) represents the interface that contains the method.
 	Decl *Interface
 
-	// @api(Object/InterfaceMethod.Params) represents the [Fields](#Object/Common/Fields) of [InterfaceMethodParam](#Object/InterfaceMethodParam).
+	// @api(Object/InterfaceMethod.Params) represents the [Fields](#Object/Common/Fields) of [InterfaceMethodParameter](#Object/InterfaceMethodParameter).
 	Params *InterfaceMethodParams
 
 	// @api(Object/InterfaceMethod.Result) represents the [InterfaceMethodResult](#Object/InterfaceMethodResult) of the method.
@@ -1066,24 +1066,24 @@ func (m *InterfaceMethod) IsLast() bool {
 	return m.index == len(m.Decl.Methods().List)-1
 }
 
-// @api(Object/InterfaceMethodParam) (extends [Node](#Object/Common/Node)) represents an interface method parameter declaration.
-type InterfaceMethodParam struct {
-	*commonNode[*InterfaceMethodParam]
+// @api(Object/InterfaceMethodParameter) (extends [Node](#Object/Common/Node)) represents an interface method parameter declaration.
+type InterfaceMethodParameter struct {
+	*commonNode[*InterfaceMethodParameter]
 	index int
 
 	unresolved struct {
 		typ ast.Type
 	}
 
-	// @api(Object/InterfaceMethodParam.Method) represents the [InterfaceMethod](#Object/InterfaceMethod) that contains the parameter.
+	// @api(Object/InterfaceMethodParameter.Method) represents the [InterfaceMethod](#Object/InterfaceMethod) that contains the parameter.
 	Method *InterfaceMethod
 
-	// @api(Object/InterfaceMethodParam.Type) represents the [Type](#Object/Common/Type) of the parameter.
+	// @api(Object/InterfaceMethodParameter.Type) represents the [Type](#Object/Common/Type) of the parameter.
 	Type Type
 }
 
-func newInterfaceMethodParam(c *Compiler, file *File, m *InterfaceMethod, src *ast.MethodParam, index int) *InterfaceMethodParam {
-	p := &InterfaceMethodParam{
+func newInterfaceMethodParam(c *Compiler, file *File, m *InterfaceMethod, src *ast.MethodParam, index int) *InterfaceMethodParameter {
+	p := &InterfaceMethodParameter{
 		Method: m,
 		index:  index,
 	}
@@ -1093,12 +1093,12 @@ func newInterfaceMethodParam(c *Compiler, file *File, m *InterfaceMethod, src *a
 	return p
 }
 
-func (p *InterfaceMethodParam) resolve(c *Compiler, file *File, scope Scope) {
+func (p *InterfaceMethodParameter) resolve(c *Compiler, file *File, scope Scope) {
 	p.commonNode.resolve(c, file, scope)
-	p.Type = c.resolveType(file, p.unresolved.typ, false)
+	p.Type = c.resolveType(0, p, p.unresolved.typ, false)
 }
 
-// @api(Object/InterfaceMethodParam.Index) represents the index of the interface method parameter in the method.
+// @api(Object/InterfaceMethodParameter.Index) represents the index of the interface method parameter in the method.
 //
 // Example:
 //
@@ -1107,11 +1107,11 @@ func (p *InterfaceMethodParam) resolve(c *Compiler, file *File, scope Scope) {
 //	    draw(int x, int y); // Index is 0 for x, 1 for y
 //	}
 //	```
-func (p *InterfaceMethodParam) Index() int {
+func (p *InterfaceMethodParameter) Index() int {
 	return p.index
 }
 
-// @api(Object/InterfaceMethodParam.IsFirst) reports whether the parameter is the first parameter in the method.
+// @api(Object/InterfaceMethodParameter.IsFirst) reports whether the parameter is the first parameter in the method.
 //
 // Example:
 //
@@ -1120,11 +1120,11 @@ func (p *InterfaceMethodParam) Index() int {
 //	    draw(int x, int y); // IsFirst is true for x
 //	}
 //	```
-func (p *InterfaceMethodParam) IsFirst() bool {
+func (p *InterfaceMethodParameter) IsFirst() bool {
 	return p.index == 0
 }
 
-// @api(Object/InterfaceMethodParam.IsLast) reports whether the parameter is the last parameter in the method.
+// @api(Object/InterfaceMethodParameter.IsLast) reports whether the parameter is the last parameter in the method.
 // Example:
 //
 //	```next
@@ -1132,7 +1132,7 @@ func (p *InterfaceMethodParam) IsFirst() bool {
 //	    draw(int x, int y); // IsLast is true for y
 //	}
 //	```
-func (p *InterfaceMethodParam) IsLast() bool {
+func (p *InterfaceMethodParameter) IsLast() bool {
 	return p.index == len(p.Method.Params.List)-1
 }
 
@@ -1159,7 +1159,7 @@ func (t *InterfaceMethodResult) resolve(c *Compiler, file *File, scope Scope) {
 	if t.unresolved.typ == nil {
 		return
 	}
-	t.Type = c.resolveType(file, t.unresolved.typ, false)
+	t.Type = c.resolveType(0, t.Method, t.unresolved.typ, false)
 }
 
 // isAvailable reports whether the declaration is available in the current language.
@@ -1217,13 +1217,27 @@ func available[T Node](c *Compiler, obj T, lang string) (T, bool) {
 	}
 	switch decl := any(obj).(type) {
 	case *Package:
+		isAllImportedOnly := true
+		for _, f := range decl.files {
+			if !f.importedOnly {
+				isAllImportedOnly = false
+				break
+			}
+		}
+		if isAllImportedOnly {
+			return obj, false
+		}
 		decl.decls.lang = lang
+		return obj, true
 	case *File:
 		decl.decls.lang = lang
 	case *Struct:
 		decl.lang = lang
 	case *Interface:
 		decl.lang = lang
+	}
+	if f := obj.File(); f == nil || f.importedOnly {
+		return obj, false
 	}
 	return obj, true
 }

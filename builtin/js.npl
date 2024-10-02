@@ -76,7 +76,7 @@ export class {{next .Type}} {
 {{end}}
 {{- if .Params.List -}}
 {{- range .Params.List -}}
-{{_}} * @param { {{render "type:doc" .Type}} } {{render "interface.method.param:name" .}}
+{{_}} * @param { {{render "type:doc" .Type}} } {{render "interface.method.parameter:name" .}}
 {{- end}}
 {{- end}}
 {{- if .Result.Type}}
@@ -88,9 +88,9 @@ export class {{next .Type}} {
 }
 {{- end}}
 
-{{/* next/js/interface.method.param: Generates a parameter for an interface method */}}
-{{- define "next/js/interface.method.param" -}}
-{{- render "interface.method.param:name" .}}
+{{/* next/js/interface.method.parameter: Generates a parameter for an interface method */}}
+{{- define "next/js/interface.method.parameter" -}}
+{{- render "interface.method.parameter:name" .}}
 {{- end}}
 
 {{/* next/js/type:doc: Generates a JSDoc type annotation */}}

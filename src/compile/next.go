@@ -186,7 +186,7 @@ var commands = map[string]*command{
 				}
 				compiler := NewCompiler(ctx.platform, ctx.builtin)
 				var options struct {
-					*Configuration `yaml:",inline"`
+					*Options `yaml:",inline"`
 
 					// @api(CommandLine/Configuration.sources) represents the source directories or files.
 					//
@@ -199,7 +199,7 @@ var commands = map[string]*command{
 					//	```
 					Sources []string `yaml:"sources" json:"sources"`
 				}
-				options.Configuration = &compiler.options
+				options.Options = &compiler.options
 				var unmarshaler func([]byte, any) error
 				ext := filepath.Ext(project)
 				switch ext {

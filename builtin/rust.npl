@@ -148,8 +148,8 @@ fn {{render "interface.method:name" .}}({{next .Params}}){{next .Result}};{{next
 {{- render "node:snake.case.name" .}}
 {{- end}}
 
-{{/* next/rust/interface.method.params: Generates parameters for a trait method */}}
-{{- define "next/rust/interface.method.params" -}}
+{{/* next/rust/interface.method.parameters: Generates parameters for a trait method */}}
+{{- define "next/rust/interface.method.parameters" -}}
 {{- if .Decl.Annotations.next.mut -}}
 	&mut self
 {{- else -}}
@@ -160,9 +160,9 @@ fn {{render "interface.method:name" .}}({{next .Params}}){{next .Result}};{{next
 {{- end -}}
 {{- end}}
 
-{{/* next/rust/interface.method.param: Generates a parameter declaration */}}
-{{- define "next/rust/interface.method.param" -}}
-{{render "interface.method.param:name" .}}: {{next .Type}}
+{{/* next/rust/interface.method.parameter: Generates a parameter declaration */}}
+{{- define "next/rust/interface.method.parameter" -}}
+{{render "interface.method.parameter:name" .}}: {{next .Type}}
 {{- end}}
 
 {{/* next/rust/interface.method.result: Generates the return type */}}

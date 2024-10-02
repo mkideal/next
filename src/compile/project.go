@@ -8,26 +8,26 @@ import (
 	"github.com/gopherd/core/term"
 )
 
-// @api(CommandLine/Configuration)
+// @api(CommandLine/Options)
 //
 //	import CodeBlock from "@theme/CodeBlock";
 //	import ExampleNextProjSource from "!!raw-loader!@site/example/example.nextproj";
 //
-// Configuration represents the configuration of the Next project.
-// The configuration is used to mamange the compiler options, such as verbosity, output directories, and custom templates.
-// If the configuration is provided, you can generate code like this:
+// Options represents the options of the Next project.
+// The options is used to mamange the compiler options, such as verbosity, output directories, and custom templates.
+// If the options is provided, you can generate code like this:
 //
 //	```sh
 //	next build example.nextproj
 //	```
 //
-// The configuration file is a YAML or JSON (for .json extension) file that contains the compiler options.
-// Here is an example of the configuration file:
+// The options file is a YAML or JSON (for .json extension) file that contains the compiler options.
+// Here is an example of the options file:
 //
 //	<CodeBlock language="yaml" title="example.nextproj">
 //		{ExampleNextProjSource}
 //	</CodeBlock>
-type Configuration struct {
+type Options struct {
 	test bool `yaml:"-" json:"-"`
 
 	// @api(CommandLine/Configuration.verbose) represents the verbosity level of the compiler.
@@ -147,7 +147,7 @@ type Configuration struct {
 	Solvers flags.MapSlice `yaml:"solvers" json:"solvers"`
 }
 
-func (o *Configuration) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
+func (o *Options) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 	isAnsiSupported := term.IsTerminal(flagSet.Output()) && term.IsSupportsAnsi()
 	grey := func(s string) string {
 		if isAnsiSupported {
@@ -392,7 +392,7 @@ func (o *Configuration) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFu
 	))
 }
 
-func (o *Configuration) resolvePath(currentPath string) {
+func (o *Options) resolvePath(currentPath string) {
 	if o.Grammar != "" {
 		o.Grammar = filepath.Join(currentPath, o.Grammar)
 	}

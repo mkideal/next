@@ -2,11 +2,11 @@
 
 package demo
 
-import "fmt"
 import "net/http"
+import "fmt"
 
-var _ = (*fmt.Stringer)(nil)
 var _ = (*http.HandlerFunc)(nil)
+var _ = (*fmt.Stringer)(nil)
 
 const Version = "1.0.0" // String constant
 const MaxRetries = 3 // Integer constant
@@ -74,7 +74,7 @@ type Contract struct {
 type LoginRequest struct {
 	Username string
 	Password string
-	// @optional annotation is a builtin annotation that marks a field as optional.
+	// @next(optional) annotation is a builtin annotation that marks a field as optional.
 	Device string
 	Os OperatingSystem
 	Timestamp int64

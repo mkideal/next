@@ -116,7 +116,7 @@ export class LoginRequest {
 		/** @type { String } */
 		this.password = "";
 		/**
-		 * @optional annotation is a builtin annotation that marks a field as optional.
+		 * @next(optional) annotation is a builtin annotation that marks a field as optional.
 		 * @type { String }
 		 */
 		this.device = "";

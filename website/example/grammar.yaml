@@ -15,76 +15,102 @@ context:
       description: Sets the alias name for target languages.
       name: .+_alias
       required: false
-      type: string
+      types:
+        - string
       validators: null
     '*_imports':
       description: Sets the import declarations for target languages.
       name: .+_imports
       required: false
-      type: string
+      types:
+        - string
       validators: null
     '*_package':
       description: Sets the package name for target languages.
       name: .+_package
       required: false
-      type: string
+      types:
+        - string
       validators:
         - expression: '{{ne . ``}}'
           message: must not be empty
           name: LangPackageMustNotBeEmpty
-    '*_type':
-      description: Sets the type name for target languages.
-      name: .+_type
-      required: false
-      type: string
-      validators: null
     available:
       description: Sets the available expression for the declaration.
       name: available
       required: false
-      type: string
+      types:
+        - string
       validators: null
     camel_case:
       description: Sets the camelCase name for the declaration.
       name: camel_case
       required: false
-      type: string
+      types:
+        - string
+      validators: null
+    default:
+      description: Sets the default value for field.
+      name: default
+      required: false
+      types:
+        - any
       validators: null
     error:
       description: Indicates the method returns an error.
       name: error
       required: false
-      type: bool
+      types:
+        - bool
       validators: null
     kebab_case:
       description: Sets the kebab-case name for the declaration.
       name: kebab_case
       required: false
-      type: string
+      types:
+        - string
       validators: null
     mut:
       description: Sets object or parameter as mutable.
       name: mut
       required: false
-      type: bool
+      types:
+        - bool
+      validators: null
+    optional:
+      description: Sets the field as optional.
+      name: optional
+      required: false
+      types:
+        - bool
       validators: null
     pascal_case:
       description: Sets the PascalCase name for the declaration.
       name: pascal_case
       required: false
-      type: string
+      types:
+        - string
+      validators: null
+    required:
+      description: Sets the field as required.
+      name: required
+      required: false
+      types:
+        - bool
       validators: null
     snake_case:
       description: Sets the snake_case name for the declaration.
       name: snake_case
       required: false
-      type: string
+      types:
+        - string
       validators: null
     type:
       description: Sets the type for enum members.
       name: type
       required: false
-      type: type
+      types:
+        - type
       validators: null
   annotations:
     message:
@@ -94,7 +120,7 @@ context:
         - description: Sets the message type id
           name: type
           required: false
-          type: int
+          types: [int]
           validators:
             - expression: '{{gt . 0}}'
               message: must be positive
@@ -102,7 +128,7 @@ context:
         - description: Sets the message as a request.
           name: req
           required: false
-          type: bool
+          types: [bool]
           validators: null
     deprecated:
       description: Sets the declaration as deprecated.
@@ -111,7 +137,8 @@ context:
         - description: Sets the deprecation message.
           name: message
           required: false
-          type: string
+          types:
+            - string
           validators: null
     next@const:
       description: Built-in annotation for the next compiler.
@@ -159,7 +186,7 @@ context:
       name: next
       parameters:
         - mut
-        - '*_type'
+        - '*_alias'
         - snake_case
         - camel_case
         - pascal_case
@@ -186,24 +213,14 @@ context:
       name: next
       parameters:
         - available
-        - '*_type'
+        - required
+        - optional
+        - default
+        - '*_alias'
         - snake_case
         - camel_case
         - pascal_case
         - kebab_case
-    optional:
-      description: Sets the field as optional.
-      name: optional
-      parameters:
-        - description: Sets the default value for optional fields.
-          name: default
-          required: false
-          type: string
-          validators: null
-    required:
-      description: Sets the field as required.
-      name: required
-      parameters: null
   validators: null
 enum:
   annotations:
@@ -255,7 +272,5 @@ struct:
     annotations:
       - next@struct.field
       - deprecated
-      - required
-      - optional
     validators: null
   validators: null

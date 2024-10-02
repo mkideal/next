@@ -186,12 +186,12 @@ virtual {{next .Result}} {{render "interface.method:name" .}}({{next .Params}}) 
 {{- render "node:snake.case.name" .}}
 {{- end}}
 
-{{/* next/cpp/interface.method.param: Generates a parameter for an interface method */}}
-{{- define "next/cpp/interface.method.param" -}}
-{{- if not .Annotations.next.mut}}const {{end}}{{next .Type}}& {{render "interface.method.param:name" .}}
+{{/* next/cpp/interface.method.parameter: Generates a parameter for an interface method */}}
+{{- define "next/cpp/interface.method.parameter" -}}
+{{- if not .Annotations.next.mut}}const {{end}}{{next .Type}}& {{render "interface.method.parameter:name" .}}
 {{- end}}
 
-{{- define "next/cpp/interface.method.param:name" -}}
+{{- define "next/cpp/interface.method.parameter:name" -}}
 {{- render "node:snake.case.name" .}}
 {{- end}}
 

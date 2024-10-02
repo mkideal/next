@@ -665,7 +665,7 @@ Currently, the field object is one of following types:
 - [EnumMember](#user-content-Object_EnumMember)
 - [StructField](#user-content-Object_StructField)
 - [InterfaceMethod](#user-content-Object_InterfaceMethod).
-- [InterfaceMethodParam](#user-content-Object_InterfaceMethodParam).
+- [InterfaceMethodParameter](#user-content-Object_InterfaceMethodParameter).
 
 </div>
 
@@ -739,7 +739,7 @@ Currently, the following nodes are supported:
 - [EnumMember](#user-content-Object_EnumMember)
 - [StructField](#user-content-Object_StructField)
 - [InterfaceMethod](#user-content-Object_InterfaceMethod)
-- [InterfaceMethodParam](#user-content-Object_InterfaceMethodParam)
+- [InterfaceMethodParameter](#user-content-Object_InterfaceMethodParameter)
 
 ###### .Annotations {#user-content-Object_Common_Node__Annotations}
 <div className="property-container">
@@ -1889,7 +1889,7 @@ interface Shape {
 ###### .Params {#user-content-Object_InterfaceMethod__Params}
 <div className="property-container">
 
-`.Params` represents the [Fields](#user-content-Object_Common_Fields) of [InterfaceMethodParam](#user-content-Object_InterfaceMethodParam).
+`.Params` represents the [Fields](#user-content-Object_Common_Fields) of [InterfaceMethodParameter](#user-content-Object_InterfaceMethodParameter).
 
 </div>
 
@@ -1900,11 +1900,11 @@ interface Shape {
 
 </div>
 
-## InterfaceMethodParam {#user-content-Object_InterfaceMethodParam}
+## InterfaceMethodParameter {#user-content-Object_InterfaceMethodParameter}
 
-`InterfaceMethodParam` (extends [Node](#user-content-Object_Common_Node)) represents an interface method parameter declaration.
+`InterfaceMethodParameter` (extends [Node](#user-content-Object_Common_Node)) represents an interface method parameter declaration.
 
-###### .Index {#user-content-Object_InterfaceMethodParam__Index}
+###### .Index {#user-content-Object_InterfaceMethodParameter__Index}
 <div className="property-container">
 
 `.Index` represents the index of the interface method parameter in the method.
@@ -1919,7 +1919,7 @@ interface Shape {
 
 </div>
 
-###### .IsFirst {#user-content-Object_InterfaceMethodParam__IsFirst}
+###### .IsFirst {#user-content-Object_InterfaceMethodParameter__IsFirst}
 <div className="property-container">
 
 `.IsFirst` reports whether the parameter is the first parameter in the method.
@@ -1934,7 +1934,7 @@ interface Shape {
 
 </div>
 
-###### .IsLast {#user-content-Object_InterfaceMethodParam__IsLast}
+###### .IsLast {#user-content-Object_InterfaceMethodParameter__IsLast}
 <div className="property-container">
 
 `.IsLast` reports whether the parameter is the last parameter in the method. Example:
@@ -1947,14 +1947,14 @@ interface Shape {
 
 </div>
 
-###### .Method {#user-content-Object_InterfaceMethodParam__Method}
+###### .Method {#user-content-Object_InterfaceMethodParameter__Method}
 <div className="property-container">
 
 `.Method` represents the [InterfaceMethod](#user-content-Object_InterfaceMethod) that contains the parameter.
 
 </div>
 
-###### .Type {#user-content-Object_InterfaceMethodParam__Type}
+###### .Type {#user-content-Object_InterfaceMethodParameter__Type}
 <div className="property-container">
 
 `.Type` represents the [Type](#user-content-Object_Common_Type) of the parameter.
@@ -1963,7 +1963,7 @@ interface Shape {
 
 ## InterfaceMethodParams {#user-content-Object_InterfaceMethodParams}
 
-`InterfaceMethodParams` represents the [Fields](#user-content-Object_Common_Fields) of [InterfaceMethodParameter](#user-content-Object_InterfaceMethodParam) in an [InterfaceMethod](#user-content-Object_InterfaceMethod) declaration.
+`InterfaceMethodParams` represents the [Fields](#user-content-Object_Common_Fields) of [InterfaceMethodParameter](#user-content-Object_InterfaceMethodParameter) in an [InterfaceMethod](#user-content-Object_InterfaceMethod) declaration.
 
 ## InterfaceMethodResult {#user-content-Object_InterfaceMethodResult}
 
@@ -2222,6 +2222,19 @@ struct Point {
 <div className="property-container">
 
 `.File` represents the [File](#user-content-Object_File) where the type is used.
+
+</div>
+
+###### .Node {#user-content-Object_UsedType__Node}
+<div className="property-container">
+
+`.Node` represents the node where the type is used.
+
+The node may be:
+
+- [StructField](#user-content-Object_StructField): for a struct field type
+- [InterfaceMethod](#user-content-Object_InterfaceMethod): for a method result type
+- [InterfaceMethodParameter](#user-content-Object_InterfaceMethodParameter): for a method parameter type
 
 </div>
 

@@ -90,7 +90,7 @@ struct:
       parameters:
         - name: type
           description: Sets the message type id.
-          type: int
+          types: [int]
           required: true
           validators:
             - name: MessageTypeMustBePositive
@@ -187,10 +187,10 @@ Example:
 
 </div>
 
-###### .Type {#user-content-Grammar_Common_AnnotationParameter__Type}
+###### .Types {#user-content-Grammar_Common_AnnotationParameter__Types}
 <div className="property-container">
 
-`.Type` represents the parameter type. The type is a string that can be one of the following types:
+`.Types` represents the parameter type. The type is a string that can be one of the following types:
 
 - **bool**: boolean type, the value can be `true` or `false`
 - **int**: integer type, the value can be a positive or negative integer, for example, `123`
@@ -980,7 +980,7 @@ interface:
         parameters:
           - name: method
             description: Sets the HTTP method.
-            type: string
+            types: [string]
             required: true
             validators:
               - name: HTTPMethodMustBeValid

@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"go/constant"
 	"io"
 	"os"
 	"path/filepath"
@@ -215,6 +216,46 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		//	{{env.PROJECT_NAME}}
 		//	```
 		"env": tc.env,
+
+		// @api(Context/make) converts the given value to a constant value.
+		//
+		// Example:
+		//
+		//	```npl
+		//	{{make 1}}
+		//	{{make 1.0}}
+		//	{{make "hello"}}
+		//	{{printf "hello"}}
+		//	```
+		//
+		//	Output:
+		//
+		//	```
+		//	1
+		//	1.0
+		//	"hello"
+		//	hello
+		//	```
+		"make": func(x any) (constant.Value, error) {
+			if x == nil {
+				return constant.MakeUnknown(), fmt.Errorf("invalid value %v", x)
+			}
+			rv := reflect.ValueOf(x)
+			if rv.CanInt() {
+				return constant.MakeInt64(rv.Int()), nil
+			}
+			if rv.CanUint() {
+				return constant.MakeUint64(rv.Uint()), nil
+			}
+			if rv.CanFloat() {
+				return constant.MakeFloat64(rv.Float()), nil
+			}
+			v := constant.Make(x)
+			if v.Kind() == constant.Unknown {
+				return v, fmt.Errorf("invalid value %v", x)
+			}
+			return v, nil
+		},
 
 		// @api(Context/this) represents the current [Decl](#Object/Common/Decl) object to be rendered.
 		// this defined in the template [meta](#meta) `meta/this`. Supported types are:
@@ -981,6 +1022,12 @@ func (tc *templateContext) next(obj Object, langs ...string) (string, error) {
 }
 
 func (tc *templateContext) nextWithNames(names []string, obj Object) (string, error) {
+	if t, ok := obj.(*UsedType); ok && t.depth == 0 {
+		alias, ok := t.node.Annotations().get("next").get(tc.lang + "_alias").(string)
+		if ok && alias != "" {
+			return alias, nil
+		}
+	}
 	result, err := tc.renderWithNames(names, obj)
 	if err != nil && IsTemplateNotFoundError(err) {
 		if t, ok := obj.(Type); ok {

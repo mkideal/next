@@ -495,9 +495,9 @@ public interface {{next .Type}}
 {{- if .Type}}{{next .Type}}{{else}}void{{end}}
 {{- end}}
 
-{{/* next/csharp/interface.method.param: Generates a parameter for an interface method */}}
-{{- define "next/csharp/interface.method.param" -}}
-{{- if .Annotations.next.mut}}ref {{end}}{{next .Type}} {{render "interface.method.param:name" .}}
+{{/* next/csharp/interface.method.parameter: Generates a parameter for an interface method */}}
+{{- define "next/csharp/interface.method.parameter" -}}
+{{- if .Annotations.next.mut}}ref {{end}}{{next .Type}} {{render "interface.method.parameter:name" .}}
 {{- end}}
 ```
 

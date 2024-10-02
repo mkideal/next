@@ -16,6 +16,7 @@ import (
 	"github.com/next/next/src/constant"
 	"github.com/next/next/src/grammar"
 	"github.com/next/next/src/internal/stringutil"
+	"github.com/next/next/src/parser"
 	"github.com/next/next/src/scanner"
 	"github.com/next/next/src/token"
 )
@@ -26,7 +27,7 @@ const verboseTrace = 2
 // Compiler represents a compiler of a Next program
 type Compiler struct {
 	// command line options
-	options  Configuration
+	options  Options
 	platform Platform
 	builtin  FileSystem
 	grammar  grammar.Grammar
@@ -189,7 +190,7 @@ func (c *Compiler) lookupFile(fullPath, relativePath string) *File {
 	if relativePath == "" {
 		return nil
 	}
-	if relativePath[0] == '.' {
+	if !filepath.IsAbs(relativePath) {
 		var err error
 		relativePath, err = filepath.Abs(filepath.Join(filepath.Dir(fullPath), relativePath))
 		if err != nil {
@@ -219,6 +220,43 @@ func (c *Compiler) call(pos token.Pos, name string, args ...constant.Value) (con
 
 // Resolve resolves all files in the context.
 func (c *Compiler) Resolve() error {
+	// imports all files
+	seen := make(map[string]bool)
+	var imports []string
+	for _, pkg := range c.packages {
+		for _, x := range pkg.imports.List {
+			if _, ok := c.files[x.FullPath]; ok {
+				seen[x.FullPath] = true
+				continue
+			}
+			if seen[x.FullPath] {
+				continue
+			}
+			seen[x.FullPath] = true
+			imports = append(imports, x.FullPath)
+		}
+	}
+	for len(imports) > 0 {
+		path := imports[len(imports)-1]
+		imports = imports[:len(imports)-1]
+		f, err := parser.ParseFile(c.fset, path, nil, parser.ParseComments)
+		if err != nil {
+			return err
+		}
+		file, err := c.AddFile(f)
+		if err != nil {
+			return err
+		}
+		file.importedOnly = true
+		for _, x := range file.imports.List {
+			if seen[x.FullPath] {
+				continue
+			}
+			seen[x.FullPath] = true
+			imports = append(imports, x.FullPath)
+		}
+	}
+
 	// sort files by package name and position
 	files := make([]*File, 0, len(c.files))
 	for i := range c.files {
@@ -419,19 +457,19 @@ func (c *Compiler) recursiveResolveInt64(file *File, scope Scope, expr ast.Expr,
 }
 
 // resolveType resolves a type
-func (c *Compiler) resolveType(file *File, t ast.Type, ignoreError bool) Type {
+func (c *Compiler) resolveType(depth int, node Node, src ast.Type, ignoreError bool) Type {
 	var result Type
-	switch t := t.(type) {
+	switch t := src.(type) {
 	case *ast.Ident:
-		result = c.resolveIdentType(file, t, ignoreError)
+		result = c.resolveIdentType(node, t, ignoreError)
 	case *ast.SelectorExpr:
-		result = c.resolveSelectorExprType(file, t, ignoreError)
+		result = c.resolveSelectorExprType(node, t, ignoreError)
 	case *ast.ArrayType:
-		result = c.resolveArrayType(file, t, ignoreError)
+		result = c.resolveArrayType(depth, node, t, ignoreError)
 	case *ast.VectorType:
-		result = c.resolveVectorType(file, t, ignoreError)
+		result = c.resolveVectorType(depth, node, t, ignoreError)
 	case *ast.MapType:
-		result = c.resolveMapType(file, t, ignoreError)
+		result = c.resolveMapType(depth, node, t, ignoreError)
 	default:
 		if ignoreError {
 			return nil
@@ -440,17 +478,17 @@ func (c *Compiler) resolveType(file *File, t ast.Type, ignoreError bool) Type {
 		return nil
 	}
 	if result != nil {
-		result = Use(result, file, t)
-		file.addObject(c, t, result)
+		result = Use(depth, src, node, result)
+		node.File().addObject(c, src, result)
 	}
 	return result
 }
 
-func (c *Compiler) resolveIdentType(file *File, i *ast.Ident, ignoreError bool) Type {
+func (c *Compiler) resolveIdentType(node Node, i *ast.Ident, ignoreError bool) Type {
 	if t, ok := primitiveTypes[i.Name]; ok {
 		return t
 	}
-	t, err := file.LookupLocalType(i.Name)
+	t, err := node.File().LookupLocalType(i.Name)
 	if err != nil {
 		if !ignoreError {
 			c.addErrorf(i.Pos(), "failed to lookup type %s: %s", i.Name, err)
@@ -482,7 +520,7 @@ func (c *Compiler) resolveSelectorExprChain(t *ast.SelectorExpr, ignoreError boo
 	return names
 }
 
-func (c *Compiler) resolveSelectorExprType(file *File, t *ast.SelectorExpr, ignoreError bool) Type {
+func (c *Compiler) resolveSelectorExprType(node Node, t *ast.SelectorExpr, ignoreError bool) Type {
 	names := c.resolveSelectorExprChain(t, ignoreError)
 	if len(names) < 2 {
 		return nil
@@ -494,7 +532,7 @@ func (c *Compiler) resolveSelectorExprType(file *File, t *ast.SelectorExpr, igno
 		return nil
 	}
 	fullName := joinSymbolName(names...)
-	typ, err := LookupType(file, fullName)
+	typ, err := LookupType(node.File(), fullName)
 	if err != nil {
 		if !ignoreError {
 			c.addError(t.Pos(), err.Error())
@@ -504,20 +542,20 @@ func (c *Compiler) resolveSelectorExprType(file *File, t *ast.SelectorExpr, igno
 	return typ
 }
 
-func (c *Compiler) resolveArrayType(file *File, t *ast.ArrayType, ignoreError bool) Type {
-	typ := c.resolveType(file, t.T, ignoreError)
+func (c *Compiler) resolveArrayType(depth int, node Node, t *ast.ArrayType, ignoreError bool) Type {
+	typ := c.resolveType(depth+1, node, t.T, ignoreError)
 	if typ == nil {
 		return nil
 	}
 	return &ArrayType{
 		pos:      t.Pos(),
 		ElemType: typ,
-		N:        c.resolveInt64(file, t.N),
+		N:        c.resolveInt64(node.File(), t.N),
 	}
 }
 
-func (c *Compiler) resolveVectorType(file *File, t *ast.VectorType, ignoreError bool) Type {
-	typ := c.resolveType(file, t.T, ignoreError)
+func (c *Compiler) resolveVectorType(depth int, node Node, t *ast.VectorType, ignoreError bool) Type {
+	typ := c.resolveType(depth+1, node, t.T, ignoreError)
 	if typ == nil {
 		return nil
 	}
@@ -527,12 +565,12 @@ func (c *Compiler) resolveVectorType(file *File, t *ast.VectorType, ignoreError 
 	}
 }
 
-func (c *Compiler) resolveMapType(file *File, t *ast.MapType, ignoreError bool) Type {
-	k := c.resolveType(file, t.K, ignoreError)
+func (c *Compiler) resolveMapType(depth int, node Node, t *ast.MapType, ignoreError bool) Type {
+	k := c.resolveType(depth+1, node, t.K, ignoreError)
 	if k == nil {
 		return nil
 	}
-	v := c.resolveType(file, t.V, ignoreError)
+	v := c.resolveType(depth+1, node, t.V, ignoreError)
 	if v == nil {
 		return nil
 	}
@@ -772,30 +810,34 @@ func (c *Compiler) validateAnnotations(node Node, annotations grammar.Annotation
 				}
 				continue
 			}
+			if slices.Contains(gp.Types, grammar.Any) {
+				continue
+			}
 			rv := reflect.ValueOf(v)
-			switch gp.Type {
-			case grammar.String:
-				if rv.Kind() != reflect.String {
+			switch {
+			case rv.Kind() == reflect.String:
+				if !slices.Contains(gp.Types, grammar.String) {
 					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should be a string value", name, p)
 				}
-			case grammar.Int:
-				if !rv.CanInt() && !rv.CanUint() {
+			case rv.CanInt() || rv.CanUint():
+				if !slices.Contains(gp.Types, grammar.Int) {
 					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should be an integer value", name, p)
 				}
-			case grammar.Bool:
-				if rv.Kind() != reflect.Bool {
+			case rv.Kind() == reflect.Bool:
+				if !slices.Contains(gp.Types, grammar.Bool) {
 					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should be a boolean value", name, p)
 				}
-			case grammar.Float:
-				if !rv.CanInt() && !rv.CanUint() && !rv.CanFloat() {
+			case rv.CanFloat():
+				if !slices.Contains(gp.Types, grammar.Float) {
 					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should be a float value", name, p)
 				}
-			case grammar.Type:
+			default:
+				if !slices.Contains(gp.Types, grammar.Type) {
+					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s: unexpected value type %T, expected one of %v", name, p, v, gp.Types)
+				}
 				if t, ok := v.(Type); !ok || t == nil {
 					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should be a type", name, p)
 				}
-			default:
-				return fmt.Errorf("unexpected parameter type %s", gp.Type)
 			}
 			for _, va := range gp.Validators {
 				if ok, err := va.Value().Validate(v); err != nil {

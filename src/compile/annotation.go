@@ -564,7 +564,7 @@ func resolveAnnotations(c *Compiler, file *File, obj Node, annotations *ast.Anno
 			if p.Value == nil {
 				value = true
 			} else if t, ok := p.Value.(ast.Type); ok {
-				if typ := c.resolveType(file, t, true); typ != nil {
+				if typ := c.resolveType(0, file, t, true); typ != nil {
 					value = typ
 				}
 			}

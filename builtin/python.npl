@@ -85,7 +85,7 @@ class {{next .Type}}(ABC):
 {{- if .Params.List}}
 Args:
 {{- range .Params.List}}
-	{{render "interface.method.param:name" .}} ({{next .Type}})
+	{{render "interface.method.parameter:name" .}} ({{next .Type}})
 {{- end}}
 {{- end}}
 {{- if .Result.Type}}
@@ -103,12 +103,12 @@ def {{render "interface.method:name" .}}(self{{if .Params.List}}, {{next .Params
 {{- render "node:snake.case.name" .}}
 {{- end}}
 
-{{/* next/python/interface.method.param: Generates a parameter for an interface method */}}
-{{- define "next/python/interface.method.param" -}}
-{{- render "interface.method.param:name" .}}: {{next .Type}}
+{{/* next/python/interface.method.parameter: Generates a parameter for an interface method */}}
+{{- define "next/python/interface.method.parameter" -}}
+{{- render "interface.method.parameter:name" .}}: {{next .Type}}
 {{- end}}
 
-{{- define "next/python/interface.method.param:name" -}}
+{{- define "next/python/interface.method.parameter:name" -}}
 {{- render "node:snake.case.name" .}}
 {{- end}}
 

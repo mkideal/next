@@ -91,7 +91,7 @@ class LoginRequest:
 		self.username = ""
 		self.password = ""
 		"""
-		@optional annotation is a builtin annotation that marks a field as optional.
+		@next(optional) annotation is a builtin annotation that marks a field as optional.
 		"""
 		self.device = ""
 		self.os = OperatingSystem("")

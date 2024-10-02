@@ -108,9 +108,9 @@ end
 {{- render "node:camel.case.name" .}}
 {{- end}}
 
-{{/* next/lua/interface.method.param: Generates a parameter for an interface method */}}
-{{- define "next/lua/interface.method.param" -}}
-{{- render "interface.method.param:name" .}}
+{{/* next/lua/interface.method.parameter: Generates a parameter for an interface method */}}
+{{- define "next/lua/interface.method.parameter" -}}
+{{- render "interface.method.parameter:name" .}}
 {{- end}}
 
 {{/* next/lua/used.type: Generates a type name, which in Lua is typically just the name itself */}}

@@ -170,6 +170,28 @@ Example:
 {{load "path/to/template.npl"}}
 ```
 
+## make {#user-content-Context_make}
+
+`make` converts the given value to a constant value.
+
+Example:
+
+```npl
+{{make 1}}
+{{make 1.0}}
+{{make "hello"}}
+{{printf "hello"}}
+```
+
+Output:
+
+```
+1
+1.0
+"hello"
+hello
+```
+
 ## meta {#user-content-Context_meta}
 
 `meta` represents the metadata of entrypoint template file by flag `-T`. To define a meta, you should define a template with the name `meta/<key>`. Currently, the following meta keys are used by the code generator:

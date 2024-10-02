@@ -121,7 +121,7 @@ typedef struct DEMO_LoginRequest {
 	char* username;
 	char* password;
 	/**
-	 * @optional annotation is a builtin annotation that marks a field as optional.
+	 * @next(optional) annotation is a builtin annotation that marks a field as optional.
 	 */
 	char* device;
 	DEMO_OperatingSystem os;

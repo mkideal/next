@@ -36,8 +36,8 @@ import "time"
 */}}
 {{- define "next/go/imports:declarations"}}
 	{{- with .Decl.Annotations.next.go_imports }}
-		{{- range (split "," . | map (trim | removeExt | trimPrefix "*") | sort | uniq)}}
-			{{- $parts := split " " . | map trim }}
+		{{- range (split "," . | map (trim | removeExt | trimPrefix "*") | uniq)}}
+			{{- $parts := split ":" . | map trim }}
 			{{- if eq 1 (len $parts)}}
 				{{- /* import "xxx" */}}
 				{{- render "dict:import.statement" (dict "value" (index $parts 0))}}
@@ -84,19 +84,22 @@ var _ = time.Now
 ```
 */}}
 {{- define "next/go/imports:unused" -}}
-{{- if .Decl.Annotations.next.go_imports}}
-{{- range (.Decl.Annotations.next.go_imports | split "," | sort | uniq)}}
-{{- $pkg := . | removeExt}}
-{{- $ptr := (hasPrefix "*" $pkg)}}
-{{- $val := . | split "." | last}}
-{{- $pkg = $pkg | split " " | map trim | first | split "/" | last | trimPrefix "*"}}
-{{- if $ptr}}
-var _ = (*{{$pkg}}.{{$val}})(nil)
-{{- else}}
-var _ = {{$pkg}}.{{$val}}
-{{- end}}
-{{- end}}
-{{- end}}
+	{{- if .Decl.Annotations.next.go_imports}}
+		{{- range (.Decl.Annotations.next.go_imports | split "," | map trim | uniq)}}
+			{{- $pkg := . | removeExt}}
+			{{- $ptr := (hasPrefix "*" $pkg)}}
+			{{- $val := . | split "." | last}}
+			{{- $pkg = $pkg | split ":" | map trim | first | split "/" | last | trimPrefix "*"}}
+			{{- if eq "_" $pkg}}
+				{{- continue}}
+			{{- end}}
+			{{- if $ptr -}}
+				{{println}}var _ = (*{{$pkg}}.{{$val}})(nil)
+			{{- else -}}
+				{{println}}var _ = {{$pkg}}.{{$val}}
+			{{- end}}
+		{{- end}}
+	{{- end}}
 	{{- range .TrimmedList}}
 		{{- if len .Target.Package.Types}}
 			{{- render "import:unused" .}}
@@ -183,12 +186,12 @@ type {{next .Type}} interface {
 {{- render "node:pascal.case.name" .}}
 {{- end}}
 
-{{/* next/go/interface.method.param: Generates a parameter declaration for an interface method */}}
-{{- define "next/go/interface.method.param" -}}
-{{- render "interface.method.param:name" .}} {{next .Type}}
+{{/* next/go/interface.method.parameter: Generates a parameter declaration for an interface method */}}
+{{- define "next/go/interface.method.parameter" -}}
+{{- render "interface.method.parameter:name" .}} {{next .Type}}
 {{- end}}
 
-{{- define "next/go/interface.method.param:name" -}}
+{{- define "next/go/interface.method.parameter:name" -}}
 {{- render "node:camel.case.name" .}}
 {{- end}}
 

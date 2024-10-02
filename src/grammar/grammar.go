@@ -19,9 +19,14 @@ const (
 	Float  = "float"
 	String = "string"
 	Type   = "type"
+	Any    = "any"
 )
 
-var validateAnnotationParameterTypes = []string{Bool, Int, Float, String, Type}
+func types(s ...string) []string {
+	return s
+}
+
+var validateAnnotationParameterTypes = []string{Bool, Int, Float, String, Type, Any}
 var validateConstTypes = []string{Bool, Int, Float, String}
 var validateEnumMemberTypes = []string{Int, Float, String}
 
@@ -202,7 +207,7 @@ func (v Validator) Validate(data any) (bool, error) {
 //	      parameters:
 //	        - name: type
 //	          description: Sets the message type id.
-//	          type: int
+//	          types: [int]
 //	          required: true
 //	          validators:
 //	            - name: MessageTypeMustBePositive
@@ -286,7 +291,7 @@ type AnnotationParameter struct {
 	// @api(Grammar/Common/AnnotationParameter.Description) represents the parameter description.
 	Description string `json:"description"`
 
-	// @api(Grammar/Common/AnnotationParameter.Type) represents the parameter type.
+	// @api(Grammar/Common/AnnotationParameter.Types) represents the parameter type.
 	// The type is a string that can be one of the following types:
 	//
 	// - **bool**: boolean type, the value can be `true` or `false`
@@ -294,7 +299,7 @@ type AnnotationParameter struct {
 	// - **float**: float type, the value can be a positive or negative float, for example, `1.23`
 	// - **string**: string type, the value can be a string, for example, `"hello"`
 	// - **type**: any type name, for example, `int`, `float`, `string`, etc. Custom type names are supported.
-	Type string `json:"type"`
+	Types []string `json:"types"`
 
 	// @api(Grammar/Common/AnnotationParameter.Required) represents the parameter is required or not.
 	Required bool `json:"required"`
@@ -1213,7 +1218,7 @@ type Interface struct {
 //	        parameters:
 //	          - name: method
 //	            description: Sets the HTTP method.
-//	            type: string
+//	            types: [string]
 //	            required: true
 //	            validators:
 //	              - name: HTTPMethodMustBeValid
@@ -1361,13 +1366,18 @@ func (p *AnnotationParameter) validate() error {
 		}
 		p.parsed.name = pattern
 	}
-	if p.Type == "" {
-		return fmt.Errorf("parameter %q: type is required", p.Name)
+	if len(p.Types) == 0 {
+		return fmt.Errorf("parameter %q: types is required", p.Name)
 	}
-	if slices.Contains(validateAnnotationParameterTypes, p.Type) {
-		return nil
+	for _, t := range p.Types {
+		if t == Any && len(p.Types) > 1 {
+			return fmt.Errorf("parameter %q: only one type %q is allowed if any type is specified", p.Name, Any)
+		}
+		if !slices.Contains(validateAnnotationParameterTypes, t) {
+			return fmt.Errorf("unknown type %q: must be one of %v", t, validateAnnotationParameterTypes)
+		}
 	}
-	return fmt.Errorf("type %q must be one of %v", p.Type, validateAnnotationParameterTypes)
+	return nil
 }
 
 const notEmpty = "{{ne . ``}}"
@@ -1398,32 +1408,33 @@ func deprecated() Annotation {
 			opt(AnnotationParameter{
 				Name:        "message",
 				Description: "Sets the deprecation message.",
-				Type:        String,
+				Types:       types(String),
 			}),
 		},
 	}
 }
 
-func required() Annotation {
-	return Annotation{
+func required() Options[AnnotationParameter] {
+	return opt(AnnotationParameter{
 		Name:        "required",
 		Description: "Sets the field as required.",
-	}
+		Types:       types(Bool),
+	})
 }
 
-func optional() Annotation {
-	return Annotation{
+func optional() Options[AnnotationParameter] {
+	return opt(AnnotationParameter{
 		Name:        "optional",
 		Description: "Sets the field as optional.",
-		Parameters:  []Options[AnnotationParameter]{default_()},
-	}
+		Types:       types(Bool),
+	})
 }
 
 func default_() Options[AnnotationParameter] {
 	return opt(AnnotationParameter{
 		Name:        "default",
-		Description: "Sets the default value for optional fields.",
-		Type:        String,
+		Description: "Sets the default value for field.",
+		Types:       types(Any),
 	})
 }
 
@@ -1431,7 +1442,7 @@ func snake_case() Options[AnnotationParameter] {
 	return opt(AnnotationParameter{
 		Name:        "snake_case",
 		Description: "Sets the snake_case name for the declaration.",
-		Type:        String,
+		Types:       types(String),
 	})
 }
 
@@ -1439,7 +1450,7 @@ func camel_case() Options[AnnotationParameter] {
 	return opt(AnnotationParameter{
 		Name:        "camel_case",
 		Description: "Sets the camelCase name for the declaration.",
-		Type:        String,
+		Types:       types(String),
 	})
 }
 
@@ -1447,7 +1458,7 @@ func pascal_case() Options[AnnotationParameter] {
 	return opt(AnnotationParameter{
 		Name:        "pascal_case",
 		Description: "Sets the PascalCase name for the declaration.",
-		Type:        String,
+		Types:       types(String),
 	})
 }
 
@@ -1455,7 +1466,7 @@ func kebab_case() Options[AnnotationParameter] {
 	return opt(AnnotationParameter{
 		Name:        "kebab_case",
 		Description: "Sets the kebab-case name for the declaration.",
-		Type:        String,
+		Types:       types(String),
 	})
 }
 
@@ -1463,7 +1474,7 @@ func available() Options[AnnotationParameter] {
 	return opt(AnnotationParameter{
 		Name:        "available",
 		Description: "Sets the available expression for the declaration.",
-		Type:        String,
+		Types:       types(String),
 	})
 }
 
@@ -1471,7 +1482,7 @@ func mut() Options[AnnotationParameter] {
 	return opt(AnnotationParameter{
 		Name:        "mut",
 		Description: "Sets object or parameter as mutable.",
-		Type:        Bool,
+		Types:       types(Bool),
 	})
 }
 
@@ -1479,7 +1490,7 @@ func error_() Options[AnnotationParameter] {
 	return opt(AnnotationParameter{
 		Name:        "error",
 		Description: "Indicates the method returns an error.",
-		Type:        Bool,
+		Types:       types(Bool),
 	})
 }
 
@@ -1487,7 +1498,7 @@ func type_() Options[AnnotationParameter] {
 	return opt(AnnotationParameter{
 		Name:        "type",
 		Description: "Sets the type for enum members.",
-		Type:        Type,
+		Types:       types(Type),
 	})
 }
 
@@ -1495,7 +1506,7 @@ func LANG_package() AnnotationParameter {
 	return AnnotationParameter{
 		Name:        ".+_package",
 		Description: "Sets the package name for target languages.",
-		Type:        String,
+		Types:       types(String),
 		Validators: Validators{
 			opt(Validator{
 				Name:       "LangPackageMustNotBeEmpty",
@@ -1510,7 +1521,7 @@ func LANG_imports() AnnotationParameter {
 	return AnnotationParameter{
 		Name:        ".+_imports",
 		Description: "Sets the import declarations for target languages.",
-		Type:        String,
+		Types:       types(String),
 	}
 }
 
@@ -1518,15 +1529,7 @@ func LANG_alias() AnnotationParameter {
 	return AnnotationParameter{
 		Name:        ".+_alias",
 		Description: "Sets the alias name for target languages.",
-		Type:        String,
-	}
-}
-
-func LANG_type() AnnotationParameter {
-	return AnnotationParameter{
-		Name:        ".+_type",
-		Description: "Sets the type name for target languages.",
-		Type:        String,
+		Types:       types(String),
 	}
 }
 
@@ -1551,19 +1554,20 @@ var Default = Grammar{
 			"next@enum":                       toJSON(next("available", "type")),
 			"next@enum.member":                toJSON(next("available", "snake_case", "camel_case", "pascal_case", "kebab_case")),
 			"next@struct":                     toJSON(next("available", "*_alias")),
-			"next@struct.field":               toJSON(next("available", "*_type", "snake_case", "camel_case", "pascal_case", "kebab_case")),
+			"next@struct.field":               toJSON(next("available", "required", "optional", "default", "*_alias", "snake_case", "camel_case", "pascal_case", "kebab_case")),
 			"next@interface":                  toJSON(next("available", "*_alias")),
 			"next@interface.method":           toJSON(next("available", "mut", "error", "snake_case", "camel_case", "pascal_case", "kebab_case")),
-			"next@interface.method.parameter": toJSON(next("mut", "*_type", "snake_case", "camel_case", "pascal_case", "kebab_case")),
+			"next@interface.method.parameter": toJSON(next("mut", "*_alias", "snake_case", "camel_case", "pascal_case", "kebab_case")),
 			"deprecated":                      toJSON(deprecated()),
-			"required":                        toJSON(required()),
-			"optional":                        toJSON(optional()),
 		},
 		AnnotationParameters: map[string]json.RawMessage{
 			"available":   toJSON(available()),
 			"mut":         toJSON(mut()),
 			"error":       toJSON(error_()),
 			"type":        toJSON(type_()),
+			"required":    toJSON(required()),
+			"optional":    toJSON(optional()),
+			"default":     toJSON(default_()),
 			"snake_case":  toJSON(snake_case()),
 			"camel_case":  toJSON(camel_case()),
 			"pascal_case": toJSON(pascal_case()),
@@ -1571,7 +1575,6 @@ var Default = Grammar{
 			"*_package":   toJSON(LANG_package()),
 			"*_imports":   toJSON(LANG_imports()),
 			"*_alias":     toJSON(LANG_alias()),
-			"*_type":      toJSON(LANG_type()),
 		},
 	},
 	Package: Package{
@@ -1591,7 +1594,7 @@ var Default = Grammar{
 	Struct: Struct{
 		Annotations: at("next@struct", "deprecated"),
 		Field: StructField{
-			Annotations: at("next@struct.field", "deprecated", "required", "optional"),
+			Annotations: at("next@struct.field", "deprecated"),
 		},
 	},
 	Interface: Interface{

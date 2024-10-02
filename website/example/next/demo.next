@@ -105,19 +105,22 @@ struct LoginRequest {
     string username;
     string password;
 
-    // @optional annotation is a builtin annotation that marks a field as optional.
-    @optional string device;
-    @next(available="!protobuf")
-    @optional(default=OperatingSystem.IOS) OperatingSystem os;
+    // @next(optional) annotation is a builtin annotation that marks a field as optional.
+    @next(optional) string device;
+    @next(
+        available="!protobuf",
+        optional,
+        default=OperatingSystem.IOS,
+    ) OperatingSystem os;
 
-    // @optional is not supported for array, vector, and map fields:
+    // @next(optional) is not supported for array, vector, and map fields:
     //
     // Bad example:
-    //  @optional array<float64, 3> coordinates;
-    //  @optional vector<string> tags;
-    //  @optional map<string, int> scores;
+    //  @next(optional) array<float64, 3> coordinates;
+    //  @next(optional) vector<string> tags;
+    //  @next(optional) map<string, int> scores;
 
-    @next(protobuf_type="fixed64")
+    @next(protobuf_alias="fixed64")
     int64 timestamp;
 }
 

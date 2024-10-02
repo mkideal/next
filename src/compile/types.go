@@ -101,7 +101,7 @@ var _ Object = (*Struct)(nil)
 var _ Object = (*StructField)(nil)
 var _ Object = (*Interface)(nil)
 var _ Object = (*InterfaceMethod)(nil)
-var _ Object = (*InterfaceMethodParam)(nil)
+var _ Object = (*InterfaceMethodParameter)(nil)
 var _ Object = (*InterfaceMethodResult)(nil)
 var _ Object = (*CallStmt)(nil)
 
@@ -144,15 +144,15 @@ func (x *DeclType[T]) Typeof() string   { return x.decl.Typeof() + ".type" }
 
 // Decl objects
 
-func (*Const) Typeof() string                 { return "const" }
-func (*Enum) Typeof() string                  { return "enum" }
-func (*EnumMember) Typeof() string            { return "enum.member" }
-func (*Struct) Typeof() string                { return "struct" }
-func (*StructField) Typeof() string           { return "struct.field" }
-func (*Interface) Typeof() string             { return "interface" }
-func (*InterfaceMethod) Typeof() string       { return "interface.method" }
-func (*InterfaceMethodParam) Typeof() string  { return "interface.method.param" }
-func (*InterfaceMethodResult) Typeof() string { return "interface.method.result" }
+func (*Const) Typeof() string                    { return "const" }
+func (*Enum) Typeof() string                     { return "enum" }
+func (*EnumMember) Typeof() string               { return "enum.member" }
+func (*Struct) Typeof() string                   { return "struct" }
+func (*StructField) Typeof() string              { return "struct.field" }
+func (*Interface) Typeof() string                { return "interface" }
+func (*InterfaceMethod) Typeof() string          { return "interface.method" }
+func (*InterfaceMethodParameter) Typeof() string { return "interface.method.parameter" }
+func (*InterfaceMethodResult) Typeof() string    { return "interface.method.result" }
 
 // Stmt objects
 
@@ -265,7 +265,7 @@ func (x *DeclType[T]) Package() *Package      { return x.File().Package() }
 // - [EnumMember](#Object/EnumMember)
 // - [StructField](#Object/StructField)
 // - [InterfaceMethod](#Object/InterfaceMethod)
-// - [InterfaceMethodParam](#Object/InterfaceMethodParam)
+// - [InterfaceMethodParameter](#Object/InterfaceMethodParameter)
 type Node interface {
 	LocatedObject
 
@@ -371,7 +371,7 @@ var _ Node = (*Interface)(nil)
 var _ Node = (*EnumMember)(nil)
 var _ Node = (*StructField)(nil)
 var _ Node = (*InterfaceMethod)(nil)
-var _ Node = (*InterfaceMethodParam)(nil)
+var _ Node = (*InterfaceMethodParameter)(nil)
 
 func (x *commonNode[Self]) Name() string { return x.name }
 
@@ -727,10 +727,9 @@ func (x *MapType) UsedKinds() Kinds {
 
 // @api(Object/UsedType) represents a used [Type](#Object/Common/Type) in a file.
 type UsedType struct {
-	node ast.Type
-
-	// @api(Object/UsedType.File) represents the [File](#Object/File) where the type is used.
-	File *File
+	depth int
+	src   ast.Type
+	node  Node
 
 	// @api(Object/UsedType.Type) represents the underlying [Type](#Object/Common/Type).
 	//
@@ -752,8 +751,24 @@ type UsedType struct {
 }
 
 // Use uses a type in a file.
-func Use(t Type, f *File, node ast.Type) *UsedType {
-	return &UsedType{Type: t, File: f, node: node}
+func Use(depth int, src ast.Type, node Node, t Type) *UsedType {
+	return &UsedType{depth: depth, src: src, node: node, Type: t}
+}
+
+// @api(Object/UsedType.File) represents the [File](#Object/File) where the type is used.
+func (u *UsedType) File() *File {
+	return u.node.File()
+}
+
+// @api(Object/UsedType.Node) represents the node where the type is used.
+//
+// The node may be:
+//
+// - [StructField](#Object/StructField): for a struct field type
+// - [InterfaceMethod](#Object/InterfaceMethod): for a method result type
+// - [InterfaceMethodParameter](#Object/InterfaceMethodParameter): for a method parameter type
+func (u *UsedType) Node() reflect.Value {
+	return reflect.ValueOf(u.node)
 }
 
 func (u *UsedType) String() string { return u.Type.String() }
@@ -761,7 +776,7 @@ func (u *UsedType) String() string { return u.Type.String() }
 func (u *UsedType) Actual() reflect.Value { return u.Type.Actual() }
 
 // UsedTypeNode returns the AST node of the used type.
-func UsedTypeNode(u *UsedType) ast.Type { return u.node }
+func UsedTypeNode(u *UsedType) ast.Type { return u.src }
 
 // @api(Object/PrimitiveType) represents a primitive type.
 //

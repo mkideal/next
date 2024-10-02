@@ -197,20 +197,20 @@ interface {{next .Type}} {
 {{- .Name}}
 {{- end}}
 
-{{/* next/interface.method.params: Generates code for all parameters of an interface method */}}
-{{- define "next/interface.method.params" -}}
+{{/* next/interface.method.parameters: Generates code for all parameters of an interface method */}}
+{{- define "next/interface.method.parameters" -}}
 {{- range $i, $p := .List}}
 	{{- if $i}}, {{end}}{{next . -}}
 {{- end}}
 {{- end}}
 
-{{/* next/interface.method.param: Generates code for a single interface method parameter */}}
-{{- define "next/interface.method.param" -}}
-{{- next .Type}} {{render "interface.method.param:name" .}}
+{{/* next/interface.method.parameter: Generates code for a single interface method parameter */}}
+{{- define "next/interface.method.parameter" -}}
+{{- next .Type}} {{render "interface.method.parameter:name" .}}
 {{- end}}
 
-{{/* next/interface.method.param.name: Generates the name of an interface method parameter */}}
-{{- define "next/interface.method.param:name" -}}
+{{/* next/interface.method.parameter.name: Generates the name of an interface method parameter */}}
+{{- define "next/interface.method.parameter:name" -}}
 {{- .Name}}
 {{- end}}
 

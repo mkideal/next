@@ -107,9 +107,9 @@ public function {{render "interface.method:name" .}}({{next .Params}}){{next .Re
 {{- render "node:camel.case.name" .}}
 {{- end}}
 
-{{/* next/php/interface.method.param: Generates a parameter for an interface method */}}
-{{- define "next/php/interface.method.param" -}}
-{{- next .Type}} ${{render "interface.method.param:name" .}}
+{{/* next/php/interface.method.parameter: Generates a parameter for an interface method */}}
+{{- define "next/php/interface.method.parameter" -}}
+{{- next .Type}} ${{render "interface.method.parameter:name" .}}
 {{- end}}
 
 {{/* next/php/interface.method.result: Generates the return type for an interface method */}}

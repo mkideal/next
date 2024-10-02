@@ -125,7 +125,7 @@ class LoginRequest {
 public:
 	std::string username = {""};
 	std::string password = {""};
-	// @optional annotation is a builtin annotation that marks a field as optional.
+	// @next(optional) annotation is a builtin annotation that marks a field as optional.
 	std::string device = {""};
 	OperatingSystem os = {OperatingSystem("")};
 	int64_t timestamp = {0};

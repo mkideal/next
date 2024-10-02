@@ -72,7 +72,7 @@ namespace Demo
 	{
 		public string username { get; set; }
 		public string password { get; set; }
-		// @optional annotation is a builtin annotation that marks a field as optional.
+		// @next(optional) annotation is a builtin annotation that marks a field as optional.
 		public string device { get; set; }
 		public OperatingSystem os { get; set; }
 		public long timestamp { get; set; }

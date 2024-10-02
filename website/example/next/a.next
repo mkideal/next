@@ -246,7 +246,7 @@ struct LoginRequest {
     string username;
     string password;
     string deviceId;
-    @optional
+    @next(optional)
     string twoFactorToken;
 }
 

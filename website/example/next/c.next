@@ -36,7 +36,7 @@ struct User {
     string username;
     string password;
     string deviceId;
-    @optional
+    @next(optional)
     string twoFactorToken;
     vector<string> roles;
     map<string, string> metadata;
@@ -48,7 +48,7 @@ struct LoginRequest {
     string username;
     string password;
     string deviceId;
-    @optional
+    @next(optional)
     string twoFactorToken;
 }
 

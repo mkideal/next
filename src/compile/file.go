@@ -10,10 +10,11 @@ import (
 
 // @api(Object/File) (extends [Decl](#Object/Common/Decl)) represents a Next source file.
 type File struct {
-	compiler *Compiler
-	pos      token.Pos // position of the file
-	pkg      *Package  // package containing the file
-	src      *ast.File // the original AST
+	compiler     *Compiler
+	pos          token.Pos // position of the file
+	pkg          *Package  // package containing the file
+	src          *ast.File // the original AST
+	importedOnly bool      // imported only
 
 	imports *Imports[*File]     // import declarations
 	decls   *Decls[*File]       // top-level declarations: const, enum, struct, interface

@@ -63,22 +63,6 @@ next v0.0.4(main: 51864a35de7890d63bfd8acecdb62d20372ca963) built at 2024/09/27T
 ```
 
 ## Configuration {#user-content-CommandLine_Configuration}
-
-import CodeBlock from "@theme/CodeBlock";
-import ExampleNextProjSource from "!!raw-loader!@site/example/example.nextproj";
-
-Configuration represents the configuration of the Next project. The configuration is used to mamange the compiler options, such as verbosity, output directories, and custom templates. If the configuration is provided, you can generate code like this:
-
-```sh
-next build example.nextproj
-```
-
-The configuration file is a YAML or JSON (for .json extension) file that contains the compiler options. Here is an example of the configuration file:
-
-<CodeBlock language="yaml" title="example.nextproj">
-	{ExampleNextProjSource}
-</CodeBlock>
-
 ###### .env {#user-content-CommandLine_Configuration__env}
 <div className="property-container">
 
@@ -396,4 +380,21 @@ Example:
 ```sh
 next -v 1 ...
 ```
+
+## Options {#user-content-CommandLine_Options}
+
+import CodeBlock from "@theme/CodeBlock";
+import ExampleNextProjSource from "!!raw-loader!@site/example/example.nextproj";
+
+Options represents the options of the Next project. The options is used to mamange the compiler options, such as verbosity, output directories, and custom templates. If the options is provided, you can generate code like this:
+
+```sh
+next build example.nextproj
+```
+
+The options file is a YAML or JSON (for .json extension) file that contains the compiler options. Here is an example of the options file:
+
+<CodeBlock language="yaml" title="example.nextproj">
+	{ExampleNextProjSource}
+</CodeBlock>
 

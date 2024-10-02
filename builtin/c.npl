@@ -186,7 +186,7 @@ struct {{next .Type}} {
 {{- range .Methods.List}}
 
 {{next .Doc}}static inline {{next .Result}} {{next $.Type}}_{{render "interface.method:name" .}}({{next $.Type}}* self{{if .Params.List}}, {{next .Params}}{{end}}) {
-	return self->{{render "interface.method:name" .}}(self{{if .Params.List}}, {{render "interface.method.params:names" .Params}}{{end}});
+	return self->{{render "interface.method:name" .}}(self{{if .Params.List}}, {{render "interface.method.parameters:names" .Params}}{{end}});
 }
 {{- end}}
 {{end}}
@@ -196,13 +196,13 @@ struct {{next .Type}} {
 {{- render "node:snake.case.name" .}}
 {{- end}}
 
-{{/* next/c/interface.method.param: Generates a parameter declaration for an interface method */}}
-{{- define "next/c/interface.method.param" -}}
-{{- next .Type}} {{render "interface.method.param:name" .}}
+{{/* next/c/interface.method.parameter: Generates a parameter declaration for an interface method */}}
+{{- define "next/c/interface.method.parameter" -}}
+{{- next .Type}} {{render "interface.method.parameter:name" .}}
 {{- end}}
 
-{{/* next/c/interface.method.param:name: Generates the name for an interface method parameter */}}
-{{- define "next/c/interface.method.param:name" -}}
+{{/* next/c/interface.method.parameter:name: Generates the name for an interface method parameter */}}
+{{- define "next/c/interface.method.parameter:name" -}}
 {{.Name}}
 {{- end}}
 
@@ -211,17 +211,17 @@ struct {{next .Type}} {
 {{- if .Type}}{{next .Type}}{{else}}void{{end -}}
 {{- end}}
 
-{{/* next/c/interface.method.params: Generates parameter declarations for an interface method */}}
-{{- define "next/c/interface.method.params" -}}
+{{/* next/c/interface.method.parameters: Generates parameter declarations for an interface method */}}
+{{- define "next/c/interface.method.parameters" -}}
 {{- range $i, $p := .List -}}
 	{{if $i}}, {{end}}{{next $p -}}
 {{- end -}}
 {{- end}}
 
-{{/* next/c/interface.method.params:names: Generates parameter names for an interface method call */}}
-{{- define "next/c/interface.method.params:names" -}}
+{{/* next/c/interface.method.parameters:names: Generates parameter names for an interface method call */}}
+{{- define "next/c/interface.method.parameters:names" -}}
 {{- range $i, $p := .List -}}
-	{{if $i}}, {{end}}{{render "interface.method.param:name" $p -}}
+	{{if $i}}, {{end}}{{render "interface.method.parameter:name" $p -}}
 {{- end -}}
 {{- end}}
 
