@@ -10,33 +10,58 @@ import CodeBlock from "@theme/CodeBlock";
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 import ExampleGrammarYAMLSource from "!!raw-loader!@site/example/grammar.yaml";
+import ExampleGrammarJSONSource from "!!raw-loader!@site/example/grammar.json";
 
 The grammar is used to define a subset of the next files. It can limit the features of the next code according by your requirements. The grammar is a yaml file that contains rules.
 
 Here is an example of the grammar file:
 
-<CodeBlock language="yaml" title="grammar.yaml">
-	{ExampleGrammarYAMLSource}
-</CodeBlock>
+<Tabs
+	defaultValue="yaml"
+	values={[
+		{label: 'YAML', value: 'yaml'},
+		{label: 'JSON', value: 'json'},
+	]}
+>
+<TabItem value="yaml">
+	<CodeBlock language="yaml" title="grammar.yaml">
+		{ExampleGrammarYAMLSource}
+	</CodeBlock>
+</TabItem>
+<TabItem value="json">
+	<CodeBlock language="json" title="grammar.json">
+		{ExampleGrammarJSONSource}
+	</CodeBlock>
+</TabItem>
+</Tabs>
 
-###### .default {#user-content-Grammar__default}
-<div className="property-container">
+It extends **built-in** grammar and defines a `@message` annotation for `struct` objects. For example:
 
-`.default` represents the default grammar for the next files.
+```next
+package demo;
 
-:::tip
+@message(type=1, req)
+struct LoginRequest {/*...*/}
 
-Run the following command to generate the default grammar:
+@message(type=2)
+struct LoginResponse {/*...*/}
 
-```sh
-next grammar grammar.yaml
+// This will error
+@message
+struct User {/*...*/}
+// Error: annotation message: parameter `type` is required
 ```
 
-You can use this grammar as a starting point for your own grammar.
+:::tip
+Run the following command to show the **built-in** grammar:
 
+```sh
+next grammar
+# Or outputs the grammar to a file
+next grammar grammar.yaml
+next grammar grammar.json
+```
 :::
-
-</div>
 
 ## Common {#user-content-Grammar_Common}
 ### Annotation {#user-content-Grammar_Common_Annotation}

@@ -1,0 +1,24 @@
+{
+  "struct": {
+    "annotations": [{
+      "name": "message",
+      "description": "Sets the declaration as a message.",
+      "parameters": [{
+        "name": "type",
+        "types": ["int"],
+        "description": "Sets the message type id",
+        "required": true,
+        "validators": [{
+          "name": "MessageTypeMustBePositive",
+          "message": "must be positive",
+          "expression": "{{gt . 0}}"
+        }]
+      },
+      {
+        "name": "req",
+        "types": ["bool"],
+        "description": "Sets the message as a request."
+      }]
+    }]
+  }
+}

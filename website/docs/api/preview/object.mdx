@@ -751,7 +751,7 @@ Example:
 ```next title="demo.next"
 package demo;
 @next(type=int8)
-@deprecated
+@custom
 enum Color {
 	Red = 1;
 	Green = 2;
@@ -762,7 +762,7 @@ enum Color {
 ```npl
 {{.Annotations.next.type}}
 {{.Annotations.next.Pos}}
-{{.Annotations.Contains "deprecated"}}
+{{.Annotations.Contains "custom"}}
 ```
 
 Output:
@@ -1234,7 +1234,7 @@ false
 ###### .String {#user-content-Object_Common_Type_Kind__String}
 <div className="property-container">
 
-`.String` returns the string representation of the kind. It returns the kind name in TitleCase. e.g. `KindInt` -> `Int`, `KindFloat32` -> `Float32`.
+`.String` returns the string representation of the kind.
 
 </div>
 

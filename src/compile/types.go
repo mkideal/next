@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
-	"strings"
 
 	"github.com/next/next/src/ast"
 	"github.com/next/next/src/token"
@@ -338,7 +337,7 @@ type Node interface {
 	//	```next title="demo.next"
 	//	package demo;
 	//	@next(type=int8)
-	//	@deprecated
+	//	@custom
 	//	enum Color {
 	//		Red = 1;
 	//		Green = 2;
@@ -349,7 +348,7 @@ type Node interface {
 	//	```npl
 	//	{{.Annotations.next.type}}
 	//	{{.Annotations.next.Pos}}
-	//	{{.Annotations.Contains "deprecated"}}
+	//	{{.Annotations.Contains "custom"}}
 	//	```
 	//
 	// Output:
@@ -806,7 +805,7 @@ func (b *PrimitiveType) Actual() reflect.Value { return reflect.ValueOf(b) }
 var primitiveTypes = func() map[string]*PrimitiveType {
 	m := make(map[string]*PrimitiveType)
 	for _, kind := range primitiveKinds {
-		name := strings.ToLower(kind.String())
+		name := kind.String()
 		m[name] = &PrimitiveType{kind: kind, name: name}
 	}
 	return m

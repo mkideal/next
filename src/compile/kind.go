@@ -84,31 +84,30 @@ func (k Kind) grammarType() string {
 // - **struct**: structure
 // - **interface**: interface
 const (
-	KindInvalid   Kind = iota // Invalid
-	KindBool                  // Bool
-	KindInt                   // Int
-	KindInt8                  // Int8
-	KindInt16                 // Int16
-	KindInt32                 // Int32
-	KindInt64                 // Int64
-	KindFloat32               // Float32
-	KindFloat64               // Float64
-	KindByte                  // Byte
-	KindBytes                 // Bytes
-	KindString                // String
-	KindAny                   // Any
-	KindMap                   // Map
-	KindVector                // Vector
-	KindArray                 // Array
-	KindEnum                  // Enum
-	KindStruct                // Struct
-	KindInterface             // Interface
+	KindInvalid   Kind = iota // invalid
+	KindBool                  // bool
+	KindInt                   // int
+	KindInt8                  // int8
+	KindInt16                 // int16
+	KindInt32                 // int32
+	KindInt64                 // int64
+	KindFloat32               // float32
+	KindFloat64               // float64
+	KindByte                  // byte
+	KindBytes                 // bytes
+	KindString                // string
+	KindAny                   // any
+	KindMap                   // map
+	KindVector                // vector
+	KindArray                 // array
+	KindEnum                  // enum
+	KindStruct                // struct
+	KindInterface             // interface
 
 	kindCount // -count-
 )
 
 // @api(Object/Common/Type/Kind.String) returns the string representation of the kind.
-// It returns the kind name in TitleCase. e.g. `KindInt` -> `Int`, `KindFloat32` -> `Float32`.
 
 // @api(Object/Common/Type/Kind.Valid) reports whether the type is valid.
 func (k Kind) Valid() bool {

@@ -3,12 +3,12 @@ package grammar
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"regexp"
 	"slices"
 	"strconv"
 
-	"github.com/gopherd/core/container/iters"
 	"github.com/gopherd/core/text/templates"
 	"github.com/next/next/src/internal/stringutil"
 )
@@ -26,9 +26,9 @@ func types(s ...string) []string {
 	return s
 }
 
-var validateAnnotationParameterTypes = []string{Bool, Int, Float, String, Type, Any}
-var validateConstTypes = []string{Bool, Int, Float, String}
-var validateEnumMemberTypes = []string{Int, Float, String}
+var validAnnotationParameterTypes = []string{Bool, Int, Float, String, Type, Any}
+var validConstTypes = []string{Bool, Int, Float, String}
+var validEnumMemberTypes = []string{Int, Float, String}
 
 func duplicated[S ~[]T, T comparable](s S) error {
 	if len(s) < 2 {
@@ -62,12 +62,6 @@ type Options[T any] struct {
 
 func opt[T any](options T) Options[T] {
 	return Options[T]{value: options}
-}
-
-func at(ids ...string) Annotations {
-	return slices.Collect(iters.Map(slices.Values(ids), func(id string) Options[Annotation] {
-		return Options[Annotation]{id: id}
-	}))
 }
 
 func (o Options[T]) Value() T {
@@ -108,16 +102,57 @@ func (o *Options[T]) resolve(source map[string]json.RawMessage) error {
 //	import Tabs from "@theme/Tabs";
 //	import TabItem from "@theme/TabItem";
 //	import ExampleGrammarYAMLSource from "!!raw-loader!@site/example/grammar.yaml";
+//	import ExampleGrammarJSONSource from "!!raw-loader!@site/example/grammar.json";
 //
 // The grammar is used to define a subset of the next files. It can limit the features of the next code according
 // by your requirements. The grammar is a yaml file that contains rules.
 //
 // Here is an example of the grammar file:
 //
-//	<CodeBlock language="yaml" title="grammar.yaml">
-//		{ExampleGrammarYAMLSource}
-//	</CodeBlock>
+//	<Tabs
+//		defaultValue="yaml"
+//		values={[
+//			{label: 'YAML', value: 'yaml'},
+//			{label: 'JSON', value: 'json'},
+//		]}
+//	>
+//	<TabItem value="yaml">
+//		<CodeBlock language="yaml" title="grammar.yaml">
+//			{ExampleGrammarYAMLSource}
+//		</CodeBlock>
+//	</TabItem>
+//	<TabItem value="json">
+//		<CodeBlock language="json" title="grammar.json">
+//			{ExampleGrammarJSONSource}
+//		</CodeBlock>
+//	</TabItem>
+//	</Tabs>
+//
+// It extends **built-in** grammar and defines a `@message` annotation for `struct` objects. For example:
+//
+//	```next
+//	package demo;
+//
+//	@message(type=1, req)
+//	struct LoginRequest {/*...*/}
+//
+//	@message(type=2)
+//	struct LoginResponse {/*...*/}
+//	```
+//
+//	:::tip
+//	Run the following command to show the **built-in** grammar:
+//
+//	```sh
+//	next grammar
+//	# Or outputs the grammar to a file
+//	next grammar grammar.yaml
+//	next grammar grammar.json
+//	```
+//	:::
 type Grammar struct {
+	builtin bool `json:"-"`
+
 	Context   Context   `json:"context"`
 	Package   Package   `json:"package"`
 	Import    Import    `json:"import"`
@@ -1256,8 +1291,8 @@ func (g *Grammar) Resolve() error {
 	}
 	// Resolve const
 	for _, v := range g.Const.Types {
-		if !slices.Contains(validateConstTypes, v) {
-			return fmt.Errorf("const type %q must be one of %v", v, validateConstTypes)
+		if !slices.Contains(validConstTypes, v) {
+			return fmt.Errorf("const type %q must be one of %v", v, validConstTypes)
 		}
 	}
 	if err := duplicated(g.Const.Types); err != nil {
@@ -1271,8 +1306,8 @@ func (g *Grammar) Resolve() error {
 		return err
 	}
 	for _, v := range g.Enum.Member.Types {
-		if !slices.Contains(validateEnumMemberTypes, v) {
-			return fmt.Errorf("enum member type %q must be one of %v", v, validateEnumMemberTypes)
+		if !slices.Contains(validEnumMemberTypes, v) {
+			return fmt.Errorf("enum member type %q must be one of %v", v, validEnumMemberTypes)
 		}
 	}
 	if err := duplicated(g.Enum.Member.Types); err != nil {
@@ -1298,7 +1333,39 @@ func (g *Grammar) Resolve() error {
 	if err := g.doResolve("interface method parameter", g.Interface.Method.Parameter.Annotations, g.Interface.Method.Parameter.Validators); err != nil {
 		return err
 	}
+
+	if !g.builtin {
+		g.extends(Builtin)
+	}
+
 	return nil
+}
+
+func (g *Grammar) extends(from Grammar) {
+	appendTo(&g.Package.Annotations, from.Package.Annotations...)
+	appendTo(&g.Package.Validators, from.Package.Validators...)
+	appendTo(&g.Const.Annotations, from.Const.Annotations...)
+	appendTo(&g.Const.Validators, from.Const.Validators...)
+	appendTo(&g.Enum.Annotations, from.Enum.Annotations...)
+	appendTo(&g.Enum.Validators, from.Enum.Validators...)
+	appendTo(&g.Enum.Member.Annotations, from.Enum.Member.Annotations...)
+	appendTo(&g.Enum.Member.Validators, from.Enum.Member.Validators...)
+	appendTo(&g.Struct.Annotations, from.Struct.Annotations...)
+	appendTo(&g.Struct.Validators, from.Struct.Validators...)
+	appendTo(&g.Struct.Field.Annotations, from.Struct.Field.Annotations...)
+	appendTo(&g.Struct.Field.Validators, from.Struct.Field.Validators...)
+	appendTo(&g.Interface.Annotations, from.Interface.Annotations...)
+	appendTo(&g.Interface.Validators, from.Interface.Validators...)
+	appendTo(&g.Interface.Method.Annotations, from.Interface.Method.Annotations...)
+	appendTo(&g.Interface.Method.Validators, from.Interface.Method.Validators...)
+	appendTo(&g.Interface.Method.Parameter.Annotations, from.Interface.Method.Parameter.Annotations...)
+	appendTo(&g.Interface.Method.Parameter.Validators, from.Interface.Method.Parameter.Validators...)
+	if len(g.Const.Types) == 0 {
+		g.Const.Types = from.Const.Types
+	}
+	if len(g.Enum.Member.Types) == 0 {
+		g.Enum.Member.Types = from.Enum.Member.Types
+	}
 }
 
 func (g *Grammar) doResolve(node string, annotations Annotations, validators Validators) error {
@@ -1326,7 +1393,7 @@ func (g *Grammar) resolveAnnotations(node string, annotations Annotations) error
 				return fmt.Errorf("%s: %w", node, err)
 			}
 		}
-		if err := a.validate(); err != nil {
+		if err := a.validate(g); err != nil {
 			return fmt.Errorf("%s: %w", node, err)
 		}
 	}
@@ -1342,20 +1409,23 @@ func (g *Grammar) resolveValidators(node string, validators Validators) error {
 	return nil
 }
 
-func (a *Annotation) validate() error {
+func (a *Annotation) validate(g *Grammar) error {
 	if a.Name == "" {
-		return fmt.Errorf("annotation name is required")
+		return errors.New("annotation name is required")
+	}
+	if !g.builtin && a.Name == "next" {
+		return errors.New("annotation @next is reserved by the next compiler")
 	}
 	for i := range a.Parameters {
 		p := &a.Parameters[i].value
-		if err := p.validate(); err != nil {
+		if err := p.validate(g); err != nil {
 			return fmt.Errorf("annotation %q: %w", a.Name, err)
 		}
 	}
 	return nil
 }
 
-func (p *AnnotationParameter) validate() error {
+func (p *AnnotationParameter) validate(_ *Grammar) error {
 	if p.Name == "" {
 		return fmt.Errorf("parameter name is required")
 	}
@@ -1373,8 +1443,8 @@ func (p *AnnotationParameter) validate() error {
 		if t == Any && len(p.Types) > 1 {
 			return fmt.Errorf("parameter %q: only one type %q is allowed if any type is specified", p.Name, Any)
 		}
-		if !slices.Contains(validateAnnotationParameterTypes, t) {
-			return fmt.Errorf("unknown type %q: must be one of %v", t, validateAnnotationParameterTypes)
+		if !slices.Contains(validAnnotationParameterTypes, t) {
+			return fmt.Errorf("unknown type %q: must be one of %v", t, validAnnotationParameterTypes)
 		}
 	}
 	return nil
@@ -1382,43 +1452,19 @@ func (p *AnnotationParameter) validate() error {
 
 const notEmpty = "{{ne . ``}}"
 
-func toJSON(v any) json.RawMessage {
-	b, err := json.Marshal(v)
-	if err != nil {
-		panic(err)
-	}
-	return b
-}
-
-func next(parameters ...string) Options[Annotation] {
+func next(node string, parameters ...Options[AnnotationParameter]) Options[Annotation] {
 	return opt(Annotation{
 		Name:        "next",
-		Description: "Built-in annotation for the next compiler.",
-		Parameters: slices.Collect(iters.Map(slices.Values(parameters), func(id string) Options[AnnotationParameter] {
-			return Options[AnnotationParameter]{id: id}
-		})),
+		Description: "Built-in annotation for " + node + " reserved by the next compiler.",
+		Parameters:  parameters,
 	})
 }
 
-func deprecated() Annotation {
-	return Annotation{
+func deprecated() Options[AnnotationParameter] {
+	return opt(AnnotationParameter{
 		Name:        "deprecated",
 		Description: "Sets the declaration as deprecated.",
-		Parameters: []Options[AnnotationParameter]{
-			opt(AnnotationParameter{
-				Name:        "message",
-				Description: "Sets the deprecation message.",
-				Types:       types(String),
-			}),
-		},
-	}
-}
-
-func required() Options[AnnotationParameter] {
-	return opt(AnnotationParameter{
-		Name:        "required",
-		Description: "Sets the field as required.",
-		Types:       types(Bool),
+		Types:       types(String, Bool),
 	})
 }
 
@@ -1436,6 +1482,11 @@ func default_() Options[AnnotationParameter] {
 		Description: "Sets the default value for field.",
 		Types:       types(Any),
 	})
+}
+
+func withCases(a Options[Annotation]) Options[Annotation] {
+	a.value.Parameters = append(a.value.Parameters, snake_case(), camel_case(), pascal_case(), kebab_case())
+	return a
 }
 
 func snake_case() Options[AnnotationParameter] {
@@ -1502,8 +1553,8 @@ func type_() Options[AnnotationParameter] {
 	})
 }
 
-func LANG_package() AnnotationParameter {
-	return AnnotationParameter{
+func LANG_package() Options[AnnotationParameter] {
+	return opt(AnnotationParameter{
 		Name:        ".+_package",
 		Description: "Sets the package name for target languages.",
 		Types:       types(String),
@@ -1514,103 +1565,64 @@ func LANG_package() AnnotationParameter {
 				Message:    "must not be empty",
 			}),
 		},
-	}
+	})
 }
 
-func LANG_imports() AnnotationParameter {
-	return AnnotationParameter{
+func LANG_imports() Options[AnnotationParameter] {
+	return opt(AnnotationParameter{
 		Name:        ".+_imports",
 		Description: "Sets the import declarations for target languages.",
 		Types:       types(String),
-	}
+	})
 }
 
-func LANG_alias() AnnotationParameter {
-	return AnnotationParameter{
+func LANG_alias() Options[AnnotationParameter] {
+	return opt(AnnotationParameter{
 		Name:        ".+_alias",
 		Description: "Sets the alias name for target languages.",
 		Types:       types(String),
-	}
+	})
 }
 
-// @api(Grammar.default) represents the default grammar for the next files.
-//
-//	:::tip
-//
-//	Run the following command to generate the default grammar:
-//
-//	```sh
-//	next grammar grammar.yaml
-//	```
-//
-//	You can use this grammar as a starting point for your own grammar.
-//
-//	:::
-var Default = Grammar{
-	Context: Context{
-		Annotations: map[string]json.RawMessage{
-			"next@package":                    toJSON(next("available", "*_package", "*_imports", "snake_case", "camel_case", "pascal_case", "kebab_case")),
-			"next@const":                      toJSON(next("available", "snake_case", "camel_case", "pascal_case", "kebab_case")),
-			"next@enum":                       toJSON(next("available", "type")),
-			"next@enum.member":                toJSON(next("available", "snake_case", "camel_case", "pascal_case", "kebab_case")),
-			"next@struct":                     toJSON(next("available", "*_alias")),
-			"next@struct.field":               toJSON(next("available", "required", "optional", "default", "*_alias", "snake_case", "camel_case", "pascal_case", "kebab_case")),
-			"next@interface":                  toJSON(next("available", "*_alias")),
-			"next@interface.method":           toJSON(next("available", "mut", "error", "snake_case", "camel_case", "pascal_case", "kebab_case")),
-			"next@interface.method.parameter": toJSON(next("mut", "*_alias", "snake_case", "camel_case", "pascal_case", "kebab_case")),
-			"deprecated":                      toJSON(deprecated()),
-		},
-		AnnotationParameters: map[string]json.RawMessage{
-			"available":   toJSON(available()),
-			"mut":         toJSON(mut()),
-			"error":       toJSON(error_()),
-			"type":        toJSON(type_()),
-			"required":    toJSON(required()),
-			"optional":    toJSON(optional()),
-			"default":     toJSON(default_()),
-			"snake_case":  toJSON(snake_case()),
-			"camel_case":  toJSON(camel_case()),
-			"pascal_case": toJSON(pascal_case()),
-			"kebab_case":  toJSON(kebab_case()),
-			"*_package":   toJSON(LANG_package()),
-			"*_imports":   toJSON(LANG_imports()),
-			"*_alias":     toJSON(LANG_alias()),
-		},
-	},
+func appendTo[S ~[]T, T any](s *S, x ...T) {
+	*s = append(*s, x...)
+}
+
+var Builtin = Grammar{
+	builtin: true,
 	Package: Package{
-		Annotations: at("next@package", "deprecated"),
+		Annotations: Annotations{withCases(next("package", available(), deprecated(), LANG_package(), LANG_imports()))},
 	},
 	Const: Const{
-		Types:       []string{Bool, Int, Float, String},
-		Annotations: at("next@const", "deprecated"),
+		Annotations: Annotations{withCases(next("const", available(), deprecated()))},
+		Types:       validConstTypes,
 	},
 	Enum: Enum{
-		Annotations: at("next@enum", "deprecated"),
+		Annotations: Annotations{next("enum", available(), deprecated(), type_())},
 		Member: EnumMember{
-			Types:       []string{Int, Float, String},
-			Annotations: at("next@enum.member", "deprecated"),
+			Annotations: Annotations{withCases(next("enum.member", available(), deprecated()))},
+			Types:       validEnumMemberTypes,
 		},
 	},
 	Struct: Struct{
-		Annotations: at("next@struct", "deprecated"),
+		Annotations: Annotations{next("struct", available(), deprecated(), LANG_alias())},
 		Field: StructField{
-			Annotations: at("next@struct.field", "deprecated"),
+			Annotations: Annotations{withCases(next("struct.field", available(), deprecated(), optional(), default_(), LANG_alias()))},
 		},
 	},
 	Interface: Interface{
-		Annotations: at("next@interface", "deprecated"),
+		Annotations: Annotations{next("interface", available(), deprecated(), LANG_alias())},
 		Method: InterfaceMethod{
-			Annotations: at("next@interface.method", "deprecated"),
+			Annotations: Annotations{withCases(next("interface.method", available(), deprecated(), mut(), error_()))},
 			Parameter: InterfaceMethodParameter{
-				Annotations: at("next@interface.method.parameter", "deprecated"),
+				Annotations: Annotations{withCases(next("interface.method.parameter", mut(), LANG_alias()))},
 			},
 		},
 	},
 }
 
 func init() {
-	// Resolve the default grammar
-	if err := Default.Resolve(); err != nil {
+	if err := Builtin.Resolve(); err != nil {
 		panic(err)
 	}
 }

@@ -25,7 +25,7 @@ Annotations can take three forms:
 Examples:
 
 ```next
-@deprecated
+@next(deprecated)
 @json(name="user_id")
 @validate(minLength=3, maxLength=50)
 @auth(required)  // Equivalent to @auth(required=true)
@@ -327,7 +327,7 @@ The `available` parameter is strictly for specifying target programming language
 Custom annotations can be created for specific needs and processed in custom templates or plugins. Here are some examples:
 
 ```next
-@deprecated(instead="Use NewUser()")
+@next(deprecated")
 struct User {
     int id;
     @json(omitempty)
@@ -419,8 +419,8 @@ Annotations can be accessed and used within templates to customize code generati
 {{- if .Doc -}}
 /**
 {{.Doc.Format " * " | align}}
-{{- if .Annotations.Contains "deprecated"}}
- * @deprecated {{.Annotations.deprecated}}
+{{- with .Annotations.next.deprecated}}
+ * @deprecated {{.}}
 {{- end}}
 {{- if .Annotations.Contains "param"}}
 {{- range $name, $desc := .Annotations.param}}

@@ -17,7 +17,7 @@ import * as {{.Target.Name}} from './{{.Target.Name}}';
 {{- end}}
 
 {{- define "next/ts/type:literal.suffix" -}}
-	{{- if eq .Kind.String "Int64" -}}
+	{{- if eq .Kind.String "int64" -}}
 		n
 	{{- end}}
 {{- end}}

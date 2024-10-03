@@ -95,7 +95,7 @@ message {{next .Type}} {
 
 {{/* next/protobuf/struct.field:deprecated: Adds the deprecated option to a field if necessary */}}
 {{- define "next/protobuf/struct.field:deprecated" -}}
-{{- if .Annotations.Contains "deprecated"}} [deprecated = true]{{end}}
+{{- if .Annotations.next.deprecated}} [deprecated = true]{{end}}
 {{- end -}}
 
 {{/* next/protobuf/struct.field:tag: Assigns a sequential tag number based on field index */}}

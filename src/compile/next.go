@@ -107,7 +107,7 @@ var commands = map[string]*command{
 				ext = filepath.Ext(path)
 			}
 
-			content, err := json.Marshal(grammar.Default)
+			content, err := json.Marshal(grammar.Builtin)
 			if err == nil {
 				switch ext {
 				case ".json":
@@ -359,13 +359,10 @@ func doCompile(compiler *Compiler, files []string, source io.Reader) {
 		default:
 			unwrap(stderr, fmt.Sprintf("unsupported file extension: %q, use .json, .yaml, or .yml", ext))
 		}
-		if err := compiler.grammar.Resolve(); err != nil {
-			return
-		}
 		unwrap(stderr, json.Unmarshal(content, &compiler.grammar))
 		unwrap(stderr, compiler.grammar.Resolve())
 	} else {
-		compiler.grammar = grammar.Default
+		compiler.grammar = grammar.Builtin
 	}
 
 	// parse and resolve all files
