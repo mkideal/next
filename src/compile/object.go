@@ -899,7 +899,10 @@ type StructField struct {
 }
 
 func newStructField(c *Compiler, file *File, s *Struct, src *ast.StructField, index int) *StructField {
-	f := &StructField{Decl: s, index: index}
+	f := &StructField{
+		Decl: s, index: index,
+		Comment: newComment(src.Comment),
+	}
 	file.addObject(c, src, f)
 	f.commonNode = newCommonNode(f, file, src.Pos(), src.Name, src.Doc, src.Annotations)
 	f.unresolved.typ = src.Type
