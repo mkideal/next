@@ -336,12 +336,12 @@ func (o *Options) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 	// Example:
 	//
 	//	```sh
-	//	next -M cpp.vector="std::vector<%T%>" \
-	//	     -M java.array="ArrayList<%T%>" \
-	//	     -M go.map="map[%K%]%V%" \
+	//	next -M "cpp.vector=std::vector<%T%>" \
+	//	     -M "java.array=ArrayList<%T%>" \
+	//	     -M "go.map=map[%K%]%V%" \
 	//	     -M python.ext=.py \
-	//	     -M protobuf.vector="repeated %T.E%" \
-	//	     -M ruby.comment="# %T%" \
+	//	     -M "protobuf.vector=repeated %T.E%" \
+	//	     -M "ruby.comment=# %T%" \
 	//	     ...
 	//	```
 	flagSet.Var(&o.Mapping, "M", u(""+
@@ -355,12 +355,12 @@ func (o *Options) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 		"Feature mappings: Set language-specific properties like file extensions or comment styles.\n"+
 		"Example:\n"+
 		"  next \\\n"+
-		"    -M cpp.vector=\"std::vector<%T%>\" \\\n"+
-		"    -M java.array=\"ArrayList<%T%>\" \\\n"+
-		"    -M go.map=\"map[%K%]%V%\" \\\n"+
+		"    -M \"cpp.vector=std::vector<%T%>\" \\\n"+
+		"    -M \"java.array=ArrayList<%T%>\" \\\n"+
+		"    -M \"go.map=map[%K%]%V%\" \\\n"+
 		"    -M python.ext=.py \\\n"+
-		"    -M protobuf.vector=\"repeated %T.E%\" \\\n"+
-		"    -M ruby.comment=\"# %T%\"\n",
+		"    -M \"protobuf.vector=repeated %T.E%\" \\\n"+
+		"    -M \"ruby.comment=# %T%\"\n",
 	))
 
 	// @api(CommandLine/Flag/-X) represents the custom annotation solver programs for code generation.

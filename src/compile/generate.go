@@ -14,6 +14,7 @@ import (
 
 	"github.com/gopherd/core/flags"
 	"github.com/gopherd/core/op"
+	"github.com/gopherd/core/text/document"
 
 	"github.com/next/next/src/internal/fsutil"
 )
@@ -338,7 +339,7 @@ func generateForTemplateFile(c *Compiler, lang, ext, dir, tmplFile string) error
 		return err
 	}
 	this := "file"
-	if values, err := resolveMeta(tc, t, string(content), "this"); err != nil {
+	if values, _, err := resolveMeta(tc, t, string(content), "this"); err != nil {
 		return err
 	} else if m := values.lookup("this"); m.Second {
 		this = m.First
@@ -464,7 +465,7 @@ func gen[T Decl](tc *templateContext, t *template.Template, decl T, content []by
 	defer tc.pop()
 
 	// Resolve meta data
-	meta, err := resolveMeta(tc, t, string(content))
+	meta, positions, err := resolveMeta(tc, t, string(content))
 	if err != nil {
 		return err
 	}
@@ -476,7 +477,8 @@ func gen[T Decl](tc *templateContext, t *template.Template, decl T, content []by
 	if m := meta.lookup("skip").First; m != "" {
 		skip, err := strconv.ParseBool(m)
 		if err != nil {
-			return fmt.Errorf("failed to parse 'skip' meta data: %v", err)
+			pos := positions["skip"]
+			return fmt.Errorf("%s: failed to parse 'skip' meta data: %v", document.FormatPosition(t.ParseName, pos), err)
 		}
 		if skip {
 			return nil
@@ -500,7 +502,7 @@ func gen[T Decl](tc *templateContext, t *template.Template, decl T, content []by
 		path = filepath.Join(tc.dir, path)
 	}
 	if err := tc.compiler.platform.WriteFile(path, []byte(buf.String())); err != nil {
-		return fmt.Errorf("failed to write file %q: %v", path, err)
+		return fmt.Errorf("%s: failed to write file %q: %v", t.ParseName, path, err)
 	}
 
 	return nil

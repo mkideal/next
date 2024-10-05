@@ -246,7 +246,7 @@ interface {{next .Type}} {
 {{/* next/value: Generates a value */}}
 {{- define "next/value" -}}
 {{- if .Type.Kind.IsBool}}
-	{{- if .Any}}{{render "true" .}}{{else}}{{render "false" .}}{{end}}
+	{{- if .Actual}}{{render "true" .}}{{else}}{{render "false" .}}{{end}}
 {{- else}}
 	{{- .}}{{render "type:literal.suffix" .Type}}
 {{- end}}

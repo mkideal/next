@@ -64,6 +64,14 @@ func stripTrailingWhitespace(s string) string {
 	return s[0:i]
 }
 
+func stripLeadingWhitespace(s string) string {
+	i := 0
+	for i < len(s) && isWhitespace(s[i]) {
+		i++
+	}
+	return s[i:]
+}
+
 // Text returns the text of the comment group.
 // Comment markers (//, /*, and */), the first space of a line comment, and
 // leading and trailing empty lines are removed.

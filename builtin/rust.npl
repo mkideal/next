@@ -172,7 +172,7 @@ fn {{render "interface.method:name" .}}({{next .Params}}){{next .Result}};{{next
 
 {{/* next/rust/used.type: Generates a type name, including module path if necessary */}}
 {{- define "next/rust/used.type" -}}
-{{- if not (.File.Package.Contains .Type)}}
+{{- if not (.File.Package.Has .Type)}}
 	{{- .Type.Decl.File.Package.Name}}::{{next .Type}}
 {{- else}}
 	{{- next .Type}}

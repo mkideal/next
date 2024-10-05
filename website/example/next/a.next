@@ -1,10 +1,10 @@
 // Package declaration
 
 @next(
-    go_package="github.com/next/next/website/example/gen/go/a",
-    cpp_package="demo::a",
-    c_package="DEMO_A_",
-    java_package="com.example.a",
+	go_package="github.com/next/next/website/example/gen/go/a",
+	cpp_package="demo::a",
+	c_package="DEMO_A_",
+	java_package="com.example.a",
 )
 package a;
 
@@ -65,14 +65,14 @@ assert_eq(MaxValue, 5673);
 
 // Enum with iota
 enum Color {
-    Red = 1 << iota;
-    Green;
-    Blue;
-    Alpha;
-    Yellow = Red | Green;
-    Cyan = Green | Blue;
-    Magenta = Red | Blue;
-    White = Red | Green | Blue;
+	Red = 1 << iota;
+	Green;
+	Blue;
+	Alpha;
+	Yellow = Red | Green;
+	Cyan = Green | Blue;
+	Magenta = Red | Blue;
+	White = Red | Green | Blue;
 }
 
 // Assert Color enum
@@ -87,28 +87,28 @@ assert_eq(Color.White, 7);
 
 // Enum with complex iota usage
 enum FilePermission {
-    None = 0;
-    Execute = 1 << iota;
-    Write;
-    Read;
+	None = 0;
+	Execute = 1 << iota;
+	Write;
+	Read;
 
-    UserRead = Read << (3 * iota);
-    UserWrite;
-    UserExecute;
+	UserRead = Read << (3 * iota);
+	UserWrite;
+	UserExecute;
 
-    GroupRead;
-    GroupWrite;
-    GroupExecute;
+	GroupRead;
+	GroupWrite;
+	GroupExecute;
 
-    OthersRead;
-    OthersWrite;
-    OthersExecute;
+	OthersRead;
+	OthersWrite;
+	OthersExecute;
 
-    // 4|32|256|2048|16384|131072|1048576|8388608|67108864
-    // 4 + 32 + 256 + 2048 + 16384 + 131072 + 1048576 + 8388608 + 67108864
-    All = UserRead | UserWrite | UserExecute | 
-          GroupRead | GroupWrite | GroupExecute | 
-          OthersRead | OthersWrite | OthersExecute;
+	// 4|32|256|2048|16384|131072|1048576|8388608|67108864
+	// 4 + 32 + 256 + 2048 + 16384 + 131072 + 1048576 + 8388608 + 67108864
+	All = UserRead | UserWrite | UserExecute | 
+	      GroupRead | GroupWrite | GroupExecute | 
+	      OthersRead | OthersWrite | OthersExecute;
 }
 
 // Assert FilePermission enum
@@ -128,36 +128,36 @@ assert_eq(FilePermission.OthersExecute, 67108864);
 assert_eq(FilePermission.All, (4 + 32 + 256 + 2048 + 16384 + 131072 + 1048576 + 8388608 + 67108864));
 
 enum Day {
-    Monday = 1 << iota;
-    Tuesday;
-    Wednesday;
-    Thursday;
-    Friday;
-    Saturday;
-    Sunday;
+	Monday = 1 << iota;
+	Tuesday;
+	Wednesday;
+	Thursday;
+	Friday;
+	Saturday;
+	Sunday;
 
-    Weekday = Monday | Tuesday | Wednesday | Thursday | Friday;
-    Weekend = Saturday | Sunday;
+	Weekday = Monday | Tuesday | Wednesday | Thursday | Friday;
+	Weekend = Saturday | Sunday;
 }
 
 enum Month {
-    January = 1 << iota;
-    February;
-    March;
-    April;
-    May;
-    June;
-    July;
-    August;
-    September;
-    October;
-    November;
-    December;
+	January = 1 << iota;
+	February;
+	March;
+	April;
+	May;
+	June;
+	July;
+	August;
+	September;
+	October;
+	November;
+	December;
 
-    Q1 = January | February | March;
-    Q2 = April | May | June;
-    Q3 = July | August | September;
-    Q4 = October | November | December;
+	Q1 = January | February | March;
+	Q2 = April | May | June;
+	Q3 = July | August | September;
+	Q4 = October | November | December;
 }
 
 // Assert Day enum
@@ -191,95 +191,95 @@ assert_eq(Month.Q4, 3584);
 
 // Struct types
 struct Point2D {
-    float64 x; // x-coordinate
-    float64 y; // y-coordinate
+	float64 x; // x-coordinate
+	float64 y; // y-coordinate
 }
 
 struct Point3D {
-    Point2D point;
-    float64 z;
+	Point2D point;
+	float64 z;
 }
 
 struct Rectangle {
-    Point2D topLeft;
-    Point2D bottomRight;
+	Point2D topLeft;
+	Point2D bottomRight;
 }
 
 // Struct with various field types
 struct ComplexStruct {
-    bool flag;
-    int8 tinyInt;
-    int16 smallInt;
-    int32 mediumInt;
-    int64 bigInt;
-    int defaultInt;
-    float32 singlePrecision;
-    float64 doublePrecision;
-    string text;
-    byte singleByte;
-    bytes byteArray;
-    array<int, 5> fixedArray;
-    vector<string> dynamicArray;
-    vector<int> intArray;
-    map<string, int> dictionary;
+	bool flag;
+	int8 tinyInt;
+	int16 smallInt;
+	int32 mediumInt;
+	int64 bigInt;
+	int defaultInt;
+	float32 singlePrecision;
+	float64 doublePrecision;
+	string text;
+	byte singleByte;
+	bytes byteArray;
+	array<int, 5> fixedArray;
+	vector<string> dynamicArray;
+	vector<int> intArray;
+	map<string, int> dictionary;
 }
 
 struct User {
-    int64 id;
-    string username;
-    string email;
-    Day preferredDay;
-    Month birthMonth;
+	int64 id;
+	string username;
+	string email;
+	Day preferredDay;
+	Month birthMonth;
 }
 
 struct UserProfile {
-    User user;
-    string firstName;
-    string lastName;
-    int age;
-    vector<string> interests;
+	User user;
+	string firstName;
+	string lastName;
+	int age;
+	vector<string> interests;
 }
 
 // message types
 @message(type=201,req)
 struct LoginRequest {
-    string username;
-    string password;
-    string deviceId;
-    @next(optional)
-    string twoFactorToken;
+	string username;
+	string password;
+	string deviceId;
+	@next(optional)
+	string twoFactorToken;
 }
 
 @message(type=202)
 struct LoginResponse {
-    bool success;
-    string errorMessage;
-    string authenticationToken;
-    User user;
+	bool success;
+	string errorMessage;
+	string authenticationToken;
+	User user;
 }
 
 struct GenericRequest {
-    string requestId;
-    int64 timestamp;
+	string requestId;
+	int64 timestamp;
 }
 
 struct GenericResponse {
-    string requestId;
-    int64 timestamp;
-    bool success;
-    string errorCode;
-    string errorMessage;
+	string requestId;
+	int64 timestamp;
+	bool success;
+	string errorCode;
+	string errorMessage;
 }
 
 // Test cases for iota
 enum IotatestEnum {
-    A = iota;     // 0
-    B;            // 1
-    C = iota * 2; // 0
-    D;            // 2
-    E = iota * iota;  // 0
-    F;                // 1
-    G = iota + C;     // 0
+	A = iota;     // 0
+	B;            // 1
+	C = iota * 2; // 0
+	D;            // 2
+	E = iota * iota;  // 0
+	F;                // 1
+	G = iota + C;     // 0
 }
 
 // Assert IotatestEnum

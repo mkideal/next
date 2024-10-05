@@ -348,7 +348,7 @@ type Node interface {
 	//	```npl
 	//	{{.Annotations.next.type}}
 	//	{{.Annotations.next.Pos}}
-	//	{{.Annotations.Contains "custom"}}
+	//	{{.Annotations.Has "custom"}}
 	//	```
 	//
 	// Output:
@@ -567,14 +567,14 @@ type Type interface {
 	// The used kinds in the `User` struct are: `(1<<KindStruct) | (1<<KindInt64) | (1<<KindString) | (1<<KindVector) | (1<<KindMap) | (1<<KindInt) | (1<<KindBool)`.
 	//
 	//	```npl
-	//	{{.UsedKinds.Contains "struct"}}
-	//	{{.UsedKinds.Contains "int64"}}
-	//	{{.UsedKinds.Contains "string"}}
-	//	{{.UsedKinds.Contains "vector"}}
-	//	{{.UsedKinds.Contains "map"}}
-	//	{{.UsedKinds.Contains "int"}}
-	//	{{.UsedKinds.Contains "bool"}}
-	//	{{.UsedKinds.Contains "float32"}}
+	//	{{.UsedKinds.Has "struct"}}
+	//	{{.UsedKinds.Has "int64"}}
+	//	{{.UsedKinds.Has "string"}}
+	//	{{.UsedKinds.Has "vector"}}
+	//	{{.UsedKinds.Has "map"}}
+	//	{{.UsedKinds.Has "int"}}
+	//	{{.UsedKinds.Has "bool"}}
+	//	{{.UsedKinds.Has "float32"}}
 	//	```
 	//
 	// Output:

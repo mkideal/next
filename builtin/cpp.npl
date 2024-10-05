@@ -27,7 +27,7 @@
 
 {{/* next/cpp/used.type: Generates a fully qualified type name, including namespace if necessary */}}
 {{- define "next/cpp/used.type" -}}
-{{if not (.File.Package.Contains .Type) -}}
+{{if not (.File.Package.Has .Type) -}}
 {{$ns := .Type.Decl.File.Package.Annotations.next.cpp_package -}}
 {{if $ns -}}
 {{$ns}}::

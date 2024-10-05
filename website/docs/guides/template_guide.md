@@ -118,75 +118,75 @@ Example from cpp.npl:
 ## Common Template Patterns
 
 1. File Generation:
-   ```npl
-   {{- define "next/go/file" -}}
-   package {{.Package.Name}}
-   {{super . -}}
-   {{- end}}
-   ```
+    ```npl
+    {{- define "next/go/file" -}}
+    package {{.Package.Name}}
+    {{super . -}}
+    {{- end}}
+    ```
 
 2. Struct Generation:
-   ```npl
-   {{- define "next/go/struct" -}}
-   {{next .Doc}}type {{next .Type}} struct {
-       {{- next .Fields}}
-   }
-   {{- end}}
-   ```
+    ```npl
+    {{- define "next/go/struct" -}}
+    {{next .Doc}}type {{next .Type}} struct {
+        {{- next .Fields}}
+    }
+    {{- end}}
+    ```
 
 3. Enum Generation:
-   ```npl
-   {{- define "next/go/enum" -}}
-   {{next .Doc}}type {{next .Type}} {{render "enum:member.type" .}}
+    ```npl
+    {{- define "next/go/enum" -}}
+    {{next .Doc}}type {{next .Type}} {{render "enum:member.type" .}}
 
-   const (
-   {{- next .Members}}
-   )
-   {{- end}}
-   ```
+    const (
+    {{- next .Members}}
+    )
+    {{- end}}
+    ```
 
 4. Interface Generation:
-   ```npl
-   {{- define "next/go/interface" -}}
-   {{next .Doc}}type {{next .Type}} interface {
-       {{- next .Methods}}
-   }
-   {{- end}}
-   ```
+    ```npl
+    {{- define "next/go/interface" -}}
+    {{next .Doc}}type {{next .Type}} interface {
+        {{- next .Methods}}
+    }
+    {{- end}}
+    ```
 
 ## Advanced Techniques
 
 1. Conditional Logic:
-   ```npl
-   {{- if .Annotations.message.type}}
-   static int message_type() { return {{.Annotations.message.type}}; }
-   {{- end}}
-   ```
+    ```npl
+    {{- if .Annotations.message.type}}
+    static int message_type() { return {{.Annotations.message.type}}; }
+    {{- end}}
+    ```
 
 2. Custom Rendering:
-   ```npl
-   {{render "file:namespace.begin" . -}}
-   {{render "file:forward.declarations" . -}}
-   ```
+    ```npl
+    {{render "file:namespace.begin" . -}}
+    {{render "file:forward.declarations" . -}}
+    ```
 
 3. Nested Templates:
-   ```npl
-   {{- define "next/go/imports:decl" -}}
-   {{_}}
-   import "strconv"
-   {{- if .File.Annotations.next.go_imports}}
-   {{- range (.File.Annotations.next.go_imports | split "," | map (trim | split "." | first | trimPrefix "*") | sort | uniq)}}
-   import "{{.}}"
-   {{- end}}
-   {{- end}}
-   {{- end}}
-   ```
+    ```npl
+    {{- define "next/go/imports:decl" -}}
+    {{_}}
+    import "strconv"
+    {{- if .File.Annotations.next.go_imports}}
+    {{- range (.File.Annotations.next.go_imports | split "," | map (trim | split "." | first | trimPrefix "*") | sort | uniq)}}
+    import "{{.}}"
+    {{- end}}
+    {{- end}}
+    {{- end}}
+    ```
 
 4. Using Built-in Functions:
-   ```npl
-   {{.Name | camelCase}}
-   {{.Name | snakeCase | upper}}
-   ```
+    ```npl
+    {{.Name | camelCase}}
+    {{.Name | snakeCase | upper}}
+    ```
 
 ## Best Practices
 

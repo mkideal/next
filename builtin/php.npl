@@ -119,7 +119,7 @@ public function {{render "interface.method:name" .}}({{next .Params}}){{next .Re
 
 {{/* next/php/used.type: Generates a fully qualified type name */}}
 {{- define "next/php/used.type" -}}
-{{- if and (not (.File.Package.Contains .Type)) (.Type.Decl.File) -}}
+{{- if and (not (.File.Package.Has .Type)) (.Type.Decl.File) -}}
 \{{render "package:name" .Type.Decl.File.Package}}\
 {{- end -}}
 {{- next .Type -}}

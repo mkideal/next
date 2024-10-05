@@ -78,20 +78,20 @@ func (p *Package) Types() []Type {
 // @api(Object/Package.Imports) represents the package's import declarations.
 func (p *Package) Imports() *Imports[*Package] { return p.imports }
 
-// @api(Object/Package.Contains) reports whether the package contains the given [Type](#Object/Common/Type) or [Symbol](#Object/Common/Symbol).
+// @api(Object/Package.Has) reports whether the package contains the given [Type](#Object/Common/Type) or [Symbol](#Object/Common/Symbol).
 // If the current package is nil, it always returns true.
 //
 // Example:
 //
 //	```npl
 //	{{- define "next/go/used.type" -}}
-//	{{if not (.File.Package.Contains .Type) -}}
+//	{{if not (.File.Package.Has .Type) -}}
 //	{{.Type.Decl.File.Package.Name -}}.
 //	{{- end -}}
 //	{{next .Type}}
 //	{{- end}}
 //	```
-func (p *Package) Contains(obj Object) (bool, error) {
+func (p *Package) Has(obj Object) (bool, error) {
 	var p2 *Package
 	switch node := obj.(type) {
 	case Type:
@@ -99,7 +99,7 @@ func (p *Package) Contains(obj Object) (bool, error) {
 	case Symbol:
 		p2 = node.File().Package()
 	default:
-		return false, fmt.Errorf("Contains: unexpected type %T, want Type or Symbol", node)
+		return false, fmt.Errorf("package.Has: unexpected type %T, want Type or Symbol", node)
 	}
 	return p2 == nil || p == p2, nil
 }

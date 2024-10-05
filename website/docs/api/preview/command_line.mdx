@@ -260,12 +260,12 @@ myapp
 Example:
 
 ```sh
-next -M cpp.vector="std::vector<%T%>" \
-     -M java.array="ArrayList<%T%>" \
-     -M go.map="map[%K%]%V%" \
+next -M "cpp.vector=std::vector<%T%>" \
+     -M "java.array=ArrayList<%T%>" \
+     -M "go.map=map[%K%]%V%" \
      -M python.ext=.py \
-     -M protobuf.vector="repeated %T.E%" \
-     -M ruby.comment="# %T%" \
+     -M "protobuf.vector=repeated %T.E%" \
+     -M "ruby.comment=# %T%" \
      ...
 ```
 

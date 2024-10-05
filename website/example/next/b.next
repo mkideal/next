@@ -1,21 +1,21 @@
 @next(
-    go_package="github.com/next/next/website/example/gen/go/b",
-    cpp_package="demo::b",
-    c_package="DEMO_B_",
-    java_package="com.example.b",
+	go_package="github.com/next/next/website/example/gen/go/b",
+	cpp_package="demo::b",
+	c_package="DEMO_B_",
+	java_package="com.example.b",
 )
 package b;
 
 import "./a.next";
 
 enum TestEnum {
-    A = a.A;
-    B = a.Color.Green + a.B;
-    C = B << iota;
-    D;
-    E;
-    F = 1 << iota;
-    G;
+	A = a.A;
+	B = a.Color.Green + a.B;
+	C = B << iota;
+	D;
+	E;
+	F = 1 << iota;
+	G;
 }
 
 assert_eq(TestEnum.A, 1);
@@ -27,7 +27,7 @@ assert_eq(TestEnum.F, 1);
 assert_eq(TestEnum.G, 2);
 
 struct TestStruct {
-    a.Point2D point;
+	a.Point2D point;
 }
 
 // error("This is an error message");

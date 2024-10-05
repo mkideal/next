@@ -1,8 +1,8 @@
 @next(
-    go_package="github.com/next/next/website/example/gen/go/c",
-    cpp_package="demo::c",
-    c_package="DEMO_C_",
-    java_package="com.example.c",
+	go_package="github.com/next/next/website/example/gen/go/c",
+	cpp_package="demo::c",
+	c_package="DEMO_C_",
+	java_package="com.example.c",
 )
 package c;
 
@@ -15,46 +15,46 @@ const C = 3.14;
 const D = true;
 
 enum Color {
-    Red = iota;
-    Green;
-    Blue;
+	Red = iota;
+	Green;
+	Blue;
 }
 
 enum LoginType {
-    Username = 1;
-    Email = 2;
+	Username = 1;
+	Email = 2;
 }
 
 enum UserType {
-    Admin = 1;
-    User = 2;
+	Admin = 1;
+	User = 2;
 }
 
 struct User {
-    UserType type;
-    int id;
-    string username;
-    string password;
-    string deviceId;
-    @next(optional)
-    string twoFactorToken;
-    vector<string> roles;
-    map<string, string> metadata;
-    array<int, A+3> scores;
+	UserType type;
+	int id;
+	string username;
+	string password;
+	string deviceId;
+	@next(optional)
+	string twoFactorToken;
+	vector<string> roles;
+	map<string, string> metadata;
+	array<int, A+3> scores;
 }
 
 struct LoginRequest {
-    LoginType type;
-    string username;
-    string password;
-    string deviceId;
-    @next(optional)
-    string twoFactorToken;
+	LoginType type;
+	string username;
+	string password;
+	string deviceId;
+	@next(optional)
+	string twoFactorToken;
 }
 
 struct LoginResponse {
-    bool success;
-    string errorMessage;
-    string authenticationToken;
-    User user;
+	bool success;
+	string errorMessage;
+	string authenticationToken;
+	User user;
 }

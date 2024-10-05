@@ -16,7 +16,7 @@ namespace {{render "package:name" .Package}}
 
 {{/* next/csharp/used.type: Generates a fully qualified type name, including namespace if necessary */}}
 {{- define "next/csharp/used.type" -}}
-	{{- if not (.File.Package.Contains .Type)}}
+	{{- if not (.File.Package.Has .Type)}}
 		{{- render "package:name" .Decl.File.Package}}.
 	{{- end}}
 	{{- next .Type}}

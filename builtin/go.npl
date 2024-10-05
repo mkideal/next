@@ -114,7 +114,7 @@ var _ = (*{{.Target.Package.Name}}.{{next (index (.Target.Package.Types) 0)}})(n
 
 {{/* next/go/used.type: Generates a fully qualified type name, including package name if necessary */}}
 {{- define "next/go/used.type" -}}
-{{if not (.File.Package.Contains .Type) -}}
+{{if not (.File.Package.Has .Type) -}}
 {{.Type.Decl.File.Package.Name -}}.
 {{- end -}}
 {{next .Type}}
@@ -143,7 +143,7 @@ const (
 {{/* next/go/enum.member: Generates a constant declaration for an enum member */}}
 {{- define "next/go/enum.member"}}
 {{next .Doc -}}
-{{- render "enum.member:name" .}} = {{next .Value}}{{next .Comment}}
+{{- render "enum.member:name" .}} {{next .Decl.Type}} = {{next .Value}}{{next .Comment}}
 {{- end}}
 
 {{- define "next/go/enum.member:name" -}}
@@ -254,7 +254,7 @@ type HTTPServer interface {
 {{- end}}
 
 {{- define "next/go/type:zero" -}}
-{{- if or (.Kind.IsInterface) (.Kind.IsVector) (.Kind.IsMap) -}}
+{{- if or (.Kind.IsInterface) (.Kind.IsVector) (.Kind.IsMap) (.Decl.Annotations.next.go_alias) -}}
 nil
 {{- else -}}
 {{super .}}

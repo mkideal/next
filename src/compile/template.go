@@ -67,8 +67,9 @@ func templatePos(content string, pos int, lookahead string) document.Position {
 
 // resolveMeta resolves the metadata of the given template for the given keys.
 // If no key is given, it resolves all metadata except "this".
-func resolveMeta(tc *templateContext, t *template.Template, content string, keys ...string) (Meta, error) {
+func resolveMeta(tc *templateContext, t *template.Template, content string, keys ...string) (Meta, map[string]document.Position, error) {
 	meta := make(Meta)
+	positions := make(map[string]document.Position)
 	if tc.meta == nil {
 		tc.meta = make(Meta)
 	}
@@ -81,35 +82,38 @@ func resolveMeta(tc *templateContext, t *template.Template, content string, keys
 			key := tt.Name()
 			if strings.HasPrefix(key, "meta/") && key != "meta/this" {
 				key = strings.TrimPrefix(key, "meta/")
+				pos := templatePos(content, int(tt.Root.Pos), "meta/")
 				if err := validMetaKey(key); err != nil {
-					pos := templatePos(content, int(tt.Root.Pos), "meta/")
-					return meta, fmt.Errorf("%s: invalid meta key %q: %w", document.FormatPosition(t.ParseName, pos), key, err)
+					return meta, nil, fmt.Errorf("%s: invalid meta key %q: %w", document.FormatPosition(t.ParseName, pos), key, err)
 				}
 				var buf bytes.Buffer
 				if err := tt.Execute(&buf, tc); err != nil {
-					return meta, err
+					return meta, nil, err
 				}
 				value := buf.String()
 				meta[key] = value
+				positions[key] = pos
 				tc.meta[key] = value
 			}
 		}
-		return meta, nil
+		return meta, positions, nil
 	}
 	for _, key := range keys {
 		tt := t.Lookup("meta/" + key)
 		if tt == nil {
 			continue
 		}
+		pos := templatePos(content, int(tt.Root.Pos), "meta/")
 		var buf bytes.Buffer
 		if err := tt.Execute(&buf, tc); err != nil {
-			return meta, err
+			return meta, nil, err
 		}
 		value := buf.String()
 		meta[key] = value
+		positions[key] = pos
 		tc.meta[key] = value
 	}
-	return meta, nil
+	return meta, positions, nil
 }
 
 // createTemplate creates a new template from the given content.
@@ -978,15 +982,15 @@ func (tc *templateContext) parseTemplateNames(lang string, name string) []string
 		return nil
 	}
 	var names []string
-	// <lang>.<name>
+	// <lang>/<name>
 	if priority <= 1 {
 		names = append(names, lang+sep+name)
 	}
-	// next.<lang>.<name>
+	// next/<lang>/<name>
 	if priority <= 2 {
 		names = append(names, "next"+sep+lang+sep+name)
 	}
-	// next.<name>
+	// next/<name>
 	if priority <= 3 {
 		names = append(names, "next"+sep+name)
 	}

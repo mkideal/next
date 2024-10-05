@@ -485,7 +485,7 @@ func (v *Value) File() *File {
 
 func (v *Value) resolve(c *Compiler, file *File, scope Scope) {
 	v.val = v.resolveValue(c, file, scope, make([]*Value, 0, 16))
-	switch v.Any().(type) {
+	switch v.Actual().(type) {
 	case int32:
 		v.typ = primitiveTypes["int32"]
 	case int64:
@@ -499,7 +499,7 @@ func (v *Value) resolve(c *Compiler, file *File, scope Scope) {
 	case string:
 		v.typ = primitiveTypes["string"]
 	default:
-		c.addErrorf(v.namePos, "unexpected constant type: %T", v.Any())
+		c.addErrorf(v.namePos, "unexpected constant type: %T", v.Actual())
 	}
 }
 
@@ -559,7 +559,7 @@ func (v *Value) String() string {
 	return v.val.String()
 }
 
-// @api(Object/Value.Any) represents the underlying value of the constant.
+// @api(Object/Value.Actual) represents the underlying value of the constant.
 // It returns one of the following types:
 //
 // - **int32**
@@ -569,7 +569,7 @@ func (v *Value) String() string {
 // - **bool**
 // - **string**
 // - **nil**
-func (v *Value) Any() any {
+func (v *Value) Actual() any {
 	if v.val == nil {
 		return nil
 	}
@@ -649,8 +649,8 @@ func (x *Const) Value() *Value {
 
 // @api(Object/Common/Fields)
 // `Fields<D, F>` represents a list of fields of a declaration where `D` is the declaration [Node](#Object/Common/Node) and
-// `F` is the field [Object](#Object).
-type Fields[D Node, F Object] struct {
+// `F` is the field object [Node](#Object/Common/Node).
+type Fields[D, F Node] struct {
 	// @api(Object/Common/Fields.Decl) is the declaration [Node](#Object/Common/Node) that contains the fields.
 	//
 	// Currently, it is one of following types:
@@ -670,6 +670,17 @@ type Fields[D Node, F Object] struct {
 	// - [InterfaceMethod](#Object/InterfaceMethod).
 	// - [InterfaceMethodParameter](#Object/InterfaceMethodParameter).
 	List []F
+}
+
+// @api(Object/Common/Fields.Lookup) looks up a field by name and returns the field object.
+func (f *Fields[D, F]) Lookup(name string) F {
+	var zero F
+	for _, x := range f.List {
+		if x.Name() == name {
+			return x
+		}
+	}
+	return zero
 }
 
 // @api(Object/EnumMembers) represents the [Fields](#Object/Common/Fields) of [EnumEember](#Object/EnumMember)

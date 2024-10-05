@@ -16,10 +16,10 @@ func (ks Kinds) contains(k Kind) bool {
 	return ks&Kinds(k) == Kinds(k)
 }
 
-// @api(Object/Common/Type/Kinds.Contains) reports whether the type contains specific kind.
+// @api(Object/Common/Type/Kinds.Has) reports whether the type contains specific kind.
 // The kind can be a `Kind` (or any integer) or a string representation of the [Kind](#Object/Common/Type/Kind).
 // If the kind is invalid, it returns an error.
-func (ks Kinds) Contains(k any) (bool, error) {
+func (ks Kinds) Has(k any) (bool, error) {
 	switch k := k.(type) {
 	case Kind:
 		return ks.contains(k), nil

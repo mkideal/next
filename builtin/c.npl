@@ -85,7 +85,7 @@ typedef unsigned char _Bool;
 
 {{/* next/c/used.type: Generates a fully qualified type name, including prefix if necessary */}}
 {{- define "next/c/used.type" -}}
-{{- if not (.File.Package.Contains .Type)}}
+{{- if not (.File.Package.Has .Type)}}
 	{{- $ns := .Type.Decl.File.Package.Annotations.next.c_package}}
 	{{- if $ns -}}
 		{{- $ns}}{{type .Type}}

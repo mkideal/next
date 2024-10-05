@@ -27,7 +27,7 @@ import {{render "package:name" .Target.Package}}.*;
 
 {{/* next/java/used.type: Generates a fully qualified type name, including package if necessary */}}
 {{- define "next/java/used.type" -}}
-	{{- if not (.File.Package.Contains .Type)}}
+	{{- if not (.File.Package.Has .Type)}}
 		{{- render "package:name" .Decl.File.Package}}.
 	{{- end}}
 	{{- next .Type}}

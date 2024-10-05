@@ -119,7 +119,7 @@ def {{render "interface.method:name" .}}(self{{if .Params.List}}, {{next .Params
 
 {{/* next/python/used.type: Generates a fully qualified type name */}}
 {{- define "next/python/used.type" -}}
-{{- if and (not (.File.Package.Contains .Type)) (.Type.Decl.File)}}
+{{- if and (not (.File.Package.Has .Type)) (.Type.Decl.File)}}
 {{- .Type.Decl.File.Package.Name}}.
 {{- end}}
 {{- next .Type}}

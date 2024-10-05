@@ -29,7 +29,7 @@ func (a Annotations) get(name string) Annotation {
 	return a[name]
 }
 
-// @api(Object/Common/Annotations.Contains) reports whether the annotations contain the given annotation.
+// @api(Object/Common/Annotations.Has) reports whether the annotations contain the given annotation.
 //
 // Example:
 //
@@ -39,11 +39,11 @@ func (a Annotations) get(name string) Annotation {
 //	```
 //
 //	```npl
-//	{{if .Annotations.Contains "json"}}
+//	{{if .Annotations.Has "json"}}
 //	{{/* do something */}}
 //	{{end}}
 //	```
-func (a Annotations) Contains(name string) bool {
+func (a Annotations) Has(name string) bool {
 	if a == nil {
 		return false
 	}
@@ -106,15 +106,19 @@ func (a Annotations) Contains(name string) bool {
 //
 // :::note
 //
-// parameter names **MUST NOT** start with an uppercase letter, as this is reserved for the next compiler.
+// Annotation name **MUST NOT** be "Has", it's a reserved method for checking whether the annotation contains the given parameter.
+// Parameter name **MUST NOT** be start with "_" and uppercase letter (A-Z).
 //
 //	```next
-//	@next(type=100) // OK
-//	@next(_type=100) // OK
+//	@message(type=100) // OK
 //
 //	// This will error
-//	@next(Type=100)
-//	// invalid parameter name "Type": must not start with an uppercase letter (A-Z), e.g., "type"
+//	@message(_type=100)
+//	// invalid parameter name "_type": must not start with an underscore (_)
+//
+//	// This will error
+//	@next(Pos=100)
+//	// invalid parameter name "Pos": must not start with an uppercase letter (A-Z)
 //	```
 //
 // :::
@@ -127,7 +131,7 @@ func (a Annotation) get(name string) any {
 	return a[name]
 }
 
-// @api(Object/Common/Annotation.Contains) reports whether the annotation contains the given parameter.
+// @api(Object/Common/Annotation.Has) reports whether the annotation contains the given parameter.
 //
 // Example:
 //
@@ -137,7 +141,7 @@ func (a Annotation) get(name string) any {
 //	```
 //
 //	```npl
-//	{{if .Annotations.json.Contains "omitempty"}}
+//	{{if .Annotations.json.Has "omitempty"}}
 //	{{/* do something */}}
 //	{{end}}
 //	```
@@ -153,7 +157,7 @@ func (a Annotation) get(name string) any {
 //	```
 //
 // :::
-func (a Annotation) Contains(name string) bool {
+func (a Annotation) Has(name string) bool {
 	if a == nil {
 		return false
 	}
@@ -532,6 +536,10 @@ func resolveAnnotations(c *Compiler, file *File, obj Node, annotations *ast.Anno
 	}
 	result := make(Annotations)
 	for _, a := range annotations.List {
+		if a.Name.Name == "Has" {
+			c.addErrorf(a.Pos(), "invalid annotation name %q: reserved for checking whether the annotations contains the given annotation", a.Name.Name)
+			continue
+		}
 		if _, dup := result[a.Name.Name]; dup {
 			c.addErrorf(a.Pos(), "annotation %s redeclared", a.Name.Name)
 			continue
@@ -551,11 +559,14 @@ func resolveAnnotations(c *Compiler, file *File, obj Node, annotations *ast.Anno
 				c.addErrorf(p.Name.Pos(), "parameter name cannot be empty")
 				continue
 			}
+			if name[0] == '_' {
+				c.addErrorf(p.Name.Pos(), "invalid parameter name %q: must not start with an underscore (_)", name)
+				continue
+			}
 			if name[0] >= 'A' && name[0] <= 'Z' {
 				c.addErrorf(p.Name.Pos(), "invalid parameter name %q: must not start with an uppercase letter (A-Z), e.g., %q", name, strings.ToLower(name[:1])+name[1:])
 				continue
 			}
-
 			if _, dup := annotation[name]; dup {
 				c.addErrorf(p.Pos(), "parameter %q redefined, previous definition at %s", name, annotation.NamePos(name))
 				continue

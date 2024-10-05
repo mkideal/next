@@ -177,23 +177,26 @@ The `next` annotation is used to pass information to the next compiler. It's a r
 
 :::note
 
-parameter names **MUST NOT** start with an uppercase letter, as this is reserved for the next compiler.
+Annotation name **MUST NOT** be "Has", it's a reserved method for checking whether the annotation contains the given parameter. Parameter name **MUST NOT** be start with "_" and uppercase letter (A-Z).
 
 ```next
-@next(type=100) // OK
-@next(_type=100) // OK
+@message(type=100) // OK
 
 // This will error
-@next(Type=100)
-// invalid parameter name "Type": must not start with an uppercase letter (A-Z), e.g., "type"
+@message(_type=100)
+// invalid parameter name "_type": must not start with an underscore (_)
+
+// This will error
+@next(Pos=100)
+// invalid parameter name "Pos": must not start with an uppercase letter (A-Z)
 ```
 
 :::
 
-###### .Contains {#user-content-Object_Common_Annotation__Contains}
+###### .Has {#user-content-Object_Common_Annotation__Has}
 <div className="property-container">
 
-`.Contains` reports whether the annotation contains the given parameter.
+`.Has` reports whether the annotation contains the given parameter.
 
 Example:
 
@@ -203,7 +206,7 @@ struct User {/*...*/}
 ```
 
 ```npl
-{{if .Annotations.json.Contains "omitempty"}}
+{{if .Annotations.json.Has "omitempty"}}
 {{/* do something */}}
 {{end}}
 ```
@@ -585,10 +588,10 @@ This will don't generate the `uint128` struct in the `rust` language, but use `u
 
 Annotations is a map that stores multiple annotations for a given entity. The key is the annotation name (string), and the value is the corresponding [Annotation](#user-content-Object_Common_Annotation) object.
 
-###### .Contains {#user-content-Object_Common_Annotations__Contains}
+###### .Has {#user-content-Object_Common_Annotations__Has}
 <div className="property-container">
 
-`.Contains` reports whether the annotations contain the given annotation.
+`.Has` reports whether the annotations contain the given annotation.
 
 Example:
 
@@ -598,7 +601,7 @@ struct User {/*...*/}
 ```
 
 ```npl
-{{if .Annotations.Contains "json"}}
+{{if .Annotations.Has "json"}}
 {{/* do something */}}
 {{end}}
 ```
@@ -639,7 +642,7 @@ The used kinds in the `User` struct are: `(1<<KindInt64) | (1<<KindString) | (1<
 
 ### Fields {#user-content-Object_Common_Fields}
 
-`Fields<D, F>` represents a list of fields of a declaration where `D` is the declaration [Node](#user-content-Object_Common_Node) and `F` is the field [Object](#user-content-Object).
+`Fields<D, F>` represents a list of fields of a declaration where `D` is the declaration [Node](#user-content-Object_Common_Node) and `F` is the field object [Node](#user-content-Object_Common_Node).
 
 ###### .Decl {#user-content-Object_Common_Fields__Decl}
 <div className="property-container">
@@ -666,6 +669,13 @@ Currently, the field object is one of following types:
 - [StructField](#user-content-Object_StructField)
 - [InterfaceMethod](#user-content-Object_InterfaceMethod).
 - [InterfaceMethodParameter](#user-content-Object_InterfaceMethodParameter).
+
+</div>
+
+###### .Lookup {#user-content-Object_Common_Fields__Lookup}
+<div className="property-container">
+
+`.Lookup` looks up a field by name and returns the field object.
 
 </div>
 
@@ -762,7 +772,7 @@ enum Color {
 ```npl
 {{.Annotations.next.type}}
 {{.Annotations.next.Pos}}
-{{.Annotations.Contains "custom"}}
+{{.Annotations.Has "custom"}}
 ```
 
 Output:
@@ -1064,14 +1074,14 @@ struct User {
 The used kinds in the `User` struct are: `(1<<KindStruct) | (1<<KindInt64) | (1<<KindString) | (1<<KindVector) | (1<<KindMap) | (1<<KindInt) | (1<<KindBool)`.
 
 ```npl
-{{.UsedKinds.Contains "struct"}}
-{{.UsedKinds.Contains "int64"}}
-{{.UsedKinds.Contains "string"}}
-{{.UsedKinds.Contains "vector"}}
-{{.UsedKinds.Contains "map"}}
-{{.UsedKinds.Contains "int"}}
-{{.UsedKinds.Contains "bool"}}
-{{.UsedKinds.Contains "float32"}}
+{{.UsedKinds.Has "struct"}}
+{{.UsedKinds.Has "int64"}}
+{{.UsedKinds.Has "string"}}
+{{.UsedKinds.Has "vector"}}
+{{.UsedKinds.Has "map"}}
+{{.UsedKinds.Has "int"}}
+{{.UsedKinds.Has "bool"}}
+{{.UsedKinds.Has "float32"}}
 ```
 
 Output:
@@ -1249,10 +1259,10 @@ false
 
 `Kinds` represents the type kind set.
 
-###### .Contains {#user-content-Object_Common_Type_Kinds__Contains}
+###### .Has {#user-content-Object_Common_Type_Kinds__Has}
 <div className="property-container">
 
-`.Contains` reports whether the type contains specific kind. The kind can be a `Kind` (or any integer) or a string representation of the [Kind](#user-content-Object_Common_Type_Kind). If the kind is invalid, it returns an error.
+`.Has` reports whether the type contains specific kind. The kind can be a `Kind` (or any integer) or a string representation of the [Kind](#user-content-Object_Common_Type_Kind). If the kind is invalid, it returns an error.
 
 </div>
 
@@ -2017,24 +2027,6 @@ interface Shape {
 
 `Package` (extends [Decl](#user-content-Object_Common_Decl)) represents a Next package.
 
-###### .Contains {#user-content-Object_Package__Contains}
-<div className="property-container">
-
-`.Contains` reports whether the package contains the given [Type](#user-content-Object_Common_Type) or [Symbol](#user-content-Object_Common_Symbol). If the current package is nil, it always returns true.
-
-Example:
-
-```npl
-{{- define "next/go/used.type" -}}
-{{if not (.File.Package.Contains .Type) -}}
-{{.Type.Decl.File.Package.Name -}}.
-{{- end -}}
-{{next .Type}}
-{{- end}}
-```
-
-</div>
-
 ###### .Decls {#user-content-Object_Package__Decls}
 <div className="property-container">
 
@@ -2046,6 +2038,24 @@ Example:
 <div className="property-container">
 
 `.Files` represents the all declared file objects in the package.
+
+</div>
+
+###### .Has {#user-content-Object_Package__Has}
+<div className="property-container">
+
+`.Has` reports whether the package contains the given [Type](#user-content-Object_Common_Type) or [Symbol](#user-content-Object_Common_Symbol). If the current package is nil, it always returns true.
+
+Example:
+
+```npl
+{{- define "next/go/used.type" -}}
+{{if not (.File.Package.Has .Type) -}}
+{{.Type.Decl.File.Package.Name -}}.
+{{- end -}}
+{{next .Type}}
+{{- end}}
+```
 
 </div>
 
@@ -2264,10 +2274,10 @@ The type of the `user` field is a `UsedType` with the underlying type `StructTyp
 
 `Value` represents a value for a const declaration or an enum member.
 
-###### .Any {#user-content-Object_Value__Any}
+###### .Actual {#user-content-Object_Value__Actual}
 <div className="property-container">
 
-`.Any` represents the underlying value of the constant. It returns one of the following types:
+`.Actual` represents the underlying value of the constant. It returns one of the following types:
 
 - **int32**
 - **int64**

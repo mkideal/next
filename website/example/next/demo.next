@@ -1,19 +1,19 @@
 @next(
-    go_package="github.com/next/next/website/example/gen/go/demo",
-    // Import statements for go_imports:
-    // - "net/http" is imported for go_alias "*net/http.HandlerFunc"
-    // - "fmt" is imported to demonstrate importing with go type
-    //
-    // Format for go_imports:
-    // - path/to/pkg.Var (for functions, variables, constants, etc.)
-    // - *path/to/pkg.Type (for types, "*" is required for importing types)
-    //
-    // Note: Avoid duplicating import paths. Use comma separation for multiple imports.
-    go_imports="*net/http.HandlerFunc,*fmt.Stringer",
-    cpp_package="demo",
-    c_package="DEMO_",
-    java_package="com.example.demo",
-    csharp_package="Demo",
+	go_package="github.com/next/next/website/example/gen/go/demo",
+	// Import statements for go_imports:
+	// - "net/http" is imported for go_alias "*net/http.HandlerFunc"
+	// - "fmt" is imported to demonstrate importing with go type
+	//
+	// Format for go_imports:
+	// - path/to/pkg.Var (for functions, variables, constants, etc.)
+	// - *path/to/pkg.Type (for types, "*" is required for importing types)
+	//
+	// Note: Avoid duplicating import paths. Use comma separation for multiple imports.
+	go_imports="*net/http.HandlerFunc,*fmt.Stringer",
+	cpp_package="demo",
+	c_package="DEMO_",
+	java_package="com.example.demo",
+	csharp_package="Demo",
 )
 package demo;
 
@@ -25,31 +25,31 @@ const Timeout = MaxRetries * 1000.0; // Float constant expression
 // Values: Red (1), Green (2), Blue (4), Yellow (8)
 @next(type=int8)
 enum Color {
-    Red = 1 << iota;
-    Green;
-    Blue;
-    Yellow;
+	Red = 1 << iota;
+	Green;
+	Blue;
+	Yellow;
 }
 
 // MathConstants represents mathematical constants
 @next(available="!protobuf & !php")
 enum MathConstants {
-    Pi = 3.14159265358979323846;
-    E = 2.71828182845904523536;
+	Pi = 3.14159265358979323846;
+	E = 2.71828182845904523536;
 }
 
 // User represents a user in the system
 struct User {
-    int64 id;
-    string username;
-    vector<string> tags;
-    map<string, int> scores;
-    array<float64, 3> coordinates;
-    array<array<int, 2>, 3> matrix;
-    @next(deprecated) string email;
-    @next(deprecated="favoriteColor is deprecated, use tags instead")
-    Color favoriteColor;
-    any extra;
+	int64 id;
+	string username;
+	vector<string> tags;
+	map<string, int> scores;
+	array<float64, 3> coordinates;
+	array<array<int, 2>, 3> matrix;
+	@next(deprecated) string email;
+	@next(deprecated="favoriteColor is deprecated, use tags instead")
+	Color favoriteColor;
+	any extra;
 }
 
 // uint64 represents a 64-bit unsigned integer.
@@ -61,16 +61,16 @@ struct User {
 // - In Protobuf, it is represented as uint64
 // - In other languages, it is represented as a struct with low and high 32-bit integers.
 @next(
-    go_alias="uint64",
-    cpp_alias="uint64_t",
-    java_alias="long",
-    rust_alias="u64",
-    csharp_alias="ulong",
-    protobuf_alias="uint64",
+	go_alias="uint64",
+	cpp_alias="uint64_t",
+	java_alias="long",
+	rust_alias="u64",
+	csharp_alias="ulong",
+	protobuf_alias="uint64",
 )
 struct uint64 {
-    int32 low;
-    int32 high;
+	int32 low;
+	int32 high;
 }
 
 // uint128 represents a 128-bit unsigned integer.
@@ -78,104 +78,104 @@ struct uint64 {
 // - In other languages, it is represented as a struct with low and high 64-bit integers.
 @next(rust_alias="u128")
 struct uint128 {
-    uint64 low;
-    uint64 high;
+	uint64 low;
+	uint64 high;
 }
 
 // Contract represents a smart contract
 struct Contract {
-    uint128 address;
-    any data;
+	uint128 address;
+	any data;
 }
 
 // OperatingSystem represents different operating systems
 @next(available="!protobuf")
 enum OperatingSystem {
-    Windows = "windows";
-    Linux = "linux";
-    MacOS = "macos";
-    Android = "android";
-    IOS = "ios";
+	Windows = "windows";
+	Linux = "linux";
+	MacOS = "macos";
+	Android = "android";
+	IOS = "ios";
 }
 
 // LoginRequest represents a login request message (type 101)
 // @message annotation is a custom annotation that generates message types.
 @message(type=101, req)
 struct LoginRequest {
-    string username;
-    string password;
+	string username;
+	string password;
 
-    // @next(optional) annotation is a builtin annotation that marks a field as optional.
-    @next(optional) string device;
-    @next(
-        available="!protobuf",
-        optional,
-        default=OperatingSystem.IOS,
-    ) OperatingSystem os;
+	// @next(optional) annotation is a builtin annotation that marks a field as optional.
+	@next(optional) string device;
+	@next(
+	    available="!protobuf",
+	    optional,
+	    default=OperatingSystem.IOS,
+	) OperatingSystem os;
 
-    // @next(optional) is not supported for array, vector, and map fields:
-    //
-    // Bad example:
-    //  @next(optional) array<float64, 3> coordinates;
-    //  @next(optional) vector<string> tags;
-    //  @next(optional) map<string, int> scores;
+	// @next(optional) is not supported for array, vector, and map fields:
+	//
+	// Bad example:
+	//  @next(optional) array<float64, 3> coordinates;
+	//  @next(optional) vector<string> tags;
+	//  @next(optional) map<string, int> scores;
 
-    @next(protobuf_alias="fixed64")
-    int64 timestamp;
+	@next(protobuf_alias="fixed64")
+	int64 timestamp;
 }
 
 // LoginResponse represents a login response message (type 102)
 @message(type=102)
 struct LoginResponse {
-    string token;
-    User user;
+	string token;
+	User user;
 }
 
 // Reader provides reading functionality
 interface Reader {
-    // @next(error) applies to the method:
-    // - For Go: The method may return an error
-    // - For C++/Java: The method throws an exception
-    //
-    // @next(mut) applies to the method:
-    // - For C++: The method is non-const
-    // - For other languages: This annotation may not have a direct effect
-    //
-    // @next(mut) applies to the parameter buffer:
-    // - For C++: The parameter is non-const, allowing modification
-    // - For other languages: This annotation may not have a direct effect, 
-    //   but indicates that the buffer content may be modified
-    @next(error, mut)
-    read(@next(mut) bytes buffer) int;
+	// @next(error) applies to the method:
+	// - For Go: The method may return an error
+	// - For C++/Java: The method throws an exception
+	//
+	// @next(mut) applies to the method:
+	// - For C++: The method is non-const
+	// - For other languages: This annotation may not have a direct effect
+	//
+	// @next(mut) applies to the parameter buffer:
+	// - For C++: The parameter is non-const, allowing modification
+	// - For other languages: This annotation may not have a direct effect, 
+	//   but indicates that the buffer content may be modified
+	@next(error, mut)
+	read(@next(mut) bytes buffer) int;
 }
 
 @next(
-    available="go|java",
-    go_alias="net/http.Handler",
-    java_alias="java.util.function.Function<com.sun.net.httpserver.HttpExchange, String>",
+	available="go|java",
+	go_alias="net/http.Handler",
+	java_alias="java.util.function.Function<com.sun.net.httpserver.HttpExchange, String>",
 )
 interface HTTPHandler {}
 
 @next(available="go|java")
 interface HTTPServer {
-    // @next(error) indicates that the method may return an error:
-    // - For Go: The method returns (LoginResponse, error)
-    // - For C++/Java: The method throws an exception
-    @next(error)
-    handle(string path, HTTPHandler handler);
+	// @next(error) indicates that the method may return an error:
+	// - For Go: The method returns (LoginResponse, error)
+	// - For C++/Java: The method throws an exception
+	@next(error)
+	handle(string path, HTTPHandler handler);
 }
 
 // HTTPClient provides HTTP request functionality
 interface HTTPClient {
-    // Available for all languages
-    request(string url, string method, string body) string;
-    request2(string url, string method, string body) string;
+	// Available for all languages
+	request(string url, string method, string body) string;
+	request2(string url, string method, string body) string;
 
-    // Available for Go and Java
-    @next(error, available="go|java")
-    get(string url) string;
+	// Available for Go and Java
+	@next(error, available="go|java")
+	get(string url) string;
 
-    // Available for C++
-    @next(error, available="cpp")
-    post(string url, string body) string;
+	// Available for C++
+	@next(error, available="cpp")
+	post(string url, string body) string;
 }

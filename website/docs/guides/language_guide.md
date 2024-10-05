@@ -62,43 +62,43 @@ Next offers a rich set of data types to model various kinds of information effec
 Next also provides several composite types for more complex data structures:
 
 1. **Array**: Fixed-size arrays
-   ```next
-   array<int, 5> scores;
-   ```
+    ```next
+    array<int, 5> scores;
+    ```
 
 2. **Vector**: Dynamic-size arrays
-   ```next
-   vector<string> names;
-   ```
+    ```next
+    vector<string> names;
+    ```
 
 3. **Map**: Key-value pairs
-   ```next
-   map<string, int> ages;
-   ```
+    ```next
+    map<string, int> ages;
+    ```
 
 4. **Enum**: Named constants
-   ```next
-   enum Color {
-       Red = 1;
-       Green = 2;
-       Blue = 3;
-   }
-   ```
+    ```next
+    enum Color {
+        Red = 1;
+        Green = 2;
+        Blue = 3;
+    }
+    ```
 
 5. **Struct**: User-defined types
-   ```next
-   struct Person {
-       string name;
-       int age;
-   }
-   ```
+    ```next
+    struct Person {
+        string name;
+        int age;
+    }
+    ```
 
 6. **Interface**: Method signatures
-   ```next
-   interface Reader {
-       read(bytes buffer) int;
-   }
-   ```
+    ```next
+    interface Reader {
+        read(bytes buffer) int;
+    }
+    ```
 
 ## Enumerations
 

@@ -239,7 +239,11 @@ func (c *Compiler) Resolve() error {
 	for len(imports) > 0 {
 		path := imports[len(imports)-1]
 		imports = imports[:len(imports)-1]
-		f, err := parser.ParseFile(c.fset, path, nil, parser.ParseComments)
+		content, err := c.platform.ReadFile(path)
+		if err != nil {
+			return fmt.Errorf("failed to read file %s: %w", path, err)
+		}
+		f, err := parser.ParseFile(c.fset, path, content, parser.ParseComments)
 		if err != nil {
 			return err
 		}
@@ -688,7 +692,7 @@ func (c *Compiler) validateEnumGrammar(x *Enum) error {
 		}
 		hasZero := false
 		for _, m := range x.Members.List {
-			if rv := reflect.ValueOf(m.value.Any()); (rv.CanInt() && rv.Int() == 0) || (rv.CanUint() && rv.Uint() == 0) {
+			if rv := reflect.ValueOf(m.value.Actual()); (rv.CanInt() && rv.Int() == 0) || (rv.CanUint() && rv.Uint() == 0) {
 				hasZero = true
 				break
 			}
