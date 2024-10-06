@@ -211,14 +211,25 @@ func formatComments(list []string, appendNewline bool, indent string, beginAndEn
 	if len(begins) > 1 {
 		lines = append(begins[1:], lines...)
 	}
+
+	trimmedIndent := strings.TrimRight(indent, " \t")
 	if end == "" {
 		for i, line := range lines {
-			lines[i] = indent + begin + line
+			line = begin + line
+			if line == "" {
+				lines[i] = trimmedIndent
+			} else {
+				lines[i] = indent + line
+			}
 		}
 	} else {
 		lines = append([]string{begin + lines[0]}, lines[1:]...)
 		for i := 1; i < len(lines); i++ {
-			lines[i] = indent + lines[i]
+			if lines[i] == "" {
+				lines[i] = trimmedIndent
+			} else {
+				lines[i] = indent + lines[i]
+			}
 		}
 		lines = append(lines, end)
 	}

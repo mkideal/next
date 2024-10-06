@@ -40,6 +40,7 @@ enum MathConstants {
 
 // User represents a user in the system
 struct User {
+	@next(tokens="ID")
 	int64 id;
 	string username;
 	vector<string> tags;
@@ -49,6 +50,14 @@ struct User {
 	@next(deprecated) string email;
 	@next(deprecated="favoriteColor is deprecated, use tags instead")
 	Color favoriteColor;
+
+	// @next(tokens) applies to the node name:
+	// - For snake_case: "last_login_ip"
+	// - For camelCase: "lastLoginIP"
+	// - For PascalCase: "LastLoginIP"
+	// - For kebab-case: "last-login-ip"
+	@next(tokens="Last Login IP")
+	string lastLoginIP;
 	any extra;
 }
 
@@ -156,7 +165,15 @@ interface Reader {
 )
 interface HTTPHandler {}
 
-@next(available="go|java")
+// HTTPServer provides HTTP server functionality.
+//
+// @next(available="go|java") indicates that the interface is available for Go and Java.
+// @next(tokens="HTTP Server") applies to the interface name.
+// - For snake_case: "http_server"
+// - For camelCase: "httpServer"
+// - For PascalCase: "HTTPServer"
+// - For kebab-case: "http-server"
+@next(available="go|java", tokens="HTTP Server")
 interface HTTPServer {
 	// @next(error) indicates that the method may return an error:
 	// - For Go: The method returns (LoginResponse, error)
@@ -166,9 +183,12 @@ interface HTTPServer {
 }
 
 // HTTPClient provides HTTP request functionality
+@next(tokens="HTTP Client")
 interface HTTPClient {
 	// Available for all languages
 	request(string url, string method, string body) string;
+
+	@next(tokens="Request2")
 	request2(string url, string method, string body) string;
 
 	// Available for Go and Java

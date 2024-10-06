@@ -142,9 +142,9 @@ export const IotatestEnum = Object.freeze({
 export class Point2D {
 	constructor() {
 		/** @type { Number } */
-		this.x = 0;
+		this.x = 0; // x-coordinate
 		/** @type { Number } */
-		this.y = 0;
+		this.y = 0; // y-coordinate
 	}
 }
 

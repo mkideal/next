@@ -10,7 +10,7 @@ package a;
 
 // XX constant
 // XX value 2
-@next(snake_case="xx", pascal_case="XX")
+@next(tokens="XX")
 const XX = 1; // XX value
 
 // Constants

@@ -149,8 +149,8 @@ enum class IotatestEnum : int32_t {
 // Struct types
 class Point2D {
 public:
-	double x = {0.0};
-	double y = {0.0};
+	double x = {0.0}; // x-coordinate
+	double y = {0.0}; // y-coordinate
 
 public:
 	Point2D() = default;

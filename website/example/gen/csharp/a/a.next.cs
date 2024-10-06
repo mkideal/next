@@ -129,8 +129,8 @@ namespace a
 	// Struct types
 	public class Point2D
 	{
-		public double x { get; set; }
-		public double y { get; set; }
+		public double x { get; set; } // x-coordinate
+		public double y { get; set; } // y-coordinate
 	}
 
 	public class Point3D

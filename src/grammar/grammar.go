@@ -1460,6 +1460,10 @@ func next(node string, parameters ...Options[AnnotationParameter]) Options[Annot
 	})
 }
 
+func base_next(node string, parameters ...Options[AnnotationParameter]) Options[Annotation] {
+	return next(node, append(parameters, available(), deprecated(), tokens())...)
+}
+
 func deprecated() Options[AnnotationParameter] {
 	return opt(AnnotationParameter{
 		Name:        "deprecated",
@@ -1484,39 +1488,10 @@ func default_() Options[AnnotationParameter] {
 	})
 }
 
-func withCases(a Options[Annotation]) Options[Annotation] {
-	a.value.Parameters = append(a.value.Parameters, snake_case(), camel_case(), pascal_case(), kebab_case())
-	return a
-}
-
-func snake_case() Options[AnnotationParameter] {
+func tokens() Options[AnnotationParameter] {
 	return opt(AnnotationParameter{
-		Name:        "snake_case",
-		Description: "Sets the snake_case name for the declaration.",
-		Types:       types(String),
-	})
-}
-
-func camel_case() Options[AnnotationParameter] {
-	return opt(AnnotationParameter{
-		Name:        "camel_case",
-		Description: "Sets the camelCase name for the declaration.",
-		Types:       types(String),
-	})
-}
-
-func pascal_case() Options[AnnotationParameter] {
-	return opt(AnnotationParameter{
-		Name:        "pascal_case",
-		Description: "Sets the PascalCase name for the declaration.",
-		Types:       types(String),
-	})
-}
-
-func kebab_case() Options[AnnotationParameter] {
-	return opt(AnnotationParameter{
-		Name:        "kebab_case",
-		Description: "Sets the kebab-case name for the declaration.",
+		Name:        "tokens",
+		Description: "Sets the space separated tokens for the declaration.",
 		Types:       types(String),
 	})
 }
@@ -1553,7 +1528,7 @@ func type_() Options[AnnotationParameter] {
 	})
 }
 
-func LANG_package() Options[AnnotationParameter] {
+func lang_package() Options[AnnotationParameter] {
 	return opt(AnnotationParameter{
 		Name:        ".+_package",
 		Description: "Sets the package name for target languages.",
@@ -1568,7 +1543,7 @@ func LANG_package() Options[AnnotationParameter] {
 	})
 }
 
-func LANG_imports() Options[AnnotationParameter] {
+func lang_imports() Options[AnnotationParameter] {
 	return opt(AnnotationParameter{
 		Name:        ".+_imports",
 		Description: "Sets the import declarations for target languages.",
@@ -1576,7 +1551,7 @@ func LANG_imports() Options[AnnotationParameter] {
 	})
 }
 
-func LANG_alias() Options[AnnotationParameter] {
+func lang_alias() Options[AnnotationParameter] {
 	return opt(AnnotationParameter{
 		Name:        ".+_alias",
 		Description: "Sets the alias name for target languages.",
@@ -1591,31 +1566,31 @@ func appendTo[S ~[]T, T any](s *S, x ...T) {
 var Builtin = Grammar{
 	builtin: true,
 	Package: Package{
-		Annotations: Annotations{withCases(next("package", available(), deprecated(), LANG_package(), LANG_imports()))},
+		Annotations: Annotations{base_next("package", lang_package(), lang_imports())},
 	},
 	Const: Const{
-		Annotations: Annotations{withCases(next("const", available(), deprecated()))},
+		Annotations: Annotations{base_next("const")},
 		Types:       validConstTypes,
 	},
 	Enum: Enum{
-		Annotations: Annotations{next("enum", available(), deprecated(), type_())},
+		Annotations: Annotations{base_next("enum", type_())},
 		Member: EnumMember{
-			Annotations: Annotations{withCases(next("enum.member", available(), deprecated()))},
+			Annotations: Annotations{base_next("enum.member")},
 			Types:       validEnumMemberTypes,
 		},
 	},
 	Struct: Struct{
-		Annotations: Annotations{next("struct", available(), deprecated(), LANG_alias())},
+		Annotations: Annotations{base_next("struct", lang_alias())},
 		Field: StructField{
-			Annotations: Annotations{withCases(next("struct.field", available(), deprecated(), optional(), default_(), LANG_alias()))},
+			Annotations: Annotations{base_next("struct.field", optional(), default_(), lang_alias())},
 		},
 	},
 	Interface: Interface{
-		Annotations: Annotations{next("interface", available(), deprecated(), LANG_alias())},
+		Annotations: Annotations{base_next("interface", lang_alias())},
 		Method: InterfaceMethod{
-			Annotations: Annotations{withCases(next("interface.method", available(), deprecated(), mut(), error_()))},
+			Annotations: Annotations{base_next("interface.method", mut(), error_())},
 			Parameter: InterfaceMethodParameter{
-				Annotations: Annotations{withCases(next("interface.method.parameter", mut(), LANG_alias()))},
+				Annotations: Annotations{next("interface.method.parameter", deprecated(), tokens(), mut(), lang_alias())},
 			},
 		},
 	},

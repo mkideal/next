@@ -90,6 +90,23 @@ public class User {
 		this.favoriteColor = favoriteColor;
 	}
 
+	/**
+	 * @next(tokens) applies to the node name:
+	 * - For snake_case: "last_login_ip"
+	 * - For camelCase: "lastLoginIP"
+	 * - For PascalCase: "LastLoginIP"
+	 * - For kebab-case: "last-login-ip"
+	 */
+	private String lastLoginIP;
+
+	public String getLastLoginIP() {
+		return lastLoginIP;
+	}
+
+	public void setLastLoginIP(String lastLoginIP) {
+		this.lastLoginIP = lastLoginIP;
+	}
+
 	private Object extra;
 
 	public Object getExtra() {

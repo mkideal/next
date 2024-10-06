@@ -48,90 +48,90 @@ const Complex5 = 31
 type Color int32
 
 const (
-	ColorRed = 1
-	ColorGreen = 2
-	ColorBlue = 4
-	ColorAlpha = 8
-	ColorYellow = 3
-	ColorCyan = 6
-	ColorMagenta = 5
-	ColorWhite = 7
+	ColorRed Color = 1
+	ColorGreen Color = 2
+	ColorBlue Color = 4
+	ColorAlpha Color = 8
+	ColorYellow Color = 3
+	ColorCyan Color = 6
+	ColorMagenta Color = 5
+	ColorWhite Color = 7
 )
 
 // Enum with complex iota usage
 type FilePermission int32
 
 const (
-	FilePermissionNone = 0
-	FilePermissionExecute = 1
-	FilePermissionWrite = 2
-	FilePermissionRead = 4
-	FilePermissionUserRead = 4
-	FilePermissionUserWrite = 32
-	FilePermissionUserExecute = 256
-	FilePermissionGroupRead = 2048
-	FilePermissionGroupWrite = 16384
-	FilePermissionGroupExecute = 131072
-	FilePermissionOthersRead = 1048576
-	FilePermissionOthersWrite = 8388608
-	FilePermissionOthersExecute = 67108864
+	FilePermissionNone FilePermission = 0
+	FilePermissionExecute FilePermission = 1
+	FilePermissionWrite FilePermission = 2
+	FilePermissionRead FilePermission = 4
+	FilePermissionUserRead FilePermission = 4
+	FilePermissionUserWrite FilePermission = 32
+	FilePermissionUserExecute FilePermission = 256
+	FilePermissionGroupRead FilePermission = 2048
+	FilePermissionGroupWrite FilePermission = 16384
+	FilePermissionGroupExecute FilePermission = 131072
+	FilePermissionOthersRead FilePermission = 1048576
+	FilePermissionOthersWrite FilePermission = 8388608
+	FilePermissionOthersExecute FilePermission = 67108864
 	// 4|32|256|2048|16384|131072|1048576|8388608|67108864
 	// 4 + 32 + 256 + 2048 + 16384 + 131072 + 1048576 + 8388608 + 67108864
-	FilePermissionAll = 76695844
+	FilePermissionAll FilePermission = 76695844
 )
 
 type Day int32
 
 const (
-	DayMonday = 1
-	DayTuesday = 2
-	DayWednesday = 4
-	DayThursday = 8
-	DayFriday = 16
-	DaySaturday = 32
-	DaySunday = 64
-	DayWeekday = 31
-	DayWeekend = 96
+	DayMonday Day = 1
+	DayTuesday Day = 2
+	DayWednesday Day = 4
+	DayThursday Day = 8
+	DayFriday Day = 16
+	DaySaturday Day = 32
+	DaySunday Day = 64
+	DayWeekday Day = 31
+	DayWeekend Day = 96
 )
 
 type Month int32
 
 const (
-	MonthJanuary = 1
-	MonthFebruary = 2
-	MonthMarch = 4
-	MonthApril = 8
-	MonthMay = 16
-	MonthJune = 32
-	MonthJuly = 64
-	MonthAugust = 128
-	MonthSeptember = 256
-	MonthOctober = 512
-	MonthNovember = 1024
-	MonthDecember = 2048
-	MonthQ1 = 7
-	MonthQ2 = 56
-	MonthQ3 = 448
-	MonthQ4 = 3584
+	MonthJanuary Month = 1
+	MonthFebruary Month = 2
+	MonthMarch Month = 4
+	MonthApril Month = 8
+	MonthMay Month = 16
+	MonthJune Month = 32
+	MonthJuly Month = 64
+	MonthAugust Month = 128
+	MonthSeptember Month = 256
+	MonthOctober Month = 512
+	MonthNovember Month = 1024
+	MonthDecember Month = 2048
+	MonthQ1 Month = 7
+	MonthQ2 Month = 56
+	MonthQ3 Month = 448
+	MonthQ4 Month = 3584
 )
 
 // Test cases for iota
 type IotatestEnum int32
 
 const (
-	IotatestEnumA = 0 // 0
-	IotatestEnumB = 1 // 1
-	IotatestEnumC = 0 // 0
-	IotatestEnumD = 2 // 2
-	IotatestEnumE = 0 // 0
-	IotatestEnumF = 1 // 1
-	IotatestEnumG = 0 // 0
+	IotatestEnumA IotatestEnum = 0 // 0
+	IotatestEnumB IotatestEnum = 1 // 1
+	IotatestEnumC IotatestEnum = 0 // 0
+	IotatestEnumD IotatestEnum = 2 // 2
+	IotatestEnumE IotatestEnum = 0 // 0
+	IotatestEnumF IotatestEnum = 1 // 1
+	IotatestEnumG IotatestEnum = 0 // 0
 )
 
 // Struct types
 type Point2D struct {
-	X float64
-	Y float64
+	X float64 // x-coordinate
+	Y float64 // y-coordinate
 }
 
 type Point3D struct {

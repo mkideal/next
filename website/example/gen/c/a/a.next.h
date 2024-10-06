@@ -173,8 +173,8 @@ typedef enum DEMO_A_IotatestEnum {
  * Struct types
  */
 typedef struct DEMO_A_Point2D {
-	double x;
-	double y;
+	double x; /* x-coordinate */
+	double y; /* y-coordinate */
 } DEMO_A_Point2D;
 
 typedef struct DEMO_A_Point3D {

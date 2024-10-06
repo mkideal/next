@@ -47,6 +47,14 @@ class User:
 		self.matrix = [[0 for _ in range(2)] for _ in range(3)]
 		self.email = ""
 		self.favorite_color = Color(0)
+		"""
+		@next(tokens) applies to the node name:
+		- For snake_case: "last_login_ip"
+		- For camelCase: "lastLoginIP"
+		- For PascalCase: "LastLoginIP"
+		- For kebab-case: "last-login-ip"
+		"""
+		self.last_login_ip = ""
 		self.extra = None
 
 """
@@ -158,5 +166,5 @@ class HTTPClient(ABC):
 		str
 	"""
 	@abstractmethod
-	def request_2(self, url: str, method: str, body: str) -> str:
+	def request2(self, url: str, method: str, body: str) -> str:
 		pass

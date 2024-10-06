@@ -16,23 +16,23 @@ const D = true
 type Color int32
 
 const (
-	ColorRed = 0
-	ColorGreen = 1
-	ColorBlue = 2
+	ColorRed Color = 0
+	ColorGreen Color = 1
+	ColorBlue Color = 2
 )
 
 type LoginType int32
 
 const (
-	LoginTypeUsername = 1
-	LoginTypeEmail = 2
+	LoginTypeUsername LoginType = 1
+	LoginTypeEmail LoginType = 2
 )
 
 type UserType int32
 
 const (
-	UserTypeAdmin = 1
-	UserTypeUser = 2
+	UserTypeAdmin UserType = 1
+	UserTypeUser UserType = 2
 )
 
 type User struct {

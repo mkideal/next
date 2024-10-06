@@ -88,6 +88,12 @@ public:
 	std::array<std::array<int, 2>, 3> matrix;
 	std::string email = {""};
 	Color favorite_color = {Color(0)};
+	// @next(tokens) applies to the node name:
+	// - For snake_case: "last_login_ip"
+	// - For camelCase: "lastLoginIP"
+	// - For PascalCase: "LastLoginIP"
+	// - For kebab-case: "last-login-ip"
+	std::string last_login_ip = {""};
 	std::any extra;
 
 public:
@@ -157,11 +163,11 @@ public:
 	// @next(error) applies to the method:
 	// - For Go: The method may return an error
 	// - For C++/Java: The method throws an exception
-	// 
+	//
 	// @next(mut) applies to the method:
 	// - For C++: The method is non-const
 	// - For other languages: This annotation may not have a direct effect
-	// 
+	//
 	// @next(mut) applies to the parameter buffer:
 	// - For C++: The parameter is non-const, allowing modification
 	// - For other languages: This annotation may not have a direct effect,
@@ -175,7 +181,7 @@ public:
 	virtual ~HTTPClient() = default;
 	// Available for all languages
 	virtual std::string request(const std::string& url, const std::string& method, const std::string& body) const = 0;
-	virtual std::string request_2(const std::string& url, const std::string& method, const std::string& body) const = 0;
+	virtual std::string request2(const std::string& url, const std::string& method, const std::string& body) const = 0;
 	// Available for C++
 	virtual std::string post(const std::string& url, const std::string& body) const = 0;
 };

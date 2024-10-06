@@ -147,8 +147,8 @@ enum IotatestEnum : int
  */
 class Point2D
 {
-	public float $x;
-	public float $y;
+	public float $x; // x-coordinate
+	public float $y; // y-coordinate
 
 	public function __construct()
 	{

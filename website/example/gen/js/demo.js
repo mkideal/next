@@ -55,6 +55,15 @@ export class User {
 		this.email = "";
 		/** @type { 'number' } */
 		this.favoriteColor = Color[Object.keys(Color)[0]];
+		/**
+		 * @next(tokens) applies to the node name:
+		 * - For snake_case: "last_login_ip"
+		 * - For camelCase: "lastLoginIP"
+		 * - For PascalCase: "LastLoginIP"
+		 * - For kebab-case: "last-login-ip"
+		 * @type { String }
+		 */
+		this.lastLoginIP = "";
 		/** @type { 'Object' } */
 		this.extra = null;
 	}
@@ -147,11 +156,11 @@ export class Reader {
 	 * @next(error) applies to the method:
 	 * - For Go: The method may return an error
 	 * - For C++/Java: The method throws an exception
-	 * 
+	 *
 	 * @next(mut) applies to the method:
 	 * - For C++: The method is non-const
 	 * - For other languages: This annotation may not have a direct effect
-	 * 
+	 *
 	 * @next(mut) applies to the parameter buffer:
 	 * - For C++: The parameter is non-const, allowing modification
 	 * - For other languages: This annotation may not have a direct effect,

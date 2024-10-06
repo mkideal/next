@@ -9,13 +9,13 @@ var _ = (*a.Color)(nil)
 type TestEnum int32
 
 const (
-	TestEnumA = 1
-	TestEnumB = 5
-	TestEnumC = 5
-	TestEnumD = 10
-	TestEnumE = 20
-	TestEnumF = 1
-	TestEnumG = 2
+	TestEnumA TestEnum = 1
+	TestEnumB TestEnum = 5
+	TestEnumC TestEnum = 5
+	TestEnumD TestEnum = 10
+	TestEnumE TestEnum = 20
+	TestEnumF TestEnum = 1
+	TestEnumG TestEnum = 2
 )
 
 type TestStruct struct {

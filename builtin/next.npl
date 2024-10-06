@@ -300,40 +300,39 @@ false
 {{- end}}
 {{- end}}
 
+{{/* next/node:snake.case.name: Generates a snake_case name for a node */}}
 {{- define "next/node:snake.case.name"}}
-{{- with .Annotations.next.snake_case}}
-	{{- .}}
+{{- with .Annotations.next.tokens}}
+	{{- . | split " " | join "_" | lower}}
 {{- else}}
 	{{- $.Name | snakeCase}}
 {{- end}}
 {{- end}}
 
-{{- define "next/node:pascal.case.name"}}
-{{- with .Annotations.next.pascal_case}}
-	{{- .}}
-{{- else with .Annotations.next.snake_case}}
-	{{- . | snakeCase | split "_" | map capitalize | join ""}}
+{{/* next/node:kebab.case.name: Generates a kebab-case name for a node */}}
+{{- define "next/node:kebab.case.name"}}
+{{- with .Annotations.next.tokens}}
+	{{- . | split " " | join "-" | lower}}
 {{- else}}
-	{{- $.Name | pascalCase}}
+	{{- $.Name | kebabCase}}
 {{- end}}
 {{- end}}
 
+{{/* next/node:camel.case.name: Generates a camelCase name for a node */}}
 {{- define "next/node:camel.case.name"}}
-{{- with .Annotations.next.camel_case}}
-	{{- .}}
-{{- else with .Annotations.next.snake_case}}
-	{{- . | snakeCase | split "_" | map capitalize | join "" | uncapitalize}}
+{{- with .Annotations.next.tokens}}
+	{{- $tokens := . | split " "}}
+	{{- index $tokens 0 | lower}}{{slice $tokens 1 | map capitalize | join ""}}
 {{- else}}
 	{{- $.Name | camelCase}}
 {{- end}}
 {{- end}}
 
-{{- define "next/node:kebab.case.name"}}
-{{- with .Annotations.next.kebab_case}}
-	{{- .}}
-{{- else with .Annotations.next.snake_case}}
-	{{- . | snakeCase | replace "_" "-"}}
+{{/* next/node:pascal.case.name: Generates a PascalCase name for a node */}}
+{{- define "next/node:pascal.case.name"}}
+{{- with .Annotations.next.tokens}}
+	{{- . | split " " | map capitalize | join ""}}
 {{- else}}
-	{{- $.Name | kebabCase}}
+	{{- $.Name | pascalCase}}
 {{- end}}
 {{- end}}

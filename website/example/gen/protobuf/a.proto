@@ -88,8 +88,8 @@ enum IotatestEnum {
 
 // Struct types
 message Point2D {
-	double x = 1;
-	double y = 2;
+	double x = 1; // x-coordinate
+	double y = 2; // y-coordinate
 }
 
 message Point3D {

@@ -217,8 +217,8 @@ impl IotatestEnum {
 
 /// Struct types
 pub struct Point2D {
-	pub x: f64,
-	pub y: f64,
+	pub x: f64 // x-coordinate,
+	pub y: f64 // y-coordinate,
 }
 
 pub struct Point3D {

@@ -132,8 +132,8 @@ Point2D.__index = Point2D
 
 function Point2D:new()
 	local obj = {
-		x = 0,
-		y = 0
+		x = 0, -- x-coordinate
+		y = 0 -- y-coordinate
 	}
 	setmetatable(obj, self)
 	return obj

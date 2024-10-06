@@ -77,6 +77,14 @@ typedef struct DEMO_User {
 	int32_t matrix[3][2];
 	char* email;
 	DEMO_Color favorite_color;
+	/**
+	 * @next(tokens) applies to the node name:
+	 * - For snake_case: "last_login_ip"
+	 * - For camelCase: "lastLoginIP"
+	 * - For PascalCase: "LastLoginIP"
+	 * - For kebab-case: "last-login-ip"
+	 */
+	char* last_login_ip;
 	void* extra;
 } DEMO_User;
 
@@ -154,11 +162,11 @@ struct DEMO_Reader {
  * @next(error) applies to the method:
  * - For Go: The method may return an error
  * - For C++/Java: The method throws an exception
- * 
+ *
  * @next(mut) applies to the method:
  * - For C++: The method is non-const
  * - For other languages: This annotation may not have a direct effect
- * 
+ *
  * @next(mut) applies to the parameter buffer:
  * - For C++: The parameter is non-const, allowing modification
  * - For other languages: This annotation may not have a direct effect,
@@ -176,7 +184,7 @@ typedef struct DEMO_HTTPClient DEMO_HTTPClient;
 struct DEMO_HTTPClient {
 	void* context;
 	char* (*request)(DEMO_HTTPClient* self, char* url, char* method, char* body);
-	char* (*request_2)(DEMO_HTTPClient* self, char* url, char* method, char* body);
+	char* (*request2)(DEMO_HTTPClient* self, char* url, char* method, char* body);
 };
 
 /**
@@ -186,8 +194,8 @@ static inline char* DEMO_HTTPClient_request(DEMO_HTTPClient* self, char* url, ch
 	return self->request(self, url, method, body);
 }
 
-static inline char* DEMO_HTTPClient_request_2(DEMO_HTTPClient* self, char* url, char* method, char* body) {
-	return self->request_2(self, url, method, body);
+static inline char* DEMO_HTTPClient_request2(DEMO_HTTPClient* self, char* url, char* method, char* body) {
+	return self->request2(self, url, method, body);
 }
 
 #endif /* DEMO_DEMO_H */

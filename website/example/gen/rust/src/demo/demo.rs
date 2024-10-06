@@ -78,6 +78,12 @@ pub struct User {
 	pub matrix: [[i32; 2]; 3],
 	pub email: String,
 	pub favorite_color: Color,
+	/// @next(tokens) applies to the node name:
+	/// - For snake_case: "last_login_ip"
+	/// - For camelCase: "lastLoginIP"
+	/// - For PascalCase: "LastLoginIP"
+	/// - For kebab-case: "last-login-ip"
+	pub last_login_ip: String,
 	pub extra: Box<dyn Any>,
 }
 
@@ -121,11 +127,11 @@ pub trait Reader {
 	/// @next(error) applies to the method:
 	/// - For Go: The method may return an error
 	/// - For C++/Java: The method throws an exception
-	/// 
+	///
 	/// @next(mut) applies to the method:
 	/// - For C++: The method is non-const
 	/// - For other languages: This annotation may not have a direct effect
-	/// 
+	///
 	/// @next(mut) applies to the parameter buffer:
 	/// - For C++: The parameter is non-const, allowing modification
 	/// - For other languages: This annotation may not have a direct effect,
@@ -137,5 +143,5 @@ pub trait Reader {
 pub trait HTTPClient {
 	/// Available for all languages
 	fn request(&self, url: String, method: String, body: String) -> String;
-	fn request_2(&self, url: String, method: String, body: String) -> String;
+	fn request2(&self, url: String, method: String, body: String) -> String;
 }

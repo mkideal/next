@@ -139,8 +139,8 @@ Struct types
 """
 class Point2D:
 	def __init__(self):
-		self.x = 0
-		self.y = 0
+		self.x = 0 # x-coordinate
+		self.y = 0 # y-coordinate
 
 class Point3D:
 	def __init__(self):

@@ -17,34 +17,34 @@ const Timeout = 3000.0 // Float constant expression
 type Color int8
 
 const (
-	ColorRed = 1
-	ColorGreen = 2
-	ColorBlue = 4
-	ColorYellow = 8
+	ColorRed Color = 1
+	ColorGreen Color = 2
+	ColorBlue Color = 4
+	ColorYellow Color = 8
 )
 
 // MathConstants represents mathematical constants
 type MathConstants float64
 
 const (
-	MathConstantsPi = 3.14159265358979323846
-	MathConstantsE = 2.71828182845904523536
+	MathConstantsPi MathConstants = 3.14159265358979323846
+	MathConstantsE MathConstants = 2.71828182845904523536
 )
 
 // OperatingSystem represents different operating systems
 type OperatingSystem string
 
 const (
-	OperatingSystemWindows = "windows"
-	OperatingSystemLinux = "linux"
-	OperatingSystemMacOS = "macos"
-	OperatingSystemAndroid = "android"
-	OperatingSystemIOS = "ios"
+	OperatingSystemWindows OperatingSystem = "windows"
+	OperatingSystemLinux OperatingSystem = "linux"
+	OperatingSystemMacOS OperatingSystem = "macos"
+	OperatingSystemAndroid OperatingSystem = "android"
+	OperatingSystemIOS OperatingSystem = "ios"
 )
 
 // User represents a user in the system
 type User struct {
-	Id int64
+	ID int64
 	Username string
 	Tags []string
 	Scores map[string]int
@@ -52,6 +52,12 @@ type User struct {
 	Matrix [3][2]int
 	Email string
 	FavoriteColor Color
+	// @next(tokens) applies to the node name:
+	// - For snake_case: "last_login_ip"
+	// - For camelCase: "lastLoginIP"
+	// - For PascalCase: "LastLoginIP"
+	// - For kebab-case: "last-login-ip"
+	LastLoginIP string
 	Extra any
 }
 
@@ -95,11 +101,11 @@ type Reader interface {
 	// @next(error) applies to the method:
 	// - For Go: The method may return an error
 	// - For C++/Java: The method throws an exception
-	// 
+	//
 	// @next(mut) applies to the method:
 	// - For C++: The method is non-const
 	// - For other languages: This annotation may not have a direct effect
-	// 
+	//
 	// @next(mut) applies to the parameter buffer:
 	// - For C++: The parameter is non-const, allowing modification
 	// - For other languages: This annotation may not have a direct effect,
@@ -107,6 +113,14 @@ type Reader interface {
 	Read(buffer []byte) (int, error)
 }
 
+// HTTPServer provides HTTP server functionality.
+//
+// @next(available="go|java") indicates that the interface is available for Go and Java.
+// @next(tokens="HTTP Server") applies to the interface name.
+// - For snake_case: "http_server"
+// - For camelCase: "httpServer"
+// - For PascalCase: "HTTPServer"
+// - For kebab-case: "http-server"
 type HTTPServer interface {
 	// @next(error) indicates that the method may return an error:
 	// - For Go: The method returns (LoginResponse, error)

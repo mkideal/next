@@ -140,8 +140,8 @@ export enum IotatestEnum {
  * Struct types
  */
 export class Point2D {
-	x: number = 0;
-	y: number = 0;
+	x: number = 0; // x-coordinate
+	y: number = 0; // y-coordinate
 }
 
 export class Point3D {

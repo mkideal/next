@@ -32,7 +32,13 @@ message User {
 	repeated int32 matrix = 6;
 	string email = 7 [deprecated = true];
 	Color favoriteColor = 8 [deprecated = true];
-	google.protobuf.Any extra = 9;
+	// @next(tokens) applies to the node name:
+	// - For snake_case: "last_login_ip"
+	// - For camelCase: "lastLoginIP"
+	// - For PascalCase: "LastLoginIP"
+	// - For kebab-case: "last-login-ip"
+	string lastLoginIP = 9;
+	google.protobuf.Any extra = 10;
 }
 
 // uint128 represents a 128-bit unsigned integer.

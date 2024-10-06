@@ -42,6 +42,14 @@ class User
 	public array $matrix;
 	public string $email;
 	public Color $favoriteColor;
+	/**
+	 * @next(tokens) applies to the node name:
+	 * - For snake_case: "last_login_ip"
+	 * - For camelCase: "lastLoginIP"
+	 * - For PascalCase: "LastLoginIP"
+	 * - For kebab-case: "last-login-ip"
+	 */
+	public string $lastLoginIP;
 	public mixed $extra;
 
 	public function __construct()
@@ -54,6 +62,7 @@ class User
 		$this->matrix = [];
 		$this->email = "";
 		$this->favoriteColor = Color::RED;
+		$this->lastLoginIP = "";
 		$this->extra = null;
 	}
 }
@@ -161,11 +170,11 @@ interface Reader
 	 * @next(error) applies to the method:
 	 * - For Go: The method may return an error
 	 * - For C++/Java: The method throws an exception
-	 * 
+	 *
 	 * @next(mut) applies to the method:
 	 * - For C++: The method is non-const
 	 * - For other languages: This annotation may not have a direct effect
-	 * 
+	 *
 	 * @next(mut) applies to the parameter buffer:
 	 * - For C++: The parameter is non-const, allowing modification
 	 * - For other languages: This annotation may not have a direct effect,

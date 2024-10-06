@@ -10,7 +10,7 @@ import java.util.Arrays;
  * Struct types
  */
 public class Point2D {
-	private double x;
+	private double x; // x-coordinate
 
 	public double getX() {
 		return x;
@@ -20,7 +20,7 @@ public class Point2D {
 		this.x = x;
 	}
 
-	private double y;
+	private double y; // y-coordinate
 
 	public double getY() {
 		return y;
