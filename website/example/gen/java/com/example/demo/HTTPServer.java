@@ -10,11 +10,6 @@ import java.util.Arrays;
  * HTTPServer provides HTTP server functionality.
  *
  * @next(available="go|java") indicates that the interface is available for Go and Java.
- * @next(tokens="HTTP Server") applies to the interface name.
- * - For snake_case: "http_server"
- * - For camelCase: "httpServer"
- * - For PascalCase: "HTTPServer"
- * - For kebab-case: "http-server"
  */
 public interface HTTPServer {
 	/**

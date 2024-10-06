@@ -13,8 +13,8 @@ pub const SERVER_NAME: &'static str = "Comprehensive Test Server";
 pub const VERSION: &'static str = "1.0.0";
 pub const MAX_CONNECTIONS: i32 = 1000;
 pub const PI: f64 = 3.14159265358979323846;
-pub const MAX_INT_64: i64 = 9223372036854775807; // 2^63 - 1
-pub const MIN_INT_64: i64 = -9223372036854775808; // -2^63
+pub const MAX_INT64: i64 = 9223372036854775807; // 2^63 - 1
+pub const MIN_INT64: i64 = -9223372036854775808; // -2^63
 /// Constants with complex expressions
 pub const A: i32 = 1;
 pub const B: i32 = 3;
@@ -37,15 +37,15 @@ pub const FLOAT_FROM_INT: f32 = 42.0;
 pub const FLOAT_FROM_BOOL: f32 = 0.0;
 pub const BOOL_FROM_INT: bool = true;
 pub const BOOL_FROM_STRING: bool = true;
-pub const FORMATTED_STRING_1: &'static str = "The answer is 42";
-pub const FORMATTED_STRING_2: &'static str = "Pi is approximately 3.14";
-pub const FORMATTED_STRING_3: &'static str = "Hello World\n";
+pub const FORMATTED_STRING1: &'static str = "The answer is 42";
+pub const FORMATTED_STRING2: &'static str = "Pi is approximately 3.14";
+pub const FORMATTED_STRING3: &'static str = "Hello World\n";
 /// Constants for testing complex expressions and bitwise operations
-pub const COMPLEX_1: i32 = 5673;
-pub const COMPLEX_2: i32 = 78547;
-pub const COMPLEX_3: i32 = 31;
-pub const COMPLEX_4: i32 = 31;
-pub const COMPLEX_5: i32 = 31;
+pub const COMPLEX1: i32 = 5673;
+pub const COMPLEX2: i32 = 78547;
+pub const COMPLEX3: i32 = 31;
+pub const COMPLEX4: i32 = 31;
+pub const COMPLEX5: i32 = 31;
 
 /// Enum with iota
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

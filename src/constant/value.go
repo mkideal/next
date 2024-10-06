@@ -73,7 +73,7 @@ func (intVal) Kind() Kind     { return Int }
 func (ratVal) Kind() Kind     { return Float }
 func (floatVal) Kind() Kind   { return Float }
 
-func (unknownVal) String() string { return "unknown" }
+func (unknownVal) String() string { return "undefined" }
 func (x boolVal) String() string  { return strconv.FormatBool(bool(x)) }
 
 // String returns a possibly shortened quoted form of the String value.
@@ -825,6 +825,9 @@ Error:
 // instead of token.QUO; the result is guaranteed to be Int in this case.
 // Division by zero leads to a run-time panic.
 func BinaryOp(x_ Value, op token.Token, y_ Value) Value {
+	if op == token.LOR {
+		return Or(x_, y_)
+	}
 	x, y := match(x_, y_)
 
 	switch x := x.(type) {
@@ -985,6 +988,48 @@ func Shift(x Value, op token.Token, s uint) Value {
 	}
 
 	panic(fmt.Sprintf("invalid shift %v %s %d", x, op, s))
+}
+
+// Or returns the result of the value of x or y like in JavaScript.
+//
+// - If y is unknown, the result is x.
+// - If x is false, the result is y.
+// - If x is 0, the result is y.
+// - If x is "", the result is y.
+// - Otherwise, the result is x.
+func Or(x, y Value) Value {
+	if y.Kind() == Unknown {
+		return x
+	}
+	switch x := x.(type) {
+	case unknownVal:
+		return y
+	case boolVal:
+		if !x {
+			return y
+		}
+	case int64Val:
+		if x == 0 {
+			return y
+		}
+	case intVal:
+		if x.val.Sign() == 0 {
+			return y
+		}
+	case ratVal:
+		if x.val.Sign() == 0 {
+			return y
+		}
+	case floatVal:
+		if x.val.Sign() == 0 {
+			return y
+		}
+	case *stringVal:
+		if x.string() == "" {
+			return y
+		}
+	}
+	return x
 }
 
 // Compare returns the result of the comparison x op y.

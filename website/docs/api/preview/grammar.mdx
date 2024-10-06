@@ -58,6 +58,82 @@ next grammar grammar.json
 ```
 :::
 
+## Builtin {#user-content-Grammar_Builtin}
+
+`Builtin` represents the built-in grammar rules. Here is an example source code for demonstration built-in grammar rules:
+
+```next
+@next(
+	// available is used to set the available expression for the file.
+	available="cpp|java",
+	// deprecated is used to set the declaration as deprecated.
+	deprecated,
+	// tokens is used to set the space separated tokens for the declaration name.
+	tokens="DB",
+	// <LANG>_package is used to set the package name for target languages.
+	cpp_package="db",
+	java_package="com.example.db",
+	// <LANG>_imports is used to set the import declarations for target languages.
+	cpp_imports="<iostream>",
+)
+package db;
+
+@next(
+	available="cpp",
+	deprecated,
+	tokens="HTTP Version",
+)
+const int HTTPVersion = 2;
+
+@next(
+	available="cpp|java",
+	deprecated,
+	tokens="HTTP Method",
+	// <LANG>_alias is used to set the alias name for target languages.
+	java_alias="org.springframework.http.HttpMethod",
+)
+enum HTTPMethod {
+	Get = "GET",
+	Post = "POST",
+	Put = "PUT",
+	Delete = "DELETE",
+	Head = "HEAD",
+	Options = "OPTIONS",
+	Patch = "PATCH",
+	Trace = "TRACE",
+	@next(available="!java", deprecated, tokens="Connect")
+	Connect = "CONNECT",
+}
+
+@next(
+	available="cpp|java",
+	deprecated,
+	tokens="User",
+	cpp_alias="model::User",
+)
+@entity
+struct User {
+	@id
+	int id;
+	@next(available="!java", deprecated, tokens="Name", optional, default="John Doe", cpp_alias="std::string")
+	string name;
+}
+
+@next(
+	available="cpp|java",
+	deprecated,
+	tokens="User Repository",
+	java_alias="org.springframework.data.repository.CrudRepository<User, Long>",
+)
+interface UserRepository {
+	@next(available="!java", deprecated, tokens="Get User", mut, error, cpp_alias="std::shared_ptr<model::User>")
+	findById(
+		@next(available="!java", deprecated, tokens="ID", mut, cpp_alias="int64_t")
+		int64 id
+	) User;
+}
+```
+
 ## Common {#user-content-Grammar_Common}
 ### Annotation {#user-content-Grammar_Common_Annotation}
 

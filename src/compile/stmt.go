@@ -46,7 +46,7 @@ func (s *CallStmt) resolve(c *Compiler, file *File) {
 	for i, arg := range s.CallExpr.Args {
 		args[i] = c.resolveValue(file, arg, nil)
 	}
-	_, err := c.call(s.pos, ident.Name, args...)
+	_, err := c.call(s.pos, s.CallExpr.Fun, args...)
 	if err != nil {
 		c.addErrorf(s.CallExpr.Pos(), "call %s: %s", ident.Name, err)
 	}

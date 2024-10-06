@@ -106,10 +106,10 @@ local Month = {
 	OCTOBER = 512,
 	NOVEMBER = 1024,
 	DECEMBER = 2048,
-	Q_1 = 7,
-	Q_2 = 56,
-	Q_3 = 448,
-	Q_4 = 3584
+	Q1 = 7,
+	Q2 = 56,
+	Q3 = 448,
+	Q4 = 3584
 }
 _M_.Month = Month
 

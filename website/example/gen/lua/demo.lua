@@ -29,9 +29,9 @@ _M_.MathConstants = MathConstants
 local OperatingSystem = {
 	WINDOWS = "windows",
 	LINUX = "linux",
-	MAC_O_S = "macos",
+	MAC_OS = "macos",
 	ANDROID = "android",
-	I_O_S = "ios"
+	IOS = "ios"
 }
 _M_.OperatingSystem = OperatingSystem
 

@@ -10,7 +10,6 @@ package a;
 
 // XX constant
 // XX value 2
-@next(tokens="XX")
 const XX = 1; // XX value
 
 // Constants
@@ -334,5 +333,8 @@ assert_lt(1, 2);
 assert_le(1, 1);
 assert_gt(2, 1);
 assert_ge(2, 2);
+
+printf("GO_MOD=%s", getenv("GO_MOD") || "github.com/next/next/website/example/gen/go");
+printf("JAVA_COM=%s", getenv("JAVA_COM") || "com.example");
 
 print("All tests passed!");

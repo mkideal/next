@@ -1,5 +1,5 @@
-github.com/gopherd/core v0.0.0-20241001125528-8c82710503c1 h1:XYFl6RqyaKi08eHriweXy//RL/IXjC4JWq1+slb8+vE=
-github.com/gopherd/core v0.0.0-20241001125528-8c82710503c1/go.mod h1:KfAPtxaKLEFiby8PpGwdgp86auCmLU82+khBzHhUTaM=
+github.com/gopherd/core v0.0.0-20241006095001-4b8dbed5cd33 h1:cN4EH6xKAxuyDJfMfZ334nCr4SUDUM2yw8Mmssphs8I=
+github.com/gopherd/core v0.0.0-20241006095001-4b8dbed5cd33/go.mod h1:KfAPtxaKLEFiby8PpGwdgp86auCmLU82+khBzHhUTaM=
 github.com/mattn/go-shellwords v1.0.12 h1:M2zGm7EW6UQJvDeQxo4T51eKPurbeFbe8WtebGE2xrk=
 github.com/mattn/go-shellwords v1.0.12/go.mod h1:EZzvwXDESEeg03EKmM+RmDnNOPKG4lLtQsUlTZDWQ8Y=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=

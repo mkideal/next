@@ -24,9 +24,9 @@ enum OperatingSystem : string
 {
 	case WINDOWS = "windows";
 	case LINUX = "linux";
-	case MAC_O_S = "macos";
+	case MAC_OS = "macos";
 	case ANDROID = "android";
-	case I_O_S = "ios";
+	case IOS = "ios";
 }
 
 /**

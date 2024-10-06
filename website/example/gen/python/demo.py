@@ -30,9 +30,9 @@ OperatingSystem represents different operating systems
 class OperatingSystem:
 	WINDOWS = "windows"
 	LINUX = "linux"
-	MAC_O_S = "macos"
+	MAC_OS = "macos"
 	ANDROID = "android"
-	I_O_S = "ios"
+	IOS = "ios"
 
 """
 User represents a user in the system

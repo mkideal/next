@@ -15,8 +15,8 @@ public class Constants {
 	public static final String VERSION = "1.0.0";
 	public static final int MAX_CONNECTIONS = 1000;
 	public static final double PI = 3.14159265358979323846;
-	public static final long MAX_INT_64 = 9223372036854775807L; // 2^63 - 1
-	public static final long MIN_INT_64 = -9223372036854775808L; // -2^63
+	public static final long MAX_INT64 = 9223372036854775807L; // 2^63 - 1
+	public static final long MIN_INT64 = -9223372036854775808L; // -2^63
 	/**
 	 * Constants with complex expressions
 	 */
@@ -45,15 +45,15 @@ public class Constants {
 	public static final float FLOAT_FROM_BOOL = 0.0F;
 	public static final boolean BOOL_FROM_INT = true;
 	public static final boolean BOOL_FROM_STRING = true;
-	public static final String FORMATTED_STRING_1 = "The answer is 42";
-	public static final String FORMATTED_STRING_2 = "Pi is approximately 3.14";
-	public static final String FORMATTED_STRING_3 = "Hello World\n";
+	public static final String FORMATTED_STRING1 = "The answer is 42";
+	public static final String FORMATTED_STRING2 = "Pi is approximately 3.14";
+	public static final String FORMATTED_STRING3 = "Hello World\n";
 	/**
 	 * Constants for testing complex expressions and bitwise operations
 	 */
-	public static final int COMPLEX_1 = 5673;
-	public static final int COMPLEX_2 = 78547;
-	public static final int COMPLEX_3 = 31;
-	public static final int COMPLEX_4 = 31;
-	public static final int COMPLEX_5 = 31;
+	public static final int COMPLEX1 = 5673;
+	public static final int COMPLEX2 = 78547;
+	public static final int COMPLEX3 = 31;
+	public static final int COMPLEX4 = 31;
+	public static final int COMPLEX5 = 31;
 }

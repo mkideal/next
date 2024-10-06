@@ -157,6 +157,12 @@ func (c *Compiler) Error(args ...any) {
 	c.log(fmt.Sprint(args...))
 }
 
+// Getenv returns the value of an environment variable
+func (c *Compiler) Getenv(key string) (string, bool) {
+	v, ok := c.options.Env[key]
+	return v, ok
+}
+
 // Position returns the current position for call expression
 func (c *Compiler) Position() token.Position {
 	if len(c.stack) == 0 {
@@ -212,7 +218,15 @@ func (c *Compiler) popTrace() {
 }
 
 // call calls a function with arguments
-func (c *Compiler) call(pos token.Pos, name string, args ...constant.Value) (constant.Value, error) {
+func (c *Compiler) call(pos token.Pos, fun ast.Expr, args ...constant.Value) (constant.Value, error) {
+	fun = ast.Unparen(fun)
+	var name string
+	switch fun := fun.(type) {
+	case *ast.Ident:
+		name = fun.Name
+	default:
+		return constant.MakeUnknown(), fmt.Errorf("unexpected function %T", fun)
+	}
 	c.pushTrace(pos)
 	defer c.popTrace()
 	return constant.Call(c, name, args)
@@ -411,17 +425,11 @@ func (c *Compiler) recursiveResolveValue(file *File, scope Scope, refs []*Value,
 		return constant.UnaryOp(expr.Op, x, 0)
 
 	case *ast.CallExpr:
-		fun := ast.Unparen(expr.Fun)
-		ident, ok := fun.(*ast.Ident)
-		if !ok {
-			c.addErrorf(expr.Pos(), "unexpected function %T", fun)
-			return constant.MakeUnknown()
-		}
 		args := make([]constant.Value, len(expr.Args))
 		for i, arg := range expr.Args {
 			args[i] = c.recursiveResolveValue(file, scope, refs, arg, iota)
 		}
-		result, err := c.call(expr.Pos(), ident.Name, args...)
+		result, err := c.call(expr.Pos(), expr.Fun, args...)
 		if err != nil {
 			c.addErrorf(expr.Pos(), err.Error())
 			return constant.MakeUnknown()

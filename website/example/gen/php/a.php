@@ -13,8 +13,8 @@ const SERVER_NAME = "Comprehensive Test Server";
 const VERSION = "1.0.0";
 const MAX_CONNECTIONS = 1000;
 const PI = 3.14159265358979323846;
-const MAX_INT_64 = 9223372036854775807; // 2^63 - 1
-const MIN_INT_64 = -9223372036854775808; // -2^63
+const MAX_INT64 = 9223372036854775807; // 2^63 - 1
+const MIN_INT64 = -9223372036854775808; // -2^63
 /**
  * Constants with complex expressions
  */
@@ -43,17 +43,17 @@ const FLOAT_FROM_INT = 42.0;
 const FLOAT_FROM_BOOL = 0.0;
 const BOOL_FROM_INT = true;
 const BOOL_FROM_STRING = true;
-const FORMATTED_STRING_1 = "The answer is 42";
-const FORMATTED_STRING_2 = "Pi is approximately 3.14";
-const FORMATTED_STRING_3 = "Hello World\n";
+const FORMATTED_STRING1 = "The answer is 42";
+const FORMATTED_STRING2 = "Pi is approximately 3.14";
+const FORMATTED_STRING3 = "Hello World\n";
 /**
  * Constants for testing complex expressions and bitwise operations
  */
-const COMPLEX_1 = 5673;
-const COMPLEX_2 = 78547;
-const COMPLEX_3 = 31;
-const COMPLEX_4 = 31;
-const COMPLEX_5 = 31;
+const COMPLEX1 = 5673;
+const COMPLEX2 = 78547;
+const COMPLEX3 = 31;
+const COMPLEX4 = 31;
+const COMPLEX5 = 31;
 
 /**
  * Enum with iota
@@ -122,10 +122,10 @@ enum Month : int
 	case OCTOBER = 512;
 	case NOVEMBER = 1024;
 	case DECEMBER = 2048;
-	case Q_1 = 7;
-	case Q_2 = 56;
-	case Q_3 = 448;
-	case Q_4 = 3584;
+	case Q1 = 7;
+	case Q2 = 56;
+	case Q3 = 448;
+	case Q4 = 3584;
 }
 
 /**

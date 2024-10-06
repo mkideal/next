@@ -116,11 +116,6 @@ type Reader interface {
 // HTTPServer provides HTTP server functionality.
 //
 // @next(available="go|java") indicates that the interface is available for Go and Java.
-// @next(tokens="HTTP Server") applies to the interface name.
-// - For snake_case: "http_server"
-// - For camelCase: "httpServer"
-// - For PascalCase: "HTTPServer"
-// - For kebab-case: "http-server"
 type HTTPServer interface {
 	// @next(error) indicates that the method may return an error:
 	// - For Go: The method returns (LoginResponse, error)

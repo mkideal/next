@@ -15,8 +15,8 @@ SERVER_NAME = "Comprehensive Test Server"
 VERSION = "1.0.0"
 MAX_CONNECTIONS = 1000
 PI = 3.14159265358979323846
-MAX_INT_64 = 9223372036854775807 # 2^63 - 1
-MIN_INT_64 = -9223372036854775808 # -2^63
+MAX_INT64 = 9223372036854775807 # 2^63 - 1
+MIN_INT64 = -9223372036854775808 # -2^63
 """
 Constants with complex expressions
 """
@@ -45,17 +45,17 @@ FLOAT_FROM_INT = 42.0
 FLOAT_FROM_BOOL = 0.0
 BOOL_FROM_INT = True
 BOOL_FROM_STRING = True
-FORMATTED_STRING_1 = "The answer is 42"
-FORMATTED_STRING_2 = "Pi is approximately 3.14"
-FORMATTED_STRING_3 = "Hello World\n"
+FORMATTED_STRING1 = "The answer is 42"
+FORMATTED_STRING2 = "Pi is approximately 3.14"
+FORMATTED_STRING3 = "Hello World\n"
 """
 Constants for testing complex expressions and bitwise operations
 """
-COMPLEX_1 = 5673
-COMPLEX_2 = 78547
-COMPLEX_3 = 31
-COMPLEX_4 = 31
-COMPLEX_5 = 31
+COMPLEX1 = 5673
+COMPLEX2 = 78547
+COMPLEX3 = 31
+COMPLEX4 = 31
+COMPLEX5 = 31
 
 """
 Enum with iota
@@ -117,10 +117,10 @@ class Month:
 	OCTOBER = 512
 	NOVEMBER = 1024
 	DECEMBER = 2048
-	Q_1 = 7
-	Q_2 = 56
-	Q_3 = 448
-	Q_4 = 3584
+	Q1 = 7
+	Q2 = 56
+	Q3 = 448
+	Q4 = 3584
 
 """
 Test cases for iota

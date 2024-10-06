@@ -5,6 +5,7 @@ package constant
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/next/next/src/token"
 )
@@ -14,6 +15,7 @@ import (
 type FuncContext interface {
 	Debug(msg string, args ...any)
 	Error(args ...any)
+	Getenv(name string) (string, bool)
 }
 
 // Func represents a function that can be called with a FuncContext and arguments.
@@ -63,6 +65,7 @@ var funcs = map[string]Func{
 	"assert_le": assertLeFunc,
 	"assert_gt": assertGtFunc,
 	"assert_ge": assertGeFunc,
+	"getenv":    getenvFunc,
 }
 
 // lenFunc returns the length of a string.
@@ -381,4 +384,19 @@ func assertGeFunc(ctx FuncContext, args []Value) Value {
 		printAssert(ctx, append([]any{fmt.Sprintf("expected %v >= %v, but not", args[0], args[1])}, toArgs(args[2:])...))
 	}
 	return MakeUnknown()
+}
+
+func getenvFunc(ctx FuncContext, args []Value) Value {
+	if len(args) != 1 {
+		panic("getenv: invalid number of arguments, expected 1 argument, got " + strconv.Itoa(len(args)))
+	}
+	if args[0].Kind() != String {
+		panic("getenv: invalid argument type, expected string, got " + args[0].Kind().String())
+	}
+	name := StringVal(args[0])
+	value, ok := ctx.Getenv(name)
+	if !ok {
+		return MakeUnknown()
+	}
+	return MakeString(value)
 }
