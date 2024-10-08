@@ -111,11 +111,16 @@ enum HTTPMethod {
 	tokens="User",
 	cpp_alias="model::User",
 )
-@entity
 struct User {
-	@id
 	int id;
-	@next(available="!java", deprecated, tokens="Name", optional, default="John Doe", cpp_alias="std::string")
+	@next(
+		available="!java",
+		deprecated,
+		tokens="Name",
+		optional,
+		default="John Doe",
+		cpp_alias="std::string",
+	)
 	string name;
 }
 
@@ -123,10 +128,19 @@ struct User {
 	available="cpp|java",
 	deprecated,
 	tokens="User Repository",
+	prompt="Prompt for AGI.",
 	java_alias="org.springframework.data.repository.CrudRepository<User, Long>",
 )
 interface UserRepository {
-	@next(available="!java", deprecated, tokens="Get User", mut, error, cpp_alias="std::shared_ptr<model::User>")
+	@next(
+		available="!java",
+		deprecated,
+		tokens="Get User",
+		mut,
+		error,
+		cpp_alias="std::shared_ptr<model::User>",
+		prompt="Prompt for AGI.",
+	)
 	findById(
 		@next(available="!java", deprecated, tokens="ID", mut, cpp_alias="int64_t")
 		int64 id

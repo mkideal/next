@@ -124,6 +124,9 @@ var commands = map[string]*command{
 						}
 						return buf.Bytes(), nil
 					})
+					if err != nil && strings.HasPrefix(err.Error(), "json: ") {
+						err = errors.New(strings.TrimPrefix(err.Error(), "json: "))
+					}
 				default:
 					return fmt.Errorf("unsupported file extension: %q, use .json, .yaml, or .yml", ext)
 				}
@@ -141,7 +144,7 @@ var commands = map[string]*command{
 
 	// @api(CommandLine/Command/build) command builds a next project file or runs all next project files in a directory.
 	// It reads the project file and compiles the source files according to the project configuration.
-	// The project file is a YAML or JSON file that contains the project [Configuration](#CommandLine/Configuration).
+	// The project file is a YAML or JSON file that contains the project [Configuration](#CommandLine/Options).
 	//
 	// Example:
 	//
@@ -188,7 +191,7 @@ var commands = map[string]*command{
 				var options struct {
 					*Options `yaml:",inline"`
 
-					// @api(CommandLine/Configuration.sources) represents the source directories or files.
+					// @api(CommandLine/Options.sources) represents the source directories or files.
 					//
 					// Example:
 					//
@@ -359,8 +362,12 @@ func doCompile(compiler *Compiler, files []string, source io.Reader) {
 		default:
 			unwrap(stderr, fmt.Sprintf("unsupported file extension: %q, use .json, .yaml, or .yml", ext))
 		}
-		unwrap(stderr, json.Unmarshal(content, &compiler.grammar))
-		unwrap(stderr, compiler.grammar.Resolve())
+		if err := json.Unmarshal(content, &compiler.grammar); err != nil {
+			unwrap(stderr, fmt.Errorf("%s: %s", compiler.options.Grammar, strings.TrimPrefix(err.Error(), "json: ")))
+		}
+		if err := compiler.grammar.Resolve(); err != nil {
+			unwrap(stderr, fmt.Errorf("%s: %w", compiler.options.Grammar, err))
+		}
 	} else {
 		compiler.grammar = grammar.Builtin
 	}
@@ -505,7 +512,11 @@ func printErrorWithPosition(stderr io.Writer, err string) {
 	}
 	parts := strings.SplitN(err, ":", 4)
 	if len(parts) < 3 {
-		term.Fprintln(stderr, errorColor.Colorize(err))
+		if len(parts) == 2 {
+			term.Fprintf(stderr, "%s:%s\n", fileColor.Colorize(parts[0]), errorColor.Colorize(parts[1]))
+		} else {
+			term.Fprintln(stderr, errorColor.Colorize(err))
+		}
 		return
 	}
 	filename := parts[0]

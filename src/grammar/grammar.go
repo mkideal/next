@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"slices"
 	"strconv"
+	"strings"
 
 	"github.com/gopherd/core/text/templates"
 	"github.com/next/next/src/internal/stringutil"
@@ -85,15 +86,21 @@ func (o *Options[T]) UnmarshalJSON(data []byte) error {
 	return json.Unmarshal(data, &o.value)
 }
 
-func (o *Options[T]) resolve(source map[string]json.RawMessage) error {
+func (o *Options[T]) resolve(sourceName string, source map[string]json.RawMessage) error {
 	if o.id == "" {
 		return nil
 	}
+	if source == nil {
+		return fmt.Errorf("can't resolve %q because of %s not defined", o.id, sourceName)
+	}
 	v, ok := source[o.id]
 	if !ok {
-		return fmt.Errorf("options %q not found", o.id)
+		return fmt.Errorf("%q not found in %s", o.id, sourceName)
 	}
-	return json.Unmarshal(v, &o.value)
+	if err := json.Unmarshal(v, &o.value); err != nil {
+		return fmt.Errorf("failed to decode %q in %s: %s", o.id, sourceName, strings.TrimPrefix(err.Error(), "json: "))
+	}
+	return nil
 }
 
 // @api(Grammar) represents the custom grammar for the next files.
@@ -1292,11 +1299,11 @@ func (g *Grammar) Resolve() error {
 	// Resolve const
 	for _, v := range g.Const.Types {
 		if !slices.Contains(validConstTypes, v) {
-			return fmt.Errorf("const type %q must be one of %v", v, validConstTypes)
+			return fmt.Errorf("const.types: type %q must be one of %v", v, validConstTypes)
 		}
 	}
 	if err := duplicated(g.Const.Types); err != nil {
-		return fmt.Errorf("const types: %w", err)
+		return fmt.Errorf("const.types: %w", err)
 	}
 	if err := g.doResolve("const", g.Const.Annotations, g.Const.Validators); err != nil {
 		return err
@@ -1307,30 +1314,30 @@ func (g *Grammar) Resolve() error {
 	}
 	for _, v := range g.Enum.Member.Types {
 		if !slices.Contains(validEnumMemberTypes, v) {
-			return fmt.Errorf("enum member type %q must be one of %v", v, validEnumMemberTypes)
+			return fmt.Errorf("enum.member.types: type %q must be one of %v", v, validEnumMemberTypes)
 		}
 	}
 	if err := duplicated(g.Enum.Member.Types); err != nil {
-		return fmt.Errorf("enum member types: %w", err)
+		return fmt.Errorf("enum.member.types: %w", err)
 	}
-	if err := g.doResolve("enum member", g.Enum.Member.Annotations, g.Enum.Member.Validators); err != nil {
+	if err := g.doResolve("enum.member", g.Enum.Member.Annotations, g.Enum.Member.Validators); err != nil {
 		return err
 	}
 	// Resolve struct
 	if err := g.doResolve("struct", g.Struct.Annotations, g.Struct.Validators); err != nil {
 		return err
 	}
-	if err := g.doResolve("struct field", g.Struct.Field.Annotations, g.Struct.Field.Validators); err != nil {
+	if err := g.doResolve("struct.field", g.Struct.Field.Annotations, g.Struct.Field.Validators); err != nil {
 		return err
 	}
 	// Resolve interface
 	if err := g.doResolve("interface", g.Interface.Annotations, g.Interface.Validators); err != nil {
 		return err
 	}
-	if err := g.doResolve("interface method", g.Interface.Method.Annotations, g.Interface.Method.Validators); err != nil {
+	if err := g.doResolve("interface.method", g.Interface.Method.Annotations, g.Interface.Method.Validators); err != nil {
 		return err
 	}
-	if err := g.doResolve("interface method parameter", g.Interface.Method.Parameter.Annotations, g.Interface.Method.Parameter.Validators); err != nil {
+	if err := g.doResolve("interface.method.parameter", g.Interface.Method.Parameter.Annotations, g.Interface.Method.Parameter.Validators); err != nil {
 		return err
 	}
 
@@ -1380,13 +1387,13 @@ func (g *Grammar) doResolve(node string, annotations Annotations, validators Val
 
 func (g *Grammar) resolveAnnotations(node string, annotations Annotations) error {
 	for i := range annotations {
-		if err := annotations[i].resolve(g.Context.Annotations); err != nil {
-			return fmt.Errorf("%s: %w", node, err)
+		if err := annotations[i].resolve("context.annotations", g.Context.Annotations); err != nil {
+			return fmt.Errorf("%s.annotations: %w", node, err)
 		}
 		a := &annotations[i].value
 		for j := range a.Parameters {
-			if err := a.Parameters[j].resolve(g.Context.AnnotationParameters); err != nil {
-				return fmt.Errorf("%s: %w", node, err)
+			if err := a.Parameters[j].resolve("context.annotation_parameters", g.Context.AnnotationParameters); err != nil {
+				return fmt.Errorf("%s.annotations.parameters: %w", node, err)
 			}
 			p := &a.Parameters[j].value
 			if err := g.resolveValidators(node, p.Validators); err != nil {
@@ -1402,7 +1409,7 @@ func (g *Grammar) resolveAnnotations(node string, annotations Annotations) error
 
 func (g *Grammar) resolveValidators(node string, validators Validators) error {
 	for i := range validators {
-		if err := validators[i].resolve(g.Context.Validators); err != nil {
+		if err := validators[i].resolve("context.validators", g.Context.Validators); err != nil {
 			return fmt.Errorf("%s: %w", node, err)
 		}
 	}
@@ -1411,15 +1418,15 @@ func (g *Grammar) resolveValidators(node string, validators Validators) error {
 
 func (a *Annotation) validate(g *Grammar) error {
 	if a.Name == "" {
-		return errors.New("annotation name is required")
+		return errors.New("annotation: name is required")
 	}
 	if !g.builtin && a.Name == "next" {
-		return errors.New("annotation @next is reserved by the next compiler")
+		return errors.New("annotation: \"next\" is reserved by the next compiler")
 	}
 	for i := range a.Parameters {
 		p := &a.Parameters[i].value
 		if err := p.validate(g); err != nil {
-			return fmt.Errorf("annotation %q: %w", a.Name, err)
+			return fmt.Errorf("annotation %s: %w", a.Name, err)
 		}
 	}
 	return nil
@@ -1427,24 +1434,24 @@ func (a *Annotation) validate(g *Grammar) error {
 
 func (p *AnnotationParameter) validate(_ *Grammar) error {
 	if p.Name == "" {
-		return fmt.Errorf("parameter name is required")
+		return fmt.Errorf("parameter: name is required")
 	}
 	if !stringutil.IsIdentifer(p.Name) {
 		pattern, err := regexp.Compile("^" + p.Name + "$")
 		if err != nil {
-			return fmt.Errorf("invalid parameter name pattern %q: %w", p.Name, err)
+			return fmt.Errorf("parameter: invalid name pattern %q: %w", p.Name, err)
 		}
 		p.parsed.name = pattern
 	}
 	if len(p.Types) == 0 {
-		return fmt.Errorf("parameter %q: types is required", p.Name)
+		return fmt.Errorf("parameter %s: types are empty", p.Name)
 	}
 	for _, t := range p.Types {
 		if t == Any && len(p.Types) > 1 {
-			return fmt.Errorf("parameter %q: only one type %q is allowed if any type is specified", p.Name, Any)
+			return fmt.Errorf("parameter %s: only one type is allowed if any type is specified, got %d", p.Name, len(p.Types))
 		}
 		if !slices.Contains(validAnnotationParameterTypes, t) {
-			return fmt.Errorf("unknown type %q: must be one of %v", t, validAnnotationParameterTypes)
+			return fmt.Errorf("parameter %s: type %s must be one of %v", p.Name, t, validAnnotationParameterTypes)
 		}
 	}
 	return nil
@@ -1464,11 +1471,35 @@ func base_next(node string, parameters ...Options[AnnotationParameter]) Options[
 	return next(node, append(parameters, available(), deprecated(), tokens())...)
 }
 
+func available() Options[AnnotationParameter] {
+	return opt(AnnotationParameter{
+		Name:        "available",
+		Description: "Sets the available expression for the declaration.",
+		Types:       types(String),
+	})
+}
+
 func deprecated() Options[AnnotationParameter] {
 	return opt(AnnotationParameter{
 		Name:        "deprecated",
 		Description: "Sets the declaration as deprecated.",
 		Types:       types(String, Bool),
+	})
+}
+
+func tokens() Options[AnnotationParameter] {
+	return opt(AnnotationParameter{
+		Name:        "tokens",
+		Description: "Sets the space separated tokens for the declaration.",
+		Types:       types(String),
+	})
+}
+
+func prompt() Options[AnnotationParameter] {
+	return opt(AnnotationParameter{
+		Name:        "prompt",
+		Description: "Sets the prompt message for the interface declaration.",
+		Types:       types(String),
 	})
 }
 
@@ -1485,22 +1516,6 @@ func default_() Options[AnnotationParameter] {
 		Name:        "default",
 		Description: "Sets the default value for field.",
 		Types:       types(Any),
-	})
-}
-
-func tokens() Options[AnnotationParameter] {
-	return opt(AnnotationParameter{
-		Name:        "tokens",
-		Description: "Sets the space separated tokens for the declaration.",
-		Types:       types(String),
-	})
-}
-
-func available() Options[AnnotationParameter] {
-	return opt(AnnotationParameter{
-		Name:        "available",
-		Description: "Sets the available expression for the declaration.",
-		Types:       types(String),
 	})
 }
 
@@ -1615,11 +1630,16 @@ func appendTo[S ~[]T, T any](s *S, x ...T) {
 //		tokens="User",
 //		cpp_alias="model::User",
 //	)
-//	@entity
 //	struct User {
-//		@id
 //		int id;
-//		@next(available="!java", deprecated, tokens="Name", optional, default="John Doe", cpp_alias="std::string")
+//		@next(
+//			available="!java",
+//			deprecated,
+//			tokens="Name",
+//			optional,
+//			default="John Doe",
+//			cpp_alias="std::string",
+//		)
 //		string name;
 //	}
 //
@@ -1627,10 +1647,19 @@ func appendTo[S ~[]T, T any](s *S, x ...T) {
 //		available="cpp|java",
 //		deprecated,
 //		tokens="User Repository",
+//		prompt="Prompt for AGI.",
 //		java_alias="org.springframework.data.repository.CrudRepository<User, Long>",
 //	)
 //	interface UserRepository {
-//		@next(available="!java", deprecated, tokens="Get User", mut, error, cpp_alias="std::shared_ptr<model::User>")
+//		@next(
+//			available="!java",
+//			deprecated,
+//			tokens="Get User",
+//			mut,
+//			error,
+//			cpp_alias="std::shared_ptr<model::User>",
+//			prompt="Prompt for AGI.",
+//		)
 //		findById(
 //			@next(available="!java", deprecated, tokens="ID", mut, cpp_alias="int64_t")
 //			int64 id
@@ -1660,9 +1689,9 @@ var Builtin = Grammar{
 		},
 	},
 	Interface: Interface{
-		Annotations: Annotations{base_next("interface", lang_alias())},
+		Annotations: Annotations{base_next("interface", prompt(), lang_alias())},
 		Method: InterfaceMethod{
-			Annotations: Annotations{base_next("interface.method", lang_alias(), mut(), error_())},
+			Annotations: Annotations{base_next("interface.method", prompt(), lang_alias(), mut(), error_())},
 			Parameter: InterfaceMethodParameter{
 				Annotations: Annotations{next("interface.method.parameter", deprecated(), tokens(), mut(), lang_alias())},
 			},

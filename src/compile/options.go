@@ -30,7 +30,7 @@ import (
 type Options struct {
 	test bool `yaml:"-" json:"-"`
 
-	// @api(CommandLine/Configuration.verbose) represents the verbosity level of the compiler.
+	// @api(CommandLine/Options.verbose) represents the verbosity level of the compiler.
 	//
 	// Example:
 	//
@@ -41,7 +41,7 @@ type Options struct {
 	// See the [-v](#CommandLine/Flag/-v) flag for more information.
 	Verbose int `yaml:"verbose" json:"verbose"`
 
-	// @api(CommandLine/Configuration.head) represents the header comment for generated code.
+	// @api(CommandLine/Options.head) represents the header comment for generated code.
 	//
 	// Example:
 	//
@@ -52,7 +52,7 @@ type Options struct {
 	// See the [-head](#CommandLine/Flag/-head) flag for more information.
 	Head string `yaml:"head" json:"head"`
 
-	// @api(CommandLine/Configuration.grammar) represents the custom grammar for the next source code.
+	// @api(CommandLine/Options.grammar) represents the custom grammar for the next source code.
 	//
 	// Example:
 	//
@@ -63,7 +63,7 @@ type Options struct {
 	// See the [-g](#CommandLine/Flag/-g) flag for more information.
 	Grammar string `yaml:"grammar" json:"grammar"`
 
-	// @api(CommandLine/Configuration.strict) represents the strict mode of the compiler.
+	// @api(CommandLine/Options.strict) represents the strict mode of the compiler.
 	//
 	// Example:
 	//
@@ -74,7 +74,7 @@ type Options struct {
 	// See the [-s](#CommandLine/Flag/-s) flag for more information.
 	Strict bool `yaml:"strict" json:"strict"`
 
-	// @api(CommandLine/Configuration.env) represents the custom environment variables for code generation.
+	// @api(CommandLine/Options.env) represents the custom environment variables for code generation.
 	//
 	// Example:
 	//
@@ -88,7 +88,7 @@ type Options struct {
 	// See the [-D](#CommandLine/Flag/-D) flag for more information.
 	Env flags.Map `yaml:"env" json:"env"`
 
-	// @api(CommandLine/Configuration.output) represents the output directories for generated code of each target language.
+	// @api(CommandLine/Options.output) represents the output directories for generated code of each target language.
 	//
 	// Example:
 	//
@@ -101,7 +101,7 @@ type Options struct {
 	// See the [-O](#CommandLine/Flag/-O) flag for more information.
 	Output flags.Map `yaml:"output" json:"output"`
 
-	// @api(CommandLine/Configuration.mapping) represents the language-specific type mappings and features.
+	// @api(CommandLine/Options.mapping) represents the language-specific type mappings and features.
 	//
 	// Example:
 	//
@@ -118,7 +118,7 @@ type Options struct {
 	// See the [-M](#CommandLine/Flag/-M) flag for more information.
 	Mapping flags.Map `yaml:"mapping" json:"mapping"`
 
-	// @api(CommandLine/Configuration.templates) represents the custom template directories or files for each target language.
+	// @api(CommandLine/Options.templates) represents the custom template directories or files for each target language.
 	//
 	// Example:
 	//
@@ -134,7 +134,7 @@ type Options struct {
 	// See the [-T](#CommandLine/Flag/-T) flag for more information.
 	Templates flags.MapSlice `yaml:"templates" json:"templates"`
 
-	// @api(CommandLine/Configuration.solvers) represents the custom annotation solver programs for code generation.
+	// @api(CommandLine/Options.solvers) represents the custom annotation solver programs for code generation.
 	//
 	// Example:
 	//

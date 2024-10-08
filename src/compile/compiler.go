@@ -786,9 +786,9 @@ func (c *Compiler) validateAnnotations(node Node, annotations grammar.Annotation
 				return a.Value().Name
 			})
 			if score > 0 {
-				c.addErrorf(annotation.Pos().pos, "annotation %s not supported, did you mean %s?", name, s)
+				c.addErrorf(annotation.Pos().pos, "unknown annotation %s, did you mean %s?", name, s)
 			} else {
-				c.addErrorf(annotation.Pos().pos, "annotation %s not supported", name)
+				c.addErrorf(annotation.Pos().pos, "unknown annotation %s", name)
 			}
 			continue
 		}
@@ -799,7 +799,7 @@ func (c *Compiler) validateAnnotations(node Node, annotations grammar.Annotation
 			}
 			gp := grammar.LookupAnnotationParameter(ga.Parameters, p)
 			if gp == nil {
-				if !c.options.Strict {
+				if !c.options.Strict && name != "next" {
 					continue
 				}
 				s, score := stringutil.FindBestMatchFunc(slices.All(ga.Parameters), p, stringutil.DefaultSimilarityThreshold, func(i int, a grammar.Options[grammar.AnnotationParameter]) string {
@@ -816,9 +816,9 @@ func (c *Compiler) validateAnnotations(node Node, annotations grammar.Annotation
 					return name
 				})
 				if score > 0 {
-					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s not supported, did you mean %s?", name, p, s)
+					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: unknown parameter %s, did you mean %s?", name, p, s)
 				} else {
-					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s not supported", name, p)
+					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: unknown parameter %s", name, p)
 				}
 				continue
 			}
@@ -829,19 +829,19 @@ func (c *Compiler) validateAnnotations(node Node, annotations grammar.Annotation
 			switch {
 			case rv.Kind() == reflect.String:
 				if !slices.Contains(gp.Types, grammar.String) {
-					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should be a string value", name, p)
+					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should be string", name, p)
 				}
 			case rv.CanInt() || rv.CanUint():
 				if !slices.Contains(gp.Types, grammar.Int) {
-					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should be an integer value", name, p)
+					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should be integer", name, p)
 				}
 			case rv.Kind() == reflect.Bool:
 				if !slices.Contains(gp.Types, grammar.Bool) {
-					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should be a boolean value", name, p)
+					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should be boolean", name, p)
 				}
 			case rv.CanFloat():
 				if !slices.Contains(gp.Types, grammar.Float) {
-					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should be a float value", name, p)
+					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should be float", name, p)
 				}
 			default:
 				if !slices.Contains(gp.Types, grammar.Type) {

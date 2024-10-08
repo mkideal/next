@@ -360,6 +360,27 @@ func (d *Decls[T]) resolve(c *Compiler, file *File) {
 	}
 }
 
+// @api(Object/Decls.List) returns the all top-level declarations.
+func (d *Decls[T]) List() []Decl {
+	var list []Decl
+	if d == nil {
+		return list
+	}
+	for _, x := range availableList(d.compiler, d.consts, d.lang) {
+		list = append(list, x)
+	}
+	for _, x := range availableList(d.compiler, d.enums, d.lang) {
+		list = append(list, x)
+	}
+	for _, x := range availableList(d.compiler, d.structs, d.lang) {
+		list = append(list, x)
+	}
+	for _, x := range availableList(d.compiler, d.interfaces, d.lang) {
+		list = append(list, x)
+	}
+	return list
+}
+
 // @api(Object/Decls.Consts) represents the [List](#Object/Common/List) of [Const](#Object/Const) declarations.
 func (d *Decls[T]) Consts() Consts {
 	if d == nil {

@@ -37,6 +37,9 @@ import "time"
 {{- define "next/go/imports:declarations"}}
 	{{- with .Decl.Annotations.next.go_imports }}
 		{{- range (split "," . | map (trim | removeExt | trimPrefix "*") | uniq)}}
+			{{- if not .}}
+				{{- continue}}
+			{{- end}}
 			{{- $parts := split ":" . | map trim }}
 			{{- if eq 1 (len $parts)}}
 				{{- /* import "xxx" */}}
@@ -86,6 +89,9 @@ var _ = time.Now
 {{- define "next/go/imports:unused" -}}
 	{{- if .Decl.Annotations.next.go_imports}}
 		{{- range (.Decl.Annotations.next.go_imports | split "," | map trim | uniq)}}
+			{{- if not .}}
+				{{- continue}}
+			{{- end}}
 			{{- $pkg := . | removeExt}}
 			{{- $ptr := (hasPrefix "*" $pkg)}}
 			{{- $val := . | split "." | last}}

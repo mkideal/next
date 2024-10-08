@@ -254,7 +254,6 @@ html[data-red-border] div#__docusaurus {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-
 [data-theme="dark"] .property-container {
   box-shadow: 0 2px 4px rgba(255, 255, 255, 0.05);
   border: 1px solid #2d3748;
@@ -262,4 +261,10 @@ html[data-red-border] div#__docusaurus {
 
 [data-theme="dark"] .property-container:hover {
   box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
+}
+
+pre[class*="language-"] {
+  tab-size: 4;
+  -moz-tab-size: 4;
+  -o-tab-size: 4;
 }
