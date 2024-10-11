@@ -49,16 +49,18 @@ build: autogen go/vet
 
 .PHONY: install
 install: build
-	@echo "Installing to ${INSTALL_DIR}/next..."
+	@echo "Installing to ${INSTALL_DIR}/..."
 	@mkdir -p ${INSTALL_DIR}
 	@cp ${BUILD_BIN_DIR}/next ${INSTALL_DIR}/
+	@cp ${BUILD_BIN_DIR}/nextls ${INSTALL_DIR}/
 
 define release_unix
 	$(eval dir := next.$(subst v,,${BUILD_VERSION}).$(1)-$(2))
-	@echo "Building ${BUILD_DIR}/${dir}/next..."
 	@mkdir -p ${BUILD_DIR}/${dir}/bin
 	@cp README.md ${BUILD_DIR}/${dir}/
+	@echo "Building ${BUILD_DIR}/${dir}/next..."
 	@GOOS=$(if $(filter mingw,$(1)),windows,$(1)) GOARCH=$(2) ${GOBUILD} -o ${BUILD_DIR}/${dir}/bin/
+	@GOOS=$(if $(filter mingw,$(1)),windows,$(1)) GOARCH=$(2) ${GOBUILD} -o ${BUILD_DIR}/${dir}/bin/ ./cmd/nextls/
 	@cd ${BUILD_DIR} && tar zcf ${dir}.tar.gz ${dir} && rm -r ${dir}
 endef
 
@@ -67,16 +69,10 @@ define release_windows
 	@echo "Building ${BUILD_DIR}/${dir}/next..."
 	@mkdir -p ${BUILD_DIR}/${dir}/bin
 	@GOOS=windows GOARCH=$(1) ${GOBUILD} -o ${BUILD_DIR}/${dir}/bin/
+	@GOOS=windows GOARCH=$(1) ${GOBUILD} -o ${BUILD_DIR}/${dir}/bin/ ./cmd/nextls/
 	@cp ./scripts/install.bat ${BUILD_DIR}/${dir}/
 	@cp README.md ${BUILD_DIR}/${dir}/
 	@cd ${BUILD_DIR} && zip ${dir}.zip -r ${dir} >/dev/null && rm -r ${dir}
-endef
-
-define release_js
-	$(eval filename := next.$(subst v,,${BUILD_VERSION}).wasm)
-	@echo "Building ${BUILD_DIR}/${filename}..."
-	@mkdir -p ${BUILD_DIR}/
-	@GOOS=js GOARCH=wasm go build -o ${BUILD_DIR}/${filename}
 endef
 
 .PHONY: release
@@ -90,7 +86,6 @@ release: autogen go/vet
 	$(call release_unix,mingw,amd64)
 	$(call release_unix,mingw,386)
 	$(call release_windows,amd64)
-	$(call release_js)
 
 .PHONY: test/src
 test/src: autogen go/vet

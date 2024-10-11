@@ -268,7 +268,7 @@ func Generate(c *Compiler) error {
 //		# This is a valid comment (leading spaces are allowed)
 //	```
 //
-// See [Builtin Map Files](https://github.com/gopherd/next/tree/main/builtin) for more information.
+// See [Builtin Map Files](https://github.com/mkideal/next/tree/main/builtin) for more information.
 //
 // :::
 func loadMap(c *Compiler, m flags.Map, lang string) error {

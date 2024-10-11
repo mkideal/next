@@ -8,7 +8,7 @@ NPL (**N**ext Tem**p**late **L**anguage based on Go's [text/template](https://pk
 
 :::tip
 
-See [Builtin Template Files](https://github.com/gopherd/next/tree/main/builtin) for more information.
+See [Builtin Template Files](https://github.com/mkideal/next/tree/main/builtin) for more information.
 
 :::
 
