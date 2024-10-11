@@ -43,7 +43,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.ref_name }}
-          files: build/next.*.tar.gz
+          files: build/next*.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -88,12 +88,12 @@ jobs:
         run: |
           candle.exe installer.wxs
           $version = $env:GITHUB_REF_NAME -replace '^v', ''
-          light.exe installer.wixobj -o build/next.$version.windows.msi
+          light.exe installer.wixobj -o build/next$version.windows.msi
 
       - name: Upload MSI to GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.ref_name }}
-          files: build/next.*.msi
+          files: build/next*.msi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

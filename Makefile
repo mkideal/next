@@ -54,7 +54,7 @@ install: build
 	@cp ${BUILD_BIN_DIR}/nextls ${INSTALL_DIR}/
 
 define release_unix
-	$(eval dir := next.$(subst v,,${BUILD_VERSION}).$(1)-$(2))
+	$(eval dir := next$(subst v,,${BUILD_VERSION}).$(1)-$(2))
 	@mkdir -p ${BUILD_DIR}/${dir}/bin
 	@cp README.md ${BUILD_DIR}/${dir}/
 	@echo "Building ${BUILD_DIR}/${dir}/next..."
@@ -65,7 +65,7 @@ endef
 
 .PHONY: release
 release:
-	@rm -f ${BUILD_DIR}/next.*.tar.gz ${BUILD_DIR}/next.*.zip ${BUILD_DIR}/*.wasm
+	@rm -f ${BUILD_DIR}/next*.tar.gz
 	$(call release_unix,darwin,amd64)
 	$(call release_unix,darwin,arm64)
 	$(call release_unix,linux,amd64)

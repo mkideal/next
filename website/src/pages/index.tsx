@@ -29,8 +29,14 @@ function HeroBanner() {
           />
         </Heading>
         <div className={styles.indexCtas}>
-          <Link className="button button--info" to="/docs">
+          <Link className="button button--primary" to="/docs">
             <Translate>Get Started</Translate>
+          </Link>
+          <Link
+            className="button button--info download-button"
+            to="/docs/download"
+          >
+            <Translate>Download</Translate>
           </Link>
         </div>
       </div>
@@ -39,18 +45,18 @@ function HeroBanner() {
 }
 
 function TopBanner() {
-  const announcedVersion = useDocusaurusContext().siteConfig.customFields
-    ?.announcedVersion as string;
+  const version = useDocusaurusContext().siteConfig.customFields
+    ?.version as string;
 
   return (
-    announcedVersion && (
+    version && (
       <div className={styles.topBanner}>
         <div className={styles.topBannerTitle}>
           {"🎉\xa0"}
           <Link to={"/docs/api/latest"} className={styles.topBannerTitleText}>
             <Translate
               id="homepage.banner.launch.newVersion"
-              values={{ newVersion: announcedVersion }}
+              values={{ newVersion: version }}
             >
               {"Next \xa0{newVersion} is\xa0out!️"}
             </Translate>

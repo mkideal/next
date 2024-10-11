@@ -14,7 +14,7 @@ import (
 	"github.com/mkideal/next/src/token"
 )
 
-//go:generate golang.org/x/tools/cmd/stringer@latest -type Kind
+//go:generate go run golang.org/x/tools/cmd/stringer@latest -type Kind
 
 // Kind specifies the kind of value represented by a Value.
 type Kind int
