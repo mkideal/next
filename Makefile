@@ -16,6 +16,9 @@ else
 endif
 endif
 
+$(info BUILD_COMMIT = $(BUILD_COMMIT))
+$(info BUILD_VERSION = $(BUILD_VERSION))
+$(info BUILD_DATETIME = $(BUILD_DATETIME))
 GOBUILD = go build -ldflags "-X ${BUILD_PKG}.commit=${BUILD_COMMIT} -X ${BUILD_PKG}.version=${BUILD_VERSION} -X ${BUILD_PKG}.datetime=${BUILD_DATETIME}"
 
 BUILD_DIR = ./build
