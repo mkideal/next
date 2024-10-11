@@ -11,7 +11,7 @@ import (
 	"github.com/gopherd/core/text/document"
 )
 
-//go:generate stringer -type=TokenType -linecomment
+//go:generate golang.org/x/tools/cmd/stringer@latest -type=TokenType -linecomment
 
 // TokenType constants aligned with VSCode's standard semantic token types
 type TokenType uint32
@@ -59,7 +59,7 @@ func TokenTypes() []string {
 	return types
 }
 
-//go:generate stringer -type=TokenModifier -linecomment
+//go:generate golang.org/x/tools/cmd/stringer@latest -type=TokenModifier -linecomment
 type TokenModifier int
 
 const (

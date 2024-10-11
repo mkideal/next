@@ -41,7 +41,7 @@ func (ks Kinds) Has(k any) (bool, error) {
 	}
 }
 
-//go:generate stringer -type=Kind -linecomment
+//go:generate golang.org/x/tools/cmd/stringer@latest -type=Kind -linecomment
 type Kind int
 
 func (k Kind) kinds() Kinds { return 1 << k }

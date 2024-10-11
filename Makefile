@@ -29,15 +29,8 @@ EXAMPLE_DIR = ./website/example
 .PHONY: all
 all: build
 
-.PHONY: deps/stringer
-deps/stringer:
-ifeq (, $(shell which stringer))
-	@echo "Installing stringer..."
-	@go install golang.org/x/tools/cmd/stringer@latest
-endif
-
 .PHONY: autogen
-autogen: deps/stringer
+autogen:
 	@echo "Running go generate..."
 	@go generate ./...
 
