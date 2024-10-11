@@ -14,6 +14,11 @@ GOBUILD = go build -ldflags " \
 BUILD_DIR = ./build
 BUILD_BIN_DIR=${BUILD_DIR}/bin
 EXAMPLE_DIR = ./website/example
+INSTALL_DIR := $(HOME)/bin
+OS := $(shell uname -s)
+ifeq ($(OS),Linux)
+    INSTALL_DIR := $(HOME)/.local/bin
+endif
 
 .PHONY: all
 all: build
@@ -44,8 +49,9 @@ build: autogen go/vet
 
 .PHONY: install
 install: build
-	@echo "Installing to /usr/local/bin/next..."
-	@cp ${BUILD_BIN_DIR}/next /usr/local/bin/
+	@echo "Installing to ${INSTALL_DIR}/next..."
+	@mkdir -p ${INSTALL_DIR}
+	@cp ${BUILD_BIN_DIR}/next ${INSTALL_DIR}/
 
 define release_unix
 	$(eval dir := next.$(subst v,,${BUILD_VERSION}).$(1)-$(2))
