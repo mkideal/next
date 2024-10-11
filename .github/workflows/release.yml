@@ -71,8 +71,8 @@ jobs:
         run: |
           $COMPONENT_GUID_1 = [guid]::NewGuid().ToString()
           $COMPONENT_GUID_2 = [guid]::NewGuid().ToString()
-          (Get-Content installer.wxs) -replace 'COMPONENT-GUID-1', $COMPONENT_GUID_1 | Set-Content installer.wxs
-          (Get-Content installer.wxs) -replace 'COMPONENT-GUID-2', $COMPONENT_GUID_2 | Set-Content installer.wxs
+          (Get-Content scripts/installer.wxs) -replace 'COMPONENT-GUID-1', $COMPONENT_GUID_1 | Set-Content installer.wxs
+          (Get-Content scripts/installer.wxs) -replace 'COMPONENT-GUID-2', $COMPONENT_GUID_2 | Set-Content installer.wxs
 
       - name: Build Windows Executable
         shell: pwsh
