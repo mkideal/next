@@ -18,15 +18,16 @@
       </Directory>
     </Directory>
 
-    <Feature Id="MainFeature" Title="Next" Level="1">
-      <ComponentRef Id="Next" />
-      <ComponentRef Id="Nextls" />
-    </Feature>
-
     <DirectoryRef Id="TARGETDIR">
       <Component Id="SetPath" Guid="42227732-9F82-4C66-B3DF-361A667A108C">
         <Environment Id="PathEnvVar" Name="PATH" Value="[INSTALLFOLDER]" Action="set" Part="last" System="yes" />
       </Component>
     </DirectoryRef>
+
+    <Feature Id="MainFeature" Title="Next" Level="1">
+      <ComponentRef Id="Next" />
+      <ComponentRef Id="Nextls" />
+      <ComponentRef Id="SetPath" />
+    </Feature>
   </Product>
 </Wix>
