@@ -9,8 +9,9 @@ import (
 	"sync"
 
 	"github.com/gopherd/core/text/document"
-	"github.com/mkideal/next/cmd/nextls/internal/protocol"
 	"github.com/sourcegraph/jsonrpc2"
+
+	"github.com/mkideal/next/cmd/nextls/internal/protocol"
 )
 
 // Server is the language server.

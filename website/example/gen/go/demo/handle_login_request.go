@@ -10,7 +10,6 @@ func handleLoginRequest(w http.ResponseWriter, r *http.Request) error {
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return err
 	}
-	// TODO: handle request
 	_ = req
 	return nil
 }

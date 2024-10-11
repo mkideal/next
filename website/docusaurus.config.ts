@@ -6,10 +6,8 @@ import type { Options as ClientRedirectsOptions } from "@docusaurus/plugin-clien
 import prismLight from "./src/utils/prismLight";
 import prismDark from "./src/utils/prismDark";
 
-// FIXME: change to https://next.as
-const URL = "https://gopherd.com";
-// FIXME: change to "https://github.com/mkideal/next"
-const REPO = "https://github.com/gopherd/next";
+const URL = "https://next.as";
+const REPO = "https://github.com/mkideal/next";
 
 const customFields = {
   announcedVersion: "0.0.4",
@@ -25,13 +23,11 @@ const config: Config = {
   url: URL,
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  // FIXME: change to "/"
-  baseUrl: "/next/",
+  baseUrl: "/",
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  // FIXME: change to "next" when organization name "next" is available.
-  organizationName: "gopherd", // Usually your GitHub org/user name.
+  organizationName: "mkideal", // Usually your GitHub org/user name.
   projectName: "next", // Usually your repo name.
   trailingSlash: false,
 

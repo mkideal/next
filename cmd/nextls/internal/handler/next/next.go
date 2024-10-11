@@ -16,13 +16,13 @@ import (
 
 	"github.com/gopherd/core/text/document"
 	"github.com/gopherd/core/types"
+
 	"github.com/mkideal/next/api"
+	"github.com/mkideal/next/cmd/nextls/internal/protocol"
 	"github.com/mkideal/next/src/ast"
 	"github.com/mkideal/next/src/compile"
 	"github.com/mkideal/next/src/parser"
 	"github.com/mkideal/next/src/token"
-
-	"github.com/mkideal/next/cmd/nextls/internal/protocol"
 )
 
 func init() {

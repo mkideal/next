@@ -1,17 +1,14 @@
-// TODO:
-//
-// 1. 处理不完全解析问题
 package main
 
 import (
 	"context"
 	"flag"
+	"fmt"
 	"io"
 	"log/slog"
 	"os"
 	"path/filepath"
 
-	"github.com/gopherd/core/builder"
 	"github.com/sourcegraph/jsonrpc2"
 
 	_ "github.com/mkideal/next/cmd/nextls/internal/handler/next"
@@ -25,6 +22,8 @@ var flags struct {
 	}
 }
 
+const version = "0.0.1"
+
 func main() {
 	logFile, _ := os.UserHomeDir()
 	if logFile != "" {
@@ -35,7 +34,7 @@ func main() {
 	flag.Parse()
 
 	if flag.NArg() == 0 && flag.Arg(0) == "version" {
-		builder.PrintInfo()
+		fmt.Printf("nextls %s\n", version)
 		os.Exit(0)
 	}
 
