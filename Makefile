@@ -5,6 +5,7 @@ BUILD_VERSION ?= $(GITHUB_REF_NAME)
 BUILD_COMMIT ?= $(GITHUB_SHA)
 
 ifeq ($(OS),Windows_NT)
+SHELL = cmd.exe
 BUILD_DATETIME := $(shell powershell -Command "Get-Date -Format 'yyyy/MM/ddTHH:mm:sszzz'")
 else
 BUILD_DATETIME := $(shell date "+%Y/%m/%dT%H:%M:%S%z")
