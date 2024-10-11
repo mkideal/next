@@ -4,12 +4,7 @@ BUILD_VERSION = $(shell git describe --tags --abbrev=0)
 BUILD_COMMIT = $(shell git rev-parse HEAD)
 BUILD_DATETIME = $(shell date "+%Y/%m/%dT%H:%M:%S%z")
 
-GOBUILD = go build -ldflags " \
-	-X ${BUILD_PKG}.branch=${BUILD_BRANCH} \
-	-X ${BUILD_PKG}.commit=${BUILD_COMMIT} \
-	-X ${BUILD_PKG}.version=${BUILD_VERSION} \
-	-X ${BUILD_PKG}.datetime=${BUILD_DATETIME} \
-	"
+GOBUILD = go build -ldflags "-X ${BUILD_PKG}.branch=${BUILD_BRANCH} -X ${BUILD_PKG}.commit=${BUILD_COMMIT} -X ${BUILD_PKG}.version=${BUILD_VERSION} -X ${BUILD_PKG}.datetime=${BUILD_DATETIME}"
 
 BUILD_DIR = ./build
 BUILD_BIN_DIR=${BUILD_DIR}/bin
