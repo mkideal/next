@@ -93,6 +93,16 @@ curl -fsSL https://getnext.sh | sh
 
 This script will download and install the latest version of Next on your system.
 
+:::tip
+
+If the downloading is very slow, you can use a https proxy like this:
+
+```sh
+curl -fsSL https://getnext.sh | https_proxy=http://127.0.0.1:1087 sh
+```
+
+:::
+
   </TabItem>
 
   <TabItem value="windows">
@@ -134,8 +144,7 @@ next -h
 
 :::
 
-<details>
-<summary>Install Editor Extensions</summary>
+### Editor Extensions
 
 <Tabs
   defaultValue="vscode"
@@ -149,7 +158,6 @@ This extension provides syntax highlighting, and other helpful features for Next
 
   </TabItem>
 </Tabs>
-</details>
 
 ## Write a Next source file
 
