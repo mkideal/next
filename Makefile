@@ -74,7 +74,7 @@ release:
 
 .PHONY: release_windows
 release_windows:
-	$(eval dir := next.$(subst v,,${BUILD_VERSION}).windows)
+	$(eval dir := windows)
 	@echo Building ${BUILD_DIR}\\${dir}\\next...
 	@if not exist "${BUILD_DIR}\\${dir}\\bin" mkdir "${BUILD_DIR}\\${dir}\\bin"
 	@${GOBUILD} -o "${BUILD_DIR}\\${dir}\\bin\\"

@@ -9,10 +9,10 @@
       <Directory Id="ProgramFilesFolder">
         <Directory Id="INSTALLFOLDER" Name="Next">
           <Component Id="Next" Guid="ACA2C51C-866B-4994-B6BE-0FF101589FC4">
-            <File Id="Next" Source="build/next.${{ env.RELEASE_VERSION }}.windows/bin/next.exe" KeyPath="yes" />
+            <File Id="Next" Source="build/windows/bin/next.exe" KeyPath="yes" />
           </Component>
           <Component Id="Nextls" Guid="15A04E67-76CB-4980-9C92-EBC97E59CCEA">
-            <File Id="Nextls" Source="build/next.${{ env.RELEASE_VERSION }}.windows/bin/nextls.exe" KeyPath="yes" />
+            <File Id="Nextls" Source="build/windows/bin/nextls.exe" KeyPath="yes" />
           </Component>
         </Directory>
       </Directory>
