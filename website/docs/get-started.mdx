@@ -81,11 +81,10 @@ flowchart TD
   values={[
     { label: 'Unix-like', value: 'unix' },
     { label: 'Windows', value: 'windows' },
-    { label: 'Source Code', value: 'source' },
   ]}>
 
   <TabItem value="unix">
-  To install Next on Unix-like systems (`Linux`, `macOS`, `Git Bash for Windows`, etc.), you can use the following command:
+  To install Next on Unix-like systems, you can use the following command:
 
 ```sh
 curl -fsSL https://getnext.sh | sh
@@ -108,23 +107,10 @@ curl -fsSL https://getnext.sh | https_proxy=http://127.0.0.1:1087 sh
   <TabItem value="windows">
   For Windows users, follow these steps:
 
-1. Download the installation package from [Downloads](/docs/downloads) for windows.
-2. Extract the downloaded ZIP file.
-3. Right-click on the `install.bat` file in the extracted folder.
-4. Select "Run as administrator" to execute the installation script.
+1. Download the `.msi` installer from [Downloads](/docs/downloads) for windows.
+2. Double click the `.msi` installer and go on.
 
 This will install the Next on your Windows system.
-
-  </TabItem>
-
-  <TabItem value="source">
-  To install Next from source, use the following command:
-
-```sh
-go install github.com/mkideal/next@latest
-```
-
-Make sure you have [Go](https://go.dev) `1.23+` installed on your system before running this command.
 
   </TabItem>
 </Tabs>

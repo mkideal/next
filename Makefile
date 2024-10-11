@@ -59,33 +59,31 @@ define release_unix
 	@mkdir -p ${BUILD_DIR}/${dir}/bin
 	@cp README.md ${BUILD_DIR}/${dir}/
 	@echo "Building ${BUILD_DIR}/${dir}/next..."
-	@GOOS=$(if $(filter mingw,$(1)),windows,$(1)) GOARCH=$(2) ${GOBUILD} -o ${BUILD_DIR}/${dir}/bin/
-	@GOOS=$(if $(filter mingw,$(1)),windows,$(1)) GOARCH=$(2) ${GOBUILD} -o ${BUILD_DIR}/${dir}/bin/ ./cmd/nextls/
+	@GOOS=$(1) GOARCH=$(2) ${GOBUILD} -o ${BUILD_DIR}/${dir}/bin/
+	@GOOS=$(1) GOARCH=$(2) ${GOBUILD} -o ${BUILD_DIR}/${dir}/bin/ ./cmd/nextls/
 	@cd ${BUILD_DIR} && tar zcf ${dir}.tar.gz ${dir} && rm -r ${dir}
 endef
 
-define release_windows
-	$(eval dir := next.$(subst v,,${BUILD_VERSION}).windows-$(1))
-	@echo "Building ${BUILD_DIR}/${dir}/next..."
-	@mkdir -p ${BUILD_DIR}/${dir}/bin
-	@GOOS=windows GOARCH=$(1) ${GOBUILD} -o ${BUILD_DIR}/${dir}/bin/
-	@GOOS=windows GOARCH=$(1) ${GOBUILD} -o ${BUILD_DIR}/${dir}/bin/ ./cmd/nextls/
-	@cp ./scripts/install.bat ${BUILD_DIR}/${dir}/
-	@cp README.md ${BUILD_DIR}/${dir}/
-	@cd ${BUILD_DIR} && zip ${dir}.zip -r ${dir} >/dev/null && rm -r ${dir}
-endef
-
 .PHONY: release
-release: autogen go/vet
+release: autogen
 	@rm -f ${BUILD_DIR}/next.*.tar.gz ${BUILD_DIR}/next.*.zip ${BUILD_DIR}/*.wasm
 	$(call release_unix,darwin,amd64)
 	$(call release_unix,darwin,arm64)
 	$(call release_unix,linux,amd64)
 	$(call release_unix,linux,arm64)
 	$(call release_unix,linux,386)
-	$(call release_unix,mingw,amd64)
-	$(call release_unix,mingw,386)
-	$(call release_windows,amd64)
+
+ifeq ($(OS),Windows_NT)
+SHELL = cmd.exe
+.PHONY: release_windows
+release_windows: autogen
+	$(eval dir := next.$(subst v,,${BUILD_VERSION}).windows-$(1))
+	@echo Building ${BUILD_DIR}\\${dir}\\next...
+	@if not exist "${BUILD_DIR}\\${dir}\\bin" mkdir "${BUILD_DIR}\\${dir}\\bin"
+	@set GOARCH=$(1) && ${GOBUILD} -o "${BUILD_DIR}\\${dir}\\bin\\"
+	@set GOARCH=$(1) && ${GOBUILD} -o "${BUILD_DIR}\\${dir}\\bin\\" ./cmd/nextls/
+	@copy README.md "${BUILD_DIR}\\${dir}\\"
+endif
 
 .PHONY: test/src
 test/src: autogen go/vet

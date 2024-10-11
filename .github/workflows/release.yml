@@ -1,0 +1,99 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  create_release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Next ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+
+  release:
+    name: Create and Publish Release
+    needs: create_release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.23
+
+      - name: Build and Create Tar.gz
+        run: make release
+
+      - name: Upload Tar.gz to GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: build/next.*.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  windows_build:
+    name: Build Windows Executable and MSI
+    needs: create_release
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Make
+        shell: pwsh
+        run: |
+          choco install make -y
+          echo 'C:\ProgramData\chocolatey\lib\make\tools\bin' | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Install WiX Toolset
+        shell: pwsh
+        run: |
+          choco install wixtoolset --version=3.11.2 -y
+          echo 'C:\Program Files (x86)\WiX Toolset v3.11\bin' | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.23
+
+      - name: Generate and set new Component GUIDs
+        shell: pwsh
+        run: |
+          $COMPONENT_GUID_1 = [guid]::NewGuid().ToString()
+          $COMPONENT_GUID_2 = [guid]::NewGuid().ToString()
+          (Get-Content installer.wxs) -replace 'COMPONENT-GUID-1', $COMPONENT_GUID_1 | Set-Content installer.wxs
+          (Get-Content installer.wxs) -replace 'COMPONENT-GUID-2', $COMPONENT_GUID_2 | Set-Content installer.wxs
+
+      - name: Build Windows Executable
+        shell: pwsh
+        run: make release_windows
+
+      - name: Create MSI Package
+        shell: pwsh
+        run: |
+          candle.exe installer.wxs
+          light.exe installer.wixobj -o build/next.${{ github.ref_name }}.msi
+
+      - name: Upload MSI to GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: build/windows/*.msi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
