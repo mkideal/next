@@ -94,6 +94,6 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.ref_name }}
-          files: build/next.${{ github.ref_name }}.msi
+          files: build/next.*.msi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
