@@ -87,7 +87,8 @@ jobs:
         shell: pwsh
         run: |
           candle.exe installer.wxs
-          light.exe installer.wixobj -o build/next.${{ github.ref_name }}.msi
+          $version = $env:GITHUB_REF_NAME -replace '^v', ''
+          light.exe installer.wixobj -o build/next.$version.windows.msi
 
       - name: Upload MSI to GitHub Release
         uses: softprops/action-gh-release@v1
