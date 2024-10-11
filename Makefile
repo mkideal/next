@@ -1,19 +1,26 @@
 BUILD_PKG = github.com/gopherd/core/builder
-BUILD_BRANCH = $(shell git symbolic-ref --short HEAD)
 BUILD_VERSION = $(shell git describe --tags --abbrev=0)
 BUILD_COMMIT = $(shell git rev-parse HEAD)
-BUILD_DATETIME = $(shell date "+%Y/%m/%dT%H:%M:%S%z")
+BUILD_VERSION ?= $(GITHUB_REF_NAME)
+BUILD_COMMIT ?= $(GITHUB_SHA)
 
-GOBUILD = go build -ldflags "-X ${BUILD_PKG}.branch=${BUILD_BRANCH} -X ${BUILD_PKG}.commit=${BUILD_COMMIT} -X ${BUILD_PKG}.version=${BUILD_VERSION} -X ${BUILD_PKG}.datetime=${BUILD_DATETIME}"
+ifeq ($(OS),Windows_NT)
+BUILD_DATETIME := $(shell powershell -Command "Get-Date -Format 'yyyy/MM/ddTHH:mm:sszzz'")
+else
+BUILD_DATETIME := $(shell date "+%Y/%m/%dT%H:%M:%S%z")
+OS_NAME := $(shell uname -s)
+ifeq (${OS_NAME},Linux)
+    INSTALL_DIR := $(HOME)/.local/bin
+else
+	INSTALL_DIR := $(HOME)/bin
+endif
+endif
+
+GOBUILD = go build -ldflags "-X ${BUILD_PKG}.commit=${BUILD_COMMIT} -X ${BUILD_PKG}.version=${BUILD_VERSION} -X ${BUILD_PKG}.datetime=${BUILD_DATETIME}"
 
 BUILD_DIR = ./build
 BUILD_BIN_DIR=${BUILD_DIR}/bin
 EXAMPLE_DIR = ./website/example
-INSTALL_DIR := $(HOME)/bin
-OS := $(shell uname -s)
-ifeq ($(OS),Linux)
-    INSTALL_DIR := $(HOME)/.local/bin
-endif
 
 .PHONY: all
 all: build
@@ -71,7 +78,7 @@ release:
 SHELL = cmd.exe
 .PHONY: release_windows
 release_windows:
-	$(eval dir := next.$(subst v,,${BUILD_VERSION}).windows-$(1))
+	$(eval dir := next.$(subst v,,${BUILD_VERSION}).windows)
 	@echo Building ${BUILD_DIR}\\${dir}\\next...
 	@if not exist "${BUILD_DIR}\\${dir}\\bin" mkdir "${BUILD_DIR}\\${dir}\\bin"
 	@${GOBUILD} -o "${BUILD_DIR}\\${dir}\\bin\\"

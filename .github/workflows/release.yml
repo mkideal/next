@@ -49,6 +49,9 @@ jobs:
 
   windows_build:
     name: Build Windows Executable and MSI
+    env:
+      GITHUB_REF_NAME: ${{ github.ref_name }}
+      GITHUB_SHA: ${{ github.sha }}
     needs: create_release
     runs-on: windows-latest
     steps:
