@@ -2,7 +2,6 @@
 pagination_prev: null
 pagination_next: null
 ---
-
 # Map {#user-content-Map}
 
 import Tabs from "@theme/Tabs";
@@ -45,7 +44,6 @@ ext=.java
 comment=// %T%
 
 # primitive types
-
 int=int
 int8=byte
 int16=short
@@ -63,7 +61,6 @@ vector=List<box(%T%)>
 array=%T%[]
 
 # box types
-
 box(int)=Integer
 box(byte)=Byte
 box(short)=Short
@@ -71,8 +68,7 @@ box(long)=Long
 box(float)=Float
 box(double)=Double
 box(boolean)=Boolean
-
-````
+```
 </TabItem>
 
 <TabItem value="cpp">
@@ -95,8 +91,7 @@ any=std::any
 map=std::unordered_map<%K%, %V%>
 vector=std::vector<%T%>
 array=std::array<%T%, %N%>
-````
-
+```
 </TabItem>
 
 <TabItem value="protobuf">
@@ -119,8 +114,7 @@ any=google.protobuf.Any
 map=map<%K%, %V%>
 vector=repeated %T.E%
 array=repeated %T.E%
-
-````
+```
 </TabItem>
 
 </Tabs>
@@ -137,8 +131,9 @@ ext=.java # This is an invalid comment
 # Comment must be the first character of the line
 
 	# This is a valid comment (leading spaces are allowed)
-````
+```
 
 See [Builtin Map Files](https://github.com/gopherd/next/tree/main/builtin) for more information.
 
 :::
+

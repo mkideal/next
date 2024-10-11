@@ -10,7 +10,7 @@ const URL = "https://next.as";
 const REPO = "https://github.com/mkideal/next";
 
 const customFields = {
-  announcedVersion: "0.0.4",
+  announcedVersion: "0.0.5",
   repo: REPO,
 };
 
