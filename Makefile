@@ -79,8 +79,8 @@ release_windows:
 	$(eval dir := next.$(subst v,,${BUILD_VERSION}).windows-$(1))
 	@echo Building ${BUILD_DIR}\\${dir}\\next...
 	@if not exist "${BUILD_DIR}\\${dir}\\bin" mkdir "${BUILD_DIR}\\${dir}\\bin"
-	@set GOARCH=$(1) && ${GOBUILD} -o "${BUILD_DIR}\\${dir}\\bin\\"
-	@set GOARCH=$(1) && ${GOBUILD} -o "${BUILD_DIR}\\${dir}\\bin\\" ./cmd/nextls/
+	@${GOBUILD} -o "${BUILD_DIR}\\${dir}\\bin\\"
+	@${GOBUILD} -o "${BUILD_DIR}\\${dir}\\bin\\" ./cmd/nextls/
 	@copy README.md "${BUILD_DIR}\\${dir}\\"
 
 .PHONY: test/src
