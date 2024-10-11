@@ -65,7 +65,7 @@ define release_unix
 endef
 
 .PHONY: release
-release: autogen
+release:
 	@rm -f ${BUILD_DIR}/next.*.tar.gz ${BUILD_DIR}/next.*.zip ${BUILD_DIR}/*.wasm
 	$(call release_unix,darwin,amd64)
 	$(call release_unix,darwin,arm64)
@@ -73,7 +73,6 @@ release: autogen
 	$(call release_unix,linux,arm64)
 	$(call release_unix,linux,386)
 
-ifeq ($(OS),Windows_NT)
 SHELL = cmd.exe
 .PHONY: release_windows
 release_windows:
@@ -83,7 +82,6 @@ release_windows:
 	@set GOARCH=$(1) && ${GOBUILD} -o "${BUILD_DIR}\\${dir}\\bin\\"
 	@set GOARCH=$(1) && ${GOBUILD} -o "${BUILD_DIR}\\${dir}\\bin\\" ./cmd/nextls/
 	@copy README.md "${BUILD_DIR}\\${dir}\\"
-endif
 
 .PHONY: test/src
 test/src: autogen go/vet
