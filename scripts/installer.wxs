@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="*" Name="Next" Language="1033" Version="1.0.0.0" Manufacturer="Next" UpgradeCode="PUT-GUID-HERE">
+  <Product Id="*" Name="Next" Language="1033" Version="1.0.0.0" Manufacturer="Next" UpgradeCode="GUID-1">
     <Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" />
 
     <Media Id="1" Cabinet="media1.cab" EmbedCab="yes" />
@@ -8,7 +8,7 @@
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="ProgramFilesFolder">
         <Directory Id="INSTALLFOLDER" Name="Next">
-          <Component Id="Next" Guid="COMPONENT-GUID-1">
+          <Component Id="Next" Guid="GUID-2">
             <File Id="Next" Source="build/next.${{ env.RELEASE_VERSION }}.windows/bin/next.exe" KeyPath="yes" />
             <File Id="Nextls" Source="build/next.${{ env.RELEASE_VERSION }}.windows/bin/nextls.exe" KeyPath="yes" />
           </Component>
@@ -21,7 +21,7 @@
     </Feature>
 
     <DirectoryRef Id="TARGETDIR">
-      <Component Id="SetPath" Guid="COMPONENT-GUID-2">
+      <Component Id="SetPath" Guid="GUID-3">
         <Environment Id="PathEnvVar" Name="PATH" Value="[INSTALLFOLDER]" Action="set" Part="last" System="yes" />
       </Component>
     </DirectoryRef>

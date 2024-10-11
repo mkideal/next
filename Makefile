@@ -78,7 +78,6 @@ release:
 	$(call release_unix,linux,arm64)
 	$(call release_unix,linux,386)
 
-SHELL = cmd.exe
 .PHONY: release_windows
 release_windows:
 	$(eval dir := next.$(subst v,,${BUILD_VERSION}).windows)

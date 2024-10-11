@@ -72,10 +72,12 @@ jobs:
       - name: Generate and set new Component GUIDs
         shell: pwsh
         run: |
-          $COMPONENT_GUID_1 = [guid]::NewGuid().ToString()
-          $COMPONENT_GUID_2 = [guid]::NewGuid().ToString()
-          (Get-Content scripts/installer.wxs) -replace 'COMPONENT-GUID-1', $COMPONENT_GUID_1 | Set-Content installer.wxs
-          (Get-Content scripts/installer.wxs) -replace 'COMPONENT-GUID-2', $COMPONENT_GUID_2 | Set-Content installer.wxs
+          $GUID_1 = [guid]::NewGuid().ToString()
+          $GUID_2 = [guid]::NewGuid().ToString()
+          $GUID_3 = [guid]::NewGuid().ToString()
+          (Get-Content scripts/installer.wxs) -replace 'GUID-1', $GUID_1 | Set-Content installer.wxs
+          (Get-Content scripts/installer.wxs) -replace 'GUID-2', $GUID_2 | Set-Content installer.wxs
+          (Get-Content scripts/installer.wxs) -replace 'GUID-3', $GUID_3 | Set-Content installer.wxs
 
       - name: Build Windows Executable
         shell: pwsh
