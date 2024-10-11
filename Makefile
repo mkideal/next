@@ -76,7 +76,7 @@ release: autogen
 ifeq ($(OS),Windows_NT)
 SHELL = cmd.exe
 .PHONY: release_windows
-release_windows: autogen
+release_windows:
 	$(eval dir := next.$(subst v,,${BUILD_VERSION}).windows-$(1))
 	@echo Building ${BUILD_DIR}\\${dir}\\next...
 	@if not exist "${BUILD_DIR}\\${dir}\\bin" mkdir "${BUILD_DIR}\\${dir}\\bin"
