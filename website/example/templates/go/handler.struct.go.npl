@@ -9,6 +9,4 @@
 {{render "struct:message.handler" .}}
 {{- end -}}
 
-{{head}}
-
 {{next this}}

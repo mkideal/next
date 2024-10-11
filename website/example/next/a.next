@@ -1,7 +1,7 @@
 // Package declaration
 
 @next(
-	go_package="github.com/next/next/website/example/gen/go/a",
+	go_package="github.com/mkideal/next/website/example/gen/go/a",
 	cpp_package="demo::a",
 	c_package="DEMO_A_",
 	java_package="com.example.a",
@@ -334,7 +334,7 @@ assert_le(1, 1);
 assert_gt(2, 1);
 assert_ge(2, 2);
 
-printf("GO_MOD=%s", getenv("GO_MOD") || "github.com/next/next/website/example/gen/go");
+printf("GO_MOD=%s", getenv("GO_MOD") || "github.com/mkideal/next/website/example/gen/go");
 printf("JAVA_COM=%s", getenv("JAVA_COM") || "com.example");
 
 print("All tests passed!");

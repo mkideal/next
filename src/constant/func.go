@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/next/next/src/token"
+	"github.com/mkideal/next/src/token"
 )
 
 // FuncContext represents the context in which a function is executed.

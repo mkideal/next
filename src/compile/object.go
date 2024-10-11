@@ -8,10 +8,10 @@ import (
 	"slices"
 	"strconv"
 
-	"github.com/next/next/src/ast"
-	"github.com/next/next/src/constant"
-	"github.com/next/next/src/parser"
-	"github.com/next/next/src/token"
+	"github.com/mkideal/next/src/ast"
+	"github.com/mkideal/next/src/constant"
+	"github.com/mkideal/next/src/parser"
+	"github.com/mkideal/next/src/token"
 )
 
 // @api(Object/Imports) holds a slice of [Import](#Object/Import) declarations and the declaration that contains the imports.

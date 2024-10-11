@@ -31,7 +31,7 @@ type Platform interface {
 	ReadFile(string) ([]byte, error)
 
 	// WriteFile writes data to the file named by filename.
-	WriteFile(string, []byte) error
+	WriteFile(string, []byte, os.FileMode) error
 
 	// IsExist reports whether the named file or directory exists.
 	IsExist(string) bool
@@ -69,15 +69,22 @@ func (standardPlatform) ReadFile(filename string) ([]byte, error) {
 	return os.ReadFile(filename)
 }
 
-func (standardPlatform) WriteFile(filename string, data []byte) error {
+func (p standardPlatform) WriteFile(filename string, data []byte, perm fs.FileMode) error {
 	dir := filepath.Dir(filename)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return err
 	}
-	return os.WriteFile(filename, data, 0644)
+	// Ensure the file is writable.
+	info, err := os.Stat(filename)
+	if err == nil && info.Mode()&0600 != 0600 {
+		if err := os.Chmod(filename, perm|0600); err != nil {
+			return err
+		}
+	}
+	return os.WriteFile(filename, data, perm)
 }
 
-func (standardPlatform) IsExist(filename string) bool {
+func (p standardPlatform) IsExist(filename string) bool {
 	_, err := os.Stat(filename)
 	return err == nil
 }

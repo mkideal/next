@@ -4,8 +4,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/next/next/src/ast"
-	"github.com/next/next/src/token"
+	"github.com/mkideal/next/src/ast"
+	"github.com/mkideal/next/src/token"
 )
 
 // @api(Object/File) (extends [Decl](#Object/Common/Decl)) represents a Next source file.

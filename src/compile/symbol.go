@@ -76,7 +76,7 @@ func LookupValue(scope Scope, name string) (*Value, error) {
 
 func expectTypeSymbol(name string, s Symbol) (Type, error) {
 	if s == nil {
-		return nil, &SymbolNotFoundError{Name: name}
+		return nil, nil
 	}
 	if t, ok := s.(Type); ok {
 		return t, nil
@@ -86,7 +86,7 @@ func expectTypeSymbol(name string, s Symbol) (Type, error) {
 
 func expectValueSymbol(name string, s Symbol) (*Value, error) {
 	if s == nil {
-		return nil, &SymbolNotFoundError{Name: name}
+		return nil, nil
 	}
 	if v, ok := s.(*Value); ok {
 		return v, nil

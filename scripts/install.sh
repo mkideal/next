@@ -144,7 +144,7 @@ get_latest_version() {
 download_next() {
     VERSION=${NEXT_VERSION:-$LATEST_VERSION}
     FILENAME="next.$VERSION.$OS-$ARCH.tar.gz"
-    URL="https://github.com/next/next/releases/download/v$VERSION/$FILENAME"
+    URL="https://github.com/mkideal/next/releases/download/v$VERSION/$FILENAME"
 
     print_step "Downloading Next package"
     print_sub_step "URL: $URL"
@@ -163,7 +163,7 @@ download_next() {
         fi
     else
         rm -rf "$TEMP_DIR"
-        die "The package for $OS-$ARCH (version $VERSION) was not found. This platform may not be supported or the version might not exist. Please check https://github.com/next/next for supported platforms and versions."
+        die "The package for $OS-$ARCH (version $VERSION) was not found. This platform may not be supported or the version might not exist. Please check https://github.com/mkideal/next for supported platforms and versions."
     fi
 
     # Set the TEMP_DIR variable for use in the install_next function

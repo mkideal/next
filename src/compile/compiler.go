@@ -12,13 +12,13 @@ import (
 
 	"github.com/gopherd/core/flags"
 
-	"github.com/next/next/src/ast"
-	"github.com/next/next/src/constant"
-	"github.com/next/next/src/grammar"
-	"github.com/next/next/src/internal/stringutil"
-	"github.com/next/next/src/parser"
-	"github.com/next/next/src/scanner"
-	"github.com/next/next/src/token"
+	"github.com/mkideal/next/src/ast"
+	"github.com/mkideal/next/src/constant"
+	"github.com/mkideal/next/src/grammar"
+	"github.com/mkideal/next/src/internal/stringutil"
+	"github.com/mkideal/next/src/parser"
+	"github.com/mkideal/next/src/scanner"
+	"github.com/mkideal/next/src/token"
 )
 
 const verboseDebug = 1
@@ -381,6 +381,9 @@ func (c *Compiler) recursiveResolveValue(file *File, scope Scope, refs []*Value,
 		}
 		v, err := expectValueSymbol(expr.Name, scope.LookupLocalSymbol(expr.Name))
 		if err != nil {
+			c.addError(expr.Pos(), err.Error())
+			return constant.MakeUnknown()
+		} else if v == nil {
 			if expr.Name == "iota" {
 				if iota == nil {
 					c.addErrorf(expr.Pos(), "iota is not allowed in this context")
@@ -398,6 +401,9 @@ func (c *Compiler) recursiveResolveValue(file *File, scope Scope, refs []*Value,
 		name := joinSymbolName(c.resolveSelectorExprChain(expr, false)...)
 		v, err := LookupValue(scope, name)
 		if err != nil {
+			c.addErrorf(expr.Pos(), err.Error())
+			return constant.MakeUnknown()
+		} else if v == nil {
 			c.addErrorf(expr.Pos(), "%s is not defined", name)
 			return constant.MakeUnknown()
 		}
@@ -506,6 +512,11 @@ func (c *Compiler) resolveIdentType(node Node, i *ast.Ident, ignoreError bool) T
 			c.addErrorf(i.Pos(), "failed to lookup type %s: %s", i.Name, err)
 		}
 		return nil
+	} else if t == nil {
+		if !ignoreError {
+			c.addErrorf(i.Pos(), "type %s is not defined", i.Name)
+		}
+		return nil
 	}
 	return t
 }
@@ -548,6 +559,11 @@ func (c *Compiler) resolveSelectorExprType(node Node, t *ast.SelectorExpr, ignor
 	if err != nil {
 		if !ignoreError {
 			c.addError(t.Pos(), err.Error())
+		}
+		return nil
+	} else if typ == nil {
+		if !ignoreError {
+			c.addErrorf(t.Pos(), "type %s is not defined", fullName)
 		}
 		return nil
 	}
@@ -792,6 +808,13 @@ func (c *Compiler) validateAnnotations(node Node, annotations grammar.Annotation
 			}
 			continue
 		}
+		for _, av := range ga.Validators {
+			if ok, err := av.Value().Validate(annotation); err != nil {
+				return fmt.Errorf("%s: failed to validate annotation %s(%s): %w", annotation.Pos(), name, annotation.Node().Name(), err)
+			} else if !ok {
+				c.addErrorf(annotation.Pos().pos, "annotation %s: %s", name, av.Value().Message)
+			}
+		}
 		for p, v := range annotation {
 			if strings.HasPrefix(p, "_") {
 				// Skip private parameters added by the compiler
@@ -851,11 +874,11 @@ func (c *Compiler) validateAnnotations(node Node, annotations grammar.Annotation
 					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should be a type", name, p)
 				}
 			}
-			for _, va := range gp.Validators {
-				if ok, err := va.Value().Validate(v); err != nil {
+			for _, pv := range gp.Validators {
+				if ok, err := pv.Value().Validate(v); err != nil {
 					return fmt.Errorf("%s: failed to validate annotation %s parameter %s: %w", annotation.NamePos(p), name, p, err)
 				} else if !ok {
-					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s: %s", name, p, va.Value().Message)
+					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s: %s", name, p, pv.Value().Message)
 				}
 			}
 		}

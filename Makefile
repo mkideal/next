@@ -96,15 +96,14 @@ example: example/clean build example/gen
 
 .PHONY: example/clean
 example/clean:
-	@if [ -d ${EXAMPLE_DIR}/gen ]; then rm -r ${EXAMPLE_DIR}/gen; fi
+	@if [ -d ${EXAMPLE_DIR}/gen ]; then rm -rf ${EXAMPLE_DIR}/gen; fi
 
 .PHONY: example/gen
 example/gen:
 	@echo "Running generate example..."
-	@rm -rf ${EXAMPLE_DIR}/gen
 	@NEXTNOCOPYBUILTIN=1 ${BUILD_BIN_DIR}/next build ${EXAMPLE_DIR}
 	@if [ -d ${EXAMPLE_DIR}/gen/rust ]; then cd ${EXAMPLE_DIR}/gen/rust && cargo init --vcs none -q; fi
 
 .PHONY: clean
 clean:
-	@if [ -d ${BUILD_DIR} ]; then rm -r ${BUILD_DIR}; fi
+	@if [ -d ${BUILD_DIR} ]; then rm -rf ${BUILD_DIR}; fi

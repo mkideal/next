@@ -23,8 +23,8 @@ import (
 	"github.com/gopherd/core/text/document"
 	"github.com/gopherd/core/text/templates"
 
-	"github.com/next/next/src/internal/fsutil"
-	"github.com/next/next/src/internal/stringutil"
+	"github.com/mkideal/next/src/internal/fsutil"
+	"github.com/mkideal/next/src/internal/stringutil"
 )
 
 // StubPrefix is the prefix for stub templates.
@@ -45,10 +45,10 @@ func validMetaKey(key string) error {
 	if !stringutil.IsIdentifer(key) {
 		return fmt.Errorf("must be a valid identifier")
 	}
-	if strings.HasPrefix(key, "_") || key == "this" || key == "path" || key == "skip" {
+	if strings.HasPrefix(key, "_") || key == "this" || key == "path" || key == "skip" || key == "perm" {
 		return nil
 	}
-	return fmt.Errorf("must be %q, %q, %q, or starts with %q for custom key (e.g., %q)", "this", "path", "skip", "_", "_"+key)
+	return fmt.Errorf("must be %q, %q, %q, %q or starts with %q for custom key (e.g., %q)", "this", "path", "skip", "perm", "_", "_"+key)
 }
 
 func templatePos(content string, pos int, lookahead string) document.Position {
@@ -191,9 +191,10 @@ type templateContext struct {
 		// cache for loaded templates: filename -> *template.Template
 		templates sync.Map
 	}
-	initiated bool
-	funcs     template.FuncMap
-	meta      Meta
+	initiated  bool
+	funcs      template.FuncMap
+	meta       Meta
+	headCalled bool
 }
 
 func newTemplateContext(info templateContextInfo) *templateContext {
@@ -305,6 +306,7 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		// - `meta/this`: the current object to be rendered. See [this](#Context/this) for details.
 		// - `meta/path`: the output path for the current object. If the path is not absolute, it will be resolved relative to the current output directory for the current language by command line flag `-O`.
 		// - `meta/skip`: whether to skip the current object.
+		// - `meta/perm`: the file permission for the current object, e.g., "0644". By default, it's `0644`.
 		//
 		// You can use them in the templates like `{{meta.<key>}}`.
 		//
@@ -320,6 +322,7 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		//	{{- define "meta/this" -}}file{{- end -}}
 		//	{{- define "meta/path" -}}path/to/file{{- end -}}
 		//	{{- define "meta/skip" -}}{{exist meta.path}}{{- end -}}
+		//	{{- define "meta/perm" -}}0644{{- end -}}
 		//	{{- define "meta/_custom_key" -}}custom value{{- end -}}
 		//
 		//	{{meta._custom_key}}
@@ -372,6 +375,8 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		//
 		// :::
 		"error": tc.error,
+
+		"must": tc.must,
 
 		// @api(Context/pwd) returns the current template file's directory.
 		//
@@ -543,6 +548,7 @@ func (tc *templateContext) reset(t *template.Template, d reflect.Value) error {
 	tc.decl = d
 	tc.meta = make(Meta)
 	tc.stacks = tc.stacks[:0]
+	tc.headCalled = false
 	return tc.lazyInit()
 }
 
@@ -677,6 +683,10 @@ func (tc *templateContext) error(msg string, args ...any) (string, error) {
 		return "", errors.New(msg)
 	}
 	return "", fmt.Errorf(msg, args...)
+}
+
+func (tc *templateContext) must(v any, msg string, args ...any) (any, error) {
+	return v, nil
 }
 
 func (tc *templateContext) pwd() (string, error) {
@@ -857,6 +867,7 @@ func finalElementType(t Type) Type {
 }
 
 func (tc *templateContext) head() string {
+	tc.headCalled = true
 	p, ok := tc.compiler.options.Mapping[tc.lang+".comment"]
 	if !ok {
 		return ""

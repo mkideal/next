@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/next/next/src/ast"
-	"github.com/next/next/src/scanner"
-	"github.com/next/next/src/token"
+	"github.com/mkideal/next/src/ast"
+	"github.com/mkideal/next/src/scanner"
+	"github.com/mkideal/next/src/token"
 )
 
 // The parser structure holds the parser's internal state.

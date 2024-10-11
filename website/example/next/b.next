@@ -1,5 +1,5 @@
 @next(
-	go_package="github.com/next/next/website/example/gen/go/b",
+	go_package="github.com/mkideal/next/website/example/gen/go/b",
 	cpp_package="demo::b",
 	c_package="DEMO_B_",
 	java_package="com.example.b",

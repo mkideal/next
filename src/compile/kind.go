@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/next/next/src/grammar"
+	"github.com/mkideal/next/src/grammar"
 )
 
 // @api(Object/Common/Type/Kinds) represents the type kind set.

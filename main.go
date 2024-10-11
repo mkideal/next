@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/next/next/src/compile"
+	"github.com/mkideal/next/src/compile"
 )
 
 //go:embed builtin/*

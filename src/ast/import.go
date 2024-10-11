@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strconv"
 
-	"github.com/next/next/src/token"
+	"github.com/mkideal/next/src/token"
 )
 
 // lineAt returns the line number for the given position in the file set.

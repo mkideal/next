@@ -8,7 +8,7 @@ import prismDark from "./src/utils/prismDark";
 
 // FIXME: change to https://next.as
 const URL = "https://gopherd.com";
-// FIXME: change to "https://github.com/next/next"
+// FIXME: change to "https://github.com/mkideal/next"
 const REPO = "https://github.com/gopherd/next";
 
 const customFields = {

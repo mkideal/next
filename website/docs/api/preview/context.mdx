@@ -199,6 +199,7 @@ hello
 - `meta/this`: the current object to be rendered. See [this](#user-content-Context_this) for details.
 - `meta/path`: the output path for the current object. If the path is not absolute, it will be resolved relative to the current output directory for the current language by command line flag `-O`.
 - `meta/skip`: whether to skip the current object.
+- `meta/perm`: the file permission for the current object, e.g., "0644". By default, it's `0644`.
 
 You can use them in the templates like `{{meta.<key>}}`.
 
@@ -214,6 +215,7 @@ Example:
 {{- define "meta/this" -}}file{{- end -}}
 {{- define "meta/path" -}}path/to/file{{- end -}}
 {{- define "meta/skip" -}}{{exist meta.path}}{{- end -}}
+{{- define "meta/perm" -}}0644{{- end -}}
 {{- define "meta/_custom_key" -}}custom value{{- end -}}
 
 {{meta._custom_key}}

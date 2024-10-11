@@ -4,7 +4,7 @@ package ast
 import (
 	"strings"
 
-	"github.com/next/next/src/token"
+	"github.com/mkideal/next/src/token"
 )
 
 // Node represents any node in the abstract syntax tree.

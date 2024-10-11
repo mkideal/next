@@ -5,7 +5,7 @@ import (
 	"io"
 	"sort"
 
-	"github.com/next/next/src/token"
+	"github.com/mkideal/next/src/token"
 )
 
 // In an [ErrorList], an error is represented by an *Error.

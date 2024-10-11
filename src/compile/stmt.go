@@ -1,9 +1,9 @@
 package compile
 
 import (
-	"github.com/next/next/src/ast"
-	"github.com/next/next/src/constant"
-	"github.com/next/next/src/token"
+	"github.com/mkideal/next/src/ast"
+	"github.com/mkideal/next/src/constant"
+	"github.com/mkideal/next/src/token"
 )
 
 // Stmt represents a Next statement.

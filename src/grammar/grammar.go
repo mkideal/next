@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/gopherd/core/text/templates"
-	"github.com/next/next/src/internal/stringutil"
+	"github.com/mkideal/next/src/internal/stringutil"
 )
 
 const (
@@ -299,6 +299,9 @@ type Annotation struct {
 
 	// @api(Grammar/Common/Annotation.Description) represents the annotation description.
 	Description string `json:"description"`
+
+	// @api(Grammar/Common/Annotation.Validators) represents the [Validator](#Grammar/Common/Validator) for the annotation.
+	Validators Validators `json:"validators"`
 
 	// @api(Grammar/Common/Annotation.Parameters) represents the annotation parameters.
 	Parameters []Options[AnnotationParameter] `json:"parameters"`
@@ -1519,6 +1522,14 @@ func default_() Options[AnnotationParameter] {
 	})
 }
 
+func raw_default() Options[AnnotationParameter] {
+	return opt(AnnotationParameter{
+		Name:        "raw_default",
+		Description: "Sets the raw default value for field.",
+		Types:       types(String),
+	})
+}
+
 func mut() Options[AnnotationParameter] {
 	return opt(AnnotationParameter{
 		Name:        "mut",
@@ -1685,7 +1696,7 @@ var Builtin = Grammar{
 	Struct: Struct{
 		Annotations: Annotations{base_next("struct", lang_alias())},
 		Field: StructField{
-			Annotations: Annotations{base_next("struct.field", optional(), default_(), lang_alias())},
+			Annotations: Annotations{base_next("struct.field", optional(), raw_default(), default_(), lang_alias())},
 		},
 	},
 	Interface: Interface{

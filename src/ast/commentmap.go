@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/next/next/src/token"
+	"github.com/mkideal/next/src/token"
 )
 
 // sortComments sorts the list of comment groups in source order.

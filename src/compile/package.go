@@ -135,3 +135,23 @@ func (p *Package) resolve(c *Compiler) error {
 	}
 	return nil
 }
+
+// @api(Object/Package.LookupLocalType) looks up a type by name in the package's symbol table.
+func (p *Package) LookupLocalType(name string) (Type, error) {
+	for _, f := range p.files {
+		if s, ok := f.symbols[name]; ok {
+			return expectTypeSymbol(name, s)
+		}
+	}
+	return nil, nil
+}
+
+// @api(Object/Package.LookupLocalValue) looks up a value by name in the package's symbol table.
+func (p *Package) LookupLocalValue(name string) (*Value, error) {
+	for _, f := range p.files {
+		if s, ok := f.symbols[name]; ok {
+			return expectValueSymbol(name, s)
+		}
+	}
+	return nil, nil
+}

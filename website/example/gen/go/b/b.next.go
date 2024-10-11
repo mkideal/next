@@ -2,7 +2,7 @@
 
 package b
 
-import a "github.com/next/next/website/example/gen/go/a"
+import a "github.com/mkideal/next/website/example/gen/go/a"
 
 var _ = (*a.Color)(nil)
 

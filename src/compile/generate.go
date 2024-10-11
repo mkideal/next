@@ -1,6 +1,7 @@
 package compile
 
 import (
+	"cmp"
 	"fmt"
 	"io"
 	"os"
@@ -16,7 +17,7 @@ import (
 	"github.com/gopherd/core/op"
 	"github.com/gopherd/core/text/document"
 
-	"github.com/next/next/src/internal/fsutil"
+	"github.com/mkideal/next/src/internal/fsutil"
 )
 
 const (
@@ -485,6 +486,24 @@ func gen[T Decl](tc *templateContext, t *template.Template, decl T, content []by
 		}
 	}
 
+	var parsedPerm os.FileMode
+	if m := meta.lookup("perm"); m.Second {
+		x, err := strconv.ParseInt(m.First, 8, 32)
+		if err != nil {
+			pos := positions["perm"]
+			return fmt.Errorf("%s: failed to parse 'perm' meta data: %v", document.FormatPosition(t.ParseName, pos), err)
+		}
+		parsedPerm = os.FileMode(x)
+		if parsedPerm|os.ModePerm != os.ModePerm {
+			pos := positions["perm"]
+			return fmt.Errorf("%s: invalid file permission: %o", document.FormatPosition(t.ParseName, pos), parsedPerm)
+		}
+		if parsedPerm == 0 {
+			pos := positions["perm"]
+			return fmt.Errorf("%s: zero file permission", document.FormatPosition(t.ParseName, pos))
+		}
+	}
+
 	// Execute the template with the template context
 	buf := tc.pc().buf
 	if err := t.Execute(buf, tc); err != nil {
@@ -501,7 +520,8 @@ func gen[T Decl](tc *templateContext, t *template.Template, decl T, content []by
 	if !filepath.IsAbs(path) {
 		path = filepath.Join(tc.dir, path)
 	}
-	if err := tc.compiler.platform.WriteFile(path, []byte(buf.String())); err != nil {
+	perm := cmp.Or(parsedPerm, op.If(tc.headCalled && tc.compiler.options.Perm > 0, os.FileMode(tc.compiler.options.Perm), 0644))
+	if err := tc.compiler.platform.WriteFile(path, buf.Bytes(), perm); err != nil {
 		return fmt.Errorf("%s: failed to write file %q: %v", t.ParseName, path, err)
 	}
 

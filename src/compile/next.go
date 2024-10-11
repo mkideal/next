@@ -23,10 +23,10 @@ import (
 	"github.com/gopherd/core/term"
 	"gopkg.in/yaml.v3"
 
-	"github.com/next/next/src/grammar"
-	"github.com/next/next/src/internal/fsutil"
-	"github.com/next/next/src/parser"
-	"github.com/next/next/src/scanner"
+	"github.com/mkideal/next/src/grammar"
+	"github.com/mkideal/next/src/internal/fsutil"
+	"github.com/mkideal/next/src/parser"
+	"github.com/mkideal/next/src/scanner"
 )
 
 // @api(Environment/NEXTNOCOPYBUILTIN) represents the environment variable to disable copying builtin files.
@@ -39,7 +39,7 @@ const NEXTMAXSTACK = "NEXTMAXSTACK"
 
 const nextExt = ".next"
 const website = "https://next.as"
-const repository = "https://github.com/next/next"
+const repository = "https://github.com/mkideal/next"
 
 type commandContext struct {
 	platform Platform

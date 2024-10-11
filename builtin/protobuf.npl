@@ -10,7 +10,7 @@ package {{this.Package.Name}};
 
 {{/* next/protobuf/package:options: Handles package-level options based on annotations */}}
 {{- define "next/protobuf/package:options"}}
-{{- if .Annotations.Has "next" }}
+{{- if .Annotations.next }}
 	{{- range $key, $value := .Annotations.next }}
 		{{- if not (hasSuffix "_package" $key)}}
 			{{- continue -}}

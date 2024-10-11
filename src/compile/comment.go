@@ -3,8 +3,8 @@ package compile
 import (
 	"strings"
 
-	"github.com/next/next/src/ast"
-	"github.com/next/next/src/token"
+	"github.com/mkideal/next/src/ast"
+	"github.com/mkideal/next/src/token"
 )
 
 // @api(Object/Comment) represents a line comment or a comment group in Next source code.

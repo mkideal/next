@@ -15,4 +15,4 @@ func handle{{next .Type}}(w http.ResponseWriter, r *http.Request) error {
 	_ = req
 	return nil
 }
-{{- end -}}
+{{end -}}

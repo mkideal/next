@@ -13,7 +13,7 @@ grammar: grammar.yaml
 # Variables, like the -d flag
 env:
   PROJECT_NAME: demo
-  GO_MOD: github.com/next/next/website/example/gen/go
+  GO_MOD: github.com/mkideal/next/website/example/gen/go
 
 # Output directories for target languages, like the -O flag
 output:

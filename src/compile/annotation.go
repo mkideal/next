@@ -10,10 +10,10 @@ import (
 
 	"github.com/mattn/go-shellwords"
 
-	"github.com/next/next/api"
-	"github.com/next/next/src/ast"
-	"github.com/next/next/src/constant"
-	"github.com/next/next/src/token"
+	"github.com/mkideal/next/api"
+	"github.com/mkideal/next/src/ast"
+	"github.com/mkideal/next/src/constant"
+	"github.com/mkideal/next/src/token"
 )
 
 // @api(Object/Common/Annotations) represents a group of annotations by `name` => [Annotation](#Object/Common/Annotation).
@@ -165,7 +165,13 @@ func (a Annotation) Has(name string) bool {
 	return ok
 }
 
+const __node__ = "__node__"
 const __pos__ = "__pos__"
+
+// @api(Object/Common/Annotation.Node) returns the node that the annotation is linked to.
+func (a Annotation) Node() Node {
+	return a.get(__node__).(Node)
+}
 
 // @api(Object/Common/Annotation.Pos) returns the position of the annotation in the source code.
 // It's useful to provide a better error message when needed.
@@ -530,7 +536,7 @@ type linkedAnnotation struct {
 }
 
 // resolveAnnotations resolves an annotation group
-func resolveAnnotations(c *Compiler, file *File, obj Node, annotations *ast.AnnotationGroup) Annotations {
+func resolveAnnotations(c *Compiler, file *File, node Node, annotations *ast.AnnotationGroup) Annotations {
 	if annotations == nil {
 		return nil
 	}
@@ -547,12 +553,13 @@ func resolveAnnotations(c *Compiler, file *File, obj Node, annotations *ast.Anno
 		annotation := make(Annotation)
 		la := &linkedAnnotation{
 			name:       a.Name.Name,
-			obj:        obj,
+			obj:        node,
 			annotation: annotation,
 		}
-		pos := obj.Pos().pos
+		pos := node.Pos().pos
 		c.annotations[pos] = la
 		annotation.setPos(__pos__, positionFor(c, a.Pos()))
+		annotation[__node__] = node
 		for _, p := range a.Params {
 			name := p.Name.Name
 			if name == "" {

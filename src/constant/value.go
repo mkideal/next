@@ -11,7 +11,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/next/next/src/token"
+	"github.com/mkideal/next/src/token"
 )
 
 //go:generate stringer -type Kind

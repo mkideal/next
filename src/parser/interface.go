@@ -9,8 +9,8 @@ import (
 	"io"
 	"os"
 
-	"github.com/next/next/src/ast"
-	"github.com/next/next/src/token"
+	"github.com/mkideal/next/src/ast"
+	"github.com/mkideal/next/src/token"
 )
 
 // readSource converts src to a []byte if possible, or reads from the file specified by filename if src is nil.
