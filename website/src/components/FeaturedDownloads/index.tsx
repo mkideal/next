@@ -17,7 +17,7 @@ const FeaturedDownloads: React.FC = () => {
     {
       title: "Microsoft Windows",
       description: "Windows 10 or later, Intel 64-bit processor",
-      fileName: `next${version}.windows.msi`,
+      fileName: `next${version}.windows-amd64.msi`,
     },
     {
       title: "Apple macOS (ARM64)",
