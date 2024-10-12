@@ -15,6 +15,8 @@ const FeaturedDownloads: React.FC = () => {
   const { siteConfig } = useDocusaurusContext();
   const version = siteConfig.customFields.version as string;
   const repo = siteConfig.customFields.repo as string;
+  const downloadUrl = (fileName: string) =>
+    `${repo}/releases/download/v${version}/${fileName}`;
 
   const downloads: DownloadItem[] = [
     {
@@ -49,7 +51,7 @@ const FeaturedDownloads: React.FC = () => {
         {downloads.map((item, index) => (
           <div key={index} className="col col--6 margin-bottom--md">
             <a
-              href={`${repo}/releases/download/v${version}/${item.fileName}`}
+              href={downloadUrl(item.fileName)}
               className={styles.downloadItemLink}
             >
               <div className={styles.downloadItem}>

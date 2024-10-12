@@ -7,7 +7,9 @@ import prismLight from "./src/utils/prismLight";
 import prismDark from "./src/utils/prismDark";
 
 const URL = "https://next.as";
-const REPO = "https://github.com/mkideal/next";
+const ORGANIZATION_NAME = "mkideal";
+const PROJECT_NAME = "next";
+const REPO = `https://github.com/${ORGANIZATION_NAME}/${PROJECT_NAME}`;
 
 const customFields = {
   version: "0.2.0",
@@ -27,8 +29,8 @@ const config: Config = {
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: "mkideal", // Usually your GitHub org/user name.
-  projectName: "next", // Usually your repo name.
+  organizationName: ORGANIZATION_NAME, // Usually your GitHub org/user name.
+  projectName: PROJECT_NAME, // Usually your repo name.
   trailingSlash: false,
 
   onBrokenLinks: "throw",
