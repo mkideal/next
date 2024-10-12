@@ -4,17 +4,20 @@ pagination_prev: null
 pagination_next: null
 slug: /api/latest
 title: Latest
-version: 0.1.18
 ---
 
 import useBaseUrl from "@docusaurus/useBaseUrl";
+import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
+
+export const version = () =>
+  useDocusaurusContext().siteConfig.customFields.version;
 
 export const linkName = (name) =>
   useBaseUrl(`/docs${frontMatter.slug}/${name}`);
 
 # Release Notes
 
-## Introduction to Next {frontMatter.version}
+## Introduction to Next {version()}
 
 <h2>
   <a href={linkName("command_line")}>CommandLine</a>
