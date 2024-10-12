@@ -1,5 +1,5 @@
-github.com/gopherd/core v0.0.0-20241006095001-4b8dbed5cd33 h1:cN4EH6xKAxuyDJfMfZ334nCr4SUDUM2yw8Mmssphs8I=
-github.com/gopherd/core v0.0.0-20241006095001-4b8dbed5cd33/go.mod h1:KfAPtxaKLEFiby8PpGwdgp86auCmLU82+khBzHhUTaM=
+github.com/gopherd/core v0.0.0-20241012055301-04560ba9f4ac h1:DvjVEISzBNSABR+9bNwReUeCUkdUGSkScFnDVUB0EQA=
+github.com/gopherd/core v0.0.0-20241012055301-04560ba9f4ac/go.mod h1:KfAPtxaKLEFiby8PpGwdgp86auCmLU82+khBzHhUTaM=
 github.com/gopherd/template v0.0.0-20240911153226-e85cdd3ec1f6 h1:8PslHwk6l1fta0+XLf+DuNCguvwzFn05eqRj8mbDmPE=
 github.com/gopherd/template v0.0.0-20240911153226-e85cdd3ec1f6/go.mod h1:ox4KHnNLOnF2DQlsPDnGM+26wEdklBaeZyndkofvEjA=
 github.com/gorilla/websocket v1.4.1 h1:q7AeDBpnBk8AogcD4DSag/Ukw/KV+YhzLj2bP5HvKCM=

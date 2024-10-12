@@ -15,7 +15,7 @@ import (
 
 // readSource converts src to a []byte if possible, or reads from the file specified by filename if src is nil.
 // It returns the resulting []byte and any error encountered.
-func readSource(filename string, src interface{}) ([]byte, error) {
+func readSource(filename string, src any) ([]byte, error) {
 	if src != nil {
 		switch s := src.(type) {
 		case string:
@@ -52,7 +52,7 @@ const (
 //
 // If parsing fails, it returns a nil ast.File and an error. For syntax errors,
 // it returns a partial AST and a scanner.ErrorList sorted by source position.
-func ParseFile(fset *token.FileSet, filename string, src interface{}, mode Mode) (f *ast.File, err error) {
+func ParseFile(fset *token.FileSet, filename string, src any, mode Mode) (f *ast.File, err error) {
 	if fset == nil {
 		panic("parser.ParseFile: no token.FileSet provided (fset == nil)")
 	}

@@ -239,7 +239,7 @@ func newImport(c *Compiler, file *File, src *ast.ImportDecl) *Import {
 		Path:     path,
 		FullPath: path,
 	}
-	if len(path) > 0 && path[0] != '/' {
+	if len(path) > 0 && !filepath.IsAbs(path) {
 		var err error
 		path, err = filepath.Abs(filepath.Join(filepath.Dir(file.Path), path))
 		if err != nil {

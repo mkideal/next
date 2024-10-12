@@ -91,8 +91,7 @@ func (documentsFS) Abs(name string) (string, error) {
 }
 
 func (h *nextHandler) HandleSemanticTokens(ctx context.Context, documents protocol.DocumentManager, doc *document.Document) (any, error) {
-	context, _ := parseFile(documents, doc)
-	file := context.GetFile(doc.Path())
+	context, file, _ := parseFile(documents, doc)
 	if file == nil {
 		return nil, nil
 	}
@@ -124,13 +123,15 @@ func (h *nextHandler) HandleSemanticTokens(ctx context.Context, documents protoc
 	return types.Object{"data": tokens}, nil
 }
 
-func parseFile(documents protocol.DocumentManager, doc *document.Document) (*compile.Compiler, error) {
+func parseFile(documents protocol.DocumentManager, doc *document.Document) (*compile.Compiler, *compile.File, error) {
+	slog.Debug("parse file", "path", doc.Path())
+	var file *compile.File
 	compiler := compile.NewCompiler(compile.StandardPlatform(), documentsFS{documents: documents})
 	if f, _ := parser.ParseFile(compiler.FileSet(), doc.Path(), doc.Content(), parser.ParseComments); f != nil {
-		compiler.AddFile(f)
+		file, _ = compiler.AddFile(f)
 	}
 	err := compiler.Resolve()
-	return compiler, err
+	return compiler, file, err
 }
 
 type tokenVisiter struct {

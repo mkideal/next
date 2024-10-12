@@ -55,7 +55,7 @@ Next offers a rich set of data types to model various kinds of information effec
 | `float32`, `float64` | Floating-point numbers | `3.14`, `-0.01` |
 | `string` | UTF-8 encoded string | `"Hello, World!"` |
 | `byte`, `bytes` | Byte and byte arrays | `0x0A`, `[]byte{0x0A, 0x0B}` |
-| `any` | Any type (similar to interface{} in Go) | - |
+| `any` | Any type | - |
 
 ### Composite Types
 

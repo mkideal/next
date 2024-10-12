@@ -81,7 +81,7 @@ const (
 type InitializeParams struct {
 	ProcessID             int                `json:"processId"`             // The process ID of the parent process that started the server.
 	RootURI               string             `json:"rootUri"`               // The rootUri of the workspace.
-	InitializationOptions interface{}        `json:"initializationOptions"` // User provided initialization options.
+	InitializationOptions any                `json:"initializationOptions"` // User provided initialization options.
 	Capabilities          ClientCapabilities `json:"capabilities"`          // The capabilities provided by the client (editor or tool).
 }
 
@@ -222,7 +222,7 @@ type CompletionItem struct {
 	AdditionalTextEdits []TextEdit         `json:"additionalTextEdits,omitempty"`
 	CommitCharacters    []string           `json:"commitCharacters,omitempty"`
 	Command             *Command           `json:"command,omitempty"`
-	Data                interface{}        `json:"data,omitempty"`
+	Data                any                `json:"data,omitempty"`
 }
 
 // CompletionItemKind represents the kind of a completion item.
@@ -244,9 +244,9 @@ type TextEdit struct {
 
 // Command represents a reference to a command.
 type Command struct {
-	Title     string        `json:"title"`
-	Command   string        `json:"command"`
-	Arguments []interface{} `json:"arguments,omitempty"`
+	Title     string `json:"title"`
+	Command   string `json:"command"`
+	Arguments []any  `json:"arguments,omitempty"`
 }
 
 // TextDocumentPositionParams represents a text document and a position inside that document.
@@ -259,7 +259,7 @@ type TextDocumentPositionParams struct {
 type Diagnostic struct {
 	Range              Range                          `json:"range"`
 	Severity           int                            `json:"severity,omitempty"`
-	Code               interface{}                    `json:"code,omitempty"`
+	Code               any                            `json:"code,omitempty"`
 	Source             string                         `json:"source,omitempty"`
 	Message            string                         `json:"message"`
 	Tags               []int                          `json:"tags,omitempty"`

@@ -227,7 +227,7 @@ func boolFunc(ctx FuncContext, args []Value) Value {
 	return MakeUnknown()
 }
 
-// toArgs converts a slice of Values to a slice of interface{}.
+// toArgs converts a slice of Values to a slice of any.
 func toArgs(args []Value) []any {
 	if len(args) == 0 {
 		return nil

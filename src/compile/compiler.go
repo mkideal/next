@@ -92,6 +92,11 @@ func (c *Compiler) GetFile(path string) *File {
 	return c.files[path]
 }
 
+// Files returns all files in the context
+func (c *Compiler) Files() map[string]*File {
+	return c.files
+}
+
 // AddFile adds a file to the context
 func (c *Compiler) AddFile(f *ast.File) (*File, error) {
 	filename := c.fset.Position(f.Pos()).Filename
