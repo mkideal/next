@@ -16,3 +16,5 @@ coverage.html
 /build/
 /next
 /cmd/nextls/nextls
+installer-temp.wsx
+*.wixobj

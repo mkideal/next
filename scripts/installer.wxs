@@ -29,5 +29,9 @@
       <ComponentRef Id="Nextls" />
       <ComponentRef Id="SetPath" />
     </Feature>
+
+    <UIRef Id="WixUI_InstallDir" />
+
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
   </Product>
 </Wix>

@@ -24,7 +24,7 @@ jobs:
           prerelease: false
 
   release:
-    name: Create and Publish Release
+    name: Release for Linux and macOS
     needs: create_release
     runs-on: ubuntu-latest
     steps:
@@ -47,8 +47,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  windows_build:
-    name: Build Windows Executable and MSI
+  release_windows:
+    name: Release for Windows
     env:
       GITHUB_REF_NAME: ${{ github.ref_name }}
       GITHUB_SHA: ${{ github.sha }}
@@ -69,34 +69,9 @@ jobs:
         with:
           go-version: 1.23
 
-      - name: Generate and set new Component GUIDs
-        shell: pwsh
-        run: |
-          $GUID_1 = [guid]::NewGuid().ToString()
-          $GUID_2 = [guid]::NewGuid().ToString()
-          $GUID_3 = [guid]::NewGuid().ToString()
-          $GUID_4 = [guid]::NewGuid().ToString()
-          $content = Get-Content scripts/installer.wxs
-          $content = $content -replace 'GUID-1', $GUID_1
-          $content = $content -replace 'GUID-2', $GUID_2
-          $content = $content -replace 'GUID-3', $GUID_3
-          $content = $content -replace 'GUID-4', $GUID_4
-          $content | Set-Content installer.wxs
-
-      - name: Build Windows Executable
+      - name: Build Windows Executable and Create MSI Package
         shell: pwsh
         run: make release/windows
-
-      - name: Create MSI Package
-        shell: pwsh
-        run: |
-          $version = $env:GITHUB_REF_NAME -replace '^v', ''
-          $architectures = @('amd64', 'arm64', '386')
-          foreach ($arch in $architectures) {
-              (Get-Content installer.wxs) -replace 'ARCH', $arch | Set-Content "installer-$arch.wxs"
-              candle.exe "installer-$arch.wxs"
-              light.exe "installer-$arch.wixobj" -o "build/next$version.windows-$arch.msi"
-          }
 
       - name: Upload MSI to GitHub Release
         uses: softprops/action-gh-release@v1

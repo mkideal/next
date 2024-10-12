@@ -72,7 +72,7 @@ release:
 	$(call release_unix,linux,arm64)
 	$(call release_unix,linux,386)
 
-define release_windows
+define build_windows
 	$(eval dir := windows-$(1))
 	@echo Building ${BUILD_DIR}\\${dir}\\next...
 	@if not exist "${BUILD_DIR}\\${dir}\\bin" mkdir "${BUILD_DIR}\\${dir}\\bin"
@@ -83,9 +83,11 @@ endef
 
 .PHONY: release/windows
 release/windows:
-	$(call release_windows,amd64)
-	$(call release_windows,arm64)
-	$(call release_windows,386)
+	$(call build_windows,amd64)
+	$(call build_windows,arm64)
+	$(call build_windows,386)
+	@echo Generating MSI packages...
+	@powershell -ExecutionPolicy Bypass -File scripts/generate-msi.ps1 -Version '$(BUILD_VERSION)'
 
 .PHONY: test/src
 test/src: autogen go/vet
