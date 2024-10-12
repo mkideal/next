@@ -336,3 +336,12 @@ false
 	{{- $.Name | pascalCase}}
 {{- end}}
 {{- end}}
+
+{{/* next/node:name.tokens: Generates a name tokens seperated by spaces */}}
+{{- define "next/node:name.tokens"}}
+{{- with .Annotations.next.tokens}}
+	{{- . }}
+{{- else}}
+	{{- $.Name | snakeCase | replace "_" " "}}
+{{- end}}
+{{- end}}

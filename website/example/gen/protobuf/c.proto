@@ -13,21 +13,21 @@ import "b.proto";
 // 4 Constants skipped.
 
 enum Color {
-	RED = 0;
-	GREEN = 1;
-	BLUE = 2;
+	C_RED = 0;
+	C_GREEN = 1;
+	C_BLUE = 2;
 }
 
 enum LoginType {
-	LOGIN_TYPE_UNSPECIFIED = 0;
-	USERNAME = 1;
-	EMAIL = 2;
+	LT_UNSPECIFIED = 0;
+	LT_USERNAME = 1;
+	LT_EMAIL = 2;
 }
 
 enum UserType {
-	USER_TYPE_UNSPECIFIED = 0;
-	ADMIN = 1;
-	USER = 2;
+	UT_UNSPECIFIED = 0;
+	UT_ADMIN = 1;
+	UT_USER = 2;
 }
 
 message User {

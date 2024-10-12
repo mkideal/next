@@ -62,7 +62,7 @@ enum {{next .Type}} {
 		{{- end -}}
 	{{- end}}
 	{{- if not $hasZero}}
-	{{next .Type | snakeCase | upper}}_UNSPECIFIED = 0;
+	{{render "enum:member.name.prefix" .}}UNSPECIFIED = 0;
 	{{- end}}
 	{{- next .Members | indent | linespace -}}
 }
@@ -76,7 +76,12 @@ enum {{next .Type}} {
 
 {{/* next/protobuf/enum.member:name: Generates the name for an enum member */}}
 {{- define "next/protobuf/enum.member:name" -}}
-{{- render "node:snake.case.name" . | upper}}
+{{- render "enum:member.name.prefix" .Decl}}{{- render "node:snake.case.name" . | upper}}
+{{- end}}
+
+{{/* next/protobuf/enum:member.name.prefix: Generates the prefix for an enum member name */}}
+{{- define "next/protobuf/enum:member.name.prefix" -}}
+{{- render "node:name.tokens" . | split " " | map first | join "" | upper}}_
 {{- end}}
 
 {{/* next/protobuf/struct: Generates a message declaration */}}

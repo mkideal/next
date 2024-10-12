@@ -10,14 +10,14 @@ option java_package = "com.example.b";
 import "a.proto";
 
 enum TestEnum {
-	TEST_ENUM_UNSPECIFIED = 0;
-	A = 1;
-	B = 5;
-	C = 5;
-	D = 10;
-	E = 20;
-	F = 1;
-	G = 2;
+	TE_UNSPECIFIED = 0;
+	TE_A = 1;
+	TE_B = 5;
+	TE_C = 5;
+	TE_D = 10;
+	TE_E = 20;
+	TE_F = 1;
+	TE_G = 2;
 }
 
 message TestStruct {

@@ -34,7 +34,7 @@ function HeroBanner() {
           </Link>
           <Link
             className="button button--info download-button"
-            to="/docs/download"
+            to="/docs/downloads"
           >
             <Translate>Download</Translate>
           </Link>

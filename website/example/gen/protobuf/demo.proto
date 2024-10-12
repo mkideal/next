@@ -15,11 +15,11 @@ import "google/protobuf/any.proto";
 // Color represents different color options
 // Values: Red (1), Green (2), Blue (4), Yellow (8)
 enum Color {
-	COLOR_UNSPECIFIED = 0;
-	RED = 1;
-	GREEN = 2;
-	BLUE = 4;
-	YELLOW = 8;
+	C_UNSPECIFIED = 0;
+	C_RED = 1;
+	C_GREEN = 2;
+	C_BLUE = 4;
+	C_YELLOW = 8;
 }
 
 // User represents a user in the system

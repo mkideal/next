@@ -11,79 +11,79 @@ option java_package = "com.example.a";
 
 // Enum with iota
 enum Color {
-	COLOR_UNSPECIFIED = 0;
-	RED = 1;
-	GREEN = 2;
-	BLUE = 4;
-	ALPHA = 8;
-	YELLOW = 3;
-	CYAN = 6;
-	MAGENTA = 5;
-	WHITE = 7;
+	C_UNSPECIFIED = 0;
+	C_RED = 1;
+	C_GREEN = 2;
+	C_BLUE = 4;
+	C_ALPHA = 8;
+	C_YELLOW = 3;
+	C_CYAN = 6;
+	C_MAGENTA = 5;
+	C_WHITE = 7;
 }
 
 // Enum with complex iota usage
 enum FilePermission {
-	NONE = 0;
-	EXECUTE = 1;
-	WRITE = 2;
-	READ = 4;
-	USER_READ = 4;
-	USER_WRITE = 32;
-	USER_EXECUTE = 256;
-	GROUP_READ = 2048;
-	GROUP_WRITE = 16384;
-	GROUP_EXECUTE = 131072;
-	OTHERS_READ = 1048576;
-	OTHERS_WRITE = 8388608;
-	OTHERS_EXECUTE = 67108864;
+	FP_NONE = 0;
+	FP_EXECUTE = 1;
+	FP_WRITE = 2;
+	FP_READ = 4;
+	FP_USER_READ = 4;
+	FP_USER_WRITE = 32;
+	FP_USER_EXECUTE = 256;
+	FP_GROUP_READ = 2048;
+	FP_GROUP_WRITE = 16384;
+	FP_GROUP_EXECUTE = 131072;
+	FP_OTHERS_READ = 1048576;
+	FP_OTHERS_WRITE = 8388608;
+	FP_OTHERS_EXECUTE = 67108864;
 	// 4|32|256|2048|16384|131072|1048576|8388608|67108864
 	// 4 + 32 + 256 + 2048 + 16384 + 131072 + 1048576 + 8388608 + 67108864
-	ALL = 76695844;
+	FP_ALL = 76695844;
 }
 
 enum Day {
-	DAY_UNSPECIFIED = 0;
-	MONDAY = 1;
-	TUESDAY = 2;
-	WEDNESDAY = 4;
-	THURSDAY = 8;
-	FRIDAY = 16;
-	SATURDAY = 32;
-	SUNDAY = 64;
-	WEEKDAY = 31;
-	WEEKEND = 96;
+	D_UNSPECIFIED = 0;
+	D_MONDAY = 1;
+	D_TUESDAY = 2;
+	D_WEDNESDAY = 4;
+	D_THURSDAY = 8;
+	D_FRIDAY = 16;
+	D_SATURDAY = 32;
+	D_SUNDAY = 64;
+	D_WEEKDAY = 31;
+	D_WEEKEND = 96;
 }
 
 enum Month {
-	MONTH_UNSPECIFIED = 0;
-	JANUARY = 1;
-	FEBRUARY = 2;
-	MARCH = 4;
-	APRIL = 8;
-	MAY = 16;
-	JUNE = 32;
-	JULY = 64;
-	AUGUST = 128;
-	SEPTEMBER = 256;
-	OCTOBER = 512;
-	NOVEMBER = 1024;
-	DECEMBER = 2048;
-	Q1 = 7;
-	Q2 = 56;
-	Q3 = 448;
-	Q4 = 3584;
+	M_UNSPECIFIED = 0;
+	M_JANUARY = 1;
+	M_FEBRUARY = 2;
+	M_MARCH = 4;
+	M_APRIL = 8;
+	M_MAY = 16;
+	M_JUNE = 32;
+	M_JULY = 64;
+	M_AUGUST = 128;
+	M_SEPTEMBER = 256;
+	M_OCTOBER = 512;
+	M_NOVEMBER = 1024;
+	M_DECEMBER = 2048;
+	M_Q1 = 7;
+	M_Q2 = 56;
+	M_Q3 = 448;
+	M_Q4 = 3584;
 }
 
 // Test cases for iota
 enum IotatestEnum {
-	A = 0;
-	B = 1;
-	C = 0;
-	D = 2;
-	E = 0;
-	F = 1;
-	G = 0;
+	IE_A = 0;
+	IE_B = 1;
+	IE_C = 0;
+	IE_D = 2;
+	IE_E = 0;
+	IE_F = 1;
+	IE_G = 0;
 }
 
 // Struct types
