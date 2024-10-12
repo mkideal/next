@@ -75,20 +75,28 @@ jobs:
           $GUID_1 = [guid]::NewGuid().ToString()
           $GUID_2 = [guid]::NewGuid().ToString()
           $GUID_3 = [guid]::NewGuid().ToString()
-          (Get-Content scripts/installer.wxs) -replace 'GUID-1', $GUID_1 | Set-Content installer.wxs
-          (Get-Content scripts/installer.wxs) -replace 'GUID-2', $GUID_2 | Set-Content installer.wxs
-          (Get-Content scripts/installer.wxs) -replace 'GUID-3', $GUID_3 | Set-Content installer.wxs
+          $GUID_4 = [guid]::NewGuid().ToString()
+          $content = Get-Content scripts/installer.wxs
+          $content = $content -replace 'GUID-1', $GUID_1
+          $content = $content -replace 'GUID-2', $GUID_2
+          $content = $content -replace 'GUID-3', $GUID_3
+          $content = $content -replace 'GUID-4', $GUID_4
+          $content | Set-Content installer.wxs
 
       - name: Build Windows Executable
         shell: pwsh
-        run: make release_windows
+        run: make release/windows
 
       - name: Create MSI Package
         shell: pwsh
         run: |
-          candle.exe installer.wxs
           $version = $env:GITHUB_REF_NAME -replace '^v', ''
-          light.exe installer.wixobj -o build/next$version.windows.msi
+          $architectures = @('amd64', 'arm64', '386')
+          foreach ($arch in $architectures) {
+              (Get-Content installer.wxs) -replace 'ARCH', $arch | Set-Content "installer-$arch.wxs"
+              candle.exe "installer-$arch.wxs"
+              light.exe "installer-$arch.wixobj" -o "build/next$version.windows-$arch.msi"
+          }
 
       - name: Upload MSI to GitHub Release
         uses: softprops/action-gh-release@v1

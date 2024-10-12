@@ -72,14 +72,20 @@ release:
 	$(call release_unix,linux,arm64)
 	$(call release_unix,linux,386)
 
-.PHONY: release_windows
-release_windows:
-	$(eval dir := windows)
+define release_windows
+	$(eval dir := windows-$(1))
 	@echo Building ${BUILD_DIR}\\${dir}\\next...
 	@if not exist "${BUILD_DIR}\\${dir}\\bin" mkdir "${BUILD_DIR}\\${dir}\\bin"
-	@${GOBUILD} -o "${BUILD_DIR}\\${dir}\\bin\\"
-	@${GOBUILD} -o "${BUILD_DIR}\\${dir}\\bin\\" ./cmd/nextls/
+	@set GOOS=windows && set GOARCH=$(1) && ${GOBUILD} -o "${BUILD_DIR}\\${dir}\\bin\\"
+	@set GOOS=windows && set GOARCH=$(1) && ${GOBUILD} -o "${BUILD_DIR}\\${dir}\\bin\\" ./cmd/nextls/
 	@copy README.md "${BUILD_DIR}\\${dir}\\"
+endef
+
+.PHONY: release/windows
+release/windows:
+	$(call release_windows,amd64)
+	$(call release_windows,arm64)
+	$(call release_windows,386)
 
 .PHONY: test/src
 test/src: autogen go/vet
