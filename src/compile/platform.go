@@ -1,6 +1,7 @@
 package compile
 
 import (
+	"fmt"
 	"io"
 	"io/fs"
 	"os"
@@ -12,6 +13,8 @@ type FileSystem interface {
 	fs.FS
 	Abs(name string) (string, error)
 }
+
+type Formatter func(filename string) error
 
 // Platform is an interface that abstracts the platform-specific functions.
 type Platform interface {
@@ -31,7 +34,7 @@ type Platform interface {
 	ReadFile(string) ([]byte, error)
 
 	// WriteFile writes data to the file named by filename.
-	WriteFile(string, []byte, os.FileMode) error
+	WriteFile(string, []byte, os.FileMode, Formatter) error
 
 	// IsExist reports whether the named file or directory exists.
 	IsExist(string) bool
@@ -69,7 +72,25 @@ func (standardPlatform) ReadFile(filename string) ([]byte, error) {
 	return os.ReadFile(filename)
 }
 
-func (p standardPlatform) WriteFile(filename string, data []byte, perm fs.FileMode) error {
+func (p standardPlatform) WriteFile(filename string, data []byte, perm fs.FileMode, formatter Formatter) error {
+	if formatter != nil {
+		tempDir, err := os.MkdirTemp("", "next-format-*")
+		if err != nil {
+			return fmt.Errorf("failed to create temporary directory for formatter: %w", err)
+		}
+		defer os.RemoveAll(tempDir)
+		path := filepath.Join(tempDir, filepath.Base(filename))
+		if err := os.WriteFile(path, data, 0600); err != nil {
+			return fmt.Errorf("failed to write temporary file for formatter: %w", err)
+		}
+		if err := formatter(path); err != nil {
+			return fmt.Errorf("failed to format file %s: %w", path, err)
+		}
+		data, err = os.ReadFile(path)
+		if err != nil {
+			return fmt.Errorf("failed to read formatted file %s: %w", path, err)
+		}
+	}
 	dir := filepath.Dir(filename)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return err

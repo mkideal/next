@@ -1,11 +1,16 @@
 package compile
 
 import (
+	"context"
 	"flag"
+	"os/exec"
 	"path/filepath"
+	"sync"
+	"time"
 
 	"github.com/gopherd/core/flags"
 	"github.com/gopherd/core/term"
+	"github.com/mattn/go-shellwords"
 )
 
 // @api(CommandLine/Options)
@@ -103,6 +108,19 @@ type Options struct {
 	//
 	// See the [-O](#CommandLine/Flag/-O) flag for more information.
 	Output flags.Map `yaml:"output" json:"output"`
+
+	// @api(CommandLine/Options.formatter) represents the custom formatter for generated code.
+	//
+	// Example:
+	//
+	//	```yaml
+	//	formatter:
+	//	  go: gofmt -s -w
+	//	  ts: prettier --write
+	//	  java: java -jar /path/to/google-java-format-1.24.0-all-deps.jar -i
+	//	  cpp: clang-format -i
+	//	```
+	Formatter flags.Map `yaml:"formatter" json:"formatter"`
 
 	// @api(CommandLine/Options.mapping) represents the language-specific type mappings and features.
 	//
@@ -366,6 +384,25 @@ func (o *Options) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 		"    -M \"ruby.comment=# %T%\"\n",
 	))
 
+	// @api(CommandLine/Flag/-F) represents the custom formatter for generated code.
+	// Example:
+	//
+	//	```sh
+	//	next -F go=gofmt -s -w \
+	//	     -F ts=prettier --write \
+	//	     -F cpp=clang-format -i \
+	//	     ...
+	//	```
+	flagSet.Var(&o.Formatter, "F", u(""+
+		"Set custom formatter for generated code.\n"+
+		"`LANG=COMMAND` specifies the target language and its formatter command.\n"+
+		"Example:\n"+
+		"  next \\\n"+
+		"    -F 'go=gofmt -s -w'\n"+
+		"	 -F 'ts=prettier --write'\n"+
+		"	 -F 'cpp=clang-format -i'\n",
+	))
+
 	// @api(CommandLine/Flag/-X) represents the custom annotation solver programs for code generation.
 	// Annotation solvers are executed in a separate process to solve annotations.
 	// All annotations are passed to the solver program via stdin and stdout.
@@ -407,4 +444,29 @@ func (o *Options) resolvePath(currentPath string) {
 			o.Templates[k][i] = filepath.Join(currentPath, t)
 		}
 	}
+}
+
+var formatterCache sync.Map
+
+func newFormatter(s string) (Formatter, error) {
+	if f, ok := formatterCache.Load(s); ok {
+		return f.(Formatter), nil
+	}
+	parser := shellwords.NewParser()
+	parser.ParseEnv = true
+	args, err := parser.Parse(s)
+	if err != nil {
+		return nil, err
+	}
+	file, err := exec.LookPath(args[0])
+	if err != nil {
+		return nil, err
+	}
+	f := func(path string) error {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		return exec.CommandContext(ctx, file, append(args[1:], path)...).Run()
+	}
+	formatterCache.Store(s, Formatter(f))
+	return f, nil
 }

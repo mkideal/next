@@ -68,7 +68,7 @@ var commands = map[string]*command{
 	// Output:
 	//
 	//	```
-	//	next v0.0.4(main: 51864a35de7890d63bfd8acecdb62d20372ca963) built at 2024/09/27T22:58:21+0800 by go1.23.0
+	//	next v0.0.4(51864a35de7890d63bfd8acecdb62d20372ca963) built at 2024/09/27T22:58:21+0800 by go1.23.0
 	//	```
 	"version": newCommand(
 		"Print the version of the next compiler",

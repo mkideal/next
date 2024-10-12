@@ -346,55 +346,63 @@ func generateForTemplateFile(c *Compiler, lang, ext, dir, tmplFile string) error
 		this = m.First
 	}
 
+	var formatter Formatter
+	if f := tc.compiler.options.Formatter.Get(lang); f != "" {
+		formatter, err = newFormatter(f)
+		if err != nil {
+			return fmt.Errorf("failed to create %s formatter: %w", lang, err)
+		}
+	}
+
 	switch strings.ToLower(this) {
 	case "package":
-		return generateForPackage(tc, t, content)
+		return generateForPackage(tc, t, content, formatter)
 
 	case "file":
-		return generateForFile(tc, t, content)
+		return generateForFile(tc, t, content, formatter)
 
 	case "const":
-		return generateForConst(tc, t, content)
+		return generateForConst(tc, t, content, formatter)
 
 	case "enum":
-		return generateForEnum(tc, t, content)
+		return generateForEnum(tc, t, content, formatter)
 
 	case "struct":
-		return generateForStruct(tc, t, content)
+		return generateForStruct(tc, t, content, formatter)
 
 	case "interface":
-		return generateForInterface(tc, t, content)
+		return generateForInterface(tc, t, content, formatter)
 
 	default:
 		return fmt.Errorf(`unknown value for 'this': %q, expected "package", "file", "const", "enum", "struct" or "interface"`, this)
 	}
 }
 
-func generateForPackage(tc *templateContext, t *template.Template, content []byte) error {
+func generateForPackage(tc *templateContext, t *template.Template, content []byte, formatter Formatter) error {
 	for _, pkg := range tc.compiler.packages {
-		if err := gen(tc, t, pkg, content); err != nil {
+		if err := gen(tc, t, pkg, content, formatter); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func generateForFile(tc *templateContext, t *template.Template, content []byte) error {
+func generateForFile(tc *templateContext, t *template.Template, content []byte, formatter Formatter) error {
 	for _, f := range tc.compiler.files {
-		if err := gen(tc, t, f, content); err != nil {
+		if err := gen(tc, t, f, content, formatter); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func generateForConst(tc *templateContext, t *template.Template, content []byte) error {
+func generateForConst(tc *templateContext, t *template.Template, content []byte, formatter Formatter) error {
 	for _, file := range tc.compiler.files {
 		if file.decls == nil {
 			continue
 		}
 		for _, d := range file.decls.consts {
-			if err := gen(tc, t, d, content); err != nil {
+			if err := gen(tc, t, d, content, formatter); err != nil {
 				return err
 			}
 		}
@@ -402,13 +410,13 @@ func generateForConst(tc *templateContext, t *template.Template, content []byte)
 	return nil
 }
 
-func generateForEnum(tc *templateContext, t *template.Template, content []byte) error {
+func generateForEnum(tc *templateContext, t *template.Template, content []byte, formatter Formatter) error {
 	for _, file := range tc.compiler.files {
 		if file.decls == nil {
 			continue
 		}
 		for _, d := range file.decls.enums {
-			if err := gen(tc, t, d, content); err != nil {
+			if err := gen(tc, t, d, content, formatter); err != nil {
 				return err
 			}
 		}
@@ -416,13 +424,13 @@ func generateForEnum(tc *templateContext, t *template.Template, content []byte) 
 	return nil
 }
 
-func generateForStruct(tc *templateContext, t *template.Template, content []byte) error {
+func generateForStruct(tc *templateContext, t *template.Template, content []byte, formatter Formatter) error {
 	for _, file := range tc.compiler.files {
 		if file.decls == nil {
 			continue
 		}
 		for _, d := range file.decls.structs {
-			if err := gen(tc, t, d, content); err != nil {
+			if err := gen(tc, t, d, content, formatter); err != nil {
 				return err
 			}
 		}
@@ -430,13 +438,13 @@ func generateForStruct(tc *templateContext, t *template.Template, content []byte
 	return nil
 }
 
-func generateForInterface(tc *templateContext, t *template.Template, content []byte) error {
+func generateForInterface(tc *templateContext, t *template.Template, content []byte, formatter Formatter) error {
 	for _, file := range tc.compiler.files {
 		if file.decls == nil {
 			continue
 		}
 		for _, d := range file.decls.interfaces {
-			if err := gen(tc, t, d, content); err != nil {
+			if err := gen(tc, t, d, content, formatter); err != nil {
 				return err
 			}
 		}
@@ -446,7 +454,7 @@ func generateForInterface(tc *templateContext, t *template.Template, content []b
 
 // gen generates a file using the given template, meta data, and object which may be a
 // file, const, enum or struct.
-func gen[T Decl](tc *templateContext, t *template.Template, decl T, content []byte) error {
+func gen[T Decl](tc *templateContext, t *template.Template, decl T, content []byte, formatter Formatter) error {
 	// Skip if the declaration is an alias
 	if decl.Annotations().get("next").get(tc.lang+"_alias") != nil {
 		return nil
@@ -521,7 +529,7 @@ func gen[T Decl](tc *templateContext, t *template.Template, decl T, content []by
 		path = filepath.Join(tc.dir, path)
 	}
 	perm := cmp.Or(parsedPerm, op.If(tc.headCalled && tc.compiler.options.Perm > 0, os.FileMode(tc.compiler.options.Perm), 0644))
-	if err := tc.compiler.platform.WriteFile(path, buf.Bytes(), perm); err != nil {
+	if err := tc.compiler.platform.WriteFile(path, buf.Bytes(), perm, formatter); err != nil {
 		return fmt.Errorf("%s: failed to write file %q: %v", t.ParseName, path, err)
 	}
 

@@ -33,7 +33,7 @@ func main() {
 	flag.StringVar(&flags.log.level, "log.level", "DEBUG", "Log level")
 	flag.Parse()
 
-	if flag.NArg() == 0 && flag.Arg(0) == "version" {
+	if flag.NArg() == 1 && flag.Arg(0) == "version" {
 		fmt.Printf("nextls %s\n", version)
 		os.Exit(0)
 	}
