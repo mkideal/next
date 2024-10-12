@@ -27,44 +27,63 @@ const (
 	langMapExt    = ".map"   // next lang map file extension
 )
 
-// searchDirs returns ordered a list of directories to search for map files.
-// The order is from the most specific to the least specific.
-// The most specific directory is the user's home directory.
-// The least specific directories are the system directories.
-// The system directories are:
-//   - /etc/next.d
-//   - /usr/local/etc/next.d
-//   - /Library/Application Support/next.d
-//   - ~/Library/Application Support/next.d
-//   - %APPDATA%/next.d
 func createSearchDirs(platform Platform) []string {
 	var dirs []string
-	dirs = append(dirs, ".")
+
+	// Add the current directory for JavaScript runtime
+	if runtime.GOOS == "js" {
+		return append(dirs, ".")
+	}
+
+	// Add the NEXT_PATH
+	if nextPath := platform.Getenv(NEXT_PATH); nextPath != "" {
+		dirs = addSearchDirs(dirs, filepath.SplitList(nextPath)...)
+	}
+
+	// Add the hidden next directory ".next" in the user's home directory
 	homedir, err := platform.UserHomeDir()
 	if err == nil {
-		dirs = append(dirs, filepath.Join(homedir, hiddenNextDir))
+		dirs = addSearchDirs(dirs, filepath.Join(homedir, hiddenNextDir))
 	}
-	if runtime.GOOS == "js" {
-		return dirs
-	}
+
 	if runtime.GOOS == "windows" {
+		// Add the APPDATA directory for Windows
 		appData := platform.Getenv("APPDATA")
 		if appData != "" {
-			dirs = append(dirs, filepath.Join(appData, nextDir))
+			dirs = addSearchDirs(dirs, filepath.Join(appData, nextDir))
 		}
 	} else {
 		if runtime.GOOS == "darwin" {
-			dirs = append(dirs, filepath.Join("/Library/Application Support", nextDir))
+			// Add the Library/Application Support directory for macOS
+			dirs = addSearchDirs(dirs, filepath.Join("/Library/Application Support", nextDir))
 			if homedir != "" {
-				dirs = append(dirs, filepath.Join(homedir, "Library/Application Support", nextDir))
+				dirs = addSearchDirs(dirs, filepath.Join(homedir, "Library/Application Support", nextDir))
 			}
 		}
-		dirs = append(dirs,
+		// Add the system etc directories
+		dirs = addSearchDirs(dirs,
 			filepath.Join("/usr/local/etc", nextDir),
 			filepath.Join("/etc", nextDir),
 		)
 	}
-	slices.Reverse(dirs)
+	return dirs
+}
+
+func addSearchDirs(dirs []string, paths ...string) []string {
+	for _, path := range paths {
+		if path != "" {
+			var found bool
+			for _, dir := range dirs {
+				if dir == path {
+					found = true
+					break
+				}
+			}
+			if !found {
+				dirs = append(dirs, path)
+			}
+		}
+	}
 	return dirs
 }
 
@@ -288,24 +307,27 @@ func loadMap(c *Compiler, m flags.Map, lang string) error {
 			return fmt.Errorf("failed to parse builtin %q: %v", lang+langMapExt, err)
 		}
 	}
-	for _, dir := range c.searchDirs {
+
+	// Load the language map from the search directories in reverse order
+	for i := len(c.searchDirs) - 1; i >= 0; i-- {
+		dir := c.searchDirs[i]
 		path := filepath.Join(dir, lang+langMapExt)
-		if err := loadMapFromFile(c, m, lang, path); err != nil {
+		if _, err := loadMapFromFile(c, m, lang, path); err != nil {
 			return fmt.Errorf("failed to load %q: %v", path, err)
 		}
 	}
 	return nil
 }
 
-func loadMapFromFile(c *Compiler, m flags.Map, lang, path string) error {
+func loadMapFromFile(c *Compiler, m flags.Map, lang, path string) (bool, error) {
 	content, err := c.platform.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil
+			return false, nil
 		}
-		return err
+		return false, err
 	}
-	return parseLangMap(m, lang, content)
+	return true, parseLangMap(m, lang, content)
 }
 
 func generateForTemplatePath(c *Compiler, lang, ext, dir, tmplPath string) error {

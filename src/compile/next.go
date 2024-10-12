@@ -29,13 +29,26 @@ import (
 	"github.com/mkideal/next/src/scanner"
 )
 
-// @api(Environment/NEXTNOCOPYBUILTIN) represents the environment variable to disable copying builtin files.
-// If the value is `1`, `true`, `on`, or `yes` (case-insensitive), builtin files will not be copied to the user home directory.
-const NEXTNOCOPYBUILTIN = "NEXTNOCOPYBUILTIN"
+// @api(Environment/NEXT_PATH) represents the environment variable to set the search path for the next files.
+// Search path returns an ordered list of directories to search for language support map and template files.
+// The order is from the most specific to the least specific.
+// The most specific directory is the NEXT_PATH, then user's home directory.
+// The least specific directories are the system directories.
+// The system directories are:
+//   - /etc/next.d
+//   - /usr/local/etc/next.d
+//   - /Library/Application Support/next.d
+//   - ~/Library/Application Support/next.d
+//   - %APPDATA%/next.d
+const NEXT_PATH = "NEXT_PATH"
 
-// @api(Environment/NEXTMAXSTACK) represents the environment variable to set the maximum stack depth.
+// @api(Environment/NEXT_NOCOPYBUILTIN) represents the environment variable to disable copying builtin files.
+// If the value is `1`, `true`, `on`, or `yes` (case-insensitive), builtin files will not be copied to the user home directory.
+const NEXT_NOCOPYBUILTIN = "NEXT_NOCOPYBUILTIN"
+
+// @api(Environment/NEXT_MAXSTACK) represents the environment variable to set the maximum stack depth.
 // The value is a positive integer that represents the maximum stack depth. The default value is 100.
-const NEXTMAXSTACK = "NEXTMAXSTACK"
+const NEXT_MAXSTACK = "NEXT_MAXSTACK"
 
 const nextExt = ".next"
 const website = "https://next.as"

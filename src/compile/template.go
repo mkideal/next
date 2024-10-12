@@ -202,7 +202,7 @@ func newTemplateContext(info templateContextInfo) *templateContext {
 		templateContextInfo: info,
 		maxStack:            100,
 	}
-	if x := os.Getenv(NEXTMAXSTACK); x != "" {
+	if x := os.Getenv(NEXT_MAXSTACK); x != "" {
 		maxStack, err := strconv.Atoi(x)
 		if err == nil && maxStack > 0 {
 			tc.maxStack = maxStack
@@ -581,36 +581,51 @@ func (tc *templateContext) lazyInit() error {
 	}
 	tc.initiated = true
 
+	var nextLoaded bool
+	var langLoaded bool
+
+	// Load built-in templates
+	if t, err := tc.loadTemplate("builtin/next"+templateExt, tc.compiler.builtin); err != nil {
+		return err
+	} else {
+		nextLoaded = t != nil
+	}
+	if t, err := tc.loadTemplate("builtin/"+tc.lang+templateExt, tc.compiler.builtin); err != nil {
+		return err
+	} else {
+		langLoaded = t != nil
+	}
+
 	var files []string
 	for _, dir := range tc.compiler.searchDirs {
 		var err error
-		files, err = fsutil.AppendFiles(files, filepath.Join(dir, "next"+templateExt), templateExt, false)
-		if err != nil && !os.IsNotExist(err) {
-			return err
-		}
-		files, err = fsutil.AppendFiles(files, filepath.Join(dir, tc.lang+templateExt), templateExt, false)
-		if err != nil && !os.IsNotExist(err) {
-			return err
-		}
-		for i := range files {
-			files[i], err = filepath.Abs(files[i])
-			if err != nil {
+		if !nextLoaded {
+			length := len(files)
+			files, err = fsutil.AppendFiles(files, filepath.Join(dir, "next"+templateExt), templateExt, false)
+			if err != nil && !os.IsNotExist(err) {
 				return err
 			}
+			nextLoaded = len(files) > length
+		}
+		if !langLoaded {
+			length := len(files)
+			files, err = fsutil.AppendFiles(files, filepath.Join(dir, tc.lang+templateExt), templateExt, false)
+			if err != nil && !os.IsNotExist(err) {
+				return err
+			}
+			langLoaded = len(files) > length
+		}
+		if nextLoaded && langLoaded {
+			break
 		}
 	}
-
-	// Load built-in templates
-	if _, err := tc.loadTemplate("builtin/next"+templateExt, tc.compiler.builtin); err != nil {
-		return err
-	}
-	if _, err := tc.loadTemplate("builtin/"+tc.lang+templateExt, tc.compiler.builtin); err != nil {
-		return err
-	}
-
-	// Load custom templates
-	for _, file := range files {
-		if _, err := tc.loadTemplate(file, nil); err != nil {
+	for i := range files {
+		var err error
+		files[i], err = filepath.Abs(files[i])
+		if err != nil {
+			return err
+		}
+		if _, err := tc.loadTemplate(files[i], nil); err != nil {
 			return err
 		}
 	}
