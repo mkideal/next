@@ -21,7 +21,7 @@ function HeroBanner() {
               __html: translate({
                 id: "homepage.hero.title",
                 message:
-                  "<b>Define</b> Data Types,<br/><b>Generate</b> Multi-Language Code,<br/><b>Customize</b> Fully.",
+                  "Generate <b>code</b> in multiple languages <b>flexibly</b>, focus on your data <b>structures</b>.",
                 description:
                   "Home page hero title, can contain simple html tags",
               }),

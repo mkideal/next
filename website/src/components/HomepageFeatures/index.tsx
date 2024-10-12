@@ -10,7 +10,7 @@ type FeatureItem = {
 
 const FeatureList: FeatureItem[] = [
   {
-    title: "Multi-Language Code Generation",
+    title: "Multi-language code generation",
     Svg: require("@site/static/img/feature_multilang.svg").default,
     description: (
       <>
