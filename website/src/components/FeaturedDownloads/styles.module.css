@@ -1,6 +1,8 @@
 .featuredDownloads {
   margin-top: 2rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
   line-height: 1.5;
   color: #333;
 }
@@ -34,15 +36,19 @@
 }
 
 .downloadItem {
-  background-color: #E3F2FD;
+  background-color: #e3f2fd;
   padding: 1rem;
   border-radius: 8px;
-  border: 1px solid #90CAF9;
+  border: 1px solid #90caf9;
   transition: background-color 0.3s ease;
 }
 
+.downloadIcon {
+  margin-right: 10px;
+}
+
 .downloadItemLink:hover .downloadItem {
-  background-color: #BBDEFB;
+  background-color: #bbdefb;
 }
 
 .downloadItem h4 {
@@ -50,11 +56,13 @@
   font-weight: bold;
   margin-top: 0;
   margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
 }
 
 .downloadItem p {
   margin-bottom: 0.5rem;
-  font-size: 1.0rem;
+  font-size: 1rem;
   color: #666;
 }
 
@@ -62,7 +70,7 @@
   display: inline-flex;
   align-items: center;
   font-size: 1.2rem;
-  color: #1565C0;
+  color: #1565c0;
   text-decoration: none;
 }
 

@@ -4,7 +4,7 @@ module github.com/mkideal/next
 go 1.23
 
 require (
-	github.com/gopherd/core v0.0.0-20241012055301-04560ba9f4ac
+	github.com/gopherd/core v0.0.0-20241012080021-1bd551f02daa
 	github.com/mattn/go-shellwords v1.0.12
 )
 

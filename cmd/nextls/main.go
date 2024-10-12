@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/gopherd/core/builder"
 	"github.com/sourcegraph/jsonrpc2"
 
 	_ "github.com/mkideal/next/cmd/nextls/internal/handler/next"
@@ -22,8 +23,6 @@ var flags struct {
 	}
 }
 
-const version = "0.0.1"
-
 func main() {
 	logFile, _ := os.UserHomeDir()
 	if logFile != "" {
@@ -34,7 +33,7 @@ func main() {
 	flag.Parse()
 
 	if flag.NArg() == 1 && flag.Arg(0) == "version" {
-		fmt.Printf("nextls %s\n", version)
+		fmt.Fprintln(os.Stdout, builder.Info())
 		os.Exit(0)
 	}
 
