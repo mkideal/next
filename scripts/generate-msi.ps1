@@ -15,7 +15,7 @@ $content = $content -replace 'GUID-1', $GUID_1
 $content = $content -replace 'GUID-2', $GUID_2
 $content = $content -replace 'GUID-3', $GUID_3
 $content = $content -replace 'GUID-4', $GUID_4
-$content = $content -replace 'VERSION', $Version
+$content = $content -replace 'NEXT_VERSION', $Version
 $content | Set-Content 'installer-temp.wxs'
 
 Write-Host "Creating MSI packages..."
