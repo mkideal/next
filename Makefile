@@ -76,8 +76,8 @@ define release_windows
 	$(eval dir := windows-$(1))
 	@echo Building ${BUILD_DIR}\\${dir}\\next...
 	@if not exist "${BUILD_DIR}\\${dir}\\bin" mkdir "${BUILD_DIR}\\${dir}\\bin"
-	@set GOOS=windows && set GOARCH=$(1) && ${GOBUILD} -o "${BUILD_DIR}\\${dir}\\bin\\"
-	@set GOOS=windows && set GOARCH=$(1) && ${GOBUILD} -o "${BUILD_DIR}\\${dir}\\bin\\" ./cmd/nextls/
+	@set GOOS=windows&& set GOARCH=$(1)&& ${GOBUILD} -o "${BUILD_DIR}\\${dir}\\bin\\"
+	@set GOOS=windows&& set GOARCH=$(1)&& ${GOBUILD} -o "${BUILD_DIR}\\${dir}\\bin\\" ./cmd/nextls/
 	@copy README.md "${BUILD_DIR}\\${dir}\\"
 endef
 
