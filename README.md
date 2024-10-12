@@ -2,8 +2,6 @@
 
 Next is a powerful Generic **Interface Definition Language (IDL)** designed to create highly customized code across multiple programming languages. It leverages a flexible template system to transform high-level specifications into language-specific implementations.
 
-[Language Specification](./website/docs/language_spec.md) | [API](./website/docs/api.md)
-
 ## ✨ Key Features
 
 - 🌐 Multi-language code generation from a single source
