@@ -121,13 +121,6 @@ After installing `next`, run `next version` to show the version informarion
 next version
 ```
 
-:::tip
-Run `next -h` to show the command usage.
-
-```sh
-next -h
-```
-
 :::
 
 ### Editor Extensions
@@ -353,7 +346,7 @@ next \
 Usually, to generate code for a language, you need a [Map](/docs/api/latest/map) file and at least one template file.
 Currently, Next has created some builtin `map` files and base templates. See [builtin](https://github.com/mkideal/next/tree/main/builtin) for more informarion.
 
-Here is an example for langauge **C#**:
+Here is an example for **C#**:
 
 <Tabs
   defaultValue="map"
@@ -395,94 +388,96 @@ array=%T%[]
 using System;
 using System.Collections.Generic;
 
-namespace {{render "package:namespace" .Package}}
+namespace {{render "package:name" .Package}}
 {
-    {{next .Decls | align -}}
+	{{- next .Decls | indent | linespace -}}
 }
 {{- end}}
 
-{{/* next/csharp/package:namespace: Generates the namespace name */}}
-{{- define "next/csharp/package:namespace" -}}
+{{/* next/csharp/package:name: Generates the namespace name */}}
+{{- define "next/csharp/package:name" -}}
 {{with .Annotations.next.csharp_package}}{{.}}{{else}}{{.Name}}{{end}}
 {{- end}}
 
 {{/* next/csharp/used.type: Generates a fully qualified type name, including namespace if necessary */}}
 {{- define "next/csharp/used.type" -}}
-    {{- if not (.File.Package.Contains .Type)}}
-        {{- render "package:namespace" .Decl.File.Package}}.
-    {{- end}}
-    {{- next .Type}}
+	{{- if not (.File.Package.Has .Type)}}
+		{{- render "package:name" .Decl.File.Package}}.
+	{{- end}}
+	{{- next .Type}}
 {{- end}}
 
 {{/* next/csharp/imports: Generates using statements for imported namespaces */}}
 {{- define "next/csharp/imports" -}}
-{{- if .TrimmedList}}
 {{- range .TrimmedList}}
 {{- next .}}
 {{- end}}
-{{end}}
 {{- end}}
 
 {{/* next/csharp/import: Generates a using statement for a specific imported namespace */}}
-{{- define "next/csharp/import" -}}
-using {{render "package:namespace" .Target.Package}};
-{{end}}
+{{- define "next/csharp/import"}}
+using {{render "package:name" .Target.Package}};
+{{- end}}
 
 {{/* next/csharp/const: Generates a constant declaration */}}
-{{- define "next/csharp/const" -}}
-{{- next .Doc -}}
+{{- define "next/csharp/const"}}
+{{next .Doc -}}
 public const {{next .Type}} {{render "const:name" .}} = {{next .Value}};{{next .Comment}}
-{{end}}
+{{- end}}
 
 {{/* next/csharp/enum: Generates an enum declaration */}}
-{{- define "next/csharp/enum" -}}
-{{- next .Doc -}}
+{{- define "next/csharp/enum"}}
+{{next .Doc -}}
 public enum {{next .Type}}
 {
-    {{next .Members | align -}}
+	{{- next .Members | indent | linespace -}}
 }
 {{end}}
 
 {{/* next/csharp/enum.member: Generates an enum member */}}
-{{- define "next/csharp/enum.member" -}}
-{{- next .Doc -}}
+{{- define "next/csharp/enum.member"}}
+{{next .Doc -}}
 {{- render "enum.member:name" .}} = {{next .Value}},{{next .Comment}}
-{{end}}
+{{- end}}
 
 {{/* next/csharp/struct: Generates a class declaration (struct in C# is typically implemented as a class) */}}
-{{- define "next/csharp/struct" -}}
-{{- next .Doc -}}
+{{- define "next/csharp/struct"}}
+{{next .Doc -}}
 public class {{next .Type}}
 {
-    {{next .Fields | align -}}
+	{{- next .Fields | indent | linespace -}}
 }
 {{end}}
 
 {{/* next/csharp/struct.field: Generates a property declaration for a class */}}
-{{- define "next/csharp/struct.field" -}}
-{{- next .Doc -}}
+{{- define "next/csharp/struct.field"}}
+{{next .Doc -}}
 public {{next .Type}} {{render "struct.field:name" .}} { get; set; }{{next .Comment}}
-{{end}}
+{{- end}}
 
 {{/* next/csharp/struct.field.name: Generates the name for a class property */}}
-{{- define "next/csharp/struct.field.name" -}}
-{{- .String | pascalCase}}
+{{- define "next/csharp/struct.field:name" -}}
+{{- render "node:camel.case.name" .}}
 {{- end}}
 
 {{/* next/csharp/interface: Generates an interface declaration */}}
-{{- define "next/csharp/interface" -}}
-{{- next .Doc -}}
+{{- define "next/csharp/interface"}}
+{{next .Doc -}}
 public interface {{next .Type}}
 {
-    {{next .Methods | align -}}
+	{{- next .Methods | indent | linespace -}}
 }
 {{end}}
 
 {{/* next/csharp/interface.method: Generates a method declaration in an interface */}}
-{{- define "next/csharp/interface.method" -}}
-{{- next .Doc -}}
+{{- define "next/csharp/interface.method"}}
+{{next .Doc -}}
 {{- next .Result}} {{render "interface.method:name" .}}({{next .Params}});{{next .Comment}}
-{{end}}
+{{- end}}
+
+{{- define "next/csharp/interface.method:name" -}}
+{{- render "node:pascal.case.name" .}}
+{{- end}}
 
 {{/* next/csharp/interface.method.result: Generates the return type for an interface method */}}
 {{- define "next/csharp/interface.method.result" -}}
