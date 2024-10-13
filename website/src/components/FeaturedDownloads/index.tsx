@@ -1,6 +1,7 @@
 import React from "react";
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 import { FaWindows, FaApple, FaLinux } from "react-icons/fa";
+import { SiGnu } from "react-icons/si";
 import styles from "./styles.module.css";
 
 interface DownloadItem {
@@ -8,7 +9,6 @@ interface DownloadItem {
   description: string;
   fileName: string;
   icon: React.ComponentType<React.ComponentProps<"svg">>;
-  chipIcon?: React.ComponentType<React.ComponentProps<"svg">>;
 }
 
 const FeaturedDownloads: React.FC = () => {
@@ -42,6 +42,18 @@ const FeaturedDownloads: React.FC = () => {
       description: "Linux 2.6.32 or later, Intel 64-bit processor",
       fileName: `next${version}.linux-amd64.tar.gz`,
       icon: FaLinux,
+    },
+    {
+      title: "MinGW-64 (Windows)",
+      description: "Windows 10 or later, Intel 64-bit processor",
+      fileName: `next${version}.mingw-amd64.tar.gz`,
+      icon: SiGnu,
+    },
+    {
+      title: "MinGW-32 (Windows)",
+      description: "Windows 10 or later, Intel 32-bit processor",
+      fileName: `next${version}.mingw-386.tar.gz`,
+      icon: SiGnu,
     },
   ];
 

@@ -11,6 +11,7 @@ import (
 	"maps"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strconv"
 	"strings"
@@ -272,7 +273,7 @@ func Compile(platform Platform, builtin FileSystem, args []string) {
 	flagSet.SetOutput(term.ColorizeWriter(stderr, term.Red))
 	usageFunc := func() {
 		flagSet.SetOutput(stderr)
-		name := term.Bold.Colorize(args[0])
+		name := term.Bold.Colorize(op.If(runtime.GOOS == "windows", "next", args[0]))
 		term.Fprint(flagSet.Output(), "Next is an IDL for generating customized code across multiple languages.\n\n")
 		term.Fprint(flagSet.Output(), "Usage:\n")
 		term.Fprintf(flagSet.Output(), "  %s [Options] [source_dirs_or_files...] (default: current directory)\n", name)
@@ -300,6 +301,13 @@ func Compile(platform Platform, builtin FileSystem, args []string) {
 			(term.Bold + term.BrightBlue).Colorize(repository),
 		)
 	}
+
+	if len(args) == 1 {
+		// show usage message if no arguments are provided
+		usageFunc()
+		unwrap(stderr, 0)
+	}
+
 	if err := flagSet.Parse(args[1:]); err != nil {
 		if err == flag.ErrHelp {
 			usageFunc()

@@ -84,7 +84,7 @@ flowchart TD
   ]}>
 
   <TabItem value="unix">
-  To install Next on Unix-like systems, you can use the following command:
+  To install Next on Unix-like systems (Linux, macOS, and Git-Bash for windows, etc.), you can use the following command:
 
 ```sh
 curl -fsSL https://getnext.sh | sh
@@ -97,7 +97,7 @@ This script will download and install the latest version of Next on your system.
 If the downloading is very slow, you can use a https proxy like this:
 
 ```sh
-curl -fsSL https://getnext.sh | https_proxy=http://127.0.0.1:1087 sh
+curl -fsSL https://getnext.sh | https_proxy=http://127.0.0.1:1080 sh
 ```
 
 :::
@@ -105,6 +105,12 @@ curl -fsSL https://getnext.sh | https_proxy=http://127.0.0.1:1087 sh
   </TabItem>
 
   <TabItem value="windows">
+  :::note
+  You can install Next using Git-Bash following **Unix-like**:
+  ```sh
+  curl -fsSL https://getnext.sh | sh
+  ```
+  :::
   For Windows users, follow these steps:
 
 1. Download the `.msi` installer from [Downloads](/docs/downloads) for windows.
