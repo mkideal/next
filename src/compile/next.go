@@ -180,7 +180,7 @@ var commands = map[string]*command{
 	//	**.nextproj** is recommended for the Next project file.
 	//	:::
 	"build": newCommand(
-		"Build a next project: next build [file_or_dirs...]",
+		"Build a next project: next build [dirs_or_files...]",
 		func(ctx *commandContext, args []string) error {
 			if len(args) == 1 {
 				args = append(args, ".")
@@ -273,13 +273,13 @@ func Compile(platform Platform, builtin FileSystem, args []string) {
 	flagSet.SetOutput(term.ColorizeWriter(stderr, term.Red))
 	usageFunc := func() {
 		flagSet.SetOutput(stderr)
-		name := term.Bold.Colorize(flagSet.Name())
+		name := flagSet.Name()
 		term.Fprint(flagSet.Output(), "Next is an IDL for generating customized code across multiple languages.\n\n")
-		term.Fprint(flagSet.Output(), "Usage:\n")
+		term.Fprint(flagSet.Output(), "Usage:\n\n")
 		term.Fprintf(flagSet.Output(), "  %s [Options] [source_dirs_or_files...] (default: current directory)\n", name)
 		term.Fprintf(flagSet.Output(), "  %s [Options] <stdin>\n", name)
 		term.Fprintf(flagSet.Output(), "  %s <Command> ...\n", name)
-		term.Fprintf(flagSet.Output(), "\nCommands:\n")
+		term.Fprintf(flagSet.Output(), "\nCommands:\n\n")
 
 		var maxCommandLength int
 		for _, name := range slices.Sorted(maps.Keys(commands)) {
@@ -287,14 +287,15 @@ func Compile(platform Platform, builtin FileSystem, args []string) {
 		}
 		maxCommandLength += 4 // add 4 spaces for padding
 		for _, name := range slices.Sorted(maps.Keys(commands)) {
-			term.Fprintf(flagSet.Output(), "  %s%s%s\n", term.BrightMagenta.Colorize(name), strings.Repeat(" ", maxCommandLength-len(name)), commands[name].description)
+			term.Fprintf(flagSet.Output(), "  %s%s%s\n", name, strings.Repeat(" ", maxCommandLength-len(name)), commands[name].description)
 		}
 
-		term.Fprintf(flagSet.Output(), "\nOptions:\n")
+		term.Fprintf(flagSet.Output(), "\nOptions:\n\n")
 		flagSet.PrintDefaults()
 		term.Fprintf(flagSet.Output(), `For more information:
-  Website:    %s
-  Repository: %s
+
+  Docs: %s
+  Repo: %s
 
 `,
 			(term.Bold + term.BrightBlue).Colorize(website),

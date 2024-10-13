@@ -26,7 +26,7 @@ var flags struct {
 func main() {
 	logFile, _ := os.UserHomeDir()
 	if logFile != "" {
-		logFile = filepath.Join(logFile, ".nextls", "nextls.log")
+		logFile = filepath.Join(logFile, ".next", "log", "nextls.log")
 	}
 	flag.StringVar(&flags.log.file, "log.file", logFile, "Log file path for debug")
 	flag.StringVar(&flags.log.level, "log.level", "INFO", "Log level")

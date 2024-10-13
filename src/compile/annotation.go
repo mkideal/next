@@ -609,7 +609,7 @@ func resolveAnnotations(c *Compiler, file *File, node Node, annotations *ast.Ann
 func (c *Compiler) solveAnnotations() error {
 	parser := shellwords.NewParser()
 	parser.ParseEnv = true
-	programs := make(map[string][][]string)
+	commands := make(map[string][][]string)
 	keys := make([]string, 0, len(c.options.Solvers))
 	for name, solvers := range c.options.Solvers {
 		if name == "next" {
@@ -624,12 +624,12 @@ func (c *Compiler) solveAnnotations() error {
 			if len(words) == 0 {
 				return fmt.Errorf("empty solver for %q", name)
 			}
-			programs[name] = append(programs[name], words)
+			commands[name] = append(commands[name], words)
 		}
 	}
 	sort.Strings(keys)
 	for _, name := range keys {
-		for _, words := range programs[name] {
+		for _, words := range commands[name] {
 			req := c.createAnnotationSolverRequest(name)
 			if len(req.Annotations) == 0 {
 				continue
