@@ -5,7 +5,6 @@ BUILD_VERSION ?= $(GITHUB_REF_NAME)
 BUILD_COMMIT ?= $(GITHUB_SHA)
 
 ifeq ($(OS),Windows_NT)
-SHELL = cmd.exe
 BUILD_DATETIME := $(shell powershell -Command "Get-Date -Format 'yyyy/MM/ddTHH:mm:sszzz'")
 else
 BUILD_DATETIME := $(shell date "+%Y/%m/%dT%H:%M:%S%z")
@@ -58,8 +57,8 @@ define release_unix
 	@mkdir -p ${BUILD_DIR}/${dir}/bin
 	@cp README.md ${BUILD_DIR}/${dir}/
 	@echo "Building ${BUILD_DIR}/${dir}/next..."
-	@GOOS=$(1) GOARCH=$(2) ${GOBUILD} -o ${BUILD_DIR}/${dir}/bin/
-	@GOOS=$(1) GOARCH=$(2) ${GOBUILD} -o ${BUILD_DIR}/${dir}/bin/ ./cmd/nextls/
+	@GOOS=$(if $(filter mingw,$(1)),windows,$(1)) GOARCH=$(2) ${GOBUILD} -o ${BUILD_DIR}/${dir}/bin/
+	@GOOS=$(if $(filter mingw,$(1)),windows,$(1)) GOARCH=$(2) ${GOBUILD} -o ${BUILD_DIR}/${dir}/bin/ ./cmd/nextls/
 	@cd ${BUILD_DIR} && tar zcf ${dir}.tar.gz ${dir} && rm -r ${dir}
 endef
 
@@ -71,23 +70,13 @@ release:
 	$(call release_unix,linux,amd64)
 	$(call release_unix,linux,arm64)
 	$(call release_unix,linux,386)
-
-define build_windows
-	$(eval dir := windows-$(1))
-	@echo Building ${BUILD_DIR}\\${dir}\\next...
-	@if not exist "${BUILD_DIR}\\${dir}\\bin" mkdir "${BUILD_DIR}\\${dir}\\bin"
-	@set GOOS=windows&& set GOARCH=$(1)&& ${GOBUILD} -o "${BUILD_DIR}\\${dir}\\bin\\"
-	@set GOOS=windows&& set GOARCH=$(1)&& ${GOBUILD} -o "${BUILD_DIR}\\${dir}\\bin\\" ./cmd/nextls/
-	@copy README.md "${BUILD_DIR}\\${dir}\\"
-endef
+	$(call release_unix,mingw,amd64)
+	$(call release_unix,mingw,arm64)
+	$(call release_unix,mingw,386)
 
 .PHONY: release/windows
 release/windows:
-	$(call build_windows,amd64)
-	$(call build_windows,arm64)
-	$(call build_windows,386)
-	@echo Generating MSI packages...
-	@powershell -ExecutionPolicy Bypass -File scripts/generate-msi.ps1 -Version '$(BUILD_VERSION)'
+	@powershell -ExecutionPolicy Bypass -File scripts/generate-msi.ps1 -Version '$(BUILD_VERSION)' -Dir '$(BUILD_DIR)' -GoBuild '$(GOBUILD)'
 
 .PHONY: test/src
 test/src: autogen go/vet

@@ -399,8 +399,8 @@ func (o *Options) SetupCommandFlags(flagSet *flag.FlagSet, u flags.UsageFunc) {
 		"Example:\n"+
 		"  next \\\n"+
 		"    -F 'go=gofmt -s -w'\n"+
-		"	 -F 'ts=prettier --write'\n"+
-		"	 -F 'cpp=clang-format -i'\n",
+		"    -F 'ts=prettier --write'\n"+
+		"    -F 'cpp=clang-format -i'\n",
 	))
 
 	// @api(CommandLine/Flag/-X) represents the custom annotation solver programs for code generation.

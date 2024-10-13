@@ -1,5 +1,7 @@
 Param(
     [string]$Version
+    [string]$Dir
+    [string]$GoBuild
 )
 
 Write-Host "Generating new GUIDs and replacing in installer.wxs..."
@@ -22,6 +24,11 @@ Write-Host "Creating MSI packages..."
 
 $Architectures = @('amd64', 'arm64', '386')
 foreach ($Arch in $Architectures) {
+	echo "Building $Dir\\windows-$Arch\\next..."
+	if not exist "$Dir\\windows-$Arch\\bin" mkdir "$Dir\\windows-$Arch\\bin"
+	set GOOS=windows&& set GOARCH=$Arch&& $GoBuild -o "$Dir\\windows-$Arch\\bin\\"
+	set GOOS=windows&& set GOARCH=$Arch&& $GoBuild -o "$Dir\\windows-$Arch\\bin\\" ./cmd/nextls/
+	copy README.md "$Dir\\windows-$Arch\\"
     (Get-Content 'installer-temp.wxs') -replace 'ARCH', $Arch | Set-Content "installer-$Arch.wxs"
     candle.exe "installer-$Arch.wxs"
     light.exe -ext WixUIExtension "installer-$Arch.wixobj" -o "build/next$Version.windows-$Arch.msi"
