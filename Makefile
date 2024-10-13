@@ -94,7 +94,6 @@ example/clean:
 example/gen:
 	@echo "Running generate example..."
 	@NEXT_NOCOPYBUILTIN=1 ${BUILD_BIN_DIR}/next build ${EXAMPLE_DIR}
-	@if [ -d ${EXAMPLE_DIR}/gen/rust ]; then cd ${EXAMPLE_DIR}/gen/rust && cargo init --vcs none -q; fi
 
 .PHONY: clean
 clean:

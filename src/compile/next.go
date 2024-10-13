@@ -180,7 +180,7 @@ var commands = map[string]*command{
 	//	**.nextproj** is recommended for the Next project file.
 	//	:::
 	"build": newCommand(
-		"Run a next project: next build [file_or_dirs...]",
+		"Build a next project: next build [file_or_dirs...]",
 		func(ctx *commandContext, args []string) error {
 			if len(args) == 1 {
 				args = append(args, ".")
@@ -262,7 +262,7 @@ func Compile(platform Platform, builtin FileSystem, args []string) {
 		}
 	}
 
-	flagSet := flag.NewFlagSet(args[0], flag.ContinueOnError)
+	flagSet := flag.NewFlagSet(op.If(runtime.GOOS == "windows", "next", args[0]), flag.ContinueOnError)
 	flagSet.Usage = func() {}
 
 	stdin, stderr := platform.Stdin(), platform.Stderr()
@@ -273,12 +273,12 @@ func Compile(platform Platform, builtin FileSystem, args []string) {
 	flagSet.SetOutput(term.ColorizeWriter(stderr, term.Red))
 	usageFunc := func() {
 		flagSet.SetOutput(stderr)
-		name := term.Bold.Colorize(op.If(runtime.GOOS == "windows", "next", args[0]))
+		name := term.Bold.Colorize(flagSet.Name())
 		term.Fprint(flagSet.Output(), "Next is an IDL for generating customized code across multiple languages.\n\n")
 		term.Fprint(flagSet.Output(), "Usage:\n")
 		term.Fprintf(flagSet.Output(), "  %s [Options] [source_dirs_or_files...] (default: current directory)\n", name)
 		term.Fprintf(flagSet.Output(), "  %s [Options] <stdin>\n", name)
-		term.Fprintf(flagSet.Output(), "  %s <Command> [Command-Args]\n", name)
+		term.Fprintf(flagSet.Output(), "  %s <Command> ...\n", name)
 		term.Fprintf(flagSet.Output(), "\nCommands:\n")
 
 		var maxCommandLength int
