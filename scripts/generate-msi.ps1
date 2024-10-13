@@ -1,6 +1,6 @@
 Param(
-    [string]$Version
-    [string]$Dir
+    [string]$Version,
+    [string]$Dir,
     [string]$GoBuild
 )
 
@@ -24,12 +24,38 @@ Write-Host "Creating MSI packages..."
 
 $Architectures = @('amd64', 'arm64', '386')
 foreach ($Arch in $Architectures) {
-	echo "Building $Dir\\windows-$Arch\\next..."
-	if not exist "$Dir\\windows-$Arch\\bin" mkdir "$Dir\\windows-$Arch\\bin"
-	set GOOS=windows&& set GOARCH=$Arch&& $GoBuild -o "$Dir\\windows-$Arch\\bin\\"
-	set GOOS=windows&& set GOARCH=$Arch&& $GoBuild -o "$Dir\\windows-$Arch\\bin\\" ./cmd/nextls/
-	copy README.md "$Dir\\windows-$Arch\\"
+    Write-Host "Building $Dir\windows-$Arch\next..."
+
+    Remove-Item installer-$Arch.wixobj -Force -ErrorAction SilentlyContinue
+    Remove-Item "$Dir\windows-$Arch" -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item "$Dir\next$Version.windows-$Arch.wixpdb" -Force -ErrorAction SilentlyContinue
+    Remove-Item "$Dir\next$Version.windows-$Arch.msi" -Force -ErrorAction SilentlyContinue
+    
+    # Create directory
+    New-Item -ItemType Directory -Force -Path "$Dir\windows-$Arch\bin" | Out-Null
+    
+    # Set environment variables and compile
+    $env:GOOS = "windows"
+    $env:GOARCH = $Arch
+    
+    Write-Host "$GoBuild -o $Dir\windows-$Arch\bin\next.exe"
+    Invoke-Expression "$GoBuild -o `"$Dir\windows-$Arch\bin\next.exe`""
+    Invoke-Expression "$GoBuild -o `"$Dir\windows-$Arch\bin\nextls.exe`" ./cmd/nextls/"
+    
+    # Copy README file
+    Copy-Item "README.md" -Destination "$Dir\windows-$Arch\"
+    
+    # Replace ARCH in installer-temp.wxs and create new file
     (Get-Content 'installer-temp.wxs') -replace 'ARCH', $Arch | Set-Content "installer-$Arch.wxs"
-    candle.exe "installer-$Arch.wxs"
-    light.exe -ext WixUIExtension "installer-$Arch.wixobj" -o "build/next$Version.windows-$Arch.msi"
+    
+    # Run WiX toolchain commands
+    & candle.exe "installer-$Arch.wxs"
+    & light.exe -ext WixUIExtension "installer-$Arch.wixobj" -o "$Dir\next$Version.windows-$Arch.msi"
+
+    Remove-Item installer-$Arch.wxs
+    Remove-Item installer-$Arch.wixobj
+    Remove-Item "$Dir\windows-$Arch" -Recurse -Force
+    Remove-Item "$Dir\next$Version.windows-$Arch.wixpdb"
 }
+
+Remove-Item installer-temp.wxs
