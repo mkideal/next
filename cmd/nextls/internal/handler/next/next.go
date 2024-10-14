@@ -297,6 +297,7 @@ func addTypeTokens(v *tokenVisiter, x compile.Type) {
 	case *compile.ArrayType:
 		addToken(&v.tokens, v.doc, token.ARRAY.String(), node.Pos(), protocol.TokenTypeType)
 		addTypeTokens(v, t2.ElemType)
+		ast.Walk(v, compile.LenExpr(t2))
 	case *compile.VectorType:
 		addToken(&v.tokens, v.doc, token.VECTOR.String(), node.Pos(), protocol.TokenTypeType)
 		addTypeTokens(v, t2.ElemType)

@@ -813,7 +813,8 @@ var primitiveTypes = func() map[string]*PrimitiveType {
 
 // @api(Object/ArrayType) represents an fixed-size array [Type](#Object/Common/Type).
 type ArrayType struct {
-	pos token.Pos
+	pos     token.Pos
+	lenExpr ast.Expr
 
 	// @api(Object/ArrayType.ElemType) represents the element [Type](#Object/Common/Type) of the array.
 	ElemType Type
@@ -821,6 +822,8 @@ type ArrayType struct {
 	// @api(Object/ArrayType.N) represents the number of elements in the array.
 	N int64
 }
+
+func LenExpr(a *ArrayType) ast.Expr { return a.lenExpr }
 
 func (a *ArrayType) String() string {
 	return "array<" + a.ElemType.String() + "," + strconv.FormatInt(a.N, 10) + ">"

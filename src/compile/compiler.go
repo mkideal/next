@@ -585,6 +585,7 @@ func (c *Compiler) resolveArrayType(depth int, node Node, t *ast.ArrayType, igno
 		pos:      t.Pos(),
 		ElemType: typ,
 		N:        c.resolveInt64(node.File(), t.N),
+		lenExpr:  t.N,
 	}
 }
 

@@ -276,7 +276,7 @@ func Compile(platform Platform, builtin FileSystem, args []string) {
 		name := flagSet.Name()
 		term.Fprint(flagSet.Output(), "Next is an IDL for generating customized code across multiple languages.\n\n")
 		term.Fprint(flagSet.Output(), "Usage:\n\n")
-		term.Fprintf(flagSet.Output(), "  %s [Options] [source_dirs_or_files...] (default: current directory)\n", name)
+		term.Fprintf(flagSet.Output(), "  %s [Options] [source_dirs_or_files...]\n", name)
 		term.Fprintf(flagSet.Output(), "  %s [Options] <stdin>\n", name)
 		term.Fprintf(flagSet.Output(), "  %s <Command> ...\n", name)
 		term.Fprintf(flagSet.Output(), "\nCommands:\n\n")
