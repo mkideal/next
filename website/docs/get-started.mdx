@@ -87,7 +87,7 @@ flowchart TD
   To install Next on Unix-like systems (Linux, macOS, and Git-Bash for windows, etc.), you can use the following command:
 
   ```sh
-  curl -fsSL https://getnext.sh | sh
+  curl --proto '=https' --tlsv1.2 -sSf https://getnext.sh | sh
   ```
 
   This script will download and install the latest version of Next on your system.
@@ -97,7 +97,7 @@ flowchart TD
   If the downloading is very slow, you can use a https proxy like this:
 
   ```sh
-  curl -fsSL https://getnext.sh | https_proxy=http://127.0.0.1:1080 sh
+  curl --proto '=https' --tlsv1.2 -sSf https://getnext.sh | https_proxy=http://127.0.0.1:1080 sh
   ```
 
   :::
@@ -105,7 +105,7 @@ flowchart TD
   </TabItem>
 
   <TabItem value="windows">
-  To install Next on Windows, you can use the following command using **PowerShell**:
+  To install Next on Windows, you can use the following command in **PowerShell**:
   
   ```sh
   iwr -useb https://getnext.sh/ps | iex
@@ -114,16 +114,16 @@ flowchart TD
   This will install the Next on your Windows system.
 
   :::note
-  You also can install Next using **Git-Bash**:
+  Also, you can install Next in **Git-Bash**:
 
   ```sh
-  curl -fsSL https://getnext.sh | sh
+  curl --proto '=https' --tlsv1.2 -sSf https://getnext.sh | sh
   ```
   :::
   </TabItem>
 </Tabs>
 
-After installing `next`, run `next version` to show the version informarion
+After installing `next`, run `next version` to check the installed version:
 
 ```sh
 next version
