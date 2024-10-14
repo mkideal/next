@@ -43,18 +43,6 @@ const FeaturedDownloads: React.FC = () => {
       fileName: `next${version}.linux-amd64.tar.gz`,
       icon: FaLinux,
     },
-    {
-      title: "MinGW-64 (Windows)",
-      description: "Windows 10 or later, Intel 64-bit processor",
-      fileName: `next${version}.mingw-amd64.tar.gz`,
-      icon: SiGnu,
-    },
-    {
-      title: "MinGW-32 (Windows)",
-      description: "Windows 10 or later, Intel 32-bit processor",
-      fileName: `next${version}.mingw-386.tar.gz`,
-      icon: SiGnu,
-    },
   ];
 
   return (
