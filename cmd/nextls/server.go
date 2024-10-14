@@ -66,7 +66,7 @@ func (s *Server) Handle(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.
 	}
 }
 
-func (s *Server) handleInitialize(ctx context.Context, req *jsonrpc2.Request) (any, error) {
+func (s *Server) handleInitialize(_ context.Context, _ *jsonrpc2.Request) (any, error) {
 	return map[string]any{
 		"capabilities": &protocol.ServerCapabilities{
 			SemanticTokensProvider: &protocol.SemanticTokensOptions{
@@ -81,7 +81,7 @@ func (s *Server) handleInitialize(ctx context.Context, req *jsonrpc2.Request) (a
 	}, nil
 }
 
-func (s *Server) handleDidOpen(ctx context.Context, req *jsonrpc2.Request) (any, error) {
+func (s *Server) handleDidOpen(_ context.Context, req *jsonrpc2.Request) (any, error) {
 	var params struct {
 		TextDocument protocol.TextDocumentItem
 	}
@@ -93,7 +93,7 @@ func (s *Server) handleDidOpen(ctx context.Context, req *jsonrpc2.Request) (any,
 	return nil, nil
 }
 
-func (s *Server) handleDidClose(ctx context.Context, req *jsonrpc2.Request) (any, error) {
+func (s *Server) handleDidClose(_ context.Context, req *jsonrpc2.Request) (any, error) {
 	var params struct {
 		TextDocument protocol.TextDocumentIdentifier `json:"textDocument"`
 	}
@@ -105,7 +105,7 @@ func (s *Server) handleDidClose(ctx context.Context, req *jsonrpc2.Request) (any
 	return nil, nil
 }
 
-func (s *Server) handleDidChange(ctx context.Context, req *jsonrpc2.Request) (any, error) {
+func (s *Server) handleDidChange(_ context.Context, req *jsonrpc2.Request) (any, error) {
 	var params struct {
 		TextDocument   protocol.TextDocumentIdentifier           `json:"textDocument"`
 		ContentChanges []protocol.TextDocumentContentChangeEvent `json:"contentChanges"`

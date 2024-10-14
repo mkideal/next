@@ -85,10 +85,19 @@ func JaroWinklerDistance(s1, s2 string) float64 {
 	return jaro + float64(prefixLen)*0.1*(1-jaro)
 }
 
+func identity[T any](_ T, s string) string {
+	return s
+}
+
+// FindBestMatch finds the best matching string to the input
+func FindBestMatch(source []string, input string, threshold float64) string {
+	return FindBestMatchFunc(slices.All(source), input, threshold, identity)
+}
+
 // FindBestMatchFunc finds the best matching value and its similarity score
 // from the given list of values. It returns the best match and its similarity score.
 // If no command meets the threshold, it returns an zero key and zero similarity score.
-func FindBestMatchFunc[F ~func(K, V) string, K, V any](seq iter.Seq2[K, V], input string, threshold float64, fn F) (string, float64) {
+func FindBestMatchFunc[F ~func(K, V) string, K, V any](seq iter.Seq2[K, V], input string, threshold float64, fn F) string {
 	var bestMatch string
 	var highestSimilarity float64
 
@@ -102,24 +111,13 @@ func FindBestMatchFunc[F ~func(K, V) string, K, V any](seq iter.Seq2[K, V], inpu
 	}
 
 	if highestSimilarity >= threshold {
-		return bestMatch, highestSimilarity
-	}
-	return bestMatch, 0
-}
-
-// FindBestMatch finds the best matching string to the input
-func FindBestMatch(source []string, input string, threshold float64) string {
-	s, sim := FindBestMatchFunc(slices.All(source), input, threshold, func(i int, s string) string {
-		return s
-	})
-	if sim > 0 {
-		return s
+		return bestMatch
 	}
 	return ""
 }
 
-// IsIdentifer checks if a string is a valid identifier.
-func IsIdentifer(s string) bool {
+// IsASCIIIdentifier checks if a string is a valid ascii identifier.
+func IsASCIIIdentifier(s string) bool {
 	if len(s) == 0 {
 		return false
 	}

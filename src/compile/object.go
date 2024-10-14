@@ -2,6 +2,7 @@ package compile
 
 import (
 	"cmp"
+	"errors"
 	"fmt"
 	"math"
 	"path/filepath"
@@ -241,7 +242,7 @@ func newImport(c *Compiler, file *File, src *ast.ImportDecl) *Import {
 	}
 	if len(path) > 0 && !filepath.IsAbs(path) {
 		var err error
-		path, err = filepath.Abs(filepath.Join(filepath.Dir(file.Path), path))
+		path, err = absolutePath(filepath.Join(filepath.Dir(file.Path), path))
 		if err != nil {
 			c.addErrorf(token.NoPos, "failed to get absolute path of %s: %v", i.Path, err)
 		} else {
@@ -1197,6 +1198,48 @@ func (t *InterfaceMethodResult) resolve(c *Compiler, file *File, scope Scope) {
 	t.Type = c.resolveType(0, t.Method, t.unresolved.typ, false)
 }
 
+type bailout struct {
+	pos Position
+	msg string
+}
+
+func (b bailout) Error() string {
+	if b.pos.IsValid() {
+		return fmt.Sprintf("%s: %s", b.pos, b.msg)
+	}
+	return b.msg
+}
+
+func validateAvailable(c *Compiler, a Annotation, v any) (pos token.Pos, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			switch r := r.(type) {
+			case string:
+				err = errors.New(r)
+			case bailout:
+				err = errors.New(r.msg)
+				pos = r.pos.pos
+			case error:
+				err = r
+			default:
+				err = fmt.Errorf("%v", r)
+			}
+		}
+	}()
+	const name = "available"
+	s, ok := v.(string)
+	if !ok {
+		return a.ValuePos(name).pos, errors.New("@next(available): should be a string")
+	}
+	valuePos := a.ValuePos(name)
+	expr, err := parser.ParseExpr(s)
+	if err != nil {
+		return valuePos.pos, errors.New("invalid @next(available) expression")
+	}
+	evalAvailableExpr(c, valuePos.pos, expr, "next")
+	return
+}
+
 // isAvailable reports whether the declaration is available in the current language.
 func isAvailable(c *Compiler, decl Node, lang string) bool {
 	a := decl.Annotations().get("next")
@@ -1204,12 +1247,12 @@ func isAvailable(c *Compiler, decl Node, lang string) bool {
 	if !ok {
 		return true
 	}
-	pos := a.ValuePos("available")
+	valuePos := a.ValuePos("available")
 	expr, err := parser.ParseExpr(s)
 	if err != nil {
-		panic(fmt.Sprintf("%s: invalid @next(available) expression", pos))
+		panic(bailout{pos: valuePos, msg: "invalid @next(available) expression"})
 	}
-	return evalAvailableExpr(c, pos.pos, expr, lang)
+	return evalAvailableExpr(c, valuePos.pos, expr, lang)
 }
 
 func evalAvailableExpr(c *Compiler, pos token.Pos, expr ast.Expr, lang string) bool {
@@ -1226,7 +1269,7 @@ func evalAvailableExpr(c *Compiler, pos token.Pos, expr ast.Expr, lang string) b
 		if expr.Op == token.NOT {
 			return !evalAvailableExpr(c, pos, expr.X, lang)
 		}
-		panic(c.fset.Position(pos+expr.OpPos).String() + ": unexpected unary operator: " + expr.Op.String())
+		panic(bailout{pos: positionFor(c, pos+expr.OpPos), msg: "unexpected unary operator: " + expr.Op.String()})
 	case *ast.BinaryExpr:
 		switch expr.Op {
 		case token.OR:
@@ -1238,10 +1281,10 @@ func evalAvailableExpr(c *Compiler, pos token.Pos, expr ast.Expr, lang string) b
 		case token.NEQ:
 			return evalAvailableExpr(c, pos, expr.X, lang) != evalAvailableExpr(c, pos, expr.Y, lang)
 		default:
-			panic(c.fset.Position(pos+expr.OpPos).String() + ": unexpected binary operator: " + expr.Op.String())
+			panic(bailout{pos: positionFor(c, pos+expr.OpPos), msg: "unexpected binary operator: " + expr.Op.String()})
 		}
 	default:
-		panic(c.fset.Position(pos+expr.Pos()).String() + ": unexpected expression")
+		panic(bailout{pos: positionFor(c, pos+expr.Pos()), msg: "unexpected expression"})
 	}
 }
 

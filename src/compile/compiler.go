@@ -104,7 +104,7 @@ func (c *Compiler) AddFile(f *ast.File) (*File, error) {
 		c.addErrorf(f.Pos(), "file %s already exists", filename)
 		return file, c.errors.Err()
 	}
-	path, err := filepath.Abs(filename)
+	path, err := absolutePath(filename)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get absolute path of %s: %w", filename, err)
 	}
@@ -188,7 +188,7 @@ func (c *Compiler) addErrorf(pos token.Pos, format string, args ...any) {
 
 // getFileByPos returns the file by position
 func (c *Compiler) getFileByPos(pos token.Pos) *File {
-	path, err := filepath.Abs(c.fset.Position(pos).Filename)
+	path, err := absolutePath(c.fset.Position(pos).Filename)
 	if err != nil {
 		c.addErrorf(pos, "failed to get absolute path of %s: %v", c.fset.Position(pos).Filename, err)
 		return nil
@@ -203,12 +203,13 @@ func (c *Compiler) lookupFile(fullPath, relativePath string) *File {
 	}
 	if !filepath.IsAbs(relativePath) {
 		var err error
-		relativePath, err = filepath.Abs(filepath.Join(filepath.Dir(fullPath), relativePath))
+		relativePath, err = absolutePath(filepath.Join(filepath.Dir(fullPath), relativePath))
 		if err != nil {
 			c.addErrorf(token.NoPos, "failed to get absolute path of %s: %v", relativePath, err)
 			return nil
 		}
 	}
+	relativePath = filepath.ToSlash(relativePath)
 	return c.files[relativePath]
 }
 
@@ -803,10 +804,10 @@ func (c *Compiler) validateAnnotations(node Node, annotations grammar.Annotation
 			if !c.options.Strict {
 				continue
 			}
-			s, score := stringutil.FindBestMatchFunc(slices.All(annotations), name, stringutil.DefaultSimilarityThreshold, func(i int, a grammar.Options[grammar.Annotation]) string {
+			s := stringutil.FindBestMatchFunc(slices.All(annotations), name, stringutil.DefaultSimilarityThreshold, func(i int, a grammar.Options[grammar.Annotation]) string {
 				return a.Value().Name
 			})
-			if score > 0 {
+			if s != "" {
 				c.addErrorf(annotation.Pos().pos, "unknown annotation %s, did you mean %s?", name, s)
 			} else {
 				c.addErrorf(annotation.Pos().pos, "unknown annotation %s", name)
@@ -830,7 +831,7 @@ func (c *Compiler) validateAnnotations(node Node, annotations grammar.Annotation
 				if !c.options.Strict && name != "next" {
 					continue
 				}
-				s, score := stringutil.FindBestMatchFunc(slices.All(ga.Parameters), p, stringutil.DefaultSimilarityThreshold, func(i int, a grammar.Options[grammar.AnnotationParameter]) string {
+				s := stringutil.FindBestMatchFunc(slices.All(ga.Parameters), p, stringutil.DefaultSimilarityThreshold, func(i int, a grammar.Options[grammar.AnnotationParameter]) string {
 					name := a.Value().Name
 					if strings.HasPrefix(name, ".+_") {
 						if index := strings.Index(p, "_"); index > 0 {
@@ -843,7 +844,7 @@ func (c *Compiler) validateAnnotations(node Node, annotations grammar.Annotation
 					}
 					return name
 				})
-				if score > 0 {
+				if s != "" {
 					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: unknown parameter %s, did you mean %s?", name, p, s)
 				} else {
 					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: unknown parameter %s", name, p)
@@ -884,6 +885,15 @@ func (c *Compiler) validateAnnotations(node Node, annotations grammar.Annotation
 					return fmt.Errorf("%s: failed to validate annotation %s parameter %s: %w", annotation.NamePos(p), name, p, err)
 				} else if !ok {
 					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s: %s", name, p, pv.Value().Message)
+				}
+			}
+			// Validate available expression
+			if name == "next" && p == "available" {
+				if pos, err := validateAvailable(c, annotation, v); err != nil {
+					if !pos.IsValid() {
+						pos = annotation.NamePos(name).pos
+					}
+					c.addError(pos, err.Error())
 				}
 			}
 		}

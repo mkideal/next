@@ -98,6 +98,7 @@ example/clean:
 .PHONY: example/gen
 example/gen:
 	@echo "Running generate example..."
+	@NEXT_NOCOPYBUILTIN=1 ${BUILD_BIN_DIR}/next -t ${EXAMPLE_DIR}/next/
 	@NEXT_NOCOPYBUILTIN=1 ${BUILD_BIN_DIR}/next build ${EXAMPLE_DIR}
 
 .PHONY: clean

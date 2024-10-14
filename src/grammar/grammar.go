@@ -1439,7 +1439,7 @@ func (p *AnnotationParameter) validate(_ *Grammar) error {
 	if p.Name == "" {
 		return fmt.Errorf("parameter: name is required")
 	}
-	if !stringutil.IsIdentifer(p.Name) {
+	if !stringutil.IsASCIIIdentifier(p.Name) {
 		pattern, err := regexp.Compile("^" + p.Name + "$")
 		if err != nil {
 			return fmt.Errorf("parameter: invalid name pattern %q: %w", p.Name, err)

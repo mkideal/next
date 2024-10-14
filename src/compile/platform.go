@@ -8,6 +8,14 @@ import (
 	"path/filepath"
 )
 
+func absolutePath(name string) (string, error) {
+	path, err := filepath.Abs(name)
+	if err == nil {
+		path = filepath.ToSlash(path)
+	}
+	return path, err
+}
+
 // FileSystem is an interface that abstracts the file system functions.
 type FileSystem interface {
 	fs.FS

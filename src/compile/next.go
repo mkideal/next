@@ -11,6 +11,7 @@ import (
 	"maps"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strconv"
 	"strings"
@@ -361,7 +362,7 @@ func doCompile(compiler *Compiler, files []string, source io.Reader) {
 	if source == nil {
 		seen := make(map[string]bool)
 		for i := len(files) - 1; i >= 0; i-- {
-			path, err := filepath.Abs(files[i])
+			path, err := absolutePath(files[i])
 			files[i] = result(stderr, path, err)
 			if seen[files[i]] {
 				files = append(files[:i], files[i+1:]...)
@@ -513,17 +514,33 @@ func printError(stderr io.Writer, err error) {
 }
 
 func parseFilename(err string) string {
-	parts := strings.SplitN(err, ":", 2)
+	parts := splitError(err)
 	if len(parts) < 2 {
 		return ""
 	}
 	return parts[0]
 }
 
+func splitError(err string) []string {
+	var drive string
+	if runtime.GOOS == "windows" {
+		// try skip the drive letter on Windows
+		if len(err) > 2 && err[1] == ':' {
+			drive = err[:2]
+			err = err[2:]
+		}
+	}
+	parts := strings.SplitN(err, ":", 4)
+	if len(parts) > 0 {
+		parts[0] = drive + parts[0]
+	}
+	return parts
+}
+
 // printErrorWithPosition tries to print template error in a more readable format.
 // template error format: "<filename>:<line>:<column>: <error message>"
 func printErrorWithPosition(stderr io.Writer, err string) {
-	const fileColor = term.Color("")
+	const fileColor = term.None
 	const lineColor = term.BrightBlue
 	const columnColor = term.BrightGreen
 	const errorColor = term.BrightRed
@@ -531,21 +548,24 @@ func printErrorWithPosition(stderr io.Writer, err string) {
 	if err == "" {
 		return
 	}
-	parts := strings.SplitN(err, ":", 4)
-	if len(parts) < 3 {
-		if len(parts) == 2 {
-			term.Fprintf(stderr, "%s:%s\n", fileColor.Colorize(parts[0]), errorColor.Colorize(parts[1]))
-		} else {
-			term.Fprintln(stderr, errorColor.Colorize(err))
-		}
-		return
-	}
+	parts := splitError(err)
 	filename := parts[0]
 	if wd, err := os.Getwd(); err == nil {
 		if rel, err := filepath.Rel(wd, filename); err == nil && !strings.HasPrefix(rel, "..") {
 			filename = rel
 		}
 	}
+	filename = filepath.ToSlash(filename)
+
+	if len(parts) < 3 {
+		if len(parts) == 2 {
+			term.Fprintf(stderr, "%s:%s\n", fileColor.Colorize(filename), errorColor.Colorize(parts[1]))
+		} else {
+			term.Fprintln(stderr, errorColor.Colorize(err))
+		}
+		return
+	}
+
 	line := parts[1]
 	column := ""
 	if len(parts) > 3 {

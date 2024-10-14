@@ -42,7 +42,7 @@ func (m Meta) lookup(key string) pair.Pair[string, bool] {
 }
 
 func validMetaKey(key string) error {
-	if !stringutil.IsIdentifer(key) {
+	if !stringutil.IsASCIIIdentifier(key) {
 		return fmt.Errorf("must be a valid identifier")
 	}
 	if strings.HasPrefix(key, "_") || key == "this" || key == "path" || key == "skip" || key == "perm" {
@@ -621,7 +621,7 @@ func (tc *templateContext) lazyInit() error {
 	}
 	for i := range files {
 		var err error
-		files[i], err = filepath.Abs(files[i])
+		files[i], err = absolutePath(files[i])
 		if err != nil {
 			return err
 		}
@@ -914,7 +914,7 @@ func (tc *templateContext) loadTemplate(path string, fs FileSystem) (*template.T
 		defer f.Close()
 		content, err = io.ReadAll(f)
 	} else {
-		path, err = filepath.Abs(path)
+		path, err = absolutePath(path)
 		if err != nil {
 			return nil, fmt.Errorf("failed to resolve template %q absolute path: %w", path, err)
 		}
@@ -926,6 +926,7 @@ func (tc *templateContext) loadTemplate(path string, fs FileSystem) (*template.T
 	if err != nil {
 		return nil, err
 	}
+	path = filepath.ToSlash(path)
 	t, err := createTemplate(path, string(content), tc.funcs)
 	if err != nil {
 		return nil, err
