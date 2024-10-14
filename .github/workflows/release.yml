@@ -36,14 +36,16 @@ jobs:
         with:
           go-version: 1.23
 
-      - name: Build and Create Tar.gz
+      - name: Build and Create Archives
         run: make release
 
-      - name: Upload Tar.gz to GitHub Release
+      - name: Upload Archives to GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.ref_name }}
-          files: build/next*.tar.gz
+          files: |
+            build/next*.tar.gz
+            build/next*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
