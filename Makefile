@@ -49,27 +49,33 @@ install: build
 	@cp ${BUILD_BIN_DIR}/next ${INSTALL_DIR}/
 	@cp ${BUILD_BIN_DIR}/nextls ${INSTALL_DIR}/
 
-define release_unix
+define create_release
 	$(eval dir := next$(subst v,,${BUILD_VERSION}).$(1)-$(2))
+	@if [ -d ${BUILD_DIR}/${dir} ]; then rm -r ${BUILD_DIR}/${dir}*; fi
 	@mkdir -p ${BUILD_DIR}/${dir}/bin
 	@cp README.md ${BUILD_DIR}/${dir}/
 	@echo "Building ${BUILD_DIR}/${dir}/next..."
-	@GOOS=$(if $(filter mingw,$(1)),windows,$(1)) GOARCH=$(2) ${GOBUILD} -o ${BUILD_DIR}/${dir}/bin/
-	@GOOS=$(if $(filter mingw,$(1)),windows,$(1)) GOARCH=$(2) ${GOBUILD} -o ${BUILD_DIR}/${dir}/bin/ ./cmd/nextls/
-	@cd ${BUILD_DIR} && tar zcf ${dir}.tar.gz ${dir} && rm -r ${dir}
+	@GOOS=$(1) GOARCH=$(2) ${GOBUILD} -o ${BUILD_DIR}/${dir}/bin/
+	@GOOS=$(1) GOARCH=$(2) ${GOBUILD} -o ${BUILD_DIR}/${dir}/bin/ ./cmd/nextls/
+	@cd ${BUILD_DIR} && \
+	if [ "$(1)" = "windows" ]; then \
+		zip -q -r ${dir}.zip ${dir} && rm -r ${dir}; \
+	else \
+		tar zcf ${dir}.tar.gz ${dir} && rm -r ${dir}; \
+	fi
 endef
 
 .PHONY: release
 release:
 	@rm -f ${BUILD_DIR}/next*.tar.gz
-	$(call release_unix,darwin,amd64)
-	$(call release_unix,darwin,arm64)
-	$(call release_unix,linux,amd64)
-	$(call release_unix,linux,arm64)
-	$(call release_unix,linux,386)
-	$(call release_unix,mingw,amd64)
-	$(call release_unix,mingw,arm64)
-	$(call release_unix,mingw,386)
+	$(call create_release,darwin,amd64)
+	$(call create_release,darwin,arm64)
+	$(call create_release,linux,amd64)
+	$(call create_release,linux,arm64)
+	$(call create_release,linux,386)
+	$(call create_release,windows,amd64)
+	$(call create_release,windows,arm64)
+	$(call create_release,windows,386)
 
 .PHONY: release/windows
 release/windows:

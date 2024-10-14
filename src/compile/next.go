@@ -11,7 +11,6 @@ import (
 	"maps"
 	"os"
 	"path/filepath"
-	"runtime"
 	"slices"
 	"strconv"
 	"strings"
@@ -262,7 +261,7 @@ func Compile(platform Platform, builtin FileSystem, args []string) {
 		}
 	}
 
-	flagSet := flag.NewFlagSet(op.If(runtime.GOOS == "windows", "next", args[0]), flag.ContinueOnError)
+	flagSet := flag.NewFlagSet("next", flag.ContinueOnError)
 	flagSet.Usage = func() {}
 
 	stdin, stderr := platform.Stdin(), platform.Stderr()

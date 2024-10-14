@@ -1,11 +1,5 @@
-github.com/gopherd/core v0.0.0-20241012080021-1bd551f02daa h1:Fs6MZutF++J3kjg3uSwYQz2CUVsv98J/P9Kt16VnvGM=
-github.com/gopherd/core v0.0.0-20241012080021-1bd551f02daa/go.mod h1:KfAPtxaKLEFiby8PpGwdgp86auCmLU82+khBzHhUTaM=
-github.com/gopherd/core v0.0.0-20241012140859-d6117f39504e h1:DThO/xnz0DieMvgF8wRu4bDNNHevVyNbvEZjrvcKi9E=
-github.com/gopherd/core v0.0.0-20241012140859-d6117f39504e/go.mod h1:KfAPtxaKLEFiby8PpGwdgp86auCmLU82+khBzHhUTaM=
-github.com/gopherd/core v0.0.0-20241012142240-6df4fad62239 h1:zD4rEA3IGaJDRs3zuLU/lXI2lm1mA5og/WhlJ103QyY=
-github.com/gopherd/core v0.0.0-20241012142240-6df4fad62239/go.mod h1:KfAPtxaKLEFiby8PpGwdgp86auCmLU82+khBzHhUTaM=
-github.com/gopherd/core v0.0.0-20241012142439-5f838c8891d0 h1:k9OFrnUj5pyNzW+nrY4/S4Jwk6+7hva/yam8gEPu84c=
-github.com/gopherd/core v0.0.0-20241012142439-5f838c8891d0/go.mod h1:KfAPtxaKLEFiby8PpGwdgp86auCmLU82+khBzHhUTaM=
+github.com/gopherd/core v0.0.0-20241014043059-35a7103ed442 h1:+XTVPm9HTZjAKl5Rr/X4Ne+Ek7Cdh0DUJF9d8VxibXo=
+github.com/gopherd/core v0.0.0-20241014043059-35a7103ed442/go.mod h1:KfAPtxaKLEFiby8PpGwdgp86auCmLU82+khBzHhUTaM=
 github.com/gopherd/template v0.0.0-20240911153226-e85cdd3ec1f6 h1:8PslHwk6l1fta0+XLf+DuNCguvwzFn05eqRj8mbDmPE=
 github.com/gopherd/template v0.0.0-20240911153226-e85cdd3ec1f6/go.mod h1:ox4KHnNLOnF2DQlsPDnGM+26wEdklBaeZyndkofvEjA=
 github.com/gorilla/websocket v1.4.1 h1:q7AeDBpnBk8AogcD4DSag/Ukw/KV+YhzLj2bP5HvKCM=
