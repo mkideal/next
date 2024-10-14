@@ -77,9 +77,11 @@ release:
 	$(call create_release,windows,arm64)
 	$(call create_release,windows,386)
 
+ifeq ($(OS),Windows_NT)
 .PHONY: release/windows
 release/windows:
 	@powershell -ExecutionPolicy Bypass -File scripts/generate-msi.ps1 -Version '$(BUILD_VERSION)' -Dir '$(BUILD_DIR)' -GoBuild '$(GOBUILD)'
+endif
 
 .PHONY: test/src
 test/src: autogen go/vet
