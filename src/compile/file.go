@@ -12,6 +12,7 @@ import (
 type File struct {
 	compiler     *Compiler
 	pos          token.Pos // position of the file
+	namePos      token.Pos // position of the package name
 	pkg          *Package  // package containing the file
 	src          *ast.File // the original AST
 	importedOnly bool      // imported only
@@ -38,6 +39,7 @@ func newFile(c *Compiler, src *ast.File, path string) *File {
 		compiler: c,
 		src:      src,
 		pos:      src.Pos(),
+		namePos:  src.Package,
 		doc:      newDoc(src.Doc),
 		symbols:  make(map[string]Symbol),
 		objects:  make(map[ast.Node]Object),

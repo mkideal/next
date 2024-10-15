@@ -382,8 +382,8 @@ func (x *commonNode[Self]) File() *File {
 	return x.file
 }
 
-func (x *Package) NamePos() Position          { return Position{} }
-func (x *File) NamePos() Position             { return Position{} }
+func (x *Package) NamePos() Position          { return positionFor(x.decls.compiler, x.File().namePos) }
+func (x *File) NamePos() Position             { return positionFor(x.compiler, x.namePos) }
 func (x *commonNode[Self]) NamePos() Position { return positionFor(x.file.compiler, x.namePos) }
 
 // -------------------------------------------------------------------------

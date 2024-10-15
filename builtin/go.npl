@@ -65,7 +65,13 @@ import {{with .name}}{{.}} {{end}}"{{.value}}"
 
 {{/* next/go/import: Generates an import statement for a specific package */}}
 {{- define "next/go/import"}}
+{{- if .Target.Package.Annotations.next.go_package}}
 import {{.Target.Package.Name}} "{{.Target.Package.Annotations.next.go_package}}"
+{{- else if env.GO_MOD}}
+import {{.Target.Package.Name}} "{{env.GO_MOD}}/{{.Target.Package.Name}}"
+{{- else}}
+{{- error "%s: missing go_package annotation parameter" .Target.Package.File.NamePos}}
+{{- end}}
 {{- end}}
 
 {{/*

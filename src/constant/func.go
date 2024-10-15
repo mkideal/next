@@ -396,7 +396,7 @@ func getenvFunc(ctx FuncContext, args []Value) Value {
 	name := StringVal(args[0])
 	value, ok := ctx.Getenv(name)
 	if !ok {
-		return MakeUnknown()
+		panic("getenv: environment variable not found: " + name)
 	}
 	return MakeString(value)
 }

@@ -598,7 +598,7 @@ func resolveAnnotations(c *Compiler, file *File, node Node, annotations *ast.Ann
 					annotation.setPos(p.Name.Name+":value", positionFor(c, p.Value.Pos()))
 				}
 			} else {
-				c.addErrorf(p.Pos(), "unexpected parameter %T", p.Value)
+				c.addError(p.Pos(), "invalid annotation parameter")
 			}
 		}
 		result[a.Name.Name] = annotation
