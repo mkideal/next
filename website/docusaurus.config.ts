@@ -189,13 +189,13 @@ const config: Config = {
     },
     algolia: {
       // The application ID provided by Algolia
-      appId: "FTUFY3O9F2",
+      appId: "DK76XLTNWJ",
 
       // Public API key: it is safe to commit it
-      apiKey: "00e8a16f9517f447382d41ca398884a7",
+      apiKey: "8a8519768bf863f91d6136632319bf0f",
 
       // The search index name
-      indexName: "prod_next_doc",
+      indexName: "next",
 
       //contextualSearch: true,
 
