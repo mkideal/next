@@ -40,7 +40,6 @@ const (
 	TokenTypeNumber                         // number
 	TokenTypeRegexp                         // regexp
 	TokenTypeOperator                       // operator
-	TokenTypeDecorator                      // decorator
 
 	tokenTypeCount // -count-
 

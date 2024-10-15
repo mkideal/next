@@ -31,13 +31,12 @@ func _() {
 	_ = x[TokenTypeNumber-20]
 	_ = x[TokenTypeRegexp-21]
 	_ = x[TokenTypeOperator-22]
-	_ = x[TokenTypeDecorator-23]
-	_ = x[tokenTypeCount-24]
+	_ = x[tokenTypeCount-23]
 }
 
-const _TokenType_name = "textnamespacetypeclassenuminterfacestructtypeParameterparametervariablepropertyenumMembereventfunctionmethodmacrokeywordmodifiercommentstringnumberregexpoperatordecorator-count-"
+const _TokenType_name = "textnamespacetypeclassenuminterfacestructtypeParameterparametervariablepropertyenumMembereventfunctionmethodmacrokeywordmodifiercommentstringnumberregexpoperator-count-"
 
-var _TokenType_index = [...]uint8{0, 4, 13, 17, 22, 26, 35, 41, 54, 63, 71, 79, 89, 94, 102, 108, 113, 120, 128, 135, 141, 147, 153, 161, 170, 177}
+var _TokenType_index = [...]uint8{0, 4, 13, 17, 22, 26, 35, 41, 54, 63, 71, 79, 89, 94, 102, 108, 113, 120, 128, 135, 141, 147, 153, 161, 168}
 
 func (i TokenType) String() string {
 	if i >= TokenType(len(_TokenType_index)-1) {
