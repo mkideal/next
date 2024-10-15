@@ -160,8 +160,12 @@ const config: Config = {
           label: "Feature Images Designed by Freepik",
           href: "https://www.freepik.com",
         },
+        {
+          label: "Built with Docusaurus",
+          href: "https://docusaurus.io",
+        },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} Next, Inc. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} Next, Inc.`,
     },
     prism: {
       theme: prismLight,

@@ -76,54 +76,27 @@ flowchart TD
 
 ## Installation
 
+To install Next, you can use the following command:
+
 <Tabs
-  defaultValue="unix"
+  defaultValue="unix-like"
   values={[
-    { label: 'Unix-like', value: 'unix' },
-    { label: 'Windows', value: 'windows' },
+    { label: 'Unix-like Shell', value: 'unix-like' },
+    { label: 'Windows PowerShell', value: 'powershell' },
   ]}>
-
-  <TabItem value="unix">
-  To install Next on Unix-like systems (Linux, macOS, and Git-Bash for windows, etc.), you can use the following command:
-
+  <TabItem value="unix-like">
   ```sh
   curl --proto '=https' --tlsv1.2 -sSf https://getnext.sh | sh
   ```
-
-  This script will download and install the latest version of Next on your system.
-
-  :::tip
-
-  If the downloading is very slow, you can use a https proxy like this:
-
-  ```sh
-  curl --proto '=https' --tlsv1.2 -sSf https://getnext.sh | https_proxy=http://127.0.0.1:1080 sh
-  ```
-
-  :::
-
   </TabItem>
-
-  <TabItem value="windows">
-  To install Next on Windows, you can use the following command in **PowerShell**:
-  
+  <TabItem value="powershell">
   ```sh
   iwr -useb https://getnext.sh/ps | iex
   ```
-
-  This will install the Next on your Windows system.
-
-  :::note
-  Also, you can install Next in **Git-Bash**:
-
-  ```sh
-  curl --proto '=https' --tlsv1.2 -sSf https://getnext.sh | sh
-  ```
-  :::
   </TabItem>
 </Tabs>
 
-After installing `next`, run `next version` to check the installed version:
+After installing Next, run `next version` to check the installed version:
 
 ```sh
 next version
