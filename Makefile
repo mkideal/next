@@ -41,6 +41,7 @@ build: autogen go/vet
 	@mkdir -p ${BUILD_DIR}
 	@mkdir -p ${BUILD_BIN_DIR}
 	@${GOBUILD} -o ${BUILD_BIN_DIR}/
+	@${GOBUILD} -o ${BUILD_BIN_DIR}/ ./cmd/nextls/
 
 .PHONY: install
 install: build

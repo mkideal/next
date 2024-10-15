@@ -57,7 +57,7 @@ type Options struct {
 	// See the [-head](#CommandLine/Flag/-head) flag for more information.
 	Head string `yaml:"head" json:"head"`
 
-	// @api(CommandLine/Options.Perm) represents the file permission for generated code if `{{head}}` is called.
+	// @api(CommandLine/Options.perm) represents the file permission for generated code if `{{head}}` is called.
 	Perm int `yaml:"perm" json:"perm"`
 
 	// @api(CommandLine/Options.grammar) represents the custom grammar for the next source code.

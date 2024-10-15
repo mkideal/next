@@ -105,12 +105,19 @@ func (p standardPlatform) WriteFile(filename string, data []byte, perm fs.FileMo
 	}
 	// Ensure the file is writable.
 	info, err := os.Stat(filename)
+	overrides := err == nil && info.Mode() != perm
 	if err == nil && info.Mode()&0600 != 0600 {
 		if err := os.Chmod(filename, perm|0600); err != nil {
 			return err
 		}
 	}
-	return os.WriteFile(filename, data, perm)
+	if err := os.WriteFile(filename, data, perm); err != nil {
+		return err
+	}
+	if overrides {
+		os.Chmod(filename, perm)
+	}
+	return nil
 }
 
 func (p standardPlatform) IsExist(filename string) bool {
