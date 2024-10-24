@@ -809,17 +809,17 @@ func (c *Compiler) validateAnnotations(node Node, annotations grammar.Annotation
 				return a.Value().Name
 			})
 			if s != "" {
-				c.addErrorf(annotation.Pos().pos, "unknown annotation %s, did you mean %s?", name, s)
+				c.addErrorf(annotation.Pos().pos, "unknown @%s, did you mean @%s?", name, s)
 			} else {
-				c.addErrorf(annotation.Pos().pos, "unknown annotation %s", name)
+				c.addErrorf(annotation.Pos().pos, "unknown @%s", name)
 			}
 			continue
 		}
 		for _, av := range ga.Validators {
 			if ok, err := av.Value().Validate(annotation); err != nil {
-				return fmt.Errorf("%s: failed to validate annotation %s(%s): %w", annotation.Pos(), name, annotation.Node().Name(), err)
+				return fmt.Errorf("%s: failed to validate @%s: %w", annotation.Pos(), name, err)
 			} else if !ok {
-				c.addErrorf(annotation.Pos().pos, "annotation %s: %s", name, av.Value().Message)
+				c.addErrorf(annotation.Pos().pos, "@%s: %s", name, av.Value().Message)
 			}
 		}
 		for p, v := range annotation {
@@ -846,9 +846,9 @@ func (c *Compiler) validateAnnotations(node Node, annotations grammar.Annotation
 					return name
 				})
 				if s != "" {
-					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: unknown parameter %s, did you mean %s?", name, p, s)
+					c.addErrorf(annotation.NamePos(p).pos, "@%s: unknown parameter %s, did you mean %s?", name, p, s)
 				} else {
-					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: unknown parameter %s", name, p)
+					c.addErrorf(annotation.NamePos(p).pos, "@%s: unknown parameter %s", name, p)
 				}
 				continue
 			}
@@ -859,33 +859,34 @@ func (c *Compiler) validateAnnotations(node Node, annotations grammar.Annotation
 			switch {
 			case rv.Kind() == reflect.String:
 				if !slices.Contains(gp.Types, grammar.String) {
-					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should not be string", name, p)
+					c.addErrorf(annotation.ValuePos(p).pos, "@%s: %s should not be string", name, p)
 				}
 			case rv.CanInt() || rv.CanUint():
 				if !slices.Contains(gp.Types, grammar.Int) {
-					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should not be integer", name, p)
+					c.addErrorf(annotation.ValuePos(p).pos, "@%s: %s should not be integer", name, p)
 				}
 			case rv.Kind() == reflect.Bool:
 				if !slices.Contains(gp.Types, grammar.Bool) {
-					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should not be boolean", name, p)
+					c.addErrorf(annotation.ValuePos(p).pos, "@%s: %s should not be boolean", name, p)
 				}
 			case rv.CanFloat():
 				if !slices.Contains(gp.Types, grammar.Float) {
-					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should not be float", name, p)
+					c.addErrorf(annotation.ValuePos(p).pos, "@%s: %s should not be float", name, p)
 				}
 			default:
 				if !slices.Contains(gp.Types, grammar.Type) {
-					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s: unexpected value type %T, expected one of %v", name, p, v, gp.Types)
+					c.addErrorf(annotation.ValuePos(p).pos, "@%s: %s expected one of %v, but got %s", name, p, gp.Types, v)
 				}
 				if t, ok := v.(Type); !ok || t == nil {
-					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should be a type", name, p)
+					c.addErrorf(annotation.ValuePos(p).pos, "@%s: %s should be a type", name, p)
 				}
 			}
 			for _, pv := range gp.Validators {
 				if ok, err := pv.Value().Validate(v); err != nil {
-					return fmt.Errorf("%s: failed to validate annotation %s parameter %s: %w", annotation.NamePos(p), name, p, err)
+					c.addErrorf(annotation.ValuePos(p).pos, "failed to validate @%s(%s): %s", name, p, err.Error())
+					return c.errors.Err()
 				} else if !ok {
-					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s: %s", name, p, pv.Value().Message)
+					c.addErrorf(annotation.ValuePos(p).pos, "@%s(%s): %s", name, p, pv.Value().Message)
 				}
 			}
 			// Validate available expression
@@ -903,7 +904,7 @@ func (c *Compiler) validateAnnotations(node Node, annotations grammar.Annotation
 				continue
 			}
 			if _, ok := annotation[gp.Value().Name]; !ok {
-				c.addErrorf(annotation.Pos().pos, "annotation %s: missing required parameter %s", name, gp.Value().Name)
+				c.addErrorf(annotation.Pos().pos, "@%s: missing required parameter %s", name, gp.Value().Name)
 			}
 		}
 	}
