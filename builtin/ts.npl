@@ -53,7 +53,7 @@ export class {{next .Type}} {
 {{/* next/ts/struct.field: Generates a single field declaration with JSDoc */}}
 {{- define "next/ts/struct.field"}}
 {{next .Doc -}}
-{{- render "struct.field:name" .}}: {{next .Type}} = {{render "type:zero" .Type}};{{next .Comment}}
+{{- render "struct.field:name" .}}{{if .Annotations.Has "optional"}}?{{end}}: {{next .Type}};{{next .Comment}}
 {{- end}}
 
 {{/* next/ts/interface: Generates an interface declaration */}}
@@ -80,7 +80,7 @@ export interface {{next .Type}} {
 {{- end}}
  */
 {{end}}
-{{- render "interface.method:name" .}}({{next .Params}}): {{next .Result.Type}};{{next .Comment}}
+{{- render "interface.method:name" .}}({{next .Params}}): {{if .Result.Type}}{{next .Result.Type}}{{else}}void{{end}};{{next .Comment}}
 {{- end}}
 
 {{/* next/ts/interface.method.parameter: Generates a parameter for an interface method */}}

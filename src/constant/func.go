@@ -387,8 +387,8 @@ func assertGeFunc(ctx FuncContext, args []Value) Value {
 }
 
 func getenvFunc(ctx FuncContext, args []Value) Value {
-	if len(args) != 1 {
-		panic("getenv: invalid number of arguments, expected 1 argument, got " + strconv.Itoa(len(args)))
+	if len(args) == 0 || len(args) > 2 {
+		panic("getenv: invalid number of arguments, expected 1 or 2 arguments, got " + strconv.Itoa(len(args)))
 	}
 	if args[0].Kind() != String {
 		panic("getenv: invalid argument type, expected string, got " + args[0].Kind().String())
@@ -396,7 +396,36 @@ func getenvFunc(ctx FuncContext, args []Value) Value {
 	name := StringVal(args[0])
 	value, ok := ctx.Getenv(name)
 	if !ok {
+		if len(args) == 2 {
+			return args[1]
+		}
 		panic("getenv: environment variable not found: " + name)
 	}
-	return MakeString(value)
+	if len(args) == 1 {
+		return MakeString(value)
+	}
+	switch args[1].Kind() {
+	case Int:
+		i, err := strconv.ParseInt(value, 10, 64)
+		if err != nil {
+			panic("getenv: failed to parse int value: " + err.Error())
+		}
+		return MakeInt64(i)
+	case Float:
+		f, err := strconv.ParseFloat(value, 64)
+		if err != nil {
+			panic("getenv: failed to parse float value: " + err.Error())
+		}
+		return MakeFloat64(f)
+	case Bool:
+		b, err := strconv.ParseBool(value)
+		if err != nil {
+			panic("getenv: failed to parse bool value: " + err.Error())
+		}
+		return MakeBool(b)
+	case String:
+		return MakeString(value)
+	default:
+		panic("getenv: invalid value type, expected int, float, bool, or string, got " + args[1].Kind().String())
+	}
 }

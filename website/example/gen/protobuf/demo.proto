@@ -30,8 +30,8 @@ message User {
 	map<string, int32> scores = 4;
 	repeated double coordinates = 5;
 	repeated int32 matrix = 6;
-	string email = 7 [deprecated = true];
-	Color favoriteColor = 8 [deprecated = true];
+	string email = 7;
+	Color favoriteColor = 8;
 	// @next(tokens) applies to the node name:
 	// - For snake_case: "last_login_ip"
 	// - For camelCase: "lastLoginIP"
@@ -60,7 +60,7 @@ message Contract {
 message LoginRequest {
 	string username = 1;
 	string password = 2;
-	// @next(optional) annotation is a builtin annotation that marks a field as optional.
+	// @optional annotation is a builtin annotation that marks a field as optional.
 	optional string device = 3;
 	fixed64 timestamp = 5;
 }

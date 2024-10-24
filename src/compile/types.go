@@ -70,6 +70,9 @@ type Object interface {
 }
 
 // All objects listed here implement the Object interface.
+var _ Object = (Packages)(nil)
+var _ Object = (*Package)(nil)
+var _ Object = (*File)(nil)
 var _ Object = (Consts)(nil)
 var _ Object = (Enums)(nil)
 var _ Object = (Structs)(nil)
@@ -78,7 +81,6 @@ var _ Object = (*EnumMembers)(nil)
 var _ Object = (*StructFields)(nil)
 var _ Object = (*InterfaceMethods)(nil)
 var _ Object = (*InterfaceMethodParams)(nil)
-var _ Object = (*File)(nil)
 var _ Object = (*Doc)(nil)
 var _ Object = (*Comment)(nil)
 var _ Object = (*Imports[Decl])(nil)
@@ -118,6 +120,7 @@ func (x *Fields[D, F]) Typeof() string {
 	return zero.Typeof() + "s"
 }
 
+func (Packages) Typeof() string    { return "packages" }
 func (*Package) Typeof() string    { return "package" }
 func (*File) Typeof() string       { return "file" }
 func (*Doc) Typeof() string        { return "doc" }
@@ -422,12 +425,21 @@ type Decl interface {
 }
 
 // All decls listed here implement the Decl interface.
+var _ Decl = (Packages)(nil)
 var _ Decl = (*Package)(nil)
 var _ Decl = (*File)(nil)
 var _ Decl = (*Const)(nil)
 var _ Decl = (*Enum)(nil)
 var _ Decl = (*Struct)(nil)
 var _ Decl = (*Interface)(nil)
+
+func (x Packages) UsedKinds() Kinds {
+	var kinds Kinds
+	for _, p := range x {
+		kinds |= p.UsedKinds()
+	}
+	return kinds
+}
 
 func (x *Package) UsedKinds() Kinds {
 	var kinds Kinds
@@ -478,12 +490,13 @@ func (x *Interface) UsedKinds() Kinds {
 	return kinds
 }
 
-func (x *Package) declNode()   {}
-func (x *File) declNode()      {}
-func (x *Const) declNode()     {}
-func (x *Enum) declNode()      {}
-func (x *Struct) declNode()    {}
-func (x *Interface) declNode() {}
+func (Packages) declNode()   {}
+func (*Package) declNode()   {}
+func (*File) declNode()      {}
+func (*Const) declNode()     {}
+func (*Enum) declNode()      {}
+func (*Struct) declNode()    {}
+func (*Interface) declNode() {}
 
 // builtinDecl represents a special declaration for built-in types.
 type builtinDecl struct {

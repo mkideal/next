@@ -191,7 +191,7 @@ public:
 	std::string text = {""};
 	unsigned char single_byte = {0};
 	std::vector<unsigned char> byte_array;
-	std::array<int, 5> fixed_array = {0};
+	std::array<int, 5> fixed_array = {int};
 	std::vector<std::string> dynamic_array;
 	std::vector<int> int_array;
 	std::unordered_map<std::string, int> dictionary;

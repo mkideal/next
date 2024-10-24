@@ -84,8 +84,8 @@ public:
 	std::string username = {""};
 	std::vector<std::string> tags;
 	std::unordered_map<std::string, int> scores;
-	std::array<double, 3> coordinates = {0.0};
-	std::array<std::array<int, 2>, 3> matrix;
+	std::array<double, 3> coordinates = {double};
+	std::array<std::array<int, 2>, 3> matrix = {std::array<int, 2>};
 	std::string email = {""};
 	Color favorite_color = {Color(0)};
 	// @next(tokens) applies to the node name:
@@ -131,7 +131,7 @@ class LoginRequest {
 public:
 	std::string username = {""};
 	std::string password = {""};
-	// @next(optional) annotation is a builtin annotation that marks a field as optional.
+	// @optional annotation is a builtin annotation that marks a field as optional.
 	std::string device = {""};
 	OperatingSystem os = {OperatingSystem("")};
 	int64_t timestamp = {0};

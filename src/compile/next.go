@@ -180,7 +180,7 @@ var commands = map[string]*command{
 	//	**.nextproj** is recommended for the Next project file.
 	//	:::
 	"build": newCommand(
-		"Build a next project: next build [dirs_or_files...]",
+		"Build a Next project: next build [dirs_or_files...]",
 		func(ctx *commandContext, args []string) error {
 			if len(args) == 1 {
 				args = append(args, ".")
@@ -539,16 +539,16 @@ func splitError(err string) []string {
 
 // printErrorWithPosition tries to print template error in a more readable format.
 // template error format: "<filename>:<line>:<column>: <error message>"
-func printErrorWithPosition(stderr io.Writer, err string) {
+func printErrorWithPosition(stderr io.Writer, msg string) {
 	const fileColor = term.None
 	const lineColor = term.BrightBlue
 	const columnColor = term.BrightGreen
 	const errorColor = term.BrightRed
 
-	if err == "" {
+	if msg == "" {
 		return
 	}
-	parts := splitError(err)
+	parts := splitError(msg)
 	filename := parts[0]
 	if wd, err := os.Getwd(); err == nil {
 		if rel, err := filepath.Rel(wd, filename); err == nil && !strings.HasPrefix(rel, "..") {
@@ -561,12 +561,16 @@ func printErrorWithPosition(stderr io.Writer, err string) {
 		if len(parts) == 2 {
 			term.Fprintf(stderr, "%s:%s\n", fileColor.Colorize(filename), errorColor.Colorize(parts[1]))
 		} else {
-			term.Fprintln(stderr, errorColor.Colorize(err))
+			term.Fprintln(stderr, errorColor.Colorize(msg))
 		}
 		return
 	}
 
 	line := parts[1]
+	if _, err := strconv.Atoi(line); err != nil {
+		term.Fprintf(stderr, "%s:%s\n", fileColor.Colorize(filename), errorColor.Colorize(msg[len(parts[0])+1:]))
+		return
+	}
 	column := ""
 	if len(parts) > 3 {
 		part := parts[2]

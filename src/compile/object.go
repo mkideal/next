@@ -1294,6 +1294,23 @@ func available[T Node](c *Compiler, obj T, lang string) (T, bool) {
 		return obj, false
 	}
 	switch decl := any(obj).(type) {
+	case Packages:
+		isAllImportedOnly := true
+		for _, p := range decl {
+			for _, f := range p.files {
+				if !f.importedOnly {
+					isAllImportedOnly = false
+					break
+				}
+			}
+		}
+		if isAllImportedOnly {
+			return obj, false
+		}
+		for _, p := range decl {
+			p.decls.lang = lang
+		}
+		return obj, true
 	case *Package:
 		isAllImportedOnly := true
 		for _, f := range decl.files {

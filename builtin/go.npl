@@ -173,11 +173,11 @@ type {{next .Type}} struct {
 {{/* next/go/struct.field: Generates a struct field declaration */}}
 {{- define "next/go/struct.field"}}
 {{next .Doc -}}
-{{- render "struct.field:name" .}} {{next .Type}}{{render "struct.field.tag" .}}{{next .Comment}}
+{{- render "struct.field:name" .}} {{next .Type}} {{render "struct.field:tag" .}}{{next .Comment}}
 {{- end}}
 
 {{/* next/go/struct.field.tag: Placeholder for generating struct field tags */}}
-{{- define "next/go/struct.field.tag" -}}
+{{- define "next/go/struct.field:tag" -}}
 {{/* TODO: write tag */}}
 {{- end}}
 

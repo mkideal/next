@@ -245,8 +245,7 @@ struct LoginRequest {
 	string username;
 	string password;
 	string deviceId;
-	@next(optional)
-	string twoFactorToken;
+	@optional string twoFactorToken;
 }
 
 @message(type=202)
@@ -334,7 +333,7 @@ assert_le(1, 1);
 assert_gt(2, 1);
 assert_ge(2, 2);
 
-printf("GO_MOD=%s", getenv("GO_MOD") || "github.com/mkideal/next/website/example/gen/go");
-printf("JAVA_COM=%s", getenv("JAVA_COM") || "com.example");
+printf("GO_MOD=%s", getenv("GO_MOD", "github.com/mkideal/next/website/example/gen/go"));
+printf("JAVA_COM=%s", getenv("JAVA_COM", "com.example"));
 
 print("All tests passed!");

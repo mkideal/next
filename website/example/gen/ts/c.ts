@@ -25,28 +25,28 @@ export enum UserType {
 }
 
 export class User {
-	type: UserType = 0 as UserType;
-	id: number = 0;
-	username: string = "";
-	password: string = "";
-	deviceId: string = "";
-	twoFactorToken: string = "";
-	roles: Array<string> = [];
-	metadata: Map<string, string> = new Map();
-	scores: Array<number> = [];
+	type: UserType;
+	id: number;
+	username: string;
+	password: string;
+	deviceId: string;
+	twoFactorToken?: string;
+	roles: Array<string>;
+	metadata: Map<string, string>;
+	scores: Array<number>;
 }
 
 export class LoginRequest {
-	type: LoginType = 0 as LoginType;
-	username: string = "";
-	password: string = "";
-	deviceId: string = "";
-	twoFactorToken: string = "";
+	type: LoginType;
+	username: string;
+	password: string;
+	deviceId: string;
+	twoFactorToken?: string;
 }
 
 export class LoginResponse {
-	success: boolean = false;
-	errorMessage: string = "";
-	authenticationToken: string = "";
-	user: User = new User;
+	success: boolean;
+	errorMessage: string;
+	authenticationToken: string;
+	user: User;
 }

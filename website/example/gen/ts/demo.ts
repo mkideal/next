@@ -38,14 +38,14 @@ export enum OperatingSystem {
  * User represents a user in the system
  */
 export class User {
-	id: bigint = 0n;
-	username: string = "";
-	tags: Array<string> = [];
-	scores: Map<string, number> = new Map();
-	coordinates: Array<number> = [];
-	matrix: Array<Array<number>> = [];
-	email: string = "";
-	favoriteColor: Color = 0 as Color;
+	id: bigint;
+	username: string;
+	tags: Array<string>;
+	scores: Map<string, number>;
+	coordinates: Array<number>;
+	matrix: Array<Array<number>>;
+	email: string;
+	favoriteColor: Color;
 	/**
 	 * @next(tokens) applies to the node name:
 	 * - For snake_case: "last_login_ip"
@@ -53,8 +53,8 @@ export class User {
 	 * - For PascalCase: "LastLoginIP"
 	 * - For kebab-case: "last-login-ip"
 	 */
-	lastLoginIP: string = "";
-	extra: any = null;
+	lastLoginIP: string;
+	extra: any;
 }
 
 /**
@@ -68,8 +68,8 @@ export class User {
  * - In other languages, it is represented as a struct with low and high 32-bit integers.
  */
 export class Uint64 {
-	low: number = 0;
-	high: number = 0;
+	low: number;
+	high: number;
 }
 
 /**
@@ -78,16 +78,16 @@ export class Uint64 {
  * - In other languages, it is represented as a struct with low and high 64-bit integers.
  */
 export class Uint128 {
-	low: Uint64 = new Uint64;
-	high: Uint64 = new Uint64;
+	low: Uint64;
+	high: Uint64;
 }
 
 /**
  * Contract represents a smart contract
  */
 export class Contract {
-	address: Uint128 = new Uint128;
-	data: any = null;
+	address: Uint128;
+	data: any;
 }
 
 /**
@@ -95,22 +95,22 @@ export class Contract {
  * @message annotation is a custom annotation that generates message types.
  */
 export class LoginRequest {
-	username: string = "";
-	password: string = "";
+	username: string;
+	password: string;
 	/**
-	 * @next(optional) annotation is a builtin annotation that marks a field as optional.
+	 * @optional annotation is a builtin annotation that marks a field as optional.
 	 */
-	device: string = "";
-	os: OperatingSystem = "" as OperatingSystem;
-	timestamp: bigint = 0n;
+	device?: string;
+	os?: OperatingSystem;
+	timestamp: bigint;
 }
 
 /**
  * LoginResponse represents a login response message (type 102)
  */
 export class LoginResponse {
-	token: string = "";
-	user: User = new User;
+	token: string;
+	user: User;
 }
 
 /**

@@ -55,7 +55,7 @@ public:
 	std::string two_factor_token = {""};
 	std::vector<std::string> roles;
 	std::unordered_map<std::string, std::string> metadata;
-	std::array<int, 4> scores = {0};
+	std::array<int, 4> scores = {int};
 
 public:
 	User() = default;

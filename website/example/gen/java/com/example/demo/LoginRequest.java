@@ -32,7 +32,7 @@ public class LoginRequest {
 	}
 
 	/**
-	 * @next(optional) annotation is a builtin annotation that marks a field as optional.
+	 * @optional annotation is a builtin annotation that marks a field as optional.
 	 */
 	private String device;
 

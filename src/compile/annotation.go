@@ -131,6 +131,20 @@ func (a Annotation) get(name string) any {
 	return a[name]
 }
 
+// @api(Object/Common/Annotation.Len) returns the number of parameters in the annotation.
+func (a Annotation) Len() int {
+	if a == nil {
+		return 0
+	}
+	n := 0
+	for k := range a {
+		if len(k) > 0 && k[0] != '_' {
+			n++
+		}
+	}
+	return n
+}
+
 // @api(Object/Common/Annotation.Has) reports whether the annotation contains the given parameter.
 //
 // Example:

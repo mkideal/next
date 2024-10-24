@@ -36,8 +36,7 @@ struct User {
 	string username;
 	string password;
 	string deviceId;
-	@next(optional)
-	string twoFactorToken;
+	@optional string twoFactorToken;
 	vector<string> roles;
 	map<string, string> metadata;
 	array<int, A+3> scores;
@@ -48,8 +47,7 @@ struct LoginRequest {
 	string username;
 	string password;
 	string deviceId;
-	@next(optional)
-	string twoFactorToken;
+	@optional string twoFactorToken;
 }
 
 struct LoginResponse {

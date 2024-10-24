@@ -130,83 +130,83 @@ const (
 
 // Struct types
 type Point2D struct {
-	X float64 // x-coordinate
-	Y float64 // y-coordinate
+	X float64  // x-coordinate
+	Y float64  // y-coordinate
 }
 
 type Point3D struct {
-	Point Point2D
-	Z float64
+	Point Point2D 
+	Z float64 
 }
 
 type Rectangle struct {
-	TopLeft Point2D
-	BottomRight Point2D
+	TopLeft Point2D 
+	BottomRight Point2D 
 }
 
 // Struct with various field types
 type ComplexStruct struct {
-	Flag bool
-	TinyInt int8
-	SmallInt int16
-	MediumInt int32
-	BigInt int64
-	DefaultInt int
-	SinglePrecision float32
-	DoublePrecision float64
-	Text string
-	SingleByte byte
-	ByteArray []byte
-	FixedArray [5]int
-	DynamicArray []string
-	IntArray []int
-	Dictionary map[string]int
+	Flag bool 
+	TinyInt int8 
+	SmallInt int16 
+	MediumInt int32 
+	BigInt int64 
+	DefaultInt int 
+	SinglePrecision float32 
+	DoublePrecision float64 
+	Text string 
+	SingleByte byte 
+	ByteArray []byte 
+	FixedArray [5]int 
+	DynamicArray []string 
+	IntArray []int 
+	Dictionary map[string]int 
 }
 
 type User struct {
-	Id int64
-	Username string
-	Email string
-	PreferredDay Day
-	BirthMonth Month
+	Id int64 
+	Username string 
+	Email string 
+	PreferredDay Day 
+	BirthMonth Month 
 }
 
 type UserProfile struct {
-	User User
-	FirstName string
-	LastName string
-	Age int
-	Interests []string
+	User User 
+	FirstName string 
+	LastName string 
+	Age int 
+	Interests []string 
 }
 
 // message types
 type LoginRequest struct {
-	Username string
-	Password string
-	DeviceId string
-	TwoFactorToken string
+	Username string 
+	Password string 
+	DeviceId string 
+	TwoFactorToken string 
 }
 
 func (LoginRequest) MessageType() int { return 201 }
 
 type LoginResponse struct {
-	Success bool
-	ErrorMessage string
-	AuthenticationToken string
-	User User
+	Success bool 
+	ErrorMessage string 
+	AuthenticationToken string 
+	User User 
 }
 
 func (LoginResponse) MessageType() int { return 202 }
 
 type GenericRequest struct {
-	RequestId string
-	Timestamp int64
+	RequestId string 
+	Timestamp int64 
 }
 
 type GenericResponse struct {
-	RequestId string
-	Timestamp int64
-	Success bool
-	ErrorCode string
-	ErrorMessage string
+	RequestId string 
+	Timestamp int64 
+	Success bool 
+	ErrorCode string 
+	ErrorMessage string 
 }

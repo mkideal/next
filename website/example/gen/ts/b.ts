@@ -13,5 +13,5 @@ export enum TestEnum {
 }
 
 export class TestStruct {
-	point: a.Point2D = new a.Point2D;
+	point: a.Point2D;
 }

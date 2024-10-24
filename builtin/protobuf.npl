@@ -112,13 +112,13 @@ message {{next .Type}} {
 {{- define "next/protobuf/struct.field:type" -}}
 {{- $type := next $.Type}}
 
-{{- if .Annotations.next.optional}}
+{{- if .Annotations.Has "optional"}}
 	{{- if .Type.Kind.IsArray}}
-		{{- error "%s: @next(optional) annotation is not supported for array field" .Pos}}
+		{{- error "%s: @optional annotation is not supported for array field" .Pos}}
 	{{- else if .Type.Kind.IsVector}}
-		{{- error "%s: @next(optional) annotation is not supported for vector field" .Pos}}
+		{{- error "%s: @optional annotation is not supported for vector field" .Pos}}
 	{{- else if .Type.Kind.IsMap}}
-		{{- error "%s: @next(optional) annotation is not supported for map field" .Pos}}
+		{{- error "%s: @optional annotation is not supported for map field" .Pos}}
 	{{- else}}
 		{{- $type = printf "optional %s" $type}}
 	{{- end}}

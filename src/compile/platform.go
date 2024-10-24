@@ -92,7 +92,7 @@ func (p standardPlatform) WriteFile(filename string, data []byte, perm fs.FileMo
 			return fmt.Errorf("failed to write temporary file for formatter: %w", err)
 		}
 		if err := formatter(path); err != nil {
-			return fmt.Errorf("failed to format file %s: %w", path, err)
+			return fmt.Errorf("failed to format file %s: %w", filename, err)
 		}
 		data, err = os.ReadFile(path)
 		if err != nil {
@@ -101,22 +101,19 @@ func (p standardPlatform) WriteFile(filename string, data []byte, perm fs.FileMo
 	}
 	dir := filepath.Dir(filename)
 	if err := os.MkdirAll(dir, 0755); err != nil {
-		return err
+		return fmt.Errorf("failed to create directory %s: %w", dir, err)
 	}
 	// Ensure the file is writable.
 	info, err := os.Stat(filename)
-	overrides := err == nil && info.Mode() != perm
 	if err == nil && info.Mode()&0600 != 0600 {
 		if err := os.Chmod(filename, perm|0600); err != nil {
-			return err
+			return fmt.Errorf("failed to make file writable: %w", err)
 		}
 	}
 	if err := os.WriteFile(filename, data, perm); err != nil {
-		return err
+		return fmt.Errorf("failed to write file %s: %w", filename, err)
 	}
-	if overrides {
-		os.Chmod(filename, perm)
-	}
+	os.Chmod(filename, perm)
 	return nil
 }
 

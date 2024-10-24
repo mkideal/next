@@ -47,8 +47,8 @@ struct User {
 	map<string, int> scores;
 	array<float64, 3> coordinates;
 	array<array<int, 2>, 3> matrix;
-	@next(deprecated) string email;
-	@next(deprecated="favoriteColor is deprecated, use tags instead")
+	@deprecated string email;
+	@deprecated(message="favoriteColor is deprecated, use tags instead")
 	Color favoriteColor;
 
 	// @next(tokens) applies to the node name:
@@ -113,20 +113,20 @@ struct LoginRequest {
 	string username;
 	string password;
 
-	// @next(optional) annotation is a builtin annotation that marks a field as optional.
-	@next(optional) string device;
+	// @optional annotation is a builtin annotation that marks a field as optional.
+	@optional string device;
 	@next(
-	    available="!protobuf",
-	    optional,
-	    default=OperatingSystem.IOS,
-	) OperatingSystem os;
+		available="!protobuf",
+		default=OperatingSystem.IOS,
+	)
+	@optional OperatingSystem os;
 
-	// @next(optional) is not supported for array, vector, and map fields:
+	// @optional is not supported for array, vector, and map fields:
 	//
 	// Bad example:
-	//  @next(optional) array<float64, 3> coordinates;
-	//  @next(optional) vector<string> tags;
-	//  @next(optional) map<string, int> scores;
+	//  @optional array<float64, 3> coordinates;
+	//  @optional vector<string> tags;
+	//  @optional map<string, int> scores;
 
 	@next(protobuf_alias="fixed64")
 	int64 timestamp;

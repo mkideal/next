@@ -1470,8 +1470,15 @@ func next(node string, parameters ...Options[AnnotationParameter]) Options[Annot
 	})
 }
 
+func optional() Options[Annotation] {
+	return opt(Annotation{
+		Name:        "optional",
+		Description: "Sets the field as optional.",
+	})
+}
+
 func base_next(node string, parameters ...Options[AnnotationParameter]) Options[Annotation] {
-	return next(node, append(parameters, available(), deprecated(), tokens())...)
+	return next(node, append(parameters, available(), tokens())...)
 }
 
 func available() Options[AnnotationParameter] {
@@ -1482,11 +1489,22 @@ func available() Options[AnnotationParameter] {
 	})
 }
 
-func deprecated() Options[AnnotationParameter] {
-	return opt(AnnotationParameter{
+func deprecated() Options[Annotation] {
+	return opt(Annotation{
 		Name:        "deprecated",
 		Description: "Sets the declaration as deprecated.",
-		Types:       types(String, Bool),
+		Parameters: []Options[AnnotationParameter]{
+			opt(AnnotationParameter{
+				Name:        "since",
+				Description: "Sets the version when the declaration is deprecated.",
+				Types:       types(String),
+			}),
+			opt(AnnotationParameter{
+				Name:        "message",
+				Description: "Sets the deprecation message for the declaration.",
+				Types:       types(String),
+			}),
+		},
 	})
 }
 
@@ -1503,14 +1521,6 @@ func prompt() Options[AnnotationParameter] {
 		Name:        "prompt",
 		Description: "Sets the prompt message for the interface declaration.",
 		Types:       types(String),
-	})
-}
-
-func optional() Options[AnnotationParameter] {
-	return opt(AnnotationParameter{
-		Name:        "optional",
-		Description: "Sets the field as optional.",
-		Types:       types(Bool),
 	})
 }
 
@@ -1596,8 +1606,6 @@ func appendTo[S ~[]T, T any](s *S, x ...T) {
 //	@next(
 //		// available is used to set the available expression for the file.
 //		available="cpp|java",
-//		// deprecated is used to set the declaration as deprecated.
-//		deprecated,
 //		// tokens is used to set the space separated tokens for the declaration name.
 //		tokens="DB",
 //		// <LANG>_package is used to set the package name for target languages.
@@ -1610,18 +1618,18 @@ func appendTo[S ~[]T, T any](s *S, x ...T) {
 //
 //	@next(
 //		available="cpp",
-//		deprecated,
 //		tokens="HTTP Version",
 //	)
+//	@deprecated(since="2.0", message="Use HTTPVersion2 instead.")
 //	const int HTTPVersion = 2;
 //
 //	@next(
 //		available="cpp|java",
-//		deprecated,
 //		tokens="HTTP Method",
 //		// <LANG>_alias is used to set the alias name for target languages.
 //		java_alias="org.springframework.http.HttpMethod",
 //	)
+//	@deprecated(since="2.0", message="Use HTTPMethod2 instead.")
 //	enum HTTPMethod {
 //		Get = "GET",
 //		Post = "POST",
@@ -1631,48 +1639,49 @@ func appendTo[S ~[]T, T any](s *S, x ...T) {
 //		Options = "OPTIONS",
 //		Patch = "PATCH",
 //		Trace = "TRACE",
-//		@next(available="!java", deprecated, tokens="Connect")
+//		@next(available="!java", tokens="Connect")
+//		@deprecated(since="2.0", message="Use Connect2 instead.")
 //		Connect = "CONNECT",
 //	}
 //
 //	@next(
 //		available="cpp|java",
-//		deprecated,
 //		tokens="User",
 //		cpp_alias="model::User",
 //	)
+//	@deprecated(since="2.0", message="Use User2 instead.")
 //	struct User {
 //		int id;
 //		@next(
 //			available="!java",
-//			deprecated,
 //			tokens="Name",
-//			optional,
 //			default="John Doe",
 //			cpp_alias="std::string",
 //		)
+//		@optional
+//		@deprecated(since="2.0", message="Use Name2 instead.")
 //		string name;
 //	}
 //
 //	@next(
 //		available="cpp|java",
-//		deprecated,
 //		tokens="User Repository",
 //		prompt="Prompt for AGI.",
 //		java_alias="org.springframework.data.repository.CrudRepository<User, Long>",
 //	)
+//	@deprecated(since="2.0", message="Use UserRepository2 instead.")
 //	interface UserRepository {
 //		@next(
 //			available="!java",
-//			deprecated,
 //			tokens="Get User",
 //			mut,
 //			error,
 //			cpp_alias="std::shared_ptr<model::User>",
 //			prompt="Prompt for AGI.",
 //		)
+//		@deprecated(since="2.0", message="Use GetUser2 instead.")
 //		findById(
-//			@next(available="!java", deprecated, tokens="ID", mut, cpp_alias="int64_t")
+//			@next(available="!java", tokens="ID", mut, cpp_alias="int64_t")
 //			int64 id
 //		) User;
 //	}
@@ -1683,28 +1692,28 @@ var Builtin = Grammar{
 		Annotations: Annotations{base_next("package", lang_package(), lang_imports())},
 	},
 	Const: Const{
-		Annotations: Annotations{base_next("const")},
+		Annotations: Annotations{base_next("const"), deprecated()},
 		Types:       validConstTypes,
 	},
 	Enum: Enum{
-		Annotations: Annotations{base_next("enum", type_())},
+		Annotations: Annotations{base_next("enum", type_()), deprecated()},
 		Member: EnumMember{
-			Annotations: Annotations{base_next("enum.member")},
+			Annotations: Annotations{base_next("enum.member"), deprecated()},
 			Types:       validEnumMemberTypes,
 		},
 	},
 	Struct: Struct{
-		Annotations: Annotations{base_next("struct", lang_alias())},
+		Annotations: Annotations{base_next("struct", lang_alias()), deprecated()},
 		Field: StructField{
-			Annotations: Annotations{base_next("struct.field", optional(), raw_default(), default_(), lang_alias())},
+			Annotations: Annotations{base_next("struct.field", raw_default(), default_(), lang_alias()), optional(), deprecated()},
 		},
 	},
 	Interface: Interface{
-		Annotations: Annotations{base_next("interface", prompt(), lang_alias())},
+		Annotations: Annotations{base_next("interface", prompt(), lang_alias()), deprecated()},
 		Method: InterfaceMethod{
-			Annotations: Annotations{base_next("interface.method", prompt(), lang_alias(), mut(), error_())},
+			Annotations: Annotations{base_next("interface.method", prompt(), lang_alias(), mut(), error_()), deprecated()},
 			Parameter: InterfaceMethodParameter{
-				Annotations: Annotations{next("interface.method.parameter", deprecated(), tokens(), mut(), lang_alias())},
+				Annotations: Annotations{next("interface.method.parameter", tokens(), mut(), lang_alias())},
 			},
 		},
 	},

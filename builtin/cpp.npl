@@ -207,7 +207,7 @@ virtual {{next .Result}} {{render "interface.method:name" .}}({{next .Params}}) 
 {{/* next/cpp/type:zero: Generates a zero-initializer for a type */}}
 {{- define "next/cpp/type:zero" -}}
 {{- if .Kind.IsArray}}
-	{{- super .Actual.ElemType}}
+	{{- next .Actual.ElemType}}
 {{- else if .Kind.IsEnum}}
 	{{- next .}}({{render "type:zero" .Actual.Decl.MemberType -}})
 {{- else -}}

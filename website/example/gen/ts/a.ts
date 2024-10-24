@@ -140,83 +140,83 @@ export enum IotatestEnum {
  * Struct types
  */
 export class Point2D {
-	x: number = 0; // x-coordinate
-	y: number = 0; // y-coordinate
+	x: number; // x-coordinate
+	y: number; // y-coordinate
 }
 
 export class Point3D {
-	point: Point2D = new Point2D;
-	z: number = 0;
+	point: Point2D;
+	z: number;
 }
 
 export class Rectangle {
-	topLeft: Point2D = new Point2D;
-	bottomRight: Point2D = new Point2D;
+	topLeft: Point2D;
+	bottomRight: Point2D;
 }
 
 /**
  * Struct with various field types
  */
 export class ComplexStruct {
-	flag: boolean = false;
-	tinyInt: number = 0;
-	smallInt: number = 0;
-	mediumInt: number = 0;
-	bigInt: bigint = 0n;
-	defaultInt: number = 0;
-	singlePrecision: number = 0;
-	doublePrecision: number = 0;
-	text: string = "";
-	singleByte: number = 0;
-	byteArray: Uint8Array = new Uint8Array();
-	fixedArray: Array<number> = [];
-	dynamicArray: Array<string> = [];
-	intArray: Array<number> = [];
-	dictionary: Map<string, number> = new Map();
+	flag: boolean;
+	tinyInt: number;
+	smallInt: number;
+	mediumInt: number;
+	bigInt: bigint;
+	defaultInt: number;
+	singlePrecision: number;
+	doublePrecision: number;
+	text: string;
+	singleByte: number;
+	byteArray: Uint8Array;
+	fixedArray: Array<number>;
+	dynamicArray: Array<string>;
+	intArray: Array<number>;
+	dictionary: Map<string, number>;
 }
 
 export class User {
-	id: bigint = 0n;
-	username: string = "";
-	email: string = "";
-	preferredDay: Day = 0 as Day;
-	birthMonth: Month = 0 as Month;
+	id: bigint;
+	username: string;
+	email: string;
+	preferredDay: Day;
+	birthMonth: Month;
 }
 
 export class UserProfile {
-	user: User = new User;
-	firstName: string = "";
-	lastName: string = "";
-	age: number = 0;
-	interests: Array<string> = [];
+	user: User;
+	firstName: string;
+	lastName: string;
+	age: number;
+	interests: Array<string>;
 }
 
 /**
  * message types
  */
 export class LoginRequest {
-	username: string = "";
-	password: string = "";
-	deviceId: string = "";
-	twoFactorToken: string = "";
+	username: string;
+	password: string;
+	deviceId: string;
+	twoFactorToken?: string;
 }
 
 export class LoginResponse {
-	success: boolean = false;
-	errorMessage: string = "";
-	authenticationToken: string = "";
-	user: User = new User;
+	success: boolean;
+	errorMessage: string;
+	authenticationToken: string;
+	user: User;
 }
 
 export class GenericRequest {
-	requestId: string = "";
-	timestamp: bigint = 0n;
+	requestId: string;
+	timestamp: bigint;
 }
 
 export class GenericResponse {
-	requestId: string = "";
-	timestamp: bigint = 0n;
-	success: boolean = false;
-	errorCode: string = "";
-	errorMessage: string = "";
+	requestId: string;
+	timestamp: bigint;
+	success: boolean;
+	errorCode: string;
+	errorMessage: string;
 }

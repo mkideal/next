@@ -6,6 +6,17 @@ import (
 	"slices"
 )
 
+// @api(Object/Packages) represents a list of Next packages.
+type Packages []*Package
+
+func (Packages) Doc() *Doc                { return nil }
+func (Packages) Annotations() Annotations { return nil }
+func (Packages) File() *File              { return nil }
+func (Packages) Package() *Package        { return nil }
+func (Packages) Name() string             { return "" }
+func (Packages) NamePos() Position        { return Position{} }
+func (Packages) Pos() Position            { return Position{} }
+
 // @api(Object/Package) (extends [Decl](#Object/Common/Decl)) represents a Next package.
 type Package struct {
 	name    string

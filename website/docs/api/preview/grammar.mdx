@@ -66,8 +66,6 @@ next grammar grammar.json
 @next(
 	// available is used to set the available expression for the file.
 	available="cpp|java",
-	// deprecated is used to set the declaration as deprecated.
-	deprecated,
 	// tokens is used to set the space separated tokens for the declaration name.
 	tokens="DB",
 	// <LANG>_package is used to set the package name for target languages.
@@ -80,18 +78,18 @@ package db;
 
 @next(
 	available="cpp",
-	deprecated,
 	tokens="HTTP Version",
 )
+@deprecated(since="2.0", message="Use HTTPVersion2 instead.")
 const int HTTPVersion = 2;
 
 @next(
 	available="cpp|java",
-	deprecated,
 	tokens="HTTP Method",
 	// <LANG>_alias is used to set the alias name for target languages.
 	java_alias="org.springframework.http.HttpMethod",
 )
+@deprecated(since="2.0", message="Use HTTPMethod2 instead.")
 enum HTTPMethod {
 	Get = "GET",
 	Post = "POST",
@@ -101,48 +99,49 @@ enum HTTPMethod {
 	Options = "OPTIONS",
 	Patch = "PATCH",
 	Trace = "TRACE",
-	@next(available="!java", deprecated, tokens="Connect")
+	@next(available="!java", tokens="Connect")
+	@deprecated(since="2.0", message="Use Connect2 instead.")
 	Connect = "CONNECT",
 }
 
 @next(
 	available="cpp|java",
-	deprecated,
 	tokens="User",
 	cpp_alias="model::User",
 )
+@deprecated(since="2.0", message="Use User2 instead.")
 struct User {
 	int id;
 	@next(
 		available="!java",
-		deprecated,
 		tokens="Name",
-		optional,
 		default="John Doe",
 		cpp_alias="std::string",
 	)
+	@optional
+	@deprecated(since="2.0", message="Use Name2 instead.")
 	string name;
 }
 
 @next(
 	available="cpp|java",
-	deprecated,
 	tokens="User Repository",
 	prompt="Prompt for AGI.",
 	java_alias="org.springframework.data.repository.CrudRepository<User, Long>",
 )
+@deprecated(since="2.0", message="Use UserRepository2 instead.")
 interface UserRepository {
 	@next(
 		available="!java",
-		deprecated,
 		tokens="Get User",
 		mut,
 		error,
 		cpp_alias="std::shared_ptr<model::User>",
 		prompt="Prompt for AGI.",
 	)
+	@deprecated(since="2.0", message="Use GetUser2 instead.")
 	findById(
-		@next(available="!java", deprecated, tokens="ID", mut, cpp_alias="int64_t")
+		@next(available="!java", tokens="ID", mut, cpp_alias="int64_t")
 		int64 id
 	) User;
 }

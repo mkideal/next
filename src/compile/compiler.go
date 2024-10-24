@@ -859,19 +859,19 @@ func (c *Compiler) validateAnnotations(node Node, annotations grammar.Annotation
 			switch {
 			case rv.Kind() == reflect.String:
 				if !slices.Contains(gp.Types, grammar.String) {
-					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should be string", name, p)
+					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should not be string", name, p)
 				}
 			case rv.CanInt() || rv.CanUint():
 				if !slices.Contains(gp.Types, grammar.Int) {
-					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should be integer", name, p)
+					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should not be integer", name, p)
 				}
 			case rv.Kind() == reflect.Bool:
 				if !slices.Contains(gp.Types, grammar.Bool) {
-					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should be boolean", name, p)
+					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should not be boolean", name, p)
 				}
 			case rv.CanFloat():
 				if !slices.Contains(gp.Types, grammar.Float) {
-					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should be float", name, p)
+					c.addErrorf(annotation.NamePos(p).pos, "annotation %s: parameter %s should not be float", name, p)
 				}
 			default:
 				if !slices.Contains(gp.Types, grammar.Type) {

@@ -377,6 +377,9 @@ func generateForTemplateFile(c *Compiler, lang, ext, dir, tmplFile string) error
 	}
 
 	switch strings.ToLower(this) {
+	case "packages":
+		return generateForPackages(tc, t, content, formatter)
+
 	case "package":
 		return generateForPackage(tc, t, content, formatter)
 
@@ -398,6 +401,10 @@ func generateForTemplateFile(c *Compiler, lang, ext, dir, tmplFile string) error
 	default:
 		return fmt.Errorf(`unknown value for 'this': %q, expected "package", "file", "const", "enum", "struct" or "interface"`, this)
 	}
+}
+
+func generateForPackages(tc *templateContext, t *template.Template, content []byte, formatter Formatter) error {
+	return gen(tc, t, Packages(tc.compiler.packages), content, formatter)
 }
 
 func generateForPackage(tc *templateContext, t *template.Template, content []byte, formatter Formatter) error {
@@ -552,7 +559,7 @@ func gen[T Decl](tc *templateContext, t *template.Template, decl T, content []by
 	}
 	perm := cmp.Or(parsedPerm, op.If(tc.headCalled && tc.compiler.options.Perm > 0, os.FileMode(tc.compiler.options.Perm), 0644))
 	if err := tc.compiler.platform.WriteFile(path, buf.Bytes(), perm, formatter); err != nil {
-		return fmt.Errorf("%s: failed to write file %q: %v", t.ParseName, path, err)
+		return fmt.Errorf("%s: failed to write file %s: %v", t.ParseName, path, err)
 	}
 
 	return nil

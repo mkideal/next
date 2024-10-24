@@ -19,5 +19,5 @@ const (
 )
 
 type TestStruct struct {
-	Point a.Point2D
+	Point a.Point2D 
 }

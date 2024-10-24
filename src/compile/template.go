@@ -985,7 +985,7 @@ const sep = "/"
 
 func (tc *templateContext) parseTemplateNames(lang string, name string) []string {
 	op.Assert(lang != "next")
-	priority := 1
+	priority := 0
 	parts := strings.Split(name, sep)
 	switch len(parts) {
 	case 1:
@@ -995,6 +995,7 @@ func (tc *templateContext) parseTemplateNames(lang string, name string) []string
 			priority = 3
 		} else if parts[0] == lang {
 			name = parts[1]
+			priority = 1
 		} else {
 			return nil
 		}
@@ -1009,6 +1010,10 @@ func (tc *templateContext) parseTemplateNames(lang string, name string) []string
 		return nil
 	}
 	var names []string
+	// <name>
+	if priority <= 0 {
+		names = append(names, name)
+	}
 	// <lang>/<name>
 	if priority <= 1 {
 		names = append(names, lang+sep+name)
