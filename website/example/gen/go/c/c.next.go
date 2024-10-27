@@ -36,28 +36,28 @@ const (
 )
 
 type User struct {
-	Type UserType 
-	Id int 
-	Username string 
-	Password string 
-	DeviceId string 
-	TwoFactorToken string 
-	Roles []string 
-	Metadata map[string]string 
-	Scores [4]int 
+	Type UserType
+	Id int
+	Username string
+	Password string
+	DeviceId string
+	TwoFactorToken string
+	Roles []string
+	Metadata map[string]string
+	Scores [4]int
 }
 
 type LoginRequest struct {
-	Type LoginType 
-	Username string 
-	Password string 
-	DeviceId string 
-	TwoFactorToken string 
+	Type LoginType
+	Username string
+	Password string
+	DeviceId string
+	TwoFactorToken string
 }
 
 type LoginResponse struct {
-	Success bool 
-	ErrorMessage string 
-	AuthenticationToken string 
-	User User 
+	Success bool
+	ErrorMessage string
+	AuthenticationToken string
+	User User
 }

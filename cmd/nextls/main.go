@@ -29,7 +29,7 @@ func main() {
 		logFile = filepath.Join(logFile, ".next", "log", "nextls.log")
 	}
 	flag.StringVar(&flags.log.file, "log.file", logFile, "Log file path for debug")
-	flag.StringVar(&flags.log.level, "log.level", "INFO", "Log level")
+	flag.StringVar(&flags.log.level, "log.level", "DEBUG", "Log level")
 	flag.Parse()
 
 	if flag.NArg() == 1 && flag.Arg(0) == "version" {

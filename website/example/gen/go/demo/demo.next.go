@@ -44,54 +44,54 @@ const (
 
 // User represents a user in the system
 type User struct {
-	ID int64 
-	Username string 
-	Tags []string 
-	Scores map[string]int 
-	Coordinates [3]float64 
-	Matrix [3][2]int 
-	Email string 
-	FavoriteColor Color 
+	ID int64
+	Username string
+	Tags []string
+	Scores map[string]int
+	Coordinates [3]float64
+	Matrix [3][2]int
+	Email string
+	FavoriteColor Color
 	// @next(tokens) applies to the node name:
 	// - For snake_case: "last_login_ip"
 	// - For camelCase: "lastLoginIP"
 	// - For PascalCase: "LastLoginIP"
 	// - For kebab-case: "last-login-ip"
-	LastLoginIP string 
-	Extra any 
+	LastLoginIP string
+	Extra any
 }
 
 // uint128 represents a 128-bit unsigned integer.
 // - In rust, it is aliased as u128
 // - In other languages, it is represented as a struct with low and high 64-bit integers.
 type Uint128 struct {
-	Low uint64 
-	High uint64 
+	Low uint64
+	High uint64
 }
 
 // Contract represents a smart contract
 type Contract struct {
-	Address Uint128 
-	Data any 
+	Address Uint128
+	Data any
 }
 
 // LoginRequest represents a login request message (type 101)
 // @message annotation is a custom annotation that generates message types.
 type LoginRequest struct {
-	Username string 
-	Password string 
+	Username string
+	Password string
 	// @optional annotation is a builtin annotation that marks a field as optional.
-	Device string 
-	Os OperatingSystem 
-	Timestamp int64 
+	Device string
+	Os OperatingSystem
+	Timestamp int64
 }
 
 func (LoginRequest) MessageType() int { return 101 }
 
 // LoginResponse represents a login response message (type 102)
 type LoginResponse struct {
-	Token string 
-	User User 
+	Token string
+	User User
 }
 
 func (LoginResponse) MessageType() int { return 102 }
