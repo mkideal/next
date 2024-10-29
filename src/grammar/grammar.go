@@ -1532,14 +1532,6 @@ func default_() Options[AnnotationParameter] {
 	})
 }
 
-func raw_default() Options[AnnotationParameter] {
-	return opt(AnnotationParameter{
-		Name:        "raw_default",
-		Description: "Sets the raw default value for field.",
-		Types:       types(String),
-	})
-}
-
 func mut() Options[AnnotationParameter] {
 	return opt(AnnotationParameter{
 		Name:        "mut",
@@ -1591,6 +1583,14 @@ func lang_alias() Options[AnnotationParameter] {
 	return opt(AnnotationParameter{
 		Name:        ".+_alias",
 		Description: "Sets the alias name for target languages.",
+		Types:       types(String),
+	})
+}
+
+func lang_default() Options[AnnotationParameter] {
+	return opt(AnnotationParameter{
+		Name:        ".+_default",
+		Description: "Sets the default value expression for field in target languages.",
 		Types:       types(String),
 	})
 }
@@ -1656,6 +1656,7 @@ func appendTo[S ~[]T, T any](s *S, x ...T) {
 //			available="!java",
 //			tokens="Name",
 //			default="John Doe",
+//			cpp_default="\"John Doe\"",
 //			cpp_alias="std::string",
 //		)
 //		@optional
@@ -1705,7 +1706,7 @@ var Builtin = Grammar{
 	Struct: Struct{
 		Annotations: Annotations{base_next("struct", lang_alias()), deprecated()},
 		Field: StructField{
-			Annotations: Annotations{base_next("struct.field", raw_default(), default_(), lang_alias()), optional(), deprecated()},
+			Annotations: Annotations{base_next("struct.field", lang_default(), default_(), lang_alias()), optional(), deprecated()},
 		},
 	},
 	Interface: Interface{
