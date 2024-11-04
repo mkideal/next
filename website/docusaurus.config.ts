@@ -12,7 +12,7 @@ const PROJECT_NAME = "next";
 const REPO = `https://github.com/${ORGANIZATION_NAME}/${PROJECT_NAME}`;
 
 const customFields = {
-  version: "0.2.7",
+  version: "0.2.8",
   repo: REPO,
 };
 

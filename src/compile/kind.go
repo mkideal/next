@@ -76,6 +76,8 @@ func (k Kind) grammarType() string {
 // - **byte**: byte
 // - **bytes**: byte slice
 // - **string**: string
+// - **time**: time
+// - **duration**: duration
 // - **any**: any object
 // - **map**: dictionary
 // - **vector**: vector of elements
@@ -96,6 +98,8 @@ const (
 	KindByte                  // byte
 	KindBytes                 // bytes
 	KindString                // string
+	KindTime                  // time
+	KindDuration              // duration
 	KindAny                   // any
 	KindMap                   // map
 	KindVector                // vector
@@ -177,7 +181,7 @@ func (k Kind) Bits() int {
 
 // @api(Object/Common/Type/Kind.IsPrimitive) reports whether the type is a [PrimitiveType](#Object/PrimitiveType).
 func (k Kind) IsPrimitive() bool {
-	return k.IsNumeric() || k.IsString() || k.IsBytes() || k.IsBool() || k.IsAny()
+	return k.IsNumeric() || k.IsString() || k.IsBytes() || k.IsBool() || k.IsAny() || k.IsTime() || k.IsDuration()
 }
 
 // @api(Object/Common/Type/Kind.IsInteger) reports whether the type is an integer.
@@ -215,6 +219,12 @@ func (k Kind) IsBytes() bool { return k == KindBytes }
 
 // @api(Object/Common/Type/Kind.IsBool) reports whether the type is a boolean.
 func (k Kind) IsBool() bool { return k == KindBool }
+
+// @api(Object/Common/Type/Kind.IsTime) reports whether the type is a time.
+func (k Kind) IsTime() bool { return k == KindTime }
+
+// @api(Object/Common/Type/Kind.IsDuration) reports whether the type is a duration.
+func (k Kind) IsDuration() bool { return k == KindDuration }
 
 // @api(Object/Common/Type/Kind.IsAny) reports whether the type is any.
 func (k Kind) IsAny() bool { return k == KindAny }
@@ -272,5 +282,7 @@ var primitiveKinds = []Kind{
 	KindByte,
 	KindBytes,
 	KindString,
+	KindTime,
+	KindDuration,
 	KindAny,
 }

@@ -20,19 +20,21 @@ func _() {
 	_ = x[KindByte-9]
 	_ = x[KindBytes-10]
 	_ = x[KindString-11]
-	_ = x[KindAny-12]
-	_ = x[KindMap-13]
-	_ = x[KindVector-14]
-	_ = x[KindArray-15]
-	_ = x[KindEnum-16]
-	_ = x[KindStruct-17]
-	_ = x[KindInterface-18]
-	_ = x[kindCount-19]
+	_ = x[KindTime-12]
+	_ = x[KindDuration-13]
+	_ = x[KindAny-14]
+	_ = x[KindMap-15]
+	_ = x[KindVector-16]
+	_ = x[KindArray-17]
+	_ = x[KindEnum-18]
+	_ = x[KindStruct-19]
+	_ = x[KindInterface-20]
+	_ = x[kindCount-21]
 }
 
-const _Kind_name = "invalidboolintint8int16int32int64float32float64bytebytesstringanymapvectorarrayenumstructinterface-count-"
+const _Kind_name = "invalidboolintint8int16int32int64float32float64bytebytesstringtimedurationanymapvectorarrayenumstructinterface-count-"
 
-var _Kind_index = [...]uint8{0, 7, 11, 14, 18, 23, 28, 33, 40, 47, 51, 56, 62, 65, 68, 74, 79, 83, 89, 98, 105}
+var _Kind_index = [...]uint8{0, 7, 11, 14, 18, 23, 28, 33, 40, 47, 51, 56, 62, 66, 74, 77, 80, 86, 91, 95, 101, 110, 117}
 
 func (i Kind) String() string {
 	if i < 0 || i >= Kind(len(_Kind_index)-1) {
