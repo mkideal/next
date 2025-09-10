@@ -102,6 +102,8 @@ die() {
 PREFIX=""
 VERSION=""
 BIN_DIR=""
+CACHE_DIR=""
+SKIP_EXISTING=0
 
 # Function to print help message
 print_help() {
@@ -112,6 +114,7 @@ Options:
   --prefix=PREFIX    Specify the installation prefix (must be an absolute path)
   --version=VERSION  Specify the version to install
   --cache-dir=DIR    Specify the cache directory to store downloaded files
+    --skip-existing    If the archive already exists in cache-dir, skip downloading
   -h, --help         Display this help message
 
 Example:
@@ -140,6 +143,14 @@ while [ $# -gt 0 ]; do
             ;;
         --version=*)
             VERSION="${1#--version=}"
+            shift
+            ;;
+        --cache-dir=*)
+            CACHE_DIR="${1#--cache-dir=}"
+            shift
+            ;;
+        --skip-existing)
+            SKIP_EXISTING=1
             shift
             ;;
         -h|--help)
@@ -225,25 +236,37 @@ download_next() {
         FILENAME="next$VERSION.$OS-$ARCH.zip"
     fi
     URL="https://github.com/${GITHUB_ORG}/${GITHUB_REPO}/releases/download/v$VERSION/$FILENAME"
-
     print_step "Downloading $FILENAME"
     print_sub_step "URL: $URL"
 
-    # Create a temporary directory
-	TEMP_DIR=$(mktemp -d)
-    if [ $? -ne 0 ]; then
-        die "Failed to create temporary directory"
+    if [ -n "$CACHE_DIR" ]; then
+        mkdir -p "$CACHE_DIR" || die "Failed to create cache dir"
+        ARCHIVE_PATH="$CACHE_DIR/$FILENAME"
+        echo "Archive path: $ARCHIVE_PATH, SKIP_EXISTING: $SKIP_EXISTING"
+        if [ -f "$ARCHIVE_PATH" ] && [ $SKIP_EXISTING -eq 1 ]; then
+            print_sub_step "Using cached file (skip-existing)"
+        else
+            TMP_DL="$ARCHIVE_PATH.tmp"
+            if ! curl -fSL --progress-bar "$URL" -o "$TMP_DL"; then
+                rm -f "$TMP_DL"
+                die "Failed to download Next. Please check your internet connection and try again."
+            fi
+            mv "$TMP_DL" "$ARCHIVE_PATH"
+            clear_last_line
+        fi
+        TEMP_DIR=$(mktemp -d) || die "Failed to create temporary directory"
+        ARCHIVE="$ARCHIVE_PATH"
+        DOWNLOAD_DIR="$TEMP_DIR"
+    else
+        TEMP_DIR=$(mktemp -d) || die "Failed to create temporary directory"
+        if ! curl -fSL --progress-bar "$URL" -o "$TEMP_DIR/$FILENAME"; then
+            rm -rf "$TEMP_DIR"
+            die "Failed to download Next. Please check your internet connection and try again."
+        fi
+        clear_last_line
+        ARCHIVE="$TEMP_DIR/$FILENAME"
+        DOWNLOAD_DIR="$TEMP_DIR"
     fi
-
-    # Download the Next package
-	if ! curl -fSL --progress-bar "$URL" -o "$TEMP_DIR/$FILENAME"; then
-		rm -rf "$TEMP_DIR"
-		die "Failed to download Next. Please check your internet connection and try again."
-	fi
-    clear_last_line
-
-    # Set the TEMP_DIR variable for use in the install_next function
-    DOWNLOAD_DIR="$TEMP_DIR"
 }
 
 # Install Next
@@ -251,12 +274,12 @@ install_next() {
     print_step "Installing to $BIN_DIR"
     print_sub_step "Extracting $FILENAME"
     if [ "$OS" = "windows" ]; then
-        if ! unzip -q "$DOWNLOAD_DIR/next$VERSION.$OS-$ARCH.zip" -d "$DOWNLOAD_DIR"; then
+    if ! unzip -q "$ARCHIVE" -d "$DOWNLOAD_DIR"; then
             rm -rf "$DOWNLOAD_DIR"
             die "Failed to extract Next package."
         fi
     else
-        if ! tar -xzf "$DOWNLOAD_DIR/next$VERSION.$OS-$ARCH.tar.gz" -C "$DOWNLOAD_DIR"; then
+    if ! tar -xzf "$ARCHIVE" -C "$DOWNLOAD_DIR"; then
             rm -rf "$DOWNLOAD_DIR"
             die "Failed to extract Next package."
         fi
