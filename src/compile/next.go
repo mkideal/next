@@ -52,7 +52,7 @@ const NEXT_NOCOPYBUILTIN = "NEXT_NOCOPYBUILTIN"
 const NEXT_MAXSTACK = "NEXT_MAXSTACK"
 
 const nextExt = ".next"
-const website = "https://next.as"
+const website = "https://nextlang.top"
 const repository = "https://github.com/mkideal/next"
 
 type commandContext struct {
